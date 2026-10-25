@@ -152,6 +152,37 @@ class InterventionIntentionTest extends EntryFixtureTest {
 	}
 
 	/**
+	 * Une puce de durée ajoute au temps déjà dit, passé comme prévu (HN-B20, 25/10) : 1 h puis « +30 min » font
+	 * 1 h 30, que la phrase relit telle que le jeton la pose. Celle qui passerait la journée ne se propose pas.
+	 */
+	public function testDurationAdditions(): void {
+
+		$eCultivation = $this->prepare();
+
+		if($eCultivation->empty() or $this->assertDecorPresent($this->eStructure->hasTime(), 'la structure du décor suit le temps de travail') === FALSE) {
+			return;
+		}
+
+		$reading = $this->readIntervention($eCultivation, 'hier 1 h ');
+
+		$this->assertEquals([15 => 75, 30 => 90, 60 => 120, 120 => 180], $reading['confirmation']['additions'], 'faite, ajoutée au temps passé');
+		$this->assertEquals(90, $this->readIntervention($eCultivation, 'hier '.DurationComplementUi::getDuration(90).' ')['confirmation']['minutes'], 'le jeton de la puce se relit');
+
+		$reading = $this->readIntervention($eCultivation, 'semaine prochaine 30 min ');
+
+		$this->assertEquals([15 => 45, 30 => 60, 60 => 90, 120 => 150], $reading['confirmation']['additions'], 'à faire, ajoutée au temps prévu');
+
+		$reading = $this->readIntervention($eCultivation, 'hier 23 h 30 ');
+
+		$this->assertEquals([15 => 1425, 30 => 1440], $reading['confirmation']['additions'], 'jusqu\'à la journée, pas au-delà');
+
+		$reading = $this->readIntervention($eCultivation, 'hier ');
+
+		$this->assertEquals([15 => 15, 30 => 30, 60 => 60, 120 => 120], $reading['confirmation']['additions'], 'sans temps dit, la puce donne ce qu\'elle ajoute');
+
+	}
+
+	/**
 	 * La semaine prochaine dite, l'intervention est à faire cette semaine-là, sans jour, et la durée devient le temps
 	 * prévu, sans rien écrire sur la fiche de temps. L'annulation la retire et redessine le début de sa semaine.
 	 */

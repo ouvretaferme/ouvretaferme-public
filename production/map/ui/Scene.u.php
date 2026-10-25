@@ -21,6 +21,7 @@ class SceneUi {
 		\Asset::js('map', 'sceneDecorDefault.js');
 		\Asset::js('map', 'sceneFauna.js');
 		\Asset::js('map', 'sceneHedgehog.js');
+		\Asset::js('map', 'sceneLimits.js');
 
 	}
 
@@ -68,6 +69,8 @@ class SceneUi {
 		], $scene['team']);
 
 		$h = '<div id="map-scene" class="plan-mapview scene-frame" data-scene="'.encode(json_encode($scene, JSON_UNESCAPED_UNICODE)).'" data-error="'.encode(s("La vue en 3D n'a pas pu s'ouvrir. Rechargez la page pour réessayer.")).'" data-plants="'.encode(\Asset::getPath('plant', 'plants.svg', 'image')).'" data-diameter-label="'.encode(s("Ø {value}", ['value' => '{value}'])).'" onrender="'.encode('MapScene.start(this)').'">';
+
+			$h .= \main\DesignUi::getLogoWait();
 
 			$h .= new \scene\SceneUi()->getContainer('map-scene-canvas', $bake);
 
@@ -146,7 +149,7 @@ class SceneUi {
 			$h .= $this->getRuins();
 
 			if($decor) {
-				$h .= $this->getDecor($eStructure, $scene['buildings']);
+				$h .= $this->getDecor($eStructure, $scene['buildings'], $scene['objects']);
 			}
 
 		$h .= '</div>';
@@ -274,7 +277,7 @@ class SceneUi {
 	 * la pose n'est pas ouverte. La famille d'un kit vit dans `MapSceneDecor.KITS`, qui en tire aussi
 	 * ses règles de chevauchement : une vignette dont la scène ne sait pas monter le kit reste cachée.
 	 */
-	protected function getDecor(\structure\Structure $eStructure, array $buildings): string {
+	protected function getDecor(\structure\Structure $eStructure, array $buildings, array $objects): string {
 
 		$h = self::getDecorSheet($eStructure);
 
@@ -326,24 +329,28 @@ class SceneUi {
 					$h .= $this->getDecorTile($kit, $name);
 				}
 
-				// Le terrain se choisit d'un clic, sans rien poser : sa vignette se peint d'après les couleurs de la scène
-				foreach(['grass' => 'decorGrass', 'soil' => 'decorSoil'] as $terrain => $property) {
+				// Les rangées Eau, Nature et Matériel finissent sur les éléments importés par la structure, puis sur la tuile qui en importe
+				// un : la feuille ne montre que ceux de la rangée ouverte. Un élément importé depuis le panneau y entre par le gabarit
+				// (`MapSceneDecor.objectSaved()`). L'import suit le drapeau des modèles téléversés, un élément en place se montre sans lui
+				foreach($objects as $object) {
+					$h .= $this->getDecorObject($object['id'], $object['family'], encode($object['name']));
+				}
 
-					$d = ConfigurationUi::p($property);
+				$h .= '<template data-scene-decor-object="true">'.$this->getDecorObject(NULL, NULL, '').'</template>';
 
-					$h .= '<div class="map-scene-decor-group hide" data-terrain="'.$terrain.'">';
-						$h .= '<h5>'.$d->label.'</h5>';
+				if(MapSetting::isDecorUploadEnabled($eStructure)) {
 
-						foreach($d->values as $value => $name) {
-							$h .= '<button type="button" class="map-scene-decor-tile" data-'.$terrain.'="'.$value.'">';
-								$h .= '<img alt="" draggable="false">';
-								$h .= '<span>'.$name.'</span>';
-							$h .= '</button>';
-						}
-
-					$h .= '</div>';
+					foreach(DecorObject::KITS as $family => $kit) {
+						$h .= '<a href="/map/decorObject:create?structure='.$eStructure['id'].'&family='.$family.'" class="map-scene-decor-tile map-scene-decor-tile-create hide" data-scene-decor-import="'.$family.'">';
+							$h .= '<span class="map-scene-decor-tile-icon">'.\Asset::icon('plus-circle').'</span>';
+							$h .= '<span>'.s("Importer").'</span>';
+						$h .= '</a>';
+					}
 
 				}
+
+				// Le terrain se choisit d'un clic, sans rien poser : sa vignette se peint d'après les couleurs de la scène
+				$h .= $this->getTerrainTiles(['grass', 'soil', 'meadow'], 'data-terrain', FALSE);
 
 			$h .= '</div>';
 
@@ -365,6 +372,9 @@ class SceneUi {
 						$h .= '<span>'.$name.'</span>';
 					$h .= '</button>';
 				}
+
+				// Le terrain d'une parcelle, après ses clôtures
+				$h .= $this->getTerrainTiles(['grass', 'soil', 'meadow'], 'data-area-terrain', TRUE);
 
 			$h .= '</div>';
 
@@ -389,6 +399,39 @@ class SceneUi {
 			$h .= '<a class="map-scene-decor-tool" data-tool="edit"><span>'.\Asset::icon('pencil').'</span><small>'.s("Modifier").'</small></a>';
 			$h .= '<a class="map-scene-decor-tool" data-tool="remove"><span>'.\Asset::icon('trash').'</span><small>'.s("Retirer").'</small></a>';
 		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	/**
+	 * Les groupes de vignettes du terrain, une par valeur de `$terrains`, chacun marqué par l'attribut `$attribute` qui dit à la scène
+	 * où il se montre. `$inherit` ajoute en tête de chaque groupe la vignette d'une parcelle qui reprend le terrain de la structure.
+	 */
+	protected function getTerrainTiles(array $terrains, string $attribute, bool $inherit): string {
+
+		$properties = ['grass' => 'decorGrass', 'soil' => 'decorSoil', 'meadow' => 'decorMeadow'];
+
+		$h = '';
+
+		foreach($terrains as $terrain) {
+
+			$d = ConfigurationUi::p($properties[$terrain]);
+			$values = ($inherit ? ['' => s("Comme la ferme")] : []) + $d->values;
+
+			$h .= '<div class="map-scene-decor-group hide" '.$attribute.'="'.$terrain.'">';
+				$h .= '<h5>'.$d->label.'</h5>';
+
+				foreach($values as $value => $name) {
+					$h .= '<button type="button" class="map-scene-decor-tile" data-'.$terrain.'="'.$value.'">';
+						$h .= '<img alt="" draggable="false">';
+						$h .= '<span>'.$name.'</span>';
+					$h .= '</button>';
+				}
+
+			$h .= '</div>';
+
+		}
 
 		return $h;
 
@@ -420,6 +463,29 @@ class SceneUi {
 			$h .= '</button>';
 
 			$h .= '<a class="map-scene-decor-tile-delete" data-ajax="/map/decorBuilding:doDelete" post-id="'.$id.'" data-confirm-free="'.encode(s("Supprimer « {value} » ?", '{value}')).'" data-confirm-posed="'.encode(s("Supprimer « {value} » ? Il sera aussi retiré du plan de la ferme.", '{value}')).'">'.\Asset::icon('trash').'</a>';
+
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	/**
+	 * Un élément importé se pose sous le kit de sa rangée (`DecorObject::KITS`), qui cite son id, et se supprime comme un bâtiment
+	 * de la structure, ses poses avec lui. Le gabarit n'a pas de rangée : `MapSceneDecor.objectSaved()` lui donne le kit.
+	 */
+	protected function getDecorObject(?int $id, ?string $family, string $name): string {
+
+		$kit = ($family === NULL) ? '' : DecorObject::KITS[$family];
+
+		$h = '<div class="map-scene-decor-tile-own">';
+
+			$h .= '<button type="button" class="map-scene-decor-tile hide" data-kit="'.$kit.'" data-object="'.$id.'">';
+				$h .= '<img alt="" draggable="false">';
+				$h .= '<span>'.$name.'</span>';
+			$h .= '</button>';
+
+			$h .= '<a class="map-scene-decor-tile-delete" data-ajax="/map/decorObject:doDelete" post-id="'.$id.'" data-confirm-free="'.encode(s("Supprimer « {value} » ?", '{value}')).'" data-confirm-posed="'.encode(s("Supprimer « {value} » ? Il sera aussi retiré du plan de la ferme.", '{value}')).'">'.\Asset::icon('trash').'</a>';
 
 		$h .= '</div>';
 

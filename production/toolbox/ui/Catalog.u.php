@@ -252,9 +252,9 @@ class CatalogUi {
 			$names = implode(' · ', array_map(fn($name) => encode(mb_strtolower(mb_substr($name, 0, 1)).mb_substr($name, 1)), $other['names']));
 
 			$rows[] = [
-				'usage' => '<span class="color-muted font-sm">'.(($rows === []) ? s("Sur {crops}", ['crops' => $names]) : s("Aussi sur {crops}", ['crops' => $names])).'</span>',
-				'dose' => '<span class="color-muted font-sm">'.self::getDoses($other['doses']).'</span>',
-				'harvestDelay' => '<span class="color-muted font-sm">'.self::getHarvestDelays($other['harvestDelays']).'</span>',
+				'usage' => '<span class="util-annotation">'.(($rows === []) ? s("Sur {crops}", ['crops' => $names]) : s("Aussi sur {crops}", ['crops' => $names])).'</span>',
+				'dose' => '<span class="util-annotation">'.self::getDoses($other['doses']).'</span>',
+				'harvestDelay' => '<span class="util-annotation">'.self::getHarvestDelays($other['harvestDelays']).'</span>',
 			];
 
 		}

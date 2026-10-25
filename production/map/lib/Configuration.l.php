@@ -10,7 +10,7 @@ class ConfigurationLib extends ConfigurationCrud {
 	use \structure\ConfLib;
 
 	public static function getPropertiesCreate(?string $origin = NULL): array {
-		return ['decorGrass', 'decorSoil'];
+		return ['decorGrass', 'decorSoil', 'decorMeadow'];
 	}
 
 	public static function getPropertiesCrop(): array {
@@ -148,7 +148,7 @@ class ConfigurationLib extends ConfigurationCrud {
 	 */
 	public static function create(Configuration $e): void {
 
-		$e->expects(['structure', 'decorGrass', 'decorSoil']);
+		$e->expects(['structure', 'decorGrass', 'decorSoil', 'decorMeadow']);
 
 		Configuration::model()->beginTransaction();
 
@@ -158,7 +158,7 @@ class ConfigurationLib extends ConfigurationCrud {
 			// structure, et garde donc un tableau de valeurs.
 			Configuration::model()
 				->whereStructure($e['structure'])
-				->update($e->extracts(['decorGrass', 'decorSoil']));
+				->update($e->extracts(['decorGrass', 'decorSoil', 'decorMeadow']));
 
 			self::forget($e['structure']);
 

@@ -477,6 +477,13 @@ class DesignUi {
 
 	}
 
+	/**
+	 * Le logo en ligne, et non en image, pour que ses quatre feuilles battent l'une après l'autre.
+	 */
+	public static function getLogoWait(): string {
+		return '<div class="util-logo-wait">'.\Asset::svg('main', 'svg/logo-otf.svg').'</div>';
+	}
+
 	public static function getRating(float $value, ?int $count = NULL, bool $compact = FALSE, bool $large = FALSE, ?string $url = NULL): string {
 
 		$number = \util\TextUi::number($value, 1);

@@ -2,9 +2,9 @@
 namespace user;
 
 /**
- * Le modèle 3D qu'un utilisateur téléverse à la place de son avatar composé. Une ligne par envoi, gardée après un
- * remplacement ou un retour à la composition pour la modération : seul le fichier part, et avec lui `hash` et
- * `bakedIndex`. `UserAvatar.upload` désigne l'envoi montré, NULL pour la composition, qui reste l'image de profil.
+ * Le modèle 3D qu'un utilisateur téléverse comme avatar, à la place de sa composition s'il en a une. Une ligne par envoi,
+ * gardée après un remplacement ou une suppression pour la modération : seul le fichier part, et avec lui `hash` et
+ * `bakedIndex`. `UserAvatar.upload` désigne l'envoi montré, NULL pour la composition.
  */
 class UserAvatarUploadLib extends UserAvatarUploadCrud {
 
@@ -147,8 +147,8 @@ class UserAvatarUploadLib extends UserAvatarUploadCrud {
 
 	/**
 	 * Le modèle converti remplace celui que l'avatar montrait, qui quitte le disque une fois la transaction validée. L'avatar
-	 * se relit sous verrou : deux envois simultanés ne doivent pas laisser chacun l'ancien fichier de l'autre, et un avatar
-	 * supprimé entre-temps n'a plus de composition où revenir.
+	 * se relit sous verrou : deux envois simultanés ne doivent pas laisser chacun l'ancien fichier de l'autre. Un compte qui
+	 * n'a pas d'avatar en reçoit un sans composition (`UserAvatarLib::createForUpload()`), qui partira avec le modèle.
 	 *
 	 * L'avatar prend le choix de remplacer la photo posté avec le modèle (`$eUserAvatar`), l'image étant celle du modèle que
 	 * l'éditeur a rendue (`UserAvatarLib::placeImage()`), placée avant l'envoi du binaire : refusée, elle annule tout sans
@@ -162,12 +162,9 @@ class UserAvatarUploadLib extends UserAvatarUploadCrud {
 
 		UserAvatarUpload::model()->beginTransaction();
 
-			$eUserAvatarLocked = UserAvatarLib::getByUserForUpdate($e['user']);
+			UserAvatarLib::createForUpload($e['user']);
 
-			if($eUserAvatarLocked->empty()) {
-				UserAvatarUpload::model()->rollBack();
-				throw new \Exception('No composed avatar');
-			}
+			$eUserAvatarLocked = UserAvatarLib::getByUserForUpdate($e['user']);
 
 			self::withdrawFiles($e['user']);
 
@@ -199,7 +196,8 @@ class UserAvatarUploadLib extends UserAvatarUploadCrud {
 	/**
 	 * L'avatar revient à sa composition, et le modèle qu'il montrait quitte le disque une fois la transaction validée.
 	 * Quand l'avatar remplace la photo, `$image` est celle de la composition, que l'éditeur a rendue, et prend la place
-	 * de celle du modèle.
+	 * de celle du modèle. Un avatar sans composition n'a rien où revenir : il part avec le modèle, et la photo reprend sa
+	 * place (`UserAvatarLib::delete()`), sans image.
 	 */
 	public static function clear(UserAvatar $eUserAvatar, ?string $image): void {
 
@@ -215,13 +213,19 @@ class UserAvatarUploadLib extends UserAvatarUploadCrud {
 				throw new \FailAction('user\UserAvatarUpload::stale');
 			}
 
-			self::withdrawFiles($eUserAvatar['user']);
+			if($eUserAvatarLocked->hasComposition()) {
 
-			$eUserAvatarLocked['upload'] = new UserAvatarUpload();
-			UserAvatarLib::update($eUserAvatarLocked, ['upload']);
+				self::withdrawFiles($eUserAvatar['user']);
 
-			if($eUserAvatarLocked['replacesPhoto']) {
-				UserAvatarLib::placeImage($eUserAvatarLocked, TRUE, $image);
+				$eUserAvatarLocked['upload'] = new UserAvatarUpload();
+				UserAvatarLib::update($eUserAvatarLocked, ['upload']);
+
+				if($eUserAvatarLocked['replacesPhoto']) {
+					UserAvatarLib::placeImage($eUserAvatarLocked, TRUE, $image);
+				}
+
+			} else {
+				UserAvatarLib::delete($eUserAvatarLocked);
 			}
 
 		UserAvatarUpload::model()->commit();
@@ -343,8 +347,8 @@ class UserAvatarUploadLib extends UserAvatarUploadCrud {
 
 	/**
 	 * Le modèle quitte le disque une fois le retrait validé, l'avatar revient à sa composition s'il le montrait, avec
-	 * l'image de celle-ci pour photo de profil quand le modèle la faisait (`UserAvatarLib::recompose()`), et l'auteur
-	 * reçoit le motif. Rend FALSE sans rien écrire quand l'envoi ne se montrait plus au moment du verrou.
+	 * l'image de celle-ci pour photo de profil quand le modèle la faisait (`UserAvatarLib::recompose()`), ou part avec
+	 * lui s'il n'a pas de composition, et l'auteur reçoit le motif. Rend FALSE sans rien écrire quand l'envoi ne se montrait plus au moment du verrou.
 	 *
 	 * Les verrous se prennent dans le même ordre que `create()`, `clear()` et `UserAvatarLib::delete()`, l'avatar puis
 	 * les envois : un retrait qui croise un import, un retour à la composition ou la suppression de l'avatar par son
@@ -382,12 +386,16 @@ class UserAvatarUploadLib extends UserAvatarUploadCrud {
 			self::update($e, ['hash', 'bakedIndex', 'status', 'reason', 'reasonText', 'moderatedAt', 'moderatedBy']);
 
 			// Un envoi qui se montre a son avatar : la suppression d'un avatar efface d'abord les fichiers de ses envois
-			// (`UserAvatarLib::delete()`), sous le même verrou
+			// (`UserAvatarLib::delete()`), sous le même verrou. Comme au retour de son auteur à la composition (`clear()`),
+			// un avatar sans composition part avec son modèle
 			$shown = $eUserAvatar['upload']->is($e);
+			$recomposed = ($shown and $eUserAvatar->hasComposition());
 
-			if($shown) {
+			if($recomposed) {
 				$eUserAvatar['upload'] = new UserAvatarUpload();
 				UserAvatarLib::update($eUserAvatar, ['upload']);
+			} else if($shown) {
+				UserAvatarLib::delete($eUserAvatar);
 			}
 
 		UserAvatarUpload::model()->commit();
@@ -396,7 +404,7 @@ class UserAvatarUploadLib extends UserAvatarUploadCrud {
 
 		// L'image du modèle retiré quitte la photo de profil : Chrome rend la composition hors transaction, quelques
 		// secondes qu'aucun verrou ne doit attendre, et la photo revient si le rendu échoue
-		if($shown and $eUserAvatar['replacesPhoto']) {
+		if($recomposed and $eUserAvatar['replacesPhoto']) {
 
 			try {
 				$image = UserAvatarLib::capture($eUserAvatar);

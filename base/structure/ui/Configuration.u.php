@@ -100,6 +100,8 @@ class ConfigurationUi {
 
 						$h .= '<div>';
 							if($change['type'] === 'overwritten') {
+								// `<s>` et non util-strikethrough : le libellé du régime passe à la ligne sur un
+								// petit écran, et le trait unique du composant passerait entre les deux lignes.
 								$h .= '<s class="color-muted">'.s("Au {date}, {value}", ['date' => $effectiveAt, 'value' => $this->getVatValue($field, $eConfigurationHistory['value'][$field])]).'</s>';
 								$h .= '<div class="color-muted">'.s("Écrasé par la déclaration du {date}", ['date' => \util\DateUi::numeric($eConfigurationHistory['overwrittenBy'], \util\DateUi::DATE)]).'</div>';
 							} else {

@@ -9,7 +9,8 @@
 //   exemples/fiche.json        une fiche de l'éditeur du décor, un bâtiment de pierre ;
 //   exemples/conforme.glb      ce bâtiment composé par decor/composer.mjs ;
 //   exemples/refus-*.glb       trois dérivés du conforme, chacun refusé pour une seule raison ;
-//   exemples/attendu.json      ce que rend `upload.mjs --check --family=building` pour chacun, au caractère près.
+//   exemples/conforme-*.glb    un élément conforme par rangée Eau, Nature et Matériel ;
+//   exemples/attendu.json      ce que rend `upload.mjs --check` pour chacun, sous sa famille, au caractère près.
 // Et à côté, hors des archives, <profil>.samples.json : l'empreinte des sources lues, que test/UploadSkillSentinel.t.php
 // compare. Son nom porte un point pour qu'aucun profil (`UploadLib::getRules()`, `^[a-z]+$`) ne le lise comme des règles.
 // Se lance depuis la racine du dépôt après toute relivraison de l'avatar ou du cadre des bâtiments, ou retouche des règles :
@@ -65,10 +66,11 @@ function check(rules, bytes) {
 	}
 }
 
-// Juge chaque fichier, vérifie qu'il rend le refus attendu, et écrit attendu.json des exemples
+// Juge chaque fichier, vérifie qu'il rend le refus attendu, et écrit attendu.json des exemples. Un profil à plusieurs familles
+// juge chacune sous ses règles : attendu.json garde alors ce que les appels précédents y ont écrit
 function judge(rules, files, expected) {
 
-	const results = {};
+	const results = (files['exemples/attendu.json'] === undefined) ? {} : JSON.parse(files['exemples/attendu.json']);
 
 	for(const [file, refusal] of Object.entries(expected)) {
 		const result = check(rules, files[file]);
@@ -129,6 +131,21 @@ function buildAvatar() {
 // couleur composée de la pierre et la vitre, que l'exemple montre ainsi à l'utilisateur
 const FICHE = { type: 'building', length: 14, width: 9, height: 4.2, settings: { roof: 'deux-pans', cover: 'tuile', coverTint: 'tuile', wall: 'pierre', wallTint: 'pierre', door: 'porte-pleine', windows: 2 } };
 
+// Un abreuvoir, un noyer au tronc marqué par l'ancre `arbre` et un broyeur, chacun sous sa famille de `decor.json`
+const OBJECTS = [
+	['water', 'conforme-eau.glb', [
+		['objet', '#8c949c', new THREE.BoxGeometry(2.4, .7, .8).translate(0, .35, 0)],
+	], {}],
+	['tree', 'conforme-nature.glb', [
+		['arbre', '#6b4f36', new THREE.CylinderGeometry(.18, .25, 2.4, 6).translate(0, 1.2, 0)],
+		['feuillage', '#4f7a3a', new THREE.IcosahedronGeometry(1.8, 0).translate(0, 3.4, 0)],
+	], { arbre: [0, 0, 0] }],
+	['other', 'conforme-materiel.glb', [
+		['objet', '#c8462c', new THREE.BoxGeometry(1.6, 1.2, 1).translate(0, .6, 0)],
+		['objet', '#3a3a3a', new THREE.CylinderGeometry(.3, .3, .2, 8).rotateZ(Math.PI / 2).translate(.9, .3, 0)],
+	], {}],
+];
+
 function buildDecor() {
 
 	const choices = readJson(new URL('static/building/choices.json', SCENE));
@@ -152,6 +169,17 @@ function buildDecor() {
 	};
 
 	judge(rules, files, { 'exemples/conforme.glb': null, 'exemples/refus-piece.glb': 'piece', 'exemples/refus-texture.glb': 'texture', 'exemples/refus-sol.glb': 'ground' });
+
+	// Un élément conforme par rangée Eau, Nature et Matériel, composé ici en three.js dans la forme qu'un modèle de Blender doit
+	// prendre : quelques formes à facettes, sous les pièces de la famille
+	for(const [family, file, parts, anchors] of OBJECTS) {
+
+		const bytesObject = glb.sceneUploadPack(glb.sceneUploadWriteGlb(parts.map(([name, color, geometry]) => ({ name, color, geometry: (geometry.index === null) ? geometry : geometry.toNonIndexed() })), anchors));
+
+		files['exemples/'+ file] = bytesObject;
+		judge(sceneUploadRules(readJson(new URL('decor.json', UPLOAD)), family), files, { ['exemples/'+ file]: null });
+
+	}
 
 	return files;
 

@@ -956,7 +956,7 @@ class SequenceUi {
 
 			$h .= $form->hidden('id', $eSequence['id']);
 			$h .= $form->dynamicField($eSequence, 'comment');
-			$h .= '<div class="flex-justify-space-between mt-1">';
+			$h .= '<div class="util-action mt-1">';
 				$h .= $form->submit(s("Enregistrer"));
 				if($eSequence['comment'] !== NULL) {
 					$h .= '<a data-ajax="/sequence/sequence:doUpdateComment" post-id="'.$eSequence['id'].'" post-comment="" data-confirm="'.s("Supprimer le commentaire ?").'" class="btn btn-outline-danger">'.s("Supprimer").'</a>';

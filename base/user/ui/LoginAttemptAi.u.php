@@ -90,7 +90,7 @@ class LoginAttemptAiUi {
 	protected function getLogin(LoginAttempt $eLoginAttempt): string {
 
 		if($eLoginAttempt['user']->empty()) {
-			return encode($eLoginAttempt['login']).'<div class="font-sm color-muted">'.s("Aucun compte").'</div>';
+			return encode($eLoginAttempt['login']).'<div class="util-annotation">'.s("Aucun compte").'</div>';
 		}
 
 		$h = '<a href="/user/admin/?id='.$eLoginAttempt['user']['id'].'">'.encode($eLoginAttempt['user']['email'] ?? $eLoginAttempt['user']->getName()).'</a>';

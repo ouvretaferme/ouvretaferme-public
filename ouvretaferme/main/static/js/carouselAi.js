@@ -9,6 +9,10 @@
  * (`juicinessAi.js`).
  *
  * La position se lit au défilement, jamais au geste : points, doigt, pavé et clavier y passent tous.
+ *
+ * Deux chevrons peuvent remplacer les points, de part et d'autre du nom de la diapositive montrée
+ * (`util-carousel-nav`), que chaque diapositive porte en `data-carousel-label`. La diapositive qui porte
+ * `data-carousel-current` se montre d'abord.
  */
 class MainCarousel {
 
@@ -20,6 +24,27 @@ class MainCarousel {
 			return;
 		}
 
+		const current = track.qs(':scope > [data-carousel-current]');
+
+		// Sans animation : la diapositive désignée est celle qu'on doit voir en arrivant, pas une
+		// destination.
+		if(current !== null) {
+			const left = current.offsetLeft - track.children[0].offsetLeft;
+			track.style.scrollBehavior = 'auto';
+			track.scrollLeft = left;
+			track.style.scrollBehavior = '';
+		}
+
+		// Deux clics rapprochés comptent depuis la diapositive demandée par le premier, et non depuis la
+		// position lue en plein défilement, qui n'a pas encore quitté celle de départ. Une piste sortie de
+		// l'intervalle entre les deux a été déplacée au doigt depuis, et se relit. L'intervalle se ferme à
+		// l'arrivée sur la diapositive demandée, ou à l'arrêt en route que signale `scrollend` là où le
+		// navigateur le connaît.
+		let origin = null;
+		let target = null;
+
+		track.addEventListener('scrollend', () => target = null);
+
 		let frame = null;
 
 		track.addEventListener('scroll', () => {
@@ -29,8 +54,15 @@ class MainCarousel {
 			}
 
 			frame = requestAnimationFrame(() => {
+
 				frame = null;
+
+				if(target !== null && Math.abs(track.scrollLeft - (track.children[target].offsetLeft - track.children[0].offsetLeft)) < 1) {
+					target = null;
+				}
+
 				this.update(carousel);
+
 			});
 
 		}, {passive: true});
@@ -42,6 +74,23 @@ class MainCarousel {
 			// Le navigateur borne le défilement en fin de piste : le point d'une des dernières cartes d'un
 			// carrousel qui en montre plusieurs les amène toutes.
 			track.scrollTo({left: track.children[position].offsetLeft - track.children[0].offsetLeft});
+
+		}));
+
+		carousel.qsa(':scope > .util-carousel-nav > [data-carousel-step]', button => button.addEventListener('click', () => {
+
+			const slides = track.children;
+			const step = (slides.length > 1) ? slides[1].offsetLeft - slides[0].offsetLeft : track.clientWidth;
+			const position = track.scrollLeft / step;
+			const moving = (target !== null && position >= Math.min(origin, target) - 0.5 && position <= Math.max(origin, target) + 0.5);
+			const from = moving ? target : Math.round(position);
+
+			if(moving === false) {
+				origin = from;
+			}
+			target = Math.min(Math.max(from + parseInt(button.dataset.carouselStep), 0), slides.length - 1);
+
+			track.scrollTo({left: slides[target].offsetLeft - slides[0].offsetLeft});
 
 		}));
 
@@ -80,6 +129,14 @@ class MainCarousel {
 		if(dots !== null) {
 			dots.hidden = fits;
 			Array.from(dots.children).forEach((dot, index) => dot.classList.toggle('selected', index >= first && index < first + visible));
+		}
+
+		const nav = carousel.qs(':scope > .util-carousel-nav');
+
+		if(nav !== null) {
+			nav.qs('.util-carousel-label').textContent = slides[Math.min(first, slides.length - 1)].dataset.carouselLabel;
+			nav.qs('[data-carousel-step="-1"]').disabled = (first === 0);
+			nav.qs('[data-carousel-step="1"]').disabled = (first + visible >= slides.length);
 		}
 
 		slides.slice(first, first + visible).forEach(slide => this.load(slide));

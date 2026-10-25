@@ -108,7 +108,6 @@ class PublicDataSentinelAiTest extends \Test {
 		'ouvretaferme/design/test/InlineStyleSentinelAi.t.php' => 1,
 		'ouvretaferme/design/ui/Design.u.php' => 1,
 		'ouvretaferme/design/ui/DevAi.u.php' => 1,
-		'ouvretaferme/game/static/js/board.js' => 2,
 		'ouvretaferme/learning/lib/Community.l.php' => 1,
 		'ouvretaferme/learning/lib/Course.l.php' => 2,
 		'ouvretaferme/learning/lib/Share.l.php' => 1,

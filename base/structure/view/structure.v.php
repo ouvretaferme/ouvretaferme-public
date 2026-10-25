@@ -150,3 +150,24 @@ new AdaptativeView('import', function($data, StructureTemplate $t) {
 	echo new \structure\StructureUi()->import($data->e);
 
 });
+
+new JsonView('weatherDay', function($data, AjaxTemplate $t) {
+
+	// `NULL` ne dit qu'une chose : le cache a expiré entre l'affichage et le clic. Le menu reste alors tel
+	// quel plutôt que de perdre sa météo sous le geste, comme au choix du modèle (`member.v.php`).
+	if($data->weather !== NULL) {
+
+		$selector = '#'.\dashboard\DashboardUi::getBlockId('structure-weather');
+
+		$t->qs($selector.' .structure-weather-forecast')
+			->outerHtml(new \structure\DashboardUi()->getForecast($data->e, $data->weather, $data->weather['day']));
+
+		// Au pied du menu, sur un écran peu haut, le jour s'ouvre sous le bord : sans ce défilement, le clic
+		// semble sans effet. `nearest` ne bouge rien quand le détail est déjà en vue.
+		if($data->weather['day'] !== NULL) {
+			$t->qs($selector.' .structure-weather-hours')->scrollTo('nearest', 'smooth');
+		}
+
+	}
+
+});

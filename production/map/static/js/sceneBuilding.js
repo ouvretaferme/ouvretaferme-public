@@ -39,15 +39,17 @@ class MapSceneBuilding {
 	}
 
 	/**
-	 * Le bâtiment enregistré revient à la scène ouverte derrière le panneau, qui le range et remonte ses poses. Sans scène, l'éditeur
-	 * a été ouvert par son adresse, et la page qui suivra le lira en base.
+	 * Le bâtiment enregistré revient à la scène ouverte derrière le panneau, qui le range et remonte ses poses. Un éditeur ouvert
+	 * par son adresse n'a pas de scène derrière lui, ni même `scene.js`, et la page qui suivra lira le bâtiment en base.
 	 */
 	static saved(building, decor) {
-		MapScene.current?.decor?.saved(building, decor);
-	}
 
-	static deleted(id) {
-		MapScene.current?.decor?.deleted(id);
+		if(typeof MapScene === 'undefined') {
+			return;
+		}
+
+		MapScene.current?.decor?.saved(building, decor);
+
 	}
 
 	// Le modèle vérifié se montre sur son onglet, la composition sur le sien

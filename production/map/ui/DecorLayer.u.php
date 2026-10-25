@@ -23,8 +23,8 @@ class DecorLayerUi {
 
 	/**
 	 * La carte flotte sur la scène (`plan-mapview-zones`, `plan-item`), et chaque geste y prend la place de la
-	 * liste sous le même titre de colonne. Le calque « Icônes des séries » est sur toutes les scènes, à côté des
-	 * calques du décor, dont les gestes ne sont qu'à qui gère la structure.
+	 * liste sous le même titre de colonne. Les calques « Icônes des séries » et « Parcelles et jardins »
+	 * sont sur toutes les scènes, à côté des calques du décor, dont les gestes ne sont qu'à qui gère la structure.
 	 */
 	public function getCard(\structure\Structure $eStructure, \user\User $eUser, bool $relief): string {
 
@@ -53,7 +53,8 @@ class DecorLayerUi {
 						$h .= '<a class="btn btn-sm btn-outline-primary" data-scene-layers-new="true">'.\Asset::icon('plus-circle').' '.s("Ajouter").'</a>';
 					}
 				$h .= '</div>';
-				// `MapSceneLayer` range les lignes des séries et du relief sous celle du décor ; sans décor, elles sont seules
+				// `MapSceneLayer` range les lignes des séries, des limites et du relief sous celle du décor ; sans décor, elles sont seules.
+				// Elles ne se renomment ni ne se suppriment : la place de la roue aligne leur interrupteur sur les autres
 				$h .= '<div data-scene-layers-rows="true">';
 					$h .= '<div class="plan-item" data-scene-series="true">';
 						$h .= '<div class="plan-item-title">';
@@ -61,7 +62,17 @@ class DecorLayerUi {
 								$h .= '<span class="plan-item-name">'.s("Icônes des séries").'</span>';
 							$h .= '</span>';
 							$h .= \util\TextUi::switch(['class' => 'field-switch-sm']);
-							// Les séries ne se renomment ni ne se suppriment : la place de la roue aligne leur interrupteur sur les autres
+							if($manage) {
+								$h .= '<span class="btn btn-sm btn-color-primary map-scene-layers-gear-away">'.\Asset::icon('gear-fill').'</span>';
+							}
+						$h .= '</div>';
+					$h .= '</div>';
+					$h .= '<div class="plan-item" data-scene-limits="true">';
+						$h .= '<div class="plan-item-title">';
+							$h .= '<span class="plan-item-text">';
+								$h .= '<span class="plan-item-name">'.s("Parcelles et jardins").'</span>';
+							$h .= '</span>';
+							$h .= \util\TextUi::switch(['class' => 'field-switch-sm']);
 							if($manage) {
 								$h .= '<span class="btn btn-sm btn-color-primary map-scene-layers-gear-away">'.\Asset::icon('gear-fill').'</span>';
 							}

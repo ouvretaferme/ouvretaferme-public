@@ -9,8 +9,17 @@ body[data-template~="game"] {
 	font-family: var(--font-text);
 }
 
+/* La cour prend tout l'écran sous la barre du site, et rien ne défile : la vue se glisse, la page non. La règle de
+   root.css qui allonge la page d'un téléphone à une fois et demie l'écran ne vaut pas ici */
+body[data-template~="game"] {
+	height: 100svh;
+	min-height: 0;
+	overflow: hidden;
+}
+
 body[data-template~="game"] main {
-	padding-top: 2rem;
+	padding: 0;
+	min-height: 0;
 }
 
 @media (min-width: 991px) and (max-width: 1399px) {
@@ -113,10 +122,7 @@ body[data-template~="game"] h1 {
 .game-court {
 	position: relative;
 	isolation: isolate;
-	height: min(calc(100svh - 8rem), 52rem);
-	min-height: 30rem;
-	margin-bottom: var(--space-lg);
-	border-radius: var(--radius-lg);
+	height: 100%;
 	overflow: hidden;
 	color: var(--game-text);
 }
@@ -138,16 +144,6 @@ body[data-template~="game"] h1 {
 	cursor: grab;
 }
 
-@media (max-width: 767px) {
-
-	.game-court {
-		margin-left: calc(-1 * var(--container-padding));
-		margin-right: calc(-1 * var(--container-padding));
-		border-radius: 0;
-	}
-
-}
-
 /* Le haut de la cour laisse passer le doigt jusqu'à la scène entre ses bandeaux, et le bandeau de tête, qui court sur
    toute la largeur, entre ses pastilles */
 .game-court-top {
@@ -158,12 +154,33 @@ body[data-template~="game"] h1 {
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-xs);
-	padding: var(--space-sm);
+	padding-block: var(--space-sm);
 	pointer-events: none;
 }
 
+/* La cour court d'un bord à l'autre de l'écran, les bandeaux restent sous le logo et le menu du site, que `.container`
+   centre sur 1600 px au plus (reboot.css), et dont le titre prend sous 768 px une marge à lui (`.root-nav-title`,
+   template-base.css) */
+@media (max-width: 767px) {
+
+	.game-court-top {
+		padding-left: calc(var(--container-padding) + var(--nav-title-indent));
+		padding-right: var(--container-padding);
+	}
+
+}
+
+@media (min-width: 768px) {
+
+	.game-court-top {
+		padding-inline: max(var(--container-padding), calc((100% - 1600px) / 2 + var(--container-padding)));
+	}
+
+}
+
 .game-court-top > *,
-.game-hud > * {
+.game-hud > :not(.game-hud-tools),
+.game-hud-tools > * {
 	pointer-events: auto;
 }
 
@@ -200,9 +217,18 @@ body[data-template~="game"] h1 {
 	display: flex;
 	align-items: center;
 	gap: var(--space-xs);
+	min-width: 0;
 	padding: var(--space-xxs) var(--space-sm) var(--space-xxs) var(--space-xxs);
 	font-weight: bold;
 	cursor: pointer;
+}
+
+/* Un chiffre ou une icône ne se coupe pas : quand la place manque, c'est le nom du joueur qui raccourcit, et non les
+   outils, qui sortiraient de l'écran */
+.game-hud-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 a.game-hud-player:hover {
@@ -306,9 +332,22 @@ a.game-banner:hover {
 	color: var(--game-gold);
 }
 
+/* Les libellés des outils prennent la place du nom du joueur, qui ne raccourcit pas à l'infini : ils attendent le
+   palier de la tablette (skill ui) */
+@media (max-width: 767px) {
+
+	.game-tool-label {
+		display: none;
+	}
+
+	.game-tool {
+		padding: var(--space-xs);
+	}
+
+}
+
 @media (max-width: 575px) {
 
-	.game-tool-label,
 	.game-hud-name,
 	.game-time-value > small,
 	.game-gauge {
@@ -320,15 +359,14 @@ a.game-banner:hover {
 		display: none;
 	}
 
-	.game-tool,
-	.game-hud-item {
-		padding: var(--space-xs);
+	/* Sur un téléphone, le cellier ne compte que ce qu'il contient : ses réserves vides l'allongeraient sur les cases
+	   voisines. Une récolte remplit sa réserve avant de s'y poser (`GameDesk.harvested()`) */
+	.game-cellar-item.game-cellar-empty {
+		display: none;
 	}
 
-	/* Sur un téléphone, la caméra recule et la marque du cellier rejoint le nom de la personne posée devant lui : elle
-	   descend sous son point d'ancrage, vers les caisses qu'elle compte */
-	.game-cellar {
-		translate: 0 calc(50% + var(--space-xs));
+	.game-hud-item {
+		padding: var(--space-xs);
 	}
 
 }

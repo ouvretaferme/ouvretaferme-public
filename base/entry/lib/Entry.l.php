@@ -153,10 +153,13 @@ class EntryLib {
 	/**
 	 * `$typingNamed` dit que l'objet est nommé par d'autres mots que celui en cours de frappe, même si
 	 * seul un complément le fait trouver : ce mot va alors aux compléments.
+	 *
+	 * `$implicit` dit une phrase sans verbe (`readImplicit()`) : l'intention n'y cherche que ses objets qui se
+	 * lisent ainsi (`IntentionLib::isImplicit()`), pour que les autres n'y soient ni nommés ni proposés.
 	 */
-	private static function readText(\structure\Structure $eStructure, string $text, array $answers, \Collection &$cElement, bool $typingNamed): array {
+	private static function readText(\structure\Structure $eStructure, string $text, array $answers, \Collection &$cElement, bool $typingNamed, bool $implicit = FALSE): array {
 
-		$answers += ['cultivation' => NULL, 'all' => FALSE, 'task' => NULL, 'addCultivation' => NULL, 'addNoSeries' => NULL, 'lines' => [], 'recap' => FALSE, 'status' => NULL, 'days' => []];
+		$answers += ['cultivation' => NULL, 'all' => FALSE, 'task' => NULL, 'addCultivation' => NULL, 'addNoSeries' => NULL, 'lines' => [], 'recap' => FALSE, 'status' => NULL, 'days' => [], 'category' => NULL];
 
 		$reading = self::getEmptyReading();
 
@@ -171,6 +174,7 @@ class EntryLib {
 		$wordsVerb = $words;
 
 		$reading['intention'] = self::readIntention($intentions, $words);
+		$positionsVerb = array_keys(array_diff_key($wordsVerb, $words));
 		$reading['verb'] = array_values(array_diff_key($wordsVerb, $words));
 
 		// La case d'un jour de récolte dit le verbe et le jour : la phrase y est toujours une récolte, lue au jour de
@@ -207,7 +211,7 @@ class EntryLib {
 		// Posté pour une intention sans récapitulatif, `recap` ne dit rien.
 		$reading['recap'] = ($answers['recap'] and $intention::hasRecap());
 
-		$cElement = $intention::getObjects($eStructure, $reading);
+		$cElement = self::getObjects($eStructure, $intention, $reading, $implicit);
 
 		$wordsObject = $words;
 
@@ -300,7 +304,7 @@ class EntryLib {
 				return $reading;
 			}
 
-			$cElement = $intention::getObjects($eStructure, $reading, $cElement);
+			$cElement = self::getObjects($eStructure, $intention, $reading, $implicit, $cElement);
 
 			if($reading['object']->notEmpty()) {
 
@@ -338,7 +342,7 @@ class EntryLib {
 					// relit en le donnant aux compléments, par tout le chemin de la lecture : « hi », début de « hier »,
 					// change le jour, et « k » l'unité, comme sur « courgette 3 hi » ou « courgette 3 k ».
 					if($typing !== NULL and $typingNamed === FALSE and array_key_exists($typing, $wordsLeft)) {
-						return self::readText($eStructure, $text, $answers, $cElement, TRUE);
+						return self::readText($eStructure, $text, $answers, $cElement, TRUE, $implicit);
 					}
 
 					// Les compléments ont lu la phrase avant que l'objet ne soit nommé, et un nom de variété à chiffre
@@ -384,9 +388,10 @@ class EntryLib {
 				self::findObjects($cElement, $reading['pending'])->empty()
 			) {
 
-				// Le verbe d'une intention qui ne se devine pas peut appartenir au nom d'un objet d'une autre :
-				// « vente directe 1 h » est un temps sur l'action Vente directe. Quand la phrase ne nomme aucun
-				// de ses objets, la lecture sans verbe dont l'objet porte ce mot l'emporte, si elle lit tous les mots :
+				// Le verbe d'une intention qui ne se devine pas peut appartenir au nom d'un objet qu'une autre lit sans
+				// verbe, une action de Culture. Hors de Culture, ce nom se tape après son verbe : « temps vente directe
+				// 1 h » (HN-B14, 25/10). Quand la phrase ne nomme aucun de ses objets, la lecture sans verbe dont
+				// l'objet porte ce mot l'emporte, si elle lit tous les mots :
 				// « vente Riom 10 », d'un client inactif, ne se lit pas en un temps sur l'action Vente qui refuse le
 				// reste de la phrase.
 				if($intention::isExplicit()) {
@@ -415,6 +420,22 @@ class EntryLib {
 		}
 
 		$intention::resolve($eStructure, $reading, $answers);
+
+		// La phrase se relit sous le verbe de l'intention qui la reprend, à la place du sien, qui reste le mot tapé :
+		// son jeton dit alors l'intention qui écrit. Une phrase sans verbe garde son refus, l'intention qui reprend
+		// ne se devinant pas.
+		if($reading['handover'] !== NULL and $implicit === FALSE and array_key_exists($reading['handover'], $intentions)) {
+
+			// Le mot en cours de frappe reste en frappe, sauf le verbe, que la phrase relue ne tape plus.
+			$typed = ($typing !== NULL and in_array($typing, $positionsVerb, TRUE) === FALSE);
+			$text = $intentions[$reading['handover']]::getWords()[0].' '.implode(' ', array_diff_key($wordsVerb, array_flip($positionsVerb))).($typed ? '' : ' ');
+
+			$readingHandover = self::readText($eStructure, $text, $answers, $cElement, $typingNamed);
+			$readingHandover['verb'] = $reading['verb'];
+
+			return $readingHandover;
+
+		}
 
 		if($reading['outcome'] === self::WRITE) {
 
@@ -481,6 +502,8 @@ class EntryLib {
 			// se tape encore et que rien ne s'écrirait.
 			'recap' => FALSE,
 			'refusal' => NULL,
+			// L'intention qui reprend la phrase que celle-ci refuse, et l'écrit à sa place (`readText()`).
+			'handover' => NULL,
 			// Les lectures sans verbe que la précédence a écartées sur le même objet, et qui ont encore quelque chose
 			// à écrire, par intention (`readImplicit()`).
 			'discarded' => array_fill_keys(array_keys(EntrySetting::INTENTIONS), NULL),
@@ -490,13 +513,16 @@ class EntryLib {
 
 	/**
 	 * Les mots d'une phrase, sans accent et en minuscules, un nombre collé à son unité décollé
-	 * (« 12kg »), l'élision détachée (« d'ail »).
+	 * (« 12kg »), l'élision détachée (« d'ail »). Les symboles qu'un clavier ne tape pas, un emoji et ses
+	 * modificateurs, ne sont pas des mots : « RH 💡 » se nomme « rh » (HN-B14). Un nom fait d'eux seuls n'a
+	 * aucun mot, et `IntentionLib::readName()` ne le lit jamais.
 	 */
 	public static function split(string $text): array {
 
 		$text = mb_strtolower($text);
 		$text = \Normalizer::normalize($text, \Normalizer::FORM_D);
 		$text = preg_replace('/\p{Mn}/u', '', $text);
+		$text = preg_replace('/[\p{So}\p{Sk}\p{Cf}]/u', ' ', $text);
 		$text = str_replace(['’', '‘'], '\'', $text);
 		$text = preg_replace('/\bd\'/u', 'd\' ', $text);
 		$text = preg_replace('/([0-9])([a-z])/u', '$1 $2', $text);
@@ -822,6 +848,25 @@ class EntryLib {
 
 	}
 
+	private static function getObjects(\structure\Structure $eStructure, string $intention, array $reading, bool $implicit, \Collection $cElementRead = new \Collection()): \Collection {
+
+		$cElement = $intention::getObjects($eStructure, $reading, $cElementRead);
+
+		if($implicit === FALSE) {
+			return $cElement;
+		}
+
+		// Une copie filtrée, et non `find()` : la liste porte aussi ce que l'intention y a lu pour tous ses objets (les
+		// cultures de la récolte, `getProperty()`), qu'une collection neuve perdrait. Les objets restent les mêmes, et
+		// la liste de l'intention, qu'elle peut garder pour la lecture suivante (`TimeIntentionLib::getObjects()`),
+		// reste entière.
+		$cElementImplicit = clone $cElement;
+		$cElementImplicit->filter(fn(\Element $eElement) => $intention::isImplicit($eElement));
+
+		return $cElementImplicit;
+
+	}
+
 	/**
 	 * Une phrase sans verbe (« courgette 12 kg », le champ du menu n'en pose pas) se lit avec celui de
 	 * l'intention dont elle nomme l'objet, ou en commence le nom : c'est la lecture de la même phrase
@@ -843,7 +888,7 @@ class EntryLib {
 			}
 
 			$cElementIntention = new \Collection();
-			$reading = self::readText($eStructure, $intention::getWords()[0].' '.$text, $answers, $cElementIntention, FALSE);
+			$reading = self::readText($eStructure, $intention::getWords()[0].' '.$text, $answers, $cElementIntention, FALSE, TRUE);
 
 			$rank = self::getImplicitRank($reading, $intention::getListed($cElementIntention), $intention::getTyped($cElementIntention));
 

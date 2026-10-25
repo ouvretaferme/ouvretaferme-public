@@ -7,6 +7,27 @@ abstract class ZoneElement extends \Element {
 
 	private static ?ZoneModel $model = NULL;
 
+	const TENDER = 'tender';
+	const PALE = 'pale';
+	const CLEAR = 'clear';
+	const DRY = 'dry';
+	const LUSH = 'lush';
+	const GRAZED = 'grazed';
+
+	const LOAM = 'loam';
+	const CLAY = 'clay';
+	const SAND = 'sand';
+	const HUMUS = 'humus';
+	const CHALK = 'chalk';
+	const OCHRE = 'ochre';
+	const SANDSTONE = 'sandstone';
+	const SCHIST = 'schist';
+	const BROWN = 'brown';
+
+	const MIXED = 'mixed';
+	const FLOWERY = 'flowery';
+	const TUFTED = 'tufted';
+
 	public static function getSelection(): array {
 		return Zone::model()->getProperties();
 	}
@@ -52,6 +73,9 @@ class ZoneModel extends \ModuleModel {
 			'structure' => ['element32', 'structure\Structure', 'cast' => 'element'],
 			'area' => ['int32', 'min' => 1, 'max' => NULL, 'cast' => 'int'],
 			'coordinates' => ['polygon', 'null' => TRUE, 'cast' => 'json'],
+			'decorGrass' => ['enum', [\map\Zone::TENDER, \map\Zone::PALE, \map\Zone::CLEAR, \map\Zone::DRY, \map\Zone::LUSH, \map\Zone::GRAZED], 'null' => TRUE, 'cast' => 'enum'],
+			'decorSoil' => ['enum', [\map\Zone::LOAM, \map\Zone::CLAY, \map\Zone::SAND, \map\Zone::HUMUS, \map\Zone::CHALK, \map\Zone::OCHRE, \map\Zone::SANDSTONE, \map\Zone::SCHIST, \map\Zone::BROWN], 'null' => TRUE, 'cast' => 'enum'],
+			'decorMeadow' => ['enum', [\map\Zone::MIXED, \map\Zone::FLOWERY, \map\Zone::TUFTED], 'null' => TRUE, 'cast' => 'enum'],
 			'seasonFirst' => ['int16', 'min' => 0, 'max' => NULL, 'null' => TRUE, 'cast' => 'int'],
 			'seasonLast' => ['int16', 'min' => 0, 'max' => NULL, 'null' => TRUE, 'cast' => 'int'],
 			'createdAt' => ['datetime', 'cast' => 'string'],
@@ -60,7 +84,7 @@ class ZoneModel extends \ModuleModel {
 		]);
 
 		$this->propertiesList = array_merge($this->propertiesList, [
-			'id', 'name', 'structure', 'area', 'coordinates', 'seasonFirst', 'seasonLast', 'createdAt', 'createdBy', 'updatedAt'
+			'id', 'name', 'structure', 'area', 'coordinates', 'decorGrass', 'decorSoil', 'decorMeadow', 'seasonFirst', 'seasonLast', 'createdAt', 'createdBy', 'updatedAt'
 		]);
 
 		$this->propertiesToModule += [
@@ -97,6 +121,15 @@ class ZoneModel extends \ModuleModel {
 
 			case 'coordinates' :
 				return $value === NULL ? NULL : new \Sql($this->pdo()->api->encodePolygon($value));
+
+			case 'decorGrass' :
+				return ($value === NULL) ? NULL : (string)$value;
+
+			case 'decorSoil' :
+				return ($value === NULL) ? NULL : (string)$value;
+
+			case 'decorMeadow' :
+				return ($value === NULL) ? NULL : (string)$value;
 
 			default :
 				return parent::encode($property, $value);
@@ -145,6 +178,18 @@ class ZoneModel extends \ModuleModel {
 
 	public function whereCoordinates(...$data): ZoneModel {
 		return $this->where('coordinates', ...$data);
+	}
+
+	public function whereDecorGrass(...$data): ZoneModel {
+		return $this->where('decorGrass', ...$data);
+	}
+
+	public function whereDecorSoil(...$data): ZoneModel {
+		return $this->where('decorSoil', ...$data);
+	}
+
+	public function whereDecorMeadow(...$data): ZoneModel {
+		return $this->where('decorMeadow', ...$data);
 	}
 
 	public function whereSeasonFirst(...$data): ZoneModel {

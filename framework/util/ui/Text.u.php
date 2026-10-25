@@ -266,10 +266,10 @@ class TextUi {
 			$h .= $form->open(NULL, [
 				'onsubmit' => 'Lime.Pagination.form(\''.$url.'\', this'.($ajaxClass === NULL ? '' : ', \''.$ajaxClass.'\'').');'
 			]);
-				$h .= '<div class="input-group">';
-					$h .= $form->number("page", "", ["placeholder" => s("Aller à..."), 'min' => 1, 'max' => $nPage, 'class' => 'pagination-goto', 'style' => 'width: 75px', 'title' => s("Aller à la page...")]);
-					$h .= $form->submit(s("Ok"));
-				$h .= '</div>';
+				$h .= $form->inputGroup(
+					$form->number("page", "", ["placeholder" => s("Aller à..."), 'min' => 1, 'max' => $nPage, 'class' => 'pagination-goto', 'style' => 'width: 75px', 'title' => s("Aller à la page...")]).
+					$form->submit(s("Ok"))
+				);
 			$h .= $form->close();
 
 		$h .= '</div>';

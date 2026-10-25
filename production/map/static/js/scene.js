@@ -101,8 +101,8 @@ class MapScene {
 	static FOLD_SHADE = .72;
 
 	// Les herbes et les sols du terrain, sous la valeur que `map\Configuration` enregistre. La première de chaque table est le défaut
-	// du schéma, que `readTerrain()` donne aussi à une valeur inconnue, y compris à une valeur retirée du schéma. La verte pâle a
-	// sa table de saison dans le plan (`MapScenePlanSeason.TABLES`), sa couleur est son 1er juillet. La presque blanche, le fond
+	// du schéma, que `readTerrain()` donne aussi à une valeur inconnue, y compris à une valeur retirée du schéma. Une herbe qui a
+	// sa table de saison dans le plan (`MapScenePlanSeason.TABLES`) a pour couleur son 1er juillet. La presque blanche, le fond
 	// de la première piste de « Plan clair », ne suit pas la saison, qui la verdirait au printemps, et ses aplats s'écartent près de
 	// quatre fois moins que ceux de l'herbe : un fond, pas un pré
 	static GRASSES = {
@@ -110,9 +110,16 @@ class MapScene {
 		pale: { color: '#cde2c0', step: .04, seasonless: false },
 		clear: { color: '#eef2e4', step: .012, seasonless: true },
 		dry: { color: '#bdb56e', step: .045, seasonless: false },
-		lush: { color: '#5e9550', step: .045, seasonless: false },
-		// Plus grise que la verte tendre, dont elle ne s'écartait pas assez une fois éclaircie comme elle dans le plan
-		grazed: { color: '#9cb07c', step: .045, seasonless: false }
+		lush: { color: '#a6dc87', step: .045, seasonless: false },
+		grazed: { color: '#c6efad', step: .045, seasonless: false }
+	};
+
+	// Les fonds du pré, sous la valeur que `map\Configuration` enregistre, le premier par défaut comme au schéma. `tufts` et `flowers`
+	// sont la part de chaque volume semé sur la lisière, `shaderTufts` et `shaderFlowers` la force de ce que le nuanceur peint
+	static MEADOWS = {
+		mixed: { tufts: .6, flowers: .4, shaderTufts: .12, shaderFlowers: .45 },
+		flowery: { tufts: 0, flowers: 1, shaderTufts: .03, shaderFlowers: 1 },
+		tufted: { tufts: 1, flowers: 0, shaderTufts: .13, shaderFlowers: 0 }
 	};
 
 	// Le sol par défaut est un sable clair, celui de « Plan clair », plus pâle que le sable qu'on choisit dans le décor pour que
@@ -170,6 +177,9 @@ class MapScene {
 
 				scene.close();
 				MapScene.current = null;
+
+				// Le message ne se lit pas sous un logo qui bat encore
+				scene.wait.remove();
 
 				console.error(error);
 				Lime.Alert.showStaticError(container.dataset.error);
@@ -253,6 +263,10 @@ class MapScene {
 		this.container = container;
 		this.closed = false;
 
+		// Le logo qui bat jusqu'à la première image (DesignUi::getLogoWait()), que restart() rend avec le reste du conteneur
+		this.wait = container.qs('.util-logo-wait');
+		this.drawn = false;
+
 		this.renderer = null;
 		this.labels = null;
 		this.controls = null;
@@ -262,6 +276,7 @@ class MapScene {
 		this.crops = null;
 		this.crew = null;
 		this.decor = null;
+		this.limits = null;
 		this.season = null;
 		this.sun = null;
 		this.hemisphere = null;
@@ -311,6 +326,7 @@ class MapScene {
 		this.ambience = null;
 		this.boards = null;
 		this.sign = null;
+		this.meadow = null;
 		this.insects = null;
 		this.antics = null;
 		this.fauna = null;
@@ -444,10 +460,12 @@ class MapScene {
 
 		this.grassStep = { value: 0 };
 		this.bedFrame = { value: 0 };
+		this.grassZones = MapScene.grassZones(THREE);
 
-		MapScene.grassTexture(materials.ground, this.grassStep);
+		MapScene.grassTexture(materials.ground, this.grassStep, this.grassZones);
+		MapScene.foldTexture(materials.fold, this.grassZones);
 		MapScene.bedTexture(THREE, materials.soil, this.bedFrame);
-		MapScene.bedTexture(THREE, materials.soilGreenhouse, this.bedFrame);
+		MapScene.bedTexture(THREE, materials.soilGreenhouse, this.bedFrame, MapScene.GREENHOUSE_SHADE);
 
 		this.materials = materials;
 		plan.terrain = MapScene.readTerrain(plan.terrain);
@@ -499,8 +517,11 @@ class MapScene {
 			spacing: 1,
 			diameterLabel: this.container.dataset.diameterLabel,
 			avatars,
+			zoneSoil: true,
 			changed: () => {
 				this.renderer.shadowMap.needsUpdate = true;
+				// Le champ pose le décor en se construisant, avant que le pré n'existe : le pré lit alors ce décor à sa première image
+				this.meadow?.changed();
 			}
 		});
 		this.disposables.push(this.field);
@@ -508,6 +529,10 @@ class MapScene {
 		this.crops = this.field.crops;
 		this.decor = this.field.decor;
 		this.crew = this.field.crew;
+
+		// Les contours se posent sur le sol que le décor vient de creuser sous ses étendues d'eau, par le drapé de ses propres lignes
+		this.limits = new MapSceneLimits({ THREE, geometry, ground: (positions, a, b, lift) => this.decor.groundLine(positions, a, b, lift), parent: this.scene });
+		this.disposables.push(this.limits);
 
 		// Un nom d'abri ne se pose pas sur une planche : devant le pignon vu de la caméra d'ouverture s'il y tient, sinon devant l'autre
 		// pignon, où il se dresse au-dessus de son ancre pour s'écarter de la bâche. S'il couvre une planche aux deux places, il reste
@@ -658,9 +683,19 @@ class MapScene {
 			controls: this.controls,
 			crew: this.field.crewGroup,
 			switched: () => this.setPosing(THREE),
+			carved: () => this.limits.draw(),
 			terrain: terrain => {
 				this.setTerrain(terrain);
+				this.meadow.choose(terrain.meadow);
 				this.light(this.date(plan));
+			},
+			// Le terrain d'une parcelle, dont chaque valeur null reprend celle de la structure : sa terre et son herbe se repeignent sur
+			// place, ses cultures refont leurs bandes au rendu qui suit
+			zoneTerrain: (zone, terrain) => {
+				this.field.paintSoil(zone, MapScene.readSoil(terrain.soil));
+				this.meadow.choose(terrain.meadow, zone);
+				this.meadow.chooseGrass(terrain.grass, zone);
+				this.show(plan);
 			}
 		});
 
@@ -823,7 +858,10 @@ class MapScene {
 			MapScene.saturate(material);
 		}
 
-		this.insects = new MapSceneInsects({ THREE, addons, crops: this.crops, geometry, scale: this.crew.scale, canvas, parent: this.scene, gradientMap: ramp });
+		this.meadow = new MapSceneMeadow({ THREE, plan, geometry, decor: this.decor, material: materials.ground, grassZones: this.grassZones, parent: this.scene, gradientMap: ramp });
+		this.disposables.push(this.meadow);
+
+		this.insects = new MapSceneInsects({ THREE, addons, crops: this.crops, meadow: this.meadow, geometry, scale: this.crew.scale, canvas, covers: () => this.covers, parent: this.scene, gradientMap: ramp });
 		this.disposables.push(this.insects);
 
 		this.antics = new MapSceneAntics({ THREE, addons, socle, crew: this.crew, decor: this.decor, geometry, parent: this.scene, gradientMap: ramp });
@@ -923,6 +961,7 @@ class MapScene {
 			this.ambience.fly(time, this.camera, this.controls);
 			this.ambience.frame(time);
 			this.boards?.frame(this.camera, this.controls);
+			this.meadow.frame(this.week);
 			this.insects.frame(time, this.shown, this.week, this.camera, this.controls);
 			this.antics.frame(time, this.shown, this.week, this.player !== null, this.camera, this.controls);
 			this.fauna.frame(time, this.shown, this.week, this.camera, this.controls);
@@ -934,6 +973,11 @@ class MapScene {
 			this.record.frame();
 			this.labels.render(this.scene, this.camera);
 			this.camera.position.sub(this.ruins.shake);
+
+			if(this.drawn === false) {
+				this.drawn = true;
+				this.wait.remove();
+			}
 
 			this.declutter(time);
 
@@ -1372,6 +1416,8 @@ class MapScene {
 
 		});
 
+		this.limits.attach(this.container);
+
 		// Le relief se pose au montage de la scène : l'allumer ou l'éteindre la remonte (toggleRelief()). La mention de sa source
 		// le suit
 		this.container.qs('[data-scene-relief]', row => {
@@ -1708,7 +1754,8 @@ class MapScene {
 
 			if(bed.whole !== null && G.inside(p, bed.whole.points)) {
 
-				const span = this.spans.get(bed.id)?.[0] ?? null;
+				const along = G.dot(G.sub(p, bed.rectangle.origin), bed.rectangle.u);
+				const span = (this.spans.get(bed.id) ?? []).find(span => along >= span.from && along <= span.to) ?? null;
 
 				return (span !== null) ? { kind: 'series', id: span.series, bed: bed.id } : { kind: 'bed', id: bed.id, bed: bed.id };
 
@@ -1785,9 +1832,19 @@ class MapScene {
 			touched = this.target(this.ground(canvas, { clientX: event.clientX + Math.cos(angle) * reach, clientY: event.clientY + Math.sin(angle) * reach }), geometry);
 		}
 
-		const r = (touched === null) ? null : (geometry.beds.find(bed => bed.id === touched.bed) ?? null);
+		if(touched === null || this.ruins.busy('bed:'+ touched.bed)) {
+			return null;
+		}
 
-		return (r === null || this.ruins.busy('bed:'+ r.id)) ? null : { ...this.bedRuin(plan, r), floor: floor(true) };
+		const r = geometry.beds.find(bed => bed.id === touched.bed) ?? null;
+
+		if(r !== null) {
+			return { ...this.bedRuin(plan, r), floor: floor(true) };
+		}
+
+		const whole = this.crops.beds.get(touched.bed) ?? null;
+
+		return (whole === null || whole.whole === null) ? null : { ...this.wholeRuin(plan, whole), floor: floor(true) };
 
 	}
 
@@ -1884,6 +1941,23 @@ class MapScene {
 	}
 
 	/**
+	 * La teinte de sommet de la terre copiée d'une planche en ruine, faite de `material` et du sol `soil` de sa parcelle. La matière
+	 * de la ruine est blanche et multiplie cette teinte : celle de la terre de la structure, ou sous un sol à soi, que `bedTexture()`
+	 * multiplie par la couleur de ce sol, l'ombre de l'abri seule.
+	 */
+	ruinSoil(material, soil) {
+
+		if(soil === null) {
+			return material.color.clone();
+		}
+
+		const shade = (material === this.materials.soilGreenhouse) ? MapScene.GREENHOUSE_SHADE : 1;
+
+		return new this.crops.THREE.Color('#ffffff').multiplyScalar(shade);
+
+	}
+
+	/**
 	 * Une planche dessinée en cible : sa terre et tout ce qui pousse dessus. Masquée, sa terre s'efface de la terre fusionnée et ses
 	 * cultures ne se posent plus, jusqu'à ce que show() les rende.
 	 */
@@ -1892,6 +1966,9 @@ class MapScene {
 		const THREE = this.crops.THREE;
 		const middle = ScenePlanGeometry.add(r.origin, ScenePlanGeometry.add(ScenePlanGeometry.mul(r.u, r.length / 2), ScenePlanGeometry.mul(r.w, r.width / 2)));
 
+		// La planche d'un jardin de pérennes n'a pas de lit de terre (`MapSceneCrops.grassed()`) : seuls ses plants se copient
+		const slab = this.field.slabs.get(r.id) ?? null;
+
 		return {
 			key: 'bed:'+ r.id,
 			base: MapScene.BED_BASE + this.geometry.height(middle.x, middle.n),
@@ -1899,23 +1976,68 @@ class MapScene {
 			bed: true,
 			angle: Math.atan2(r.u.n, r.u.x),
 			// La terre copiée garde son bord grignoté et ses aplats : la copie prend la place de l'original sans qu'on la voie
-			look: { material: this.materials.soil, depth: null, name: 'bed', attributes: { bedEdge: 3, bedSize: 2 }, points: [] },
+			look: { material: this.materials.soil, depth: null, name: 'bed', attributes: { bedEdge: 3, bedSize: 2, bedSoil: 4 }, points: [] },
 			parts: () => {
-				const slab = this.field.slabs.get(r.id);
-				const soil = MapScene.bed(THREE, this.geometry, r);
+
+				if(slab === null) {
+					return this.crops.parts(r);
+				}
+
+				const zoneSoil = this.field.soils.get(r.zone) ?? null;
+				const soil = MapScene.bed(THREE, this.geometry, r, undefined, zoneSoil);
+
 				return [
-					{ geometry: (this.geometry.relief === null) ? soil : MapSceneField.drape(THREE, this.geometry, soil), matrix: new THREE.Matrix4().makeTranslation(0, MapScene.BED_BASE, 0), color: slab.mesh.material.color.clone(), ground: true },
+					{ geometry: (this.geometry.relief === null) ? soil : MapSceneField.drape(THREE, this.geometry, soil), matrix: new THREE.Matrix4().makeTranslation(0, MapScene.BED_BASE, 0), color: this.ruinSoil(slab.mesh.material, zoneSoil), ground: true },
 					...this.crops.parts(r)
 				];
+
 			},
 			hide: () => {
-				this.slab(r.id, false);
+				if(slab !== null) {
+					this.slab(r.id, false);
+				}
 				this.crops.ruined.add(r.id);
 				this.show(plan);
 			},
 			show: () => {
-				this.slab(r.id, true);
+				if(slab !== null) {
+					this.slab(r.id, true);
+				}
 				this.crops.ruined.delete(r.id);
+				this.show(plan);
+			}
+		};
+
+	}
+
+	/**
+	 * Un jardin sans planche dessinée en cible, comme une planche : la terre de ses bandes du jour et tout ce qui y pousse. Masqué, il
+	 * ne porte plus rien, terre comprise, jusqu'à ce que show() le rende.
+	 */
+	wholeRuin(plan, bed) {
+
+		const THREE = this.crops.THREE;
+		const r = bed.rectangle;
+		const middle = ScenePlanGeometry.centroid(bed.whole.points);
+		const material = (bed.whole.plot.mode === 'greenhouse') ? this.materials.soilGreenhouse : this.materials.soil;
+
+		return {
+			key: 'bed:'+ bed.id,
+			base: MapScene.BED_BASE + this.geometry.height(middle.x, middle.n),
+			least: 1.2,
+			bed: true,
+			angle: Math.atan2(r.u.n, r.u.x),
+			look: { material: this.materials.soil, depth: null, name: 'bed', attributes: { bedEdge: 3, bedSize: 2, bedSoil: 4 }, points: [] },
+			parts: () => [
+				...this.crops.soiled(bed.id).map(geometry => ({ geometry, matrix: new THREE.Matrix4().makeTranslation(0, MapScene.BED_BASE, 0), color: this.ruinSoil(material, this.field.soils.get(bed.zone) ?? null), ground: true })),
+				...this.crops.parts(r, bed.whole.points)
+			],
+			hide: () => {
+				this.crops.ruined.add(bed.id);
+				this.show(plan);
+			},
+			show: () => {
+				this.crops.ruined.delete(bed.id);
 				this.show(plan);
 			}
 		};
@@ -1994,12 +2116,16 @@ class MapScene {
 
 		for(const bed of this.crops.beds.values()) {
 
-			const center = (bed.whole !== null) ? G.centroid(bed.whole.points) : this.bedCenter(bed.id);
+			const center = (bed.whole !== null) ? null : this.bedCenter(bed.id);
 
 			for(const place of bed.places) {
-				if(this.centers.has(place.series) === false) {
-					this.centers.set(place.series, center);
+
+				const band = (bed.whole !== null) ? (bed.bands.get(place.id) ?? null) : null;
+
+				if(this.centers.has(place.series) === false && (bed.whole === null || band !== null)) {
+					this.centers.set(place.series, (band !== null) ? G.centroid(band.outline) : center);
 				}
+
 			}
 
 		}
@@ -2326,15 +2452,22 @@ class MapScene {
 	 * Le terrain lu du serveur, chaque valeur que la scène ne connaît pas remplacée par la première de sa table. Une version du
 	 * client plus ancienne que la base peut recevoir une herbe ou un sol qu'elle ne sait pas peindre.
 	 */
-	static readTerrain({ grass, soil }) {
+	static readTerrain({ grass, soil, meadow }) {
 
 		const known = (table, value) => Object.hasOwn(table, value) ? value : Object.keys(table)[0];
 
 		return {
 			grass: known(MapScene.GRASSES, grass),
-			soil: known(MapScene.SOILS, soil)
+			soil: known(MapScene.SOILS, soil),
+			meadow: known(MapScene.MEADOWS, meadow)
 		};
 
+	}
+
+	// Le fond d'une parcelle, qui n'a pas de défaut à elle : une valeur que la scène ne connaît pas reprend, comme NULL, celui de la
+	// structure
+	static readMeadow(meadow) {
+		return Object.hasOwn(MapScene.MEADOWS, meadow) ? meadow : null;
 	}
 
 	/**
@@ -2374,7 +2507,7 @@ class MapScene {
 
 		const light = this.season.at(date);
 
-		this.ambience.prepare(this.week, this.player !== null, this.speed.factor, { sun: this.sun, hemisphere: this.hemisphere, ground: this.materials.ground, fold: this.materials.fold });
+		this.ambience.prepare(this.week, this.player !== null, this.speed.factor, { sun: this.sun, hemisphere: this.hemisphere, ground: this.materials.ground, fold: this.materials.fold, grassRatio: this.grassZones.grassRatio.value });
 		this.shown = date;
 
 		this.sun.intensity = light.force;
@@ -2387,6 +2520,8 @@ class MapScene {
 		const materials = this.materials;
 		materials.ground.color.setRGB(...light.grass);
 		materials.fold.color.copy(materials.ground.color).multiplyScalar(MapScene.FOLD_SHADE);
+
+		MapScene.grassRatios(this.grassZones, light);
 
 		this.decor.season(date, light.path);
 
@@ -2595,10 +2730,17 @@ class MapScene {
 	 * grignoté et les aplats de la terre se calculent de là (`bedTexture()`). Les coordonnées se lisent dans le repère de la planche
 	 * et non en projections sur ses axes : une planche tracée n'a pas toujours ses deux axes à angle droit, et les projections
 	 * s'écarteraient alors du bord dessiné de plusieurs décimètres au bout d'une planche de 25 m.
+	 *
+	 * `outline` est le contour de la terre, les coins de la planche par défaut. La bande d'un jardin entier (`MapSceneCrops.bands()`)
+	 * y passe son morceau de contour, avec le rectangle de la bande pour repère : son bord grignoté et son cadre suivent les bouts de
+	 * la bande et les côtés du rectangle du jardin, pas les côtés obliques du contour.
+	 *
+	 * `soil` est le sol de la parcelle de la planche, null pour celui de la structure : il passe dans l'attribut `bedSoil`
+	 * (`soilTone()`), que `bedTexture()` lit.
 	 */
-	static bed(THREE, geometry, bed) {
+	static bed(THREE, geometry, bed, outline = geometry.corners(bed), soil = null) {
 
-		const shape = new THREE.Shape(geometry.corners(bed).map(p => new THREE.Vector2(p.x, p.n)));
+		const shape = new THREE.Shape(outline.map(p => new THREE.Vector2(p.x, p.n)));
 		const slab = new THREE.ExtrudeGeometry(shape, { depth: MapScene.BED_HEIGHT, bevelEnabled: false }).rotateX(-Math.PI / 2);
 
 		const position = slab.attributes.position;
@@ -2608,6 +2750,7 @@ class MapScene {
 
 		const edge = new Float32Array(position.count * 3);
 		const size = new Float32Array(position.count * 2);
+		const tone = MapScene.soilTone(THREE, soil);
 
 		for(let i = 0; i < position.count; i++) {
 
@@ -2620,9 +2763,74 @@ class MapScene {
 
 		slab.setAttribute('bedEdge', new THREE.BufferAttribute(edge, 3));
 		slab.setAttribute('bedSize', new THREE.BufferAttribute(size, 2));
+		slab.setAttribute('bedSoil', new THREE.BufferAttribute(new Float32Array(position.count * 4).map((_, i) => tone[i % 4]), 4));
 
 		return slab;
 
+	}
+
+	/**
+	 * Le sol d'une parcelle tel que `bedTexture()` le lit dans `bedSoil` : sa couleur linéaire, et en quatrième valeur 0 pour suivre
+	 * la terre de la structure (`soil` null), 1 pour une terre propre sans cadre, 2 pour une terre claire qui prend le cadre.
+	 */
+	static soilTone(THREE, soil) {
+
+		if(soil === null) {
+			return [0, 0, 0, 0];
+		}
+
+		const color = new THREE.Color(MapScene.SOILS[soil]);
+
+		return [color.r, color.g, color.b, MapScene.framed(soil) ? 2 : 1];
+
+	}
+
+	// Le sol d'une parcelle, qui n'a pas de défaut à elle : une valeur que la scène ne connaît pas reprend, comme NULL, celui de la
+	// structure
+	static readSoil(soil) {
+		return Object.hasOwn(MapScene.SOILS, soil) ? soil : null;
+	}
+
+	// L'herbe d'une parcelle, lue comme son sol
+	static readGrass(grass) {
+		return Object.hasOwn(MapScene.GRASSES, grass) ? grass : null;
+	}
+
+	/**
+	 * Les herbes des parcelles, pour `grassTexture()` : le masque où chaque case porte le rang de l'herbe de sa parcelle dans
+	 * GRASSES, compté depuis 1, que le pré peint (`MapSceneMeadow.paintGrass()`), sa boite, et pour chaque rang le rapport de sa
+	 * couleur à celle de la structure (`light()`) et l'écart de ses aplats. Le rang 0 est la structure : rapport 1, son écart à elle.
+	 */
+	static grassZones(THREE) {
+
+		const grasses = Object.values(MapScene.GRASSES);
+
+		return {
+			grassMask: { value: null },
+			grassBox: { value: new THREE.Vector4() },
+			grassRatio: { value: [null, ...grasses].map(() => new THREE.Vector3(1, 1, 1)) },
+			grassSteps: { value: [0, ...grasses.map(({ step }) => step)] }
+		};
+
+	}
+
+	/**
+	 * Chaque herbe de parcelle en part de celle de la structure, que la matière porte : la glissade d'une semaine à l'autre, qui ne
+	 * fond que la couleur de la matière, entraîne les parcelles avec elle.
+	 */
+	static grassRatios(zones, light) {
+
+		Object.keys(MapScene.GRASSES).forEach((grass, k) => {
+			const color = light['grass.'+ grass];
+			zones.grassRatio.value[k + 1].set(color[0] / light.grass[0], color[1] / light.grass[1], color[2] / light.grass[2]);
+		});
+
+	}
+
+	// Le sol de chaque parcelle du plan, par identifiant, quand la scène le lit (`zoneSoil`) : vide sinon, toute terre suit alors
+	// celle de la scène
+	static zoneSoils(plan, zoneSoil) {
+		return new Map(zoneSoil ? plan.zones.map(zone => [zone.id, MapScene.readSoil(zone.decorSoil)]) : []);
 	}
 
 	// Le bruit de valeur des aplats de l'herbe et de la terre, et du bord grignoté des planches
@@ -2639,22 +2847,86 @@ float mapNoise(vec2 p) {
 	 * L'herbe en aplats tachetés, d'une valeur à l'autre de `step` en part de sa couleur, sur deux octaves de bruit qui ne
 	 * laissent voir aucune répétition. Le décalage de 2,089 est la moyenne mesurée des aplats : la teinte moyenne de l'herbe
 	 * reste celle de la couleur unie, que la saison règle.
+	 *
+	 * Avec `zones` (`grassZones()`), chaque parcelle qui a son herbe la prend, bornée par sa limite. Le plan le passe toujours, même
+	 * sans parcelle en herbe, pour que le premier choix d'une herbe ne recompile pas le programme ; le bourg ne le passe pas.
 	 */
-	static grassTexture(material, step) {
+	static grassTexture(material, step, zones = null) {
+
+		const own = (zones === null) ? '' : MapScene.grassRank() + `
+	diffuseColor.rgb *= grassRatio[gRank];
+	gStep = (gRank == 0) ? grassStep : grassSteps[gRank];`;
 
 		material.onBeforeCompile = shader => {
 
 			shader.uniforms.grassStep = step;
 
+			if(zones !== null) {
+				Object.assign(shader.uniforms, zones);
+			}
+
 			shader.vertexShader = 'varying vec2 vGround;\n' + shader.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\nvGround = (modelMatrix * vec4(transformed, 1.0)).xz;');
 
-			shader.fragmentShader = 'uniform float grassStep;\nvarying vec2 vGround;\n' + MapScene.NOISE + shader.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>
+			const uniforms = (zones === null) ? '' : MapScene.grassUniforms(zones);
+
+			shader.fragmentShader = uniforms + 'uniform float grassStep;\nvarying vec2 vGround;\n' + MapScene.NOISE + shader.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>
+	float gStep = grassStep;${own}
 	float tone = (mapNoise(vGround * .07) + .35 * mapNoise(vGround * .31 + 5.)) * 3.;
-	diffuseColor.rgb *= 1. + grassStep * (floor(tone) + smoothstep(.45, .55, fract(tone)) - 2.089);`);
+	diffuseColor.rgb *= 1. + gStep * (floor(tone) + smoothstep(.45, .55, fract(tone)) - 2.089);`);
 
 		};
 
-		material.customProgramCacheKey = () => 'map-scene-grass';
+		material.customProgramCacheKey = () => (zones === null) ? 'map-scene-grass' : 'map-scene-grass-zones';
+
+	}
+
+	/**
+	 * Le trait entre deux ilots, sombre de l'herbe qu'il traverse : celle d'une parcelle qui a la sienne, celle de la structure
+	 * ailleurs. Il garde sa teinte unie, sans les aplats de `grassTexture()`.
+	 */
+	static foldTexture(material, zones) {
+
+		material.onBeforeCompile = shader => {
+
+			Object.assign(shader.uniforms, zones);
+
+			shader.vertexShader = 'varying vec2 vGround;\n' + shader.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\nvGround = (modelMatrix * vec4(transformed, 1.0)).xz;');
+
+			shader.fragmentShader = MapScene.grassUniforms(zones) + 'varying vec2 vGround;\n' + shader.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>${MapScene.grassRank()}
+	diffuseColor.rgb *= grassRatio[gRank];`);
+
+		};
+
+		material.customProgramCacheKey = () => 'map-scene-fold-zones';
+
+	}
+
+	// Les uniforms des herbes des parcelles (`grassZones()`), dans un nuanceur qui lit leur masque
+	static grassUniforms(zones) {
+
+		return `uniform sampler2D grassMask;
+uniform vec4 grassBox;
+uniform vec3 grassRatio[${zones.grassRatio.value.length}];
+uniform float grassSteps[${zones.grassSteps.value.length}];
+`;
+
+	}
+
+	/**
+	 * Le rang de l'herbe sous le fragment, `gRank`, lu du masque sur `vGround`. Hors de la boite du masque, et sans masque quand le
+	 * plan n'a aucun tracé, la case est celle de la structure. Le rang indexe des tableaux d'uniforms, ce que GLSL ES 3.0 admet d'un
+	 * entier calculé.
+	 */
+	static grassRank() {
+
+		return `
+	int gRank = 0;
+	if(grassBox.z > 0.) {
+		vec2 gUv = (vec2(vGround.x, -vGround.y) - grassBox.xy) / grassBox.zw;
+		if(gUv.x >= 0. && gUv.y >= 0. && gUv.x < 1. && gUv.y < 1.) {
+			gRank = int(texture2D(grassMask, gUv).r * 255. + .5);
+		}
+	}`;
 
 	}
 
@@ -2673,8 +2945,11 @@ float mapNoise(vec2 p) {
 	 *
 	 * Le cadre (BED_FRAME) longe le bord grignoté quand `frame.value` vaut 1, que `setTerrain()` pose d'après le sol : un uniform,
 	 * pour que changer de sol ne recompile pas le nuanceur.
+	 *
+	 * Une planche d'une parcelle qui a son sol le porte dans `bedSoil` (`soilTone()`) : sa couleur remplace celle de la matière, que
+	 * la structure tient, à l'ombre `shade` près, celle de l'abri pour la terre sous abri, et son cadre suit ce sol.
 	 */
-	static bedTexture(THREE, material, frame) {
+	static bedTexture(THREE, material, frame, shade = 1) {
 
 		// La teinte du cadre, dans l'espace de couleur linéaire où le nuanceur calcule, comme celle que prend la matière
 		const edge = new THREE.Color(MapScene.BED_FRAME).toArray().map(x => x.toFixed(4));
@@ -2682,10 +2957,13 @@ float mapNoise(vec2 p) {
 		material.onBeforeCompile = shader => {
 
 			shader.uniforms.bedFrame = frame;
+			shader.uniforms.bedShade = { value: shade };
 
-			shader.vertexShader = 'attribute vec3 bedEdge;\nattribute vec2 bedSize;\nvarying vec3 vBedEdge;\nvarying vec2 vBedSize;\nvarying float vBedUp;\n' + shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvBedEdge = bedEdge;\nvBedSize = bedSize;\nvBedUp = normal.y;');
+			shader.vertexShader = 'attribute vec3 bedEdge;\nattribute vec2 bedSize;\nattribute vec4 bedSoil;\nvarying vec3 vBedEdge;\nvarying vec2 vBedSize;\nvarying vec4 vBedSoil;\nvarying float vBedUp;\n' + shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvBedEdge = bedEdge;\nvBedSize = bedSize;\nvBedSoil = bedSoil;\nvBedUp = normal.y;');
 
 			shader.fragmentShader = `uniform float bedFrame;
+uniform float bedShade;
+varying vec4 vBedSoil;
 varying vec3 vBedEdge;
 varying vec2 vBedSize;
 varying float vBedUp;
@@ -2710,17 +2988,114 @@ varying float vBedUp;
 	float bInside = bSigned - bDepth;
 	float bEdgePixel = length(vec2(dFdx(bInside), dFdy(bInside)));
 	if(bBed) {
+		// La matière porte la terre de la structure : celle de la parcelle s'y substitue. Une copie de ruine, de matière blanche, ne
+		// porte alors en couleur de sommet que l'ombre de l'abri (ruinSoil())
+		if(vBedSoil.a > .5) diffuseColor.rgb *= vBedSoil.rgb * bedShade / max(diffuse, vec3(.001));
+		float bFramed = (vBedSoil.a > .5) ? step(1.5, vBedSoil.a) : bedFrame;
 		vec2 bSpot = vec2(vBedEdge.x + vBedEdge.z, vBedEdge.y) * vec2(.4, .8);
 		float bTone = clamp(((mapNoise(bSpot) + .35 * mapNoise(bSpot * 2.2 + 5.)) / 1.35 - .3) / .4, 0., .999) * 2.;
 		float bShade = mix(.5, (floor(bTone) + smoothstep(.45, .55, fract(bTone))) / 2., 1. - smoothstep(.5, 1.2, bPixel));
 		diffuseColor.rgb *= 1. + ${MapScene.BED_STEP} * (bShade - .5);
 		float bEdge = max(${MapScene.BED_FRAME_WIDTH.toFixed(3)}, bEdgePixel);
-		diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${edge.join(', ')}), bedFrame * (1. - smoothstep(bEdge - .5 * bEdgePixel, bEdge + .5 * bEdgePixel, bInside)));
+		diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${edge.join(', ')}), bFramed * (1. - smoothstep(bEdge - .5 * bEdgePixel, bEdge + .5 * bEdgePixel, bInside)));
 	}`);
 
 		};
 
 		material.customProgramCacheKey = () => 'map-scene-bed';
+
+	}
+
+	/**
+	 * Le fond du pré (`MapSceneMeadow`) peint sur l'herbe, après ses aplats : des brins sombres ou clairs et des fleurs, hors de la
+	 * bande unie que le masque porte en rouge, à la force que ses canaux vert et bleu donnent à chaque case. Hors de la boite du
+	 * masque, le fond de la structure. Il s'enchaîne sur `grassTexture()`, dont il lit `vGround` et le bruit.
+	 *
+	 * Un pré n'a ni lignes ni tuile : chaque brin se tire dans une case de l'une de deux grilles de pas et d'angle différents, et prend
+	 * de sa case son orientation, sa longueur, son épaisseur et sa teinte. Une grille droite rangerait les brins en rangs que l'œil
+	 * suit. Leur densité varie par plaques. Ce qui passerait sous le pixel s'efface au lieu de grésiller : un brin s'élargit au pixel
+	 * en s'éclaircissant d'autant, une fleur garde le pixel tant que sa case de 0,6 m en couvre plusieurs, puis ne laisse à sa tache
+	 * qu'une teinte claire. Effacée plus tôt, elle laissait aux touffes, dont l'ombre tient à tout recul, l'image d'un plan vu de loin.
+	 */
+	static meadowTexture(material, uniforms) {
+
+		const compile = material.onBeforeCompile;
+		const key = material.customProgramCacheKey();
+
+		material.onBeforeCompile = (shader, renderer) => {
+
+			compile.call(material, shader, renderer);
+
+			Object.assign(shader.uniforms, uniforms);
+
+			// Le hachage du bruit de l'herbe passe par le sinus d'un grand nombre, dont la précision se perd loin de l'origine en motifs
+			// réguliers : chaque case d'un brin ou d'une fleur se tire par un hachage sans sinus
+			shader.fragmentShader = `uniform sampler2D meadowMask;
+uniform vec4 meadowBox;
+uniform vec2 meadowDefault;
+uniform float meadowBloom;
+float meadowHash(vec2 p) {
+	vec3 q = fract(vec3(p.xyx) * .1031);
+	q += dot(q, q.yzx + 33.33);
+	return fract((q.x + q.y) * q.z);
+}
+` + shader.fragmentShader.replace('#include <emissivemap_fragment>', `
+	{
+		vec2 mUv = (vec2(vGround.x, -vGround.y) - meadowBox.xy) / meadowBox.zw;
+		bool mIn = (mUv.x >= 0. && mUv.y >= 0. && mUv.x <= 1. && mUv.y <= 1.);
+		vec4 mCell = texture2D(meadowMask, clamp(mUv, 0., 1.));
+		float mWild = mIn ? 1. - mCell.r : 1.;
+		vec2 mForce = mIn ? mCell.gb : meadowDefault;
+		float mTufts = mForce.x * ${MapSceneMeadow.TUFTS_MAX.toFixed(3)};
+		float mFlowers = mForce.y * meadowBloom;
+		float mPixel = max(fwidth(vGround.x), fwidth(vGround.y));
+
+		// Les plaques de brins, sur un bruit au domaine tourné pour qu'aucune ne s'allonge le long d'un axe
+		float mPatch = smoothstep(.3, .8, mapNoise(mat2(.8, -.6, .6, .8) * vGround * .12 + 17.));
+		float mFade = 1. - smoothstep(.12, .3, mPixel);
+		float mShade = 0.;
+		for(int mLayer = 0; mLayer < 2; mLayer++) {
+			float mStep = mLayer == 0 ? .5 : .37;
+			float mAngle = mLayer == 0 ? .5 : 2.1;
+			vec2 mP = mat2(cos(mAngle), sin(mAngle), -sin(mAngle), cos(mAngle)) * vGround / mStep + float(mLayer) * 31.7;
+			vec2 mCase = floor(mP);
+			// Le brin reste dans sa case : centre tiré entre 0,2 et 0,8, demi-longueur de 0,18 au plus
+			vec2 mCentre = mCase + .2 + .6 * vec2(meadowHash(mCase + 3.), meadowHash(mCase + 7.));
+			float mTurn = meadowHash(mCase + 11.) * 3.1416;
+			vec2 mDirection = vec2(cos(mTurn), sin(mTurn));
+			float mHalf = mix(.08, .18, meadowHash(mCase + 17.));
+			vec2 mQ = mP - mCentre;
+			float mAlong = clamp(dot(mQ, mDirection), -mHalf, mHalf);
+			float mDistance = length(mQ - mDirection * mAlong) * mStep;
+			float mWidth = mix(.012, .028, meadowHash(mCase + 19.));
+			float mDrawn = max(mWidth, mPixel);
+			float mCover = (1. - smoothstep(mDrawn - .5 * mPixel, mDrawn + .5 * mPixel, mDistance)) * mWidth / mDrawn;
+			float mOn = step(meadowHash(mCase + 23.), mTufts / ${MapSceneMeadow.TUFTS_MAX.toFixed(3)} * (.15 + .6 * mPatch));
+			// Un brin sur quatre accroche la lumière, les autres sont dans l'ombre de la touffe
+			float mTone = meadowHash(mCase + 29.) < .25 ? -.6 : mix(.6, 1., meadowHash(mCase + 31.));
+			mShade += mOn * mCover * mTone;
+		}
+		diffuseColor.rgb *= 1. - mWild * mFade * clamp(mShade, -.6, 1.) * .5 - mTufts * mWild * .35 * smoothstep(.55, .8, mapNoise(mat2(.6, .8, -.8, .6) * vGround * .45 + 7.));
+
+		// Au plus une fleur par case de 0,6 m, posée au hasard dans la case, plus dense dans les taches de prairie
+		float mMeadow = smoothstep(.35, .75, mapNoise(vGround * .06 + 11.));
+		float mSharp = 1. - smoothstep(.45, .8, mPixel);
+		diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.97, .95, .82), mFlowers * mWild * mMeadow * .2 * (1. - mSharp));
+		vec2 mSquare = floor(mat2(.92, .39, -.39, .92) * vGround / .6);
+		if(mFlowers > 0. && mSharp > 0. && meadowHash(mSquare) < mFlowers * (.06 + .45 * mMeadow) * mWild) {
+			vec2 mFlower = (mSquare + .15 + .7 * vec2(meadowHash(mSquare + 3.), meadowHash(mSquare + 7.))) * .6;
+			float mRadius = max(.1 + .06 * meadowHash(mSquare + 21.), .7 * mPixel);
+			float mKind = meadowHash(mSquare + 13.);
+			vec3 mColor = mKind < .4 ? vec3(.98, .98, .95) : mKind < .65 ? vec3(.95, .82, .23) : mKind < .82 ? vec3(.91, .65, .78) : mKind < .93 ? vec3(.5, .56, .88) : vec3(.9, .33, .25);
+			diffuseColor.rgb = mix(diffuseColor.rgb, mColor, (1. - smoothstep(mRadius - mPixel, mRadius + mPixel, length(mat2(.92, .39, -.39, .92) * vGround - mFlower))) * mSharp);
+		}
+	}
+	#include <emissivemap_fragment>`);
+
+		};
+
+		material.customProgramCacheKey = () => key + '-meadow';
+		material.needsUpdate = true;
 
 	}
 
@@ -2931,6 +3306,7 @@ varying float vBedUp;
 		this.crops = null;
 		this.crew = null;
 		this.decor = null;
+		this.limits = null;
 		this.season = null;
 		this.sun = null;
 		this.hemisphere = null;
@@ -2939,6 +3315,7 @@ varying float vBedUp;
 		this.ambience = null;
 		this.boards = null;
 		this.sign = null;
+		this.meadow = null;
 		this.insects = null;
 		this.antics = null;
 		this.fauna = null;
@@ -4241,21 +4618,30 @@ class MapSceneField {
 	// L'œil d'ouverture du plan, face auquel se tire le décor par défaut : le même décor où que le champ se montre
 	static EYE = { x: MapScene.OPENING_EYE.x * MapScene.OPENING_DISTANCE, y: MapScene.OPENING_DISTANCE, z: -MapScene.OPENING_EYE.n * MapScene.OPENING_DISTANCE };
 
-	// `avatars` est l'équipe avec ses avatars (`SceneCrew.prepare()`), que le bourg ne donne pas
-	constructor({ socle, plan, geometry, parent, gradientMap, wind, soil, soilGreenhouse, shelter, arches, spacing, diameterLabel, changed, avatars = null }) {
+	// `avatars` est l'équipe avec ses avatars (`SceneCrew.prepare()`), que le bourg ne donne pas. `zoneSoil` fait lire aux planches
+	// et aux buttes le sol de leur parcelle : seul le plan le demande, le bourg peignant toute terre de la sienne, y compris celle
+	// de la structure
+	constructor({ socle, plan, geometry, parent, gradientMap, wind, soil, soilGreenhouse, shelter, arches, spacing, diameterLabel, changed, avatars = null, zoneSoil = false }) {
 
 		const { THREE, addons } = socle;
 
 		this.pieces = [];
 
-		// La place des sommets de chaque planche dans la terre fusionnée, que MapSceneRuins efface et remet
+		// La place des sommets de chaque planche dans la terre fusionnée, que MapSceneRuins efface et remet, et que le sol d'une
+		// parcelle réécrit
 		this.slabs = new Map();
+		this.THREE = THREE;
+		this.geometry = geometry;
+		this.soils = MapScene.zoneSoils(plan, zoneSoil);
+
+		// Un jardin de pérennes n'a pas de lit de terre : ses plants poussent dans l'herbe
+		const grassed = MapSceneCrops.grassed(plan);
 
 		// Une géométrie par terre et non par planche : chaque maillage coûte un appel de dessin, et une structure en compte des centaines
 		for(const greenhouse of [false, true]) {
 
-			const beds = geometry.beds.filter(bed => bed.greenhouse === greenhouse);
-			const slabs = beds.map(bed => MapScene.bed(THREE, geometry, bed)).map(slab => (geometry.relief === null) ? slab : MapSceneField.drape(THREE, geometry, slab));
+			const beds = geometry.beds.filter(bed => bed.greenhouse === greenhouse && grassed.has(bed.plot) === false);
+			const slabs = beds.map(bed => MapScene.bed(THREE, geometry, bed, undefined, this.soils.get(bed.zone) ?? null)).map(slab => (geometry.relief === null) ? slab : MapSceneField.drape(THREE, geometry, slab));
 
 			if(slabs.length > 0) {
 
@@ -4315,7 +4701,7 @@ class MapSceneField {
 		const cropGroup = new THREE.Group();
 		parent.add(cropGroup);
 
-		this.crops = new MapSceneCrops(socle, plan, geometry, cropGroup, gradientMap, wind, soil, spacing);
+		this.crops = new MapSceneCrops(socle, plan, geometry, cropGroup, gradientMap, wind, soil, soilGreenhouse, spacing, zoneSoil);
 
 		this.crewGroup = new THREE.Group();
 		parent.add(this.crewGroup);
@@ -4390,6 +4776,43 @@ class MapSceneField {
 		this.decor.byDefault(plan, { boards, sign, eye: MapSceneField.EYE });
 	}
 
+	/**
+	 * Le sol de la parcelle `zone`, null pour celui de la structure : la plage de chacune de ses planches se réécrit dans la terre
+	 * fusionnée, sans maillage neuf, et les cultures le reprennent pour leurs bandes et leurs buttes.
+	 */
+	paintSoil(zone, soil) {
+
+		this.soils.set(zone, soil);
+
+		const tone = MapScene.soilTone(this.THREE, soil);
+		const touched = new Set();
+
+		for(const bed of this.geometry.beds) {
+
+			const slab = this.slabs.get(bed.id) ?? null;
+
+			if(bed.zone !== zone || slab === null) {
+				continue;
+			}
+
+			const attribute = slab.mesh.geometry.attributes.bedSoil;
+
+			for(let i = slab.start; i < slab.start + slab.count; i++) {
+				attribute.setXYZW(i, ...tone);
+			}
+
+			touched.add(attribute);
+
+		}
+
+		touched.forEach(attribute => {
+			attribute.needsUpdate = true;
+		});
+
+		this.crops.paintSoil(zone, soil);
+
+	}
+
 	dispose() {
 
 		this.crops.dispose();
@@ -4404,9 +4827,9 @@ class MapSceneField {
 
 /**
  * Des rangées qui défilent de côté sans barre, qui les grandirait dès qu'elles débordent : chacune s'estompe du côté où il en reste, la
- * molette d'une souris la fait défiler de côté, et une flèche se pose au milieu de son bord, dans l'estompe, sous un pointeur fin
- * seulement (scene.css). Les flèches désignent leur rangée par son nom dans `rows`, et partagent son parent positionné. Ce sont les
- * rangées du catalogue du décor et la clé des cultures d'un téléphone.
+ * molette d'une souris la fait défiler de côté, et une flèche se pose sur son bord, dans l'estompe, à la souris comme au doigt
+ * (scene.css). Les flèches désignent leur rangée par son nom dans `rows`, et partagent son parent positionné. Ce sont les rangées
+ * du catalogue du décor et la clé des cultures d'un téléphone.
  */
 class MapSceneScroll {
 
@@ -4436,25 +4859,40 @@ class MapSceneScroll {
 	}
 
 	/**
-	 * Une rangée qui déborde s'estompe du côté où il en reste. Ses flèches se posent au milieu de ses bords, de ce même côté, tant
-	 * qu'elle se voit : les familles du décor restent en place, invisibles, sous une emprise choisie. Toutes les rangées se mesurent,
-	 * puis toutes s'écrivent.
+	 * Une rangée qui déborde s'estompe du côté où il en reste. Ses flèches se posent sur ses bords, de ce même côté, tant qu'elle se
+	 * voit : les familles du décor restent en place, invisibles, sous une emprise choisie. Une rangée de vignettes les centre sur
+	 * leurs images, sous lesquelles vient le libellé, qu'une flèche ne doit jamais couvrir. Une rangée sans image n'a que des
+	 * libellés, et le nom d'un groupe du terrain se tient à hauteur des images : l'une et l'autre se retirent de leurs bords tant
+	 * qu'elles débordent, et leurs flèches se posent dans la place laissée (scene.css). Le retrait ne tombe qu'avec le débordement,
+	 * qu'il ne fait que creuser : il ne bat pas d'un tour à l'autre. Toutes les rangées se mesurent, puis toutes s'écrivent ; une
+	 * rangée retirée change de taille et revient ici par l'observateur, ses flèches avec.
 	 */
 	shade() {
 
-		const rows = Object.fromEntries(Object.entries(this.rows).map(([name, row]) => [name, {
-			row,
-			left: row.scrollLeft > 1,
-			right: row.scrollLeft + row.clientWidth < row.scrollWidth - 1,
-			shown: (row.offsetParent !== null && getComputedStyle(row).visibility === 'visible'),
-			top: row.offsetTop + row.offsetHeight / 2,
-			start: row.offsetLeft,
-			end: row.offsetLeft + row.offsetWidth
-		}]));
+		const rows = Object.fromEntries(Object.entries(this.rows).map(([name, row]) => {
 
-		for(const { row, left, right } of Object.values(rows)) {
+			const image = [...row.querySelectorAll('img')].find(img => img.offsetParent !== null);
+			const named = [...row.querySelectorAll('h5')].some(heading => heading.offsetParent !== null);
+			const middle = (image === undefined) ? row.offsetHeight / 2 : image.getBoundingClientRect().top - row.getBoundingClientRect().top + image.offsetHeight / 2;
+			const style = getComputedStyle(row);
+
+			return [name, {
+				row,
+				left: row.scrollLeft > 1,
+				right: row.scrollLeft + row.clientWidth < row.scrollWidth - 1,
+				gutter: ((image === undefined || named) && row.scrollWidth > row.clientWidth + 1),
+				shown: (row.offsetParent !== null && style.visibility === 'visible'),
+				top: row.offsetTop + middle,
+				start: row.offsetLeft - parseFloat(style.marginLeft),
+				end: row.offsetLeft + row.offsetWidth + parseFloat(style.marginRight)
+			}];
+
+		}));
+
+		for(const { row, left, right, gutter } of Object.values(rows)) {
 			row.classList.toggle('map-scene-more-left', left);
 			row.classList.toggle('map-scene-more-right', right);
+			row.classList.toggle('map-scene-scroll-gutter', gutter);
 		}
 
 		for(const arrow of this.arrows) {
@@ -4635,9 +5073,9 @@ class MapSceneSeason {
  * La saison de la scène du plan, « Plan clair » (choisi par Vincent) : un ciel blanc, un soleil plus haut, et un pré pâle. Le
  * bourg garde les tables de `MapSceneSeason`, qu'il lit telles quelles.
  *
- * Toutes les herbes du plan sont de la même famille claire : la verte tendre et la verte pâle ont leur table, une herbe hors
- * saison sa couleur, et les autres la table partagée éclaircie de LIGHTEN vers le blanc, le traitement qui donne la table de la
- * verte tendre.
+ * Toutes les herbes du plan sont de la même famille claire : la verte tendre, la pâle, la vive et la lumineuse ont leur table, une
+ * herbe hors saison sa couleur, et la sèche la table partagée éclaircie de LIGHTEN vers le blanc, le traitement qui donne la table
+ * de la verte tendre.
  */
 class MapScenePlanSeason extends MapSceneSeason {
 
@@ -4650,10 +5088,14 @@ class MapScenePlanSeason extends MapSceneSeason {
 
 	// Les herbes qui ont leur table dans le plan, mois par mois, et la teinte pâle de leur hiver, comme `MapSceneSeason`. La verte
 	// tendre est la table partagée éclaircie de LIGHTEN, écrite valeur par valeur. La verte pâle est le dosage 2 de la planche, la
-	// table partagée éclaircie de 55 %. Les deux gardent la marche des saisons et un hiver vert
+	// table partagée éclaircie de 55 %. La vive et la lumineuse sont la verte tendre plus claire et plus saturée, clé par clé, en
+	// Lab : clarté +3 et chroma ×1,45 pour la vive, clarté +11 et chroma ×1,12 pour la lumineuse. Elles s'écartent ainsi de la
+	// tendre, et l'une de l'autre, au-delà du plancher de SeasonAi. Toutes gardent la marche des saisons et un hiver vert
 	static TABLES = {
 		tender: { winter: '#bed3b2', keys: [[2, '#bedba1'], [3.6, '#b1db92'], [6, '#abcf95'], [8, '#aed397'], [9.6, '#b4d79b'], [11, '#bcd7aa']] },
-		pale: { winter: '#d8e4d1', keys: [[2, '#d8e9c7'], [3.6, '#d0e9bd'], [6, '#cde2c0'], [8, '#cee4c0'], [9.6, '#d2e7c3'], [11, '#d7e7cc']] }
+		pale: { winter: '#d8e4d1', keys: [[2, '#d8e9c7'], [3.6, '#d0e9bd'], [6, '#cde2c0'], [8, '#cee4c0'], [9.6, '#d2e7c3'], [11, '#d7e7cc']] },
+		lush: { winter: '#bfdeae', keys: [[2, '#bce792'], [3.6, '#a9e97d'], [6, '#a6dc87'], [8, '#a8e088'], [9.6, '#afe48c'], [11, '#bbe3a1']] },
+		grazed: { winter: '#dbf3cd', keys: [[2, '#dafcb9'], [3.6, '#ccfca8'], [6, '#c6efad'], [8, '#c9f4ae'], [9.6, '#cff8b3'], [11, '#d8f7c4']] }
 	};
 
 	// Un ciel blanc, à peine plus bleu l'été, qui reste en retrait derrière le pré pâle (« Plan clair », choisi par Vincent)
@@ -4721,19 +5163,48 @@ class MapScenePlanSeason extends MapSceneSeason {
 
 	}
 
+	/**
+	 * Les tables lues au mois `m`, l'herbe de la structure en `grass` et chacune des herbes en `grass.<herbe>`, que les parcelles
+	 * prennent : toutes sont lues, aucune parcelle n'a donc à prévenir la saison de celle qu'elle choisit.
+	 */
 	read(m) {
 
 		const light = super.read(m);
-		const table = this.tables[this.grassName];
 
-		if(table !== undefined) {
-			light.grass = this.key(table, m);
-		} else if(this.fixed === null) {
-			const shared = '#'+ new this.THREE.Color().setRGB(...light.grass).getHexString();
-			light.grass = new this.THREE.Color(MapScenePlanSeason.lighten(shared)).toArray();
+		light.grass = this.grassAt(this.grassName, m);
+
+		for(const grass of Object.keys(MapScene.GRASSES)) {
+			light['grass.'+ grass] = this.grassAt(grass, m);
 		}
 
 		return light;
+
+	}
+
+	/**
+	 * Une herbe au mois `m` : sa table quand elle en a une, sa couleur quand elle est hors saison, sinon la table partagée teinte
+	 * comme `setGrass()` la teint puis éclaircie. Elle se lit de son seul nom, jamais de l'herbe de la structure que `setGrass()` a
+	 * retenue, pour qu'une parcelle ne prenne pas la saison de la structure.
+	 */
+	grassAt(grass, m) {
+
+		const table = this.tables[grass];
+
+		if(table !== undefined) {
+			return this.key(table, m);
+		}
+
+		const THREE = this.THREE;
+		const color = new THREE.Color(MapScene.GRASSES[grass].color);
+
+		if(MapScene.GRASSES[grass].seasonless) {
+			return color.toArray();
+		}
+
+		const tint = [color.r / this.summer.r, color.g / this.summer.g, color.b / this.summer.b];
+		const shared = '#'+ new THREE.Color().setRGB(...this.key(this.grass, m).map((x, j) => x * tint[j])).getHexString();
+
+		return new THREE.Color(MapScenePlanSeason.lighten(shared)).toArray();
 
 	}
 
@@ -4761,8 +5232,15 @@ class MapSceneCrops {
 	// Plus grande dimension qu'un jeune plant garde pour rester reconnaissable, en mètres
 	static YOUNG_LEGIBLE = .56;
 
-	// Une série qui tient un jardin sans planche y prend la taille d'une planche de 1 m, en 150 pieds au plus
+	// Une série qui tient un jardin sans planche y prend la taille d'une planche de 1 m, et les séries du jardin s'y partagent
+	// 150 pieds au plus
 	static WHOLE = { bed: 1, plants: 150 };
+
+	// La longueur d'une bande de jardin entier se cherche par moitiés jusqu'au centimètre
+	static BAND_PRECISION = .01;
+
+	// La valeur de `Series::PERENNIAL`, que la scène reçoit dans `series.cycle`
+	static PERENNIAL = 'perennial';
 
 	// Le nom d'une culture sans modèle couvre les sept dixièmes de la largeur de sa planche
 	static NAME_FILL = .7;
@@ -4829,13 +5307,17 @@ class MapSceneCrops {
 
 	/**
 	 * `spacing` écarte les pieds sur le rang (`crop.layout()`) : le plan les pose à 1, une scène qui montre une structure en petit
-	 * les écarte pour tenir ses triangles.
+	 * les écarte pour tenir ses triangles. `soil` et `soilGreenhouse` sont les matériaux de la terre des planches, à l'air et sous abri,
+	 * que la terre d'un jardin entier reprend. `zoneSoil` est celui de `MapSceneField`.
 	 */
-	constructor(socle, plan, geometry, parent, gradientMap, wind, soil, spacing) {
+	constructor(socle, plan, geometry, parent, gradientMap, wind, soil, soilGreenhouse, spacing, zoneSoil) {
 
-		const { THREE } = socle;
+		const { THREE, addons } = socle;
 
 		this.THREE = THREE;
+		this.addons = addons;
+		this.soil = { open: soil, greenhouse: soilGreenhouse };
+		this.soils = MapScene.zoneSoils(plan, zoneSoil);
 		this.parent = parent;
 		this.spacing = spacing;
 		this.crop = socle.crop;
@@ -4934,6 +5416,7 @@ class MapSceneCrops {
 		const beds = new Map(geometry.beds.map(bed => [bed.id, bed]));
 		const plotsWithBeds = new Set(geometry.beds.map(bed => bed.plot));
 		const plans = new Map(plan.beds.map(bed => [bed.id, bed]));
+		const grassed = MapSceneCrops.grassed(plan);
 
 		this.beds = new Map();
 
@@ -4953,13 +5436,28 @@ class MapSceneCrops {
 					continue;
 				}
 
-				this.beds.set(place.bed, { id: place.bed, zone: rectangle?.zone ?? whole.plot.zone, rectangle: rectangle ?? whole.rectangle, whole, places: [] });
+				this.beds.set(place.bed, { id: place.bed, zone: rectangle?.zone ?? whole.plot.zone, rectangle: rectangle ?? whole.rectangle, whole, grass: grassed.has(bed?.plot ?? rectangle.plot), places: [] });
 
 			}
 
 			this.beds.get(place.bed).places.push(place);
 
 		}
+
+		// Les bandes d'un jardin entier se calculent une fois pour la saison : une place y garde la sienne d'un bout à l'autre
+		for(const bed of this.beds.values()) {
+			bed.bands = (bed.whole === null) ? null : MapSceneCrops.bands(bed.rectangle, bed.whole.points, bed.places.map(place => ({
+				id: place.id,
+				area: place.area,
+				start: this.series.get(place.series).timeline.real.start,
+				end: this.series.get(place.series).timeline.real.end
+			})));
+		}
+
+		// La terre des bandes debout, un maillage par terre refait quand elles changent
+		this.soilMeshes = [];
+		this.soilKey = null;
+		this.soilShown = new Map();
 
 		this.pools = new Map();
 		this.names = [];
@@ -4993,9 +5491,10 @@ class MapSceneCrops {
 	}
 
 	/**
-	 * Pose les cultures en place à la date, et rend avec sa couleur chaque espèce montrée dans la zone choisie, ou dans
-	 * toute la structure sans zone. Rend aussi l'emprise de chaque série de l'espèce choisie : son rectangle pour le liseré,
-	 * qu'un jardin entier ne porte pas, et ce qui se cadre, dans toutes les zones, puisque le liseré les cerne toutes. La série
+	 * Pose les cultures en place à la date, avec la terre des bandes d'un jardin entier, et rend avec sa couleur chaque espèce
+	 * montrée dans la zone choisie, ou dans toute la structure sans zone. Rend aussi l'emprise de chaque série de l'espèce choisie,
+	 * sa portion de planche ou sa bande de jardin, pour le liseré et ce qui se cadre, dans toutes les zones, puisque le liseré les
+	 * cerne toutes. La série
 	 * `selected`, choisie d'un clic, se cerne de même, et `marker` est le centre de sa première portion. `spans` dit pour chaque
 	 * planche quelle série tient quelle longueur, ce que lit le clic sur la scène, et `segments` chaque portion debout, d'où part
 	 * l'éclat d'une série qui sort pendant la lecture.
@@ -5016,6 +5515,7 @@ class MapSceneCrops {
 		const badges = [];
 		const spans = new Map();
 		const segments = [];
+		const soils = [];
 		let marker = null;
 		let names = 0;
 
@@ -5046,9 +5546,10 @@ class MapSceneCrops {
 
 			const r = bed.rectangle;
 
-			// Quand les séries de la planche ne tiennent pas bout à bout, une série arrachée cède sa place la première, puis
-			// une série clôturée cède la sienne à une série en cours
-			const fits = list => list.reduce((sum, { place }) => sum + Math.min(place.length ?? r.length / list.length, r.length), 0) <= r.length + .01;
+			// Quand les séries d'une planche ne tiennent pas bout à bout, une série arrachée cède sa place la première, puis
+			// une série clôturée cède la sienne à une série en cours. Un jardin entier ne cède rien : ses bandes tiennent déjà
+			// ensemble sur la saison
+			const fits = list => bed.whole !== null || list.reduce((sum, { place }) => sum + Math.min(place.length ?? r.length / list.length, r.length), 0) <= r.length + .01;
 
 			if(fits(active) === false) {
 				active = active.filter(({ drawn }) => drawn);
@@ -5056,16 +5557,31 @@ class MapSceneCrops {
 
 			const opened = active.filter(({ series }) => series.status !== 'closed');
 
-			if(opened.length > 0 && opened.length < active.length && (bed.whole !== null || fits(active) === false)) {
+			if(opened.length > 0 && opened.length < active.length && fits(active) === false) {
 				active = opened;
 			}
 
 			active.sort((a, b) => a.series.timeline.real.start.localeCompare(b.series.timeline.real.start));
 
-			// Un jardin entier ne porte qu'une série : la première encore debout, puisqu'une série arrachée n'y laisse aucune
-			// place à garder
+			// Dans un jardin entier, chaque place debout tient sa bande de la saison, arrachée ou non : sa terre reste jusqu'à la fin de
+			// sa période, comme la longueur d'une série arrachée sur une planche. Les pieds du jardin se partagent entre les bandes
+			// plantées au prorata de leur surface
+			const shares = new Map();
+
 			if(bed.whole !== null) {
-				active = active.filter(({ drawn }) => drawn).slice(0, 1);
+
+				active = active.filter(({ place }) => bed.bands.has(place.id));
+
+				const sown = active.filter(({ series, drawn }) => drawn && series.entry !== null).map(({ place }) => place.id);
+				MapSceneCrops.share(sown.map(id => bed.bands.get(id).area)).forEach((plants, i) => shares.set(sown[i], plants));
+
+				// Un jardin de pérennes garde son herbe sous ses plants
+				if(bed.grass === false) {
+					for(const { place } of active) {
+						soils.push({ bed, place, band: bed.bands.get(place.id) });
+					}
+				}
+
 			}
 
 			const angle = Math.atan2(r.u.n, r.u.x);
@@ -5073,15 +5589,18 @@ class MapSceneCrops {
 
 			for(const { place, series, stage, drawn } of active) {
 
-				const length = (bed.whole !== null) ? r.length : Math.min(place.length ?? r.length / active.length, r.length);
+				const band = (bed.whole === null) ? null : bed.bands.get(place.id);
+				const length = (band === null) ? Math.min(place.length ?? r.length / active.length, r.length) : band.to - band.from;
 
-				if(offset + length > r.length + .01) {
+				if(band !== null) {
+					offset = band.from;
+				} else if(offset + length > r.length + .01) {
 					offset = 0;
 				}
 
 				if(drawn) {
 
-					const middle = ScenePlanGeometry.add(ScenePlanGeometry.add(r.origin, ScenePlanGeometry.mul(r.u, offset + length / 2)), ScenePlanGeometry.mul(r.w, r.width / 2));
+					const middle = (band === null) ? ScenePlanGeometry.add(ScenePlanGeometry.add(r.origin, ScenePlanGeometry.mul(r.u, offset + length / 2)), ScenePlanGeometry.mul(r.w, r.width / 2)) : ScenePlanGeometry.centroid(band.outline);
 
 					MapScene.push(spans, bed.id, { from: offset, to: offset + length, series: series.id });
 					segments.push({ key: bed.id +'-'+ series.id, series: series.id, center: middle, angle, length, width: r.width, top: MapScene.BED_BASE + MapScene.BED_HEIGHT });
@@ -5092,7 +5611,9 @@ class MapSceneCrops {
 
 					if(series.entry !== null) {
 
-						this.plant({ instances, fruits, fruitKeys, ridges }, place, series, stage, bed, offset, length, angle, date, picking, playing);
+						const plants = (band === null) ? null : shares.get(place.id);
+
+						this.plant({ instances, fruits, fruitKeys, ridges }, place, series, stage, bed, offset, length, angle, date, picking, playing, plants);
 
 						badges.push({
 							position: [middle.x, MapScene.BED_BASE + MapScene.BED_HEIGHT + this.geometry.height(middle.x, middle.n), -middle.n],
@@ -5112,12 +5633,9 @@ class MapSceneCrops {
 
 					if(series.plant === species || series.id === selected) {
 
-						const span = (bed.whole !== null) ? bed.whole.points : this.span(r, offset, length);
+						const span = (band === null) ? this.span(r, offset, length) : band.outline;
 
-						if(bed.whole === null) {
-							chosen.outline.push(span);
-						}
-
+						chosen.outline.push(span);
 						chosen.framed.push(...span);
 
 					}
@@ -5129,6 +5647,8 @@ class MapSceneCrops {
 			}
 
 		}
+
+		this.soilBands(soils);
 
 		for(const [key, pool] of this.pools) {
 			if(instances.has(key) === false) {
@@ -5204,7 +5724,7 @@ class MapSceneCrops {
 	 * sa place dans le monde, sa couleur, la teinte de son feuillage et sa taille. Ils se reconnaissent à leur place : les instances
 	 * d'une variante sont celles de toutes les planches, et deux planches ne se recouvrent pas.
 	 */
-	parts(r) {
+	parts(r, outline = null) {
 
 		const THREE = this.THREE;
 		const G = ScenePlanGeometry;
@@ -5231,6 +5751,10 @@ class MapSceneCrops {
 				const along = G.dot(d, r.u), across = G.dot(d, r.w);
 
 				if(along < -.05 || along > r.length + .05 || across < -.05 || across > r.width + .05) {
+					continue;
+				}
+
+				if(outline !== null && G.inside({ x: matrix.elements[12], n: -matrix.elements[14] }, outline) === false) {
 					continue;
 				}
 
@@ -5341,6 +5865,298 @@ class MapSceneCrops {
 	}
 
 	/**
+	 * Les bandes d'un jardin entier sur la saison. Chaque place y tient, sur toute la largeur du rectangle `r` et le long de `r.u`,
+	 * la longueur dont la part dans le contour `points` vaut sa surface. Elle prend la première longueur libre du jardin sur sa
+	 * période, comme une série revient au début d'une planche, et la garde toute la saison : une voisine arrachée ne la déplace pas.
+	 *
+	 * `places` porte `{ id, area, start, end }`, la période réelle de chaque place (`start` à null pour une place jamais en terre,
+	 * `end` à null pour une place sans fin). Une place sans surface prend la part du jardin que les places de surface connue lui
+	 * laissent, partagée avec les autres places sans surface. Quand les places debout ensemble demandent plus que le jardin, elles se
+	 * ramènent au jardin au prorata ; quand aucune longueur libre d'un seul tenant ne suffit, la place prend le plus grand morceau
+	 * libre. Rend, par id de place, `{ from, to, outline, area }` : `outline` est la bande coupée par le contour, ce que la terre
+	 * couvre, et `area` sa surface. Ni THREE ni scène : `SeasonAi` l'éprouve sous node.
+	 */
+	static bands(r, points, places) {
+
+		const G = ScenePlanGeometry;
+		const total = G.area(points);
+		const ends = place => place.end ?? '9999-12-31';
+		const meets = (a, b) => a.start <= ends(b) && b.start <= ends(a);
+		const sorted = places.filter(place => place.start !== null).sort((a, b) => a.start.localeCompare(b.start) || a.id - b.id);
+
+		// La charge du jardin se mesure aux jours où une place entre : entre deux entrées, elle ne peut que baisser
+		const standing = date => sorted.filter(place => place.start <= date && date <= ends(place));
+		const peaks = place => sorted.filter(other => meets(place, other) && other.start >= place.start).map(other => standing(other.start));
+
+		const wanted = new Map();
+
+		for(const place of sorted) {
+
+			if(place.area !== null) {
+				wanted.set(place.id, place.area);
+				continue;
+			}
+
+			const share = Math.min(...peaks(place).map(group => Math.max(0, total - group.reduce((sum, other) => sum + (other.area ?? 0), 0)) / group.filter(other => other.area === null).length));
+			wanted.set(place.id, share);
+
+		}
+
+		// Le contour entre `from` et `to` le long de r.u, coupé par deux demi-plans
+		const cut = (from, to) => {
+
+			let outline = points;
+
+			for(const [limit, sign] of [[from, 1], [to, -1]]) {
+
+				const side = p => sign * (G.dot(G.sub(p, r.origin), r.u) - limit);
+				const kept = [];
+
+				outline.forEach((a, i) => {
+
+					const b = outline[(i + 1) % outline.length];
+					const sa = side(a);
+					const sb = side(b);
+
+					if(sa >= 0) {
+						kept.push(a);
+					}
+
+					if((sa >= 0) !== (sb >= 0)) {
+						kept.push(G.lerp(a, b, sa / (sa - sb)));
+					}
+
+				});
+
+				outline = kept;
+
+			}
+
+			return outline;
+
+		};
+
+		const part = (from, to) => {
+			const outline = cut(from, to);
+			return (outline.length < 3) ? 0 : G.area(outline);
+		};
+
+		// La part du contour croit avec la longueur : la longueur qui porte `area` depuis `from` se trouve par moitiés
+		const reach = (from, area) => {
+
+			let low = from;
+			let high = r.length;
+
+			if(part(from, high) <= area) {
+				return high;
+			}
+
+			while(high - low > MapSceneCrops.BAND_PRECISION) {
+
+				const middle = (low + high) / 2;
+
+				if(part(from, middle) < area) {
+					low = middle;
+				} else {
+					high = middle;
+				}
+
+			}
+
+			return high;
+
+		};
+
+		const placed = [];
+		const bands = new Map();
+
+		for(const place of sorted) {
+
+			const ratio = Math.min(1, ...peaks(place).map(group => total / group.reduce((sum, other) => sum + wanted.get(other.id), 0)));
+			const area = wanted.get(place.id) * ratio;
+
+			if(area <= 0) {
+				continue;
+			}
+
+			const taken = placed.filter(other => meets(place, other.place)).map(other => other.band);
+			const free = (from, to) => taken.every(band => band.to <= from + .001 || band.from >= to - .001);
+			const starts = [0, ...taken.map(band => band.to)].filter(from => from < r.length && free(from, from + .002)).sort((a, b) => a - b);
+
+			let band = null;
+
+			for(const from of starts) {
+
+				const to = reach(from, area);
+
+				if(free(from, to) && part(from, to) >= area * .99) {
+					band = { from, to };
+					break;
+				}
+
+			}
+
+			if(band === null) {
+
+				const gaps = starts.map(from => ({ from, to: Math.min(r.length, ...taken.filter(other => other.from >= from).map(other => other.from)) }));
+
+				band = gaps.reduce((best, gap) => (best === null || part(gap.from, gap.to) > part(best.from, best.to)) ? gap : best, null);
+
+			}
+
+			if(band === null) {
+				continue;
+			}
+
+			placed.push({ place, band });
+			bands.set(place.id, { ...band, outline: cut(band.from, band.to), area: part(band.from, band.to) });
+
+		}
+
+		return bands;
+
+	}
+
+	/**
+	 * Les pieds d'un jardin entier partagés entre ses bandes plantées, de surfaces `areas`, au prorata de leur surface : leur somme
+	 * reste celle d'un jardin à une série, à l'arrondi près, et chaque bande en garde un au moins.
+	 */
+	static share(areas) {
+
+		const total = areas.reduce((sum, area) => sum + area, 0);
+
+		return areas.map(area => Math.max(1, Math.round(MapSceneCrops.WHOLE.plants * area / total)));
+
+	}
+
+	/**
+	 * Les jardins de plein air dont toutes les places de l'année montrée, voisines comprises, portent une série pérenne. Ils gardent
+	 * sous leurs plants l'herbe du terrain ou le fond de leur parcelle : ni terre, ni lit de planche, ni butte, ni bande unie du pré.
+	 * Le cycle lu est celui que l'utilisateur donne à la série, celui que le produit lit pour dire pérenne. Un jardin sans place
+	 * garde sa terre, un jardin sous abri aussi : la bâche couvre de la terre, pas un pré.
+	 */
+	static grassed(plan) {
+
+		const plots = new Map(plan.beds.map(bed => [bed.id, bed.plot]));
+		const sheltered = new Set(plan.plots.filter(plot => plot.mode === 'greenhouse').map(plot => plot.id));
+		const cycles = new Map(plan.series.map(series => [series.id, series.cycle]));
+		const perennial = new Map();
+
+		for(const place of plan.places) {
+
+			const plot = plots.get(place.bed);
+
+			perennial.set(plot, (perennial.get(plot) ?? true) && cycles.get(place.series) === MapSceneCrops.PERENNIAL);
+
+		}
+
+		return new Set([...perennial].filter(([plot, only]) => only && sheltered.has(plot) === false).map(([plot]) => plot));
+
+	}
+
+	/**
+	 * La terre de la bande `band` d'un jardin entier, posée comme celle d'une planche et drapée sur le relief.
+	 */
+	soilSlab(bed, place, band) {
+
+		const G = ScenePlanGeometry;
+		const r = bed.rectangle;
+		const frame = { id: place.id, origin: G.add(r.origin, G.mul(r.u, band.from)), u: r.u, w: r.w, length: band.to - band.from, width: r.width };
+		const slab = MapScene.bed(this.THREE, this.geometry, frame, band.outline, this.soils.get(bed.zone) ?? null);
+
+		return (this.geometry.relief === null) ? slab : MapSceneField.drape(this.THREE, this.geometry, slab);
+
+	}
+
+	/**
+	 * Pose la terre des bandes debout, `soils` portant `{ bed, place, band }`. Un maillage par terre, à l'air et sous abri, comme les
+	 * planches : ils ne se refont que lorsque les bandes debout changent, une semaine sans culture n'en laisse aucun.
+	 */
+	soilBands(soils) {
+
+		const key = soils.map(({ place }) => place.id).join(' ');
+
+		if(key === this.soilKey) {
+			return;
+		}
+
+		this.soilKey = key;
+		this.disposeSoil();
+
+		this.soilShown = new Map();
+
+		for(const soil of soils) {
+			MapScene.push(this.soilShown, soil.bed.id, soil);
+		}
+
+		for(const greenhouse of [false, true]) {
+
+			const slabs = soils.filter(({ bed }) => (bed.whole.plot.mode === 'greenhouse') === greenhouse).map(({ bed, place, band }) => this.soilSlab(bed, place, band));
+
+			if(slabs.length === 0) {
+				continue;
+			}
+
+			const mesh = new this.THREE.Mesh(this.addons.mergeGeometries(slabs), greenhouse ? this.soil.greenhouse : this.soil.open);
+			mesh.position.y = MapScene.BED_BASE;
+			mesh.receiveShadow = true;
+
+			this.parent.add(mesh);
+			this.soilMeshes.push(mesh);
+
+			slabs.forEach(slab => slab.dispose());
+
+		}
+
+	}
+
+	/**
+	 * Le sol de la parcelle `zone` change : la terre des bandes se refait au prochain rendu, les buttes y reprennent leur couleur.
+	 */
+	paintSoil(zone, soil) {
+		this.soils.set(zone, soil);
+		this.soilKey = null;
+	}
+
+	/**
+	 * La teinte d'instance d'une butte de la planche `r` : la matière des buttes tient la terre de la structure, et une parcelle qui a
+	 * son sol en prend le rapport à cette terre. Il se calcule au rendu, la terre de la structure pouvant changer entre deux.
+	 */
+	ridgeColor(r) {
+
+		const soil = this.soils.get(r.zone) ?? null;
+		const base = r.greenhouse ? this.ridgeShade : this.ridgeOpen;
+
+		if(soil === null) {
+			return base;
+		}
+
+		const own = new this.THREE.Color(MapScene.SOILS[soil]);
+		const common = this.ridgeMaterial.color;
+
+		return own.setRGB(own.r / Math.max(common.r, .001), own.g / Math.max(common.g, .001), own.b / Math.max(common.b, .001)).multiply(base);
+
+	}
+
+	/**
+	 * La terre du jour des bandes du jardin `id`, refaite pour la copie de MapSceneRuins.
+	 */
+	soiled(id) {
+		return (this.soilShown.get(id) ?? []).map(({ bed, place, band }) => this.soilSlab(bed, place, band));
+	}
+
+	disposeSoil() {
+
+		for(const mesh of this.soilMeshes) {
+			this.parent.remove(mesh);
+			mesh.geometry.dispose();
+		}
+
+		this.soilMeshes = [];
+
+	}
+
+	/**
 	 * Les quatre coins de la portion de planche qu'occupe une série.
 	 */
 	span(r, offset, length) {
@@ -5394,8 +6210,23 @@ class MapSceneCrops {
 
 		for(const bed of this.beds.values()) {
 
-			if(bed.whole !== null || bed.places.some(place => this.stage.at(this.series.get(place.series).timeline, date, 'real').on) === false) {
+			const standing = bed.places.filter(place => this.stage.at(this.series.get(place.series).timeline, date, 'real').on);
+
+			if(standing.length === 0) {
 				continue;
+			}
+
+			// Un jardin entier pèse la surface de ses bandes debout, une planche toute sa surface
+			if(bed.whole !== null) {
+
+				const area = standing.reduce((sum, place) => sum + (bed.bands.get(place.id)?.area ?? 0), 0);
+
+				if(area > 0) {
+					growing.push({ bed, center: G.centroid(bed.whole.points), area });
+				}
+
+				continue;
+
 			}
 
 			const r = bed.rectangle;
@@ -5425,9 +6256,11 @@ class MapSceneCrops {
 
 		// Se cadrent les coins de toutes les planches que la boite des voisines cultivées contient : une planche nue prise entre deux
 		// planches cultivées reste dans le cadre au lieu d'en être coupée
-		const box = growing.filter(b => near(best, b)).flatMap(b => this.geometry.corners(b.bed.rectangle));
+		const outline = bed => (bed.whole === null) ? this.geometry.corners(bed.rectangle) : bed.whole.points;
+		const box = growing.filter(b => near(best, b)).flatMap(b => outline(b.bed));
 		const [minX, maxX, minN, maxN] = [Math.min(...box.map(p => p.x)), Math.max(...box.map(p => p.x)), Math.min(...box.map(p => p.n)), Math.max(...box.map(p => p.n))];
-		const points = this.geometry.beds.flatMap(bed => this.geometry.corners(bed)).filter(p => p.x >= minX - .01 && p.x <= maxX + .01 && p.n >= minN - .01 && p.n <= maxN + .01);
+		const wholes = [...this.beds.values()].filter(bed => bed.whole !== null).flatMap(bed => bed.whole.points);
+		const points = [...this.geometry.beds.flatMap(bed => this.geometry.corners(bed)), ...wholes].filter(p => p.x >= minX - .01 && p.x <= maxX + .01 && p.n >= minN - .01 && p.n <= maxN + .01);
 
 		return { zone: best.bed.zone, points };
 
@@ -5436,9 +6269,10 @@ class MapSceneCrops {
 	/**
 	 * Les pieds d'une série sur sa portion de planche, rangés par variante du modèle dans `instances`, et ce qui les accompagne :
 	 * leurs fruits dans `fruits`, la clé qui dit quand les reposer dans `fruitKeys`, leurs buttes dans `ridges`. `picking` est le
-	 * jour où se juge la cueillette des fruits.
+	 * jour où se juge la cueillette des fruits. `plants` est la part de la bande d'un jardin entier dans ses pieds, null sur une
+	 * planche.
 	 */
-	plant({ instances, fruits, fruitKeys, ridges }, place, series, stage, bed, offset, length, angle, date, picking, playing) {
+	plant({ instances, fruits, fruitKeys, ridges }, place, series, stage, bed, offset, length, angle, date, picking, playing, plants = null) {
 
 		const slug = series.entry.slug;
 		const model = this.models.get(slug);
@@ -5447,7 +6281,7 @@ class MapSceneCrops {
 
 		const layout = this.crop.layout(model, (bed.whole === null) ?
 			{ width: r.width, length, scale: MapSceneCrops.SCALE, density: MapSceneCrops.DENSITY, minPitch: MapSceneCrops.MIN_PITCH, inset: MapSceneCrops.INSET, spacing: this.spacing } :
-			{ width: r.width, length: r.length, scale: MapSceneCrops.SCALE, density: MapSceneCrops.DENSITY, minPitch: MapSceneCrops.MIN_PITCH, whole: MapSceneCrops.WHOLE, spacing: this.spacing });
+			{ width: r.width, length, scale: MapSceneCrops.SCALE, density: MapSceneCrops.DENSITY, minPitch: MapSceneCrops.MIN_PITCH, inset: MapSceneCrops.INSET, whole: { bed: MapSceneCrops.WHOLE.bed, plants }, spacing: this.spacing });
 
 		const { d, h } = layout.size;
 
@@ -5601,7 +6435,7 @@ class MapSceneCrops {
 		// Le rang continu d'une espèce buttée : le plant porte sa propre butte, mais son pas laisse un creux entre deux pieds
 		const ridge = this.crop.ridge(slug.split('~')[0]);
 
-		if(ridge !== null && bed.whole === null) {
+		if(ridge !== null && bed.whole === null && bed.grass === false) {
 
 			for(let k = 0; k < layout.rows; k++) {
 
@@ -5615,14 +6449,14 @@ class MapSceneCrops {
 					length: Math.max(used, .1),
 					width: d * (.35 + .65 * growth) * ridge.width * presence,
 					height: h * growth * ridge.height * presence,
-					color: r.greenhouse ? this.ridgeShade : this.ridgeOpen
+					color: this.ridgeColor(r)
 				});
 
 			}
 
 		}
 
-		// Les papillons de MapSceneInsects volent au-dessus de ces places, à la hauteur des plants
+		// Les papillons de MapSceneInsects volent au-dessus de ces places, à la hauteur des plants, comme au-dessus des fleurs du pré
 		const middle = ScenePlanGeometry.add(r.origin, ScenePlanGeometry.mul(r.w, r.width / 2));
 
 		this.blooms.set(place.id, {
@@ -5759,6 +6593,8 @@ class MapSceneCrops {
 		this.nameGeometry.dispose();
 		this.material.dispose();
 		this.leafMaterial.dispose();
+
+		this.disposeSoil();
 
 		this.ridgePool?.mesh.dispose();
 		this.ridgeGeometry.dispose();
@@ -6914,16 +7750,18 @@ class MapSceneAmbience {
 
 	}
 
-	state({ sun, hemisphere, ground, fold }) {
+	// Les herbes des parcelles glissent avec celle de la structure : leur rapport à elle change d'une semaine à l'autre, et posé d'un
+	// coup sur une couleur qui glisse encore, il ferait sauter la teinte d'une herbe hors saison au début de chaque glissade
+	state({ sun, hemisphere, ground, fold, grassRatio }) {
 		return {
 			sun: sun.intensity, sunColor: sun.color.clone(),
 			hemisphere: hemisphere.intensity, hemisphereColor: hemisphere.color.clone(), hemisphereGround: hemisphere.groundColor.clone(),
 			top: this.top.clone(), horizon: this.horizon.clone(),
-			ground: ground.color.clone(), fold: fold.color.clone()
+			ground: ground.color.clone(), fold: fold.color.clone(), grassRatio: grassRatio.map(ratio => ratio.clone())
 		};
 	}
 
-	blend(a, b, k, { sun, hemisphere, ground, fold }) {
+	blend(a, b, k, { sun, hemisphere, ground, fold, grassRatio }) {
 
 		sun.intensity = a.sun + (b.sun - a.sun) * k;
 		sun.color.copy(a.sunColor).lerp(b.sunColor, k);
@@ -6932,6 +7770,7 @@ class MapSceneAmbience {
 		hemisphere.groundColor.copy(a.hemisphereGround).lerp(b.hemisphereGround, k);
 		ground.color.copy(a.ground).lerp(b.ground, k);
 		fold.color.copy(a.fold).lerp(b.fold, k);
+		grassRatio.forEach((ratio, rank) => ratio.copy(a.grassRatio[rank]).lerp(b.grassRatio[rank], k));
 
 		this.paint(a.top.clone().lerp(b.top, k), a.horizon.clone().lerp(b.horizon, k));
 
@@ -8060,9 +8899,9 @@ class MapSceneSign {
 }
 
 /**
- * Les papillons, au-dessus des planches en culture que la vue regarde. Ils ne portent pas d'ombre : la carte des ombres ne se refait
- * qu'au changement de jour, l'ombre resterait sur place. Un insecte a une forme qui se lit comme la sienne, ou ne se dessine pas :
- * jamais une sphère ni un disque.
+ * Les papillons, au-dessus des planches en culture et des fleurs du pré que la vue regarde, et les abeilles, de fleur en fleur dans
+ * le pré. Ils ne portent pas d'ombre : la carte des ombres ne se refait qu'au changement de jour, l'ombre resterait sur place. Un
+ * insecte a une forme qui se lit comme la sienne, ou ne se dessine pas : jamais une sphère ni un disque.
  */
 class MapSceneInsects {
 
@@ -8070,13 +8909,37 @@ class MapSceneInsects {
 
 	// Un papillon a sa taille naturelle, trois fois grossie au grossissement des paysans, tant qu'elle fait BUTTERFLY_PIXELS pixels
 	// d'envergure au cadrage du moment. Quand la vue recule il grossit pour tenir ces pixels, sans dépasser BUTTERFLY_CAP mètres dans
-	// la scène, où il couvre déjà une planche : le plafond passe avant les pixels. Sous BUTTERFLY_FAINT pixels à ce plafond, il ne se
-	// dessine plus, plutôt que de devenir une tache sur un petit écran
+	// la scène, au-delà desquels il dépasserait deux planches côte à côte et ne se lirait plus comme un insecte : le plafond passe avant les
+	// pixels. Sous BUTTERFLY_FAINT pixels à ce plafond, il ne se dessine plus, plutôt que de devenir une tache sur un petit écran
 	static BUTTERFLY_SCALE = 3;
 	static BUTTERFLY_SPAN = .1;
-	static BUTTERFLY_PIXELS = 12;
+	static BUTTERFLY_PIXELS = 22;
 	static BUTTERFLY_FAINT = 5;
-	static BUTTERFLY_CAP = .6;
+	static BUTTERFLY_CAP = 1.6;
+	static BUTTERFLY_COUNT = 12;
+
+	// Un majorant de l'écart d'un papillon à son point dans le plan, en multiples de l'échelle des paysans : sur chaque axe, la
+	// somme des amplitudes de son vol (`flyButterflies()`)
+	static BUTTERFLY_ORBIT = Math.hypot(1.1 + .35, .9 + .3);
+
+	// Des insectes à moins de CROWD_PIXELS pixels l'un de l'autre se lisent comme un groupe : un insecte se pose seul ou à deux, et
+	// ne fait un groupe de CROWD_MAX ou plus que si le cadre ne lui offre aucune autre place
+	static CROWD_PIXELS = 90;
+	static CROWD_MAX = 3;
+
+	// Un papillon qui visite le pré hors d'une fleur vole au-dessus de l'herbe, à cette hauteur de son sol
+	static GRASS_HEIGHT = .15;
+
+	// Piéride, citron, paon-du-jour, vulcain, azuré : la teinte de l'espèce colore les ailes, l'apex reste noir
+	static SPECIES = ['#ffffff', '#f6e04a', '#d2552c', '#e0703a', '#8fb4f2'];
+
+	// Une abeille de BEE_SIZE mètres, grossie comme un papillon jusqu'à BEE_PIXELS pixels sans dépasser BEE_CAP mètres, au-dessus des
+	// fleurs du pré : à son plafond, elle reste plus petite qu'un papillon au sien. Un plafond de 0,5 m la laissait à 6 pixels au
+	// cadrage d'ouverture d'un plan de 12 pixels par mètre, où elle ne se voyait plus
+	static BEE_COUNT = 14;
+	static BEE_SIZE = .025;
+	static BEE_PIXELS = 14;
+	static BEE_CAP = 1;
 
 	// Les pixels par mètre du cadrage du moment, pour un canevas haut de `height` pixels
 	static perMetre(height, camera) {
@@ -8106,16 +8969,23 @@ class MapSceneInsects {
 	static TIP = '#1d1c21';
 	static BODY = '#4a4850';
 
-	constructor({ THREE, addons, crops, geometry, scale, canvas, parent, gradientMap }) {
+	constructor({ THREE, addons, crops, meadow, geometry, scale, canvas, covers, parent, gradientMap }) {
 
 		this.THREE = THREE;
 		this.crops = crops;
+		this.meadow = meadow;
 		this.geometry = geometry;
 		this.parent = parent;
 		this.scale = scale;
 		this.canvas = canvas;
-		// Le grossissement se règle à chaque changement de zoom ou de taille du canevas. Nul, il dit que le papillon ne se dessine pas
+		this.covers = covers;
+		// Le grossissement, la distance d'un groupe et la bande que les panneaux laissent voir se règlent à chaque changement de zoom
+		// ou de taille du canevas. Nul, le grossissement dit que l'insecte ne se dessine pas
 		this.butterflyScale = 0;
+		this.beeScale = 0;
+		this.perMetre = 0;
+		this.half = [0, 0];
+		this.band = [-1, 1];
 		this.zoom = null;
 		this.random = MapSceneCrops.random(41);
 
@@ -8130,7 +9000,7 @@ class MapSceneInsects {
 
 		});
 
-		this.count = 4 + Math.floor(this.random() * 4);
+		this.count = MapSceneInsects.BUTTERFLY_COUNT;
 
 		for(const piece of this.pieces) {
 			piece.mesh = new THREE.InstancedMesh(piece.geometry, this.material, this.count);
@@ -8140,10 +9010,21 @@ class MapSceneInsects {
 			parent.add(piece.mesh);
 		}
 
-		this.butterflies = Array.from({ length: this.count }, () => ({ seed: this.random() * 100, anchor: null, goal: null, away: 0, wander: 0, at: { x: 0, n: 0 }, y: 0, heading: 0, flap: 0, seen: false }));
+		this.butterflies = Array.from({ length: this.count }, (_, i) => ({ seed: this.random() * 100, species: new THREE.Color(MapSceneInsects.SPECIES[i % MapSceneInsects.SPECIES.length]), anchor: null, goal: null, away: 0, wander: 0, at: { x: 0, n: 0 }, y: 0, heading: 0, flap: 0, seen: false }));
+
+		this.bee = new THREE.InstancedMesh(MapSceneInsects.beeGeometry(THREE), this.material, MapSceneInsects.BEE_COUNT);
+		this.bee.count = 0;
+		this.bee.frustumCulled = false;
+		parent.add(this.bee);
+
+		this.bees = Array.from({ length: MapSceneInsects.BEE_COUNT }, () => ({ seed: this.random() * 100, at: null, goal: null, stay: 0, heading: 0 }));
+
+		this.white = new THREE.Color('#ffffff');
 
 		this.frustum = new THREE.Frustum();
 		this.projection = new THREE.Matrix4();
+		this.inverse = new THREE.Matrix4();
+		this.ray = new THREE.Vector3();
 		this.probe = new THREE.Vector3();
 		this.sphere = new THREE.Sphere();
 		this.matrix = new THREE.Matrix4();
@@ -8258,6 +9139,48 @@ class MapSceneInsects {
 	}
 
 	/**
+	 * Une abeille, tête vers +X, ventre à y = 0 : le thorax et l'abdomen rayé jaune et noir d'un octaèdre subdivisé, la tête, deux
+	 * ailes claires levées. 42 triangles.
+	 */
+	static beeGeometry(THREE) {
+
+		const colored = (g, color) => {
+			const out = (g.index !== null) ? g.toNonIndexed() : g;
+			out.deleteAttribute('uv');
+			out.computeVertexNormals();
+			const p = out.attributes.position;
+			out.setAttribute('color', new THREE.Float32BufferAttribute(Array.from({ length: p.count }, (_, i) => color(p.getX(i))).flat(), 3));
+			return out;
+		};
+
+		const yellow = [.96, .74, .16];
+		const black = [.13, .11, .1];
+		const wing = [.93, .96, 1];
+
+		const parts = [
+			colored(new THREE.OctahedronGeometry(.5, 1).scale(.0085, .005, .005).translate(-.004, .006, 0), x => (Math.floor((x + .02) / .0032) % 2) ? yellow : black),
+			colored(new THREE.OctahedronGeometry(.0034, 0).translate(.0055, .007, 0), () => black)
+		];
+
+		for(const side of [-1, 1]) {
+			const g = new THREE.BufferGeometry();
+			g.setAttribute('position', new THREE.Float32BufferAttribute([.004, .009, 0, -.004, .0115, side * .009, .0035, .0115, side * .0085], 3));
+			parts.push(colored(g, () => wing));
+		}
+
+		const merged = new THREE.BufferGeometry();
+
+		for(const name of ['position', 'normal', 'color']) {
+			merged.setAttribute(name, new THREE.Float32BufferAttribute(parts.flatMap(g => Array.from(g.attributes[name].array)), 3));
+		}
+
+		parts.forEach(g => g.dispose());
+
+		return merged;
+
+	}
+
+	/**
 	 * Les places en culture du jour montré, relevées par `MapSceneCrops.plant()`.
 	 */
 	blooms(date) {
@@ -8265,12 +9188,70 @@ class MapSceneInsects {
 	}
 
 	/**
-	 * Un point d'une planche en culture hors abri dans le cadre, tiré parmi les plus proches du centre de la vue. Une planche longue
-	 * déborde du cadre de près : elle se sonde en cinq points le long de son axe.
+	 * La place du papillon `butterfly`, dans la bande que les panneaux laissent voir : une fois sur deux un point d'une planche en
+	 * culture hors abri, sinon le pré, ses fleurs et son herbe. Le pré prend aussi le papillon quand les planches du cadre n'ont plus
+	 * de place hors d'un groupe, ou quand rien n'y pousse ce jour. Une planche longue déborde du cadre de près : elle se sonde en cinq
+	 * points le long de son axe.
 	 */
-	spot(blooms, controls) {
+	spot(blooms, butterfly) {
 
-		const near = [];
+		const others = this.butterflies.filter(other => other !== butterfly && other.anchor !== null).map(other => [other.anchor, other.goal]);
+		const orbit = MapSceneInsects.BUTTERFLY_ORBIT * this.scale;
+
+		if(this.random() < .5) {
+
+			const bed = this.place(this.bloomPoints(blooms), others, orbit);
+
+			if(bed !== null && bed.group < MapSceneInsects.CROWD_MAX) {
+				return bed.point;
+			}
+
+		}
+
+		return this.place([...this.meadow.flowersInView(this.frustum, this.probe).filter(flower => this.framed(flower)), ...this.grass(24)], others, orbit)?.point ?? null;
+
+	}
+
+	/**
+	 * Au plus `count` points du sol tirés au hasard dans la bande que les panneaux laissent voir : de près, le cadre ne montre
+	 * parfois qu'une planche et quelques fleurs, trop peu de places pour douze papillons sans les grouper. Le regard se coupe au
+	 * plan horizontal, et le point prend ensuite la hauteur du relief : il reste un point du sol, mais le relief peut le sortir de la
+	 * bande, d'où le `framed()`. Un tel point est écarté plutôt que recherché le long du regard par `onRelief()`, qui avance pas à
+	 * pas : un tirage perdu ne coûte qu'une place de moins parmi d'autres, à chaque image. Un point sous une emprise du décor est
+	 * écarté, comme les fleurs du pré.
+	 */
+	grass(count) {
+
+		const inverse = this.inverse.copy(this.projection).invert();
+		const points = [];
+
+		for(let i = 0; i < count; i++) {
+
+			const x = this.random() * 2 - 1;
+			const y = this.band[0] + this.random() * (this.band[1] - this.band[0]);
+			const near = this.ray.set(x, y, -1).applyMatrix4(inverse);
+			const far = this.probe.set(x, y, 1).applyMatrix4(inverse);
+
+			// Le regard plonge toujours vers le sol : il croise le plan horizontal entre ses deux bouts
+			const t = near.y / (near.y - far.y);
+			const p = { x: near.x + (far.x - near.x) * t, n: -(near.z + (far.z - near.z) * t) };
+
+			const point = { ...p, y: this.geometry.height(p.x, p.n) + MapSceneInsects.GRASS_HEIGHT };
+
+			if(this.framed(point) && MapSceneMeadow.covers(this.meadow.footprints, point) === false) {
+				points.push(point);
+			}
+
+		}
+
+		return points;
+
+	}
+
+	// Les points des planches en culture hors abri dans la bande que les panneaux laissent voir
+	bloomPoints(blooms) {
+
+		const points = [];
 
 		for(const bloom of blooms) {
 
@@ -8281,25 +9262,72 @@ class MapSceneInsects {
 			for(let i = 0; i < 5; i++) {
 
 				const p = ScenePlanGeometry.lerp(bloom.a, bloom.b, .1 + .8 * i / 4);
-				const top = bloom.top + this.geometry.height(p.x, p.n);
+				const point = { x: p.x, n: p.n, y: bloom.top + this.geometry.height(p.x, p.n) };
 
-				if(this.frustum.containsPoint(this.probe.set(p.x, top, -p.n)) === false) {
-					continue;
+				if(this.framed(point)) {
+					points.push(point);
 				}
-
-				near.push([{ x: p.x, n: p.n, y: top }, (p.x - controls.target.x) ** 2 + (p.n + controls.target.z) ** 2]);
 
 			}
 
 		}
 
-		if(near.length === 0) {
+		return points;
+
+	}
+
+	/**
+	 * Une place de `points`, tirée au hasard sur tout le cadre plutôt qu'au plus près de son centre, où tous les insectes se
+	 * retrouveraient. `others` donne pour chaque autre insecte les points où il est et où il va. Seize tirages au plus cherchent une
+	 * place seule ou à deux, et à défaut la place qui fait le plus petit groupe, autour d'elle ou d'un voisin : `group` le dit, à
+	 * l'appelant de la prendre ou non. La portée d'un groupe se mesure à l'écran, où la vue de trois quarts rapproche ce qui
+	 * s'éloigne dans la profondeur. `orbit` est l'écart de l'insecte à son point, compté des deux côtés pour que deux vols voisins
+	 * ne se rejoignent pas. Sans point, il n'y a pas de place.
+	 */
+	place(points, others, orbit) {
+
+		if(points.length === 0) {
 			return null;
 		}
 
-		near.sort((a, b) => a[1] - b[1]);
+		const screen = p => {
+			const at = this.probe.set(p.x, p.y, -p.n).applyMatrix4(this.projection);
+			return [at.x * this.half[0], at.y * this.half[1]];
+		};
 
-		return near[Math.floor(this.random() * Math.min(near.length, 24))][0];
+		const placed = others.map(at => at.map(screen));
+		const reach = (MapSceneInsects.CROWD_PIXELS + 2 * orbit * this.perMetre) ** 2;
+		const close = (a, b) => a.some(q => b.some(r => (q[0] - r[0]) ** 2 + (q[1] - r[1]) ** 2 < reach));
+		const around = placed.map(a => placed.filter(b => b !== a && close(a, b)).length);
+		let chosen = null;
+		let fewest = Infinity;
+
+		for(let i = 0; i < 16 && fewest >= MapSceneInsects.CROWD_MAX; i++) {
+
+			const p = points[Math.floor(this.random() * points.length)];
+			const at = [screen(p)];
+			const neighbours = placed.map((b, k) => close(at, b) ? k : -1).filter(k => k !== -1);
+
+			// Le plus grand groupe que la place ferait, autour d'elle ou d'un voisin, elle comprise
+			const group = Math.max(neighbours.length + 1, ...neighbours.map(k => around[k] + 2));
+
+			if(group < fewest) {
+				chosen = p;
+				fewest = group;
+			}
+
+		}
+
+		return { point: { ...chosen }, group: fewest };
+
+	}
+
+	// Un point dans la bande du canevas que les panneaux laissent voir, relevée par `frame()`
+	framed(p) {
+
+		const at = this.probe.set(p.x, p.y, -p.n).applyMatrix4(this.projection);
+
+		return Math.abs(at.x) <= 1 && Math.abs(at.z) <= 1 && at.y >= this.band[0] && at.y <= this.band[1];
 
 	}
 
@@ -8328,17 +9356,133 @@ class MapSceneInsects {
 
 			this.zoom = camera.zoom;
 
-			const perMetre = I.perMetre(this.canvas.clientHeight, camera);
+			const height = this.canvas.clientHeight;
+			const perMetre = I.perMetre(height, camera);
 			const butterfly = I.sized(I.BUTTERFLY_SPAN, this.scale * I.BUTTERFLY_SCALE, I.BUTTERFLY_PIXELS, perMetre, I.BUTTERFLY_CAP);
+			const bee = I.sized(I.BEE_SIZE, this.scale * I.BUTTERFLY_SCALE, I.BEE_PIXELS, perMetre, I.BEE_CAP);
 
 			this.butterflyScale = I.faint(I.BUTTERFLY_SPAN, butterfly, perMetre, I.BUTTERFLY_FAINT) ? 0 : butterfly;
+			this.beeScale = I.faint(I.BEE_SIZE, bee, perMetre, I.BUTTERFLY_FAINT) ? 0 : bee;
+			this.perMetre = perMetre;
+			this.half = [height / 2 * (camera.right - camera.left) / (camera.top - camera.bottom), height / 2];
+
+			// La rangée des réglages couvre le haut du canevas, la frise le bas, comme pour la faune (`MapSceneFauna.look()`) : en
+			// coordonnées de la caméra, le haut du canevas vaut 1 et le bas -1
+			let top = 0;
+			let bottom = height;
+
+			for(const [, coverTop, , coverBottom] of this.covers()) {
+				if(coverTop + coverBottom < height) {
+					top = Math.max(top, coverBottom);
+				} else {
+					bottom = Math.min(bottom, coverTop);
+				}
+			}
+
+			this.band = [1 - 2 * bottom / height, 1 - 2 * top / height];
 
 		}
 
 		const blooms = this.blooms(date);
+		const season = (week >= MapSceneInsects.BUTTERFLY_WEEKS[0] && week <= MapSceneInsects.BUTTERFLY_WEEKS[1]);
 
-		this.flyButterflies(week >= MapSceneInsects.BUTTERFLY_WEEKS[0] && week <= MapSceneInsects.BUTTERFLY_WEEKS[1], blooms, dt, seconds, camera, controls);
+		this.flyButterflies(season, blooms, dt, seconds, camera, controls);
 		this.drawButterflies();
+
+		this.flyBees(season, dt, seconds);
+		this.drawBees();
+
+	}
+
+	/**
+	 * Une abeille reste quelques instants sur une fleur du pré dans le cadre, puis file vers une autre, prise comme la place d'un
+	 * papillon (`place()`). Une fleur qui ferait un groupe de CROWD_MAX abeilles n'est pas prise : celle qui n'a pas encore volé
+	 * attend, celle qui butine reste où elle est. Une seule recherche de fleur par image, comme pour les papillons.
+	 */
+	flyBees(season, dt, seconds) {
+
+		let relocated = false;
+
+		for(const b of this.bees) {
+
+			b.visible = season;
+
+			if(season === false) {
+				b.at = null;
+				b.goal = null;
+				continue;
+			}
+
+			b.stay -= dt;
+
+			if(relocated === false && (b.goal === null || b.stay <= 0)) {
+
+				relocated = true;
+
+				const flower = this.place(this.meadow.flowersInView(this.frustum, this.probe).filter(flower => this.framed(flower)), this.bees.filter(other => other !== b && other.goal !== null).map(other => [other.at, other.goal]), 0);
+
+				if(flower !== null && flower.group < MapSceneInsects.CROWD_MAX) {
+					b.goal = flower.point;
+					b.at ??= { ...b.goal };
+				}
+
+				b.stay = .6 + this.random() * 1.8;
+
+			}
+
+			if(b.at === null) {
+				b.visible = false;
+				continue;
+			}
+
+			const k = Math.min(1, dt * 5);
+			const dx = b.goal.x - b.at.x;
+			const dn = b.goal.n - b.at.n;
+
+			b.at.x += dx * k;
+			b.at.n += dn * k;
+			b.at.y += (b.goal.y - b.at.y) * k;
+
+			if(Math.hypot(dx, dn) > 1e-3) {
+				b.heading = Math.atan2(dn, dx);
+			}
+
+			// Le vol stationnaire d'une abeille qui butine : de petits écarts rapides autour de la fleur
+			const t = seconds + b.seed;
+			b.x = b.at.x + Math.sin(t * 6.1) * .12;
+			b.n = b.at.n + Math.cos(t * 5.3) * .12;
+			b.y = b.at.y + .12 + Math.sin(t * 9) * .05;
+
+		}
+
+	}
+
+	drawBees() {
+
+		const scale = this.beeScale;
+		let drawn = 0;
+
+		for(const b of this.bees) {
+
+			if(b.visible === false || scale === 0) {
+				continue;
+			}
+
+			this.sphere.center.set(b.x, b.y, -b.n);
+			this.sphere.radius = scale * MapSceneInsects.BEE_SIZE;
+
+			if(this.frustum.intersectsSphere(this.sphere) === false) {
+				continue;
+			}
+
+			this.quaternion.setFromAxisAngle(this.up, b.heading);
+			this.matrix.compose(this.position.set(b.x, b.y, -b.n), this.quaternion, this.size.setScalar(scale));
+			this.bee.setMatrixAt(drawn++, this.matrix);
+
+		}
+
+		this.bee.count = drawn;
+		this.bee.instanceMatrix.needsUpdate = true;
 
 	}
 
@@ -8362,7 +9506,7 @@ class MapSceneInsects {
 			// Une seule recherche de planche par image : elle parcourt toutes les planches en culture
 			if(relocated === false && (b.anchor === null || b.away > 1.2 || b.wander <= 0)) {
 
-				const spot = this.spot(blooms, controls);
+				const spot = this.spot(blooms, b);
 				relocated = true;
 
 				if(spot !== null) {
@@ -8441,6 +9585,8 @@ class MapSceneInsects {
 				this.partQuaternion.setFromEuler(this.euler.set(flap, 0, 0));
 				this.part.compose(piece.pivot, this.partQuaternion, this.one).premultiply(this.matrix);
 				piece.mesh.setMatrixAt(drawn, this.part);
+				// Les instances se tassent sur les papillons du cadre : la teinte suit le papillon, pas sa place dans le maillage
+				piece.mesh.setColorAt(drawn, (piece.name === 'corps') ? this.white : b.species);
 
 			}
 
@@ -8451,6 +9597,9 @@ class MapSceneInsects {
 		for(const piece of this.pieces) {
 			piece.mesh.count = drawn;
 			piece.mesh.instanceMatrix.needsUpdate = true;
+			if(piece.mesh.instanceColor !== null) {
+				piece.mesh.instanceColor.needsUpdate = true;
+			}
 		}
 
 	}
@@ -8468,7 +9617,692 @@ class MapSceneInsects {
 			piece.mesh.dispose();
 		}
 
+		this.parent.remove(this.bee);
+		this.bee.geometry.dispose();
+		this.bee.dispose();
+
 		this.material.dispose();
+
+	}
+
+}
+
+/**
+ * Le fond du pré hors des planches : prairie fleurie, herbe à touffes ou les deux mêlées, que la structure choisit et qu'une
+ * parcelle peut changer pour elle. Il reste uni sur BAND mètres autour des parcelles, des jardins et des planches, pour que
+ * l'herbe ne dispute pas la lecture de ce qui est cultivé.
+ *
+ * Il tient en deux couches. Le nuanceur du pré peint les crêtes des touffes et les fleurs partout hors de la bande, sans un
+ * triangle de plus. Des touffes et des fleurs en volume, TRIANGLES triangles au plus, se serrent sur une lisière de RING mètres
+ * au-delà de la bande : c'est là que l'œil regarde, et aucun budget ne couvrirait le pré entier. Une fleur ne s'ouvre qu'entre les
+ * semaines FLOWER_WEEKS, une touffe reste toute l'année.
+ */
+class MapSceneMeadow {
+
+	// La plus forte des touffes peintes, à laquelle le masque rapporte celle de chaque case
+	static TUFTS_MAX = .13;
+
+	// La bande laisse passer un paysan et sa brouette sans fleur ni touffe, et reste lisible en vue d'ensemble
+	static BAND = 3;
+	static RING = 10;
+	static TRIANGLES = 10000;
+	static FLOWER_WEEKS = [14, 44];
+
+	// Le masque tient sur MASK_SIDE cases au plus de côté, jamais plus fines que MASK_STEP mètres
+	static MASK_SIDE = 1024;
+	static MASK_STEP = .25;
+
+	// Marguerite, bouton d'or, trèfle, centaurée, coquelicot
+	static FLOWERS = ['#fbfaf2', '#f3d23a', '#e9a7c8', '#7f8fe0', '#e5553f'];
+	static TUFT_SHADES = ['#ffffff', '#e8f0d8', '#d8e6c0'];
+
+	// La taille des volumes, plus grande que nature pour se lire au zoom où l'on regarde la lisière, et la hauteur de la corolle d'une
+	// fleur à la taille 1
+	static SCALE = 1.6;
+	static FLOWER_HEIGHT = .28;
+
+	constructor({ THREE, plan, geometry, decor, material, grassZones, parent, gradientMap }) {
+
+		this.THREE = THREE;
+		this.geometry = geometry;
+		this.decor = decor;
+		this.parent = parent;
+		this.grassZones = grassZones;
+
+		this.meadow = plan.terrain.meadow;
+		this.zones = new Map(plan.zones.map(zone => [zone.id, MapScene.readMeadow(zone.decorMeadow)]));
+		this.grasses = new Map(plan.zones.map(zone => [zone.id, MapScene.readGrass(zone.decorGrass)]));
+		this.grassed = MapSceneCrops.grassed(plan);
+
+		this.uniforms = {
+			meadowMask: { value: null },
+			meadowBox: { value: new THREE.Vector4() },
+			meadowDefault: { value: new THREE.Vector2() },
+			meadowBloom: { value: 0 }
+		};
+
+		this.box = this.footprint();
+		this.lay();
+		this.paintMask();
+		this.paintGrass();
+
+		MapScene.meadowTexture(material, this.uniforms);
+
+		const volume = new THREE.MeshToonMaterial({ vertexColors: true, side: THREE.DoubleSide, gradientMap });
+		this.material = volume;
+
+		this.kinds = {
+			tuft: { geometry: MapSceneMeadow.tuftGeometry(THREE), colors: MapSceneMeadow.TUFT_SHADES },
+			flower: { geometry: MapSceneMeadow.flowerGeometry(THREE), colors: MapSceneMeadow.FLOWERS }
+		};
+
+		this.seeds = this.sow();
+
+		for(const [name, kind] of Object.entries(this.kinds)) {
+			kind.triangles = kind.geometry.attributes.position.count / 3;
+			kind.mesh = new THREE.InstancedMesh(kind.geometry, volume, Math.max(1, Math.floor(MapSceneMeadow.TRIANGLES / kind.triangles)));
+			kind.mesh.count = 0;
+			kind.mesh.receiveShadow = true;
+			// Les instances couvrent toute la lisière et se reposent quand le décor bouge : la sphère englobante serait à refaire à chaque fois
+			kind.mesh.frustumCulled = false;
+			kind.name = name;
+			parent.add(kind.mesh);
+		}
+
+		// Les fleurs du pré visibles ce jour, où papillons et abeilles se posent
+		this.flowers = [];
+		this.week = null;
+		this.dirty = true;
+		// Les emprises se lisent à la première image, le champ ayant posé le décor avant que le pré n'existe
+		this.moved = true;
+		this.print = null;
+		this.footprints = [];
+
+		this.matrix = new THREE.Matrix4();
+		this.quaternion = new THREE.Quaternion();
+		this.size = new THREE.Vector3();
+		this.position = new THREE.Vector3();
+		this.color = new THREE.Color();
+		this.up = new THREE.Vector3(0, 1, 0);
+
+	}
+
+	// La boite du plan, élargie de ce que la bande et la lisière prennent au-delà du dernier tracé
+	footprint() {
+
+		const g = this.geometry;
+		const points = [...[...g.zones.values()].flat(), ...[...g.plots.values()].flatMap(plot => plot.points), ...g.beds.flatMap(bed => g.corners(bed))];
+		const margin = MapSceneMeadow.BAND + MapSceneMeadow.RING + 2;
+
+		if(points.length === 0) {
+			return null;
+		}
+
+		const { x0, x1, n0, n1 } = MapSceneDecor.extent(points);
+		const w = x1 - x0 + 2 * margin;
+		const h = n1 - n0 + 2 * margin;
+		const step = Math.max(MapSceneMeadow.MASK_STEP, Math.max(w, h) / MapSceneMeadow.MASK_SIDE);
+
+		return { x: x0 - margin, n: n0 - margin, w, h, step, columns: Math.ceil(w / step), rows: Math.ceil(h / step) };
+
+	}
+
+	/**
+	 * Chaque case de la boite dont le centre tombe dans le polygone `points`, par balayage de lignes : `visit` reçoit son index.
+	 */
+	fill(points, visit) {
+
+		const box = this.box;
+		const ns = points.map(p => p.n);
+		const j0 = Math.max(0, Math.ceil((Math.min(...ns) - box.n) / box.step - .5));
+		const j1 = Math.min(box.rows - 1, Math.floor((Math.max(...ns) - box.n) / box.step - .5));
+
+		for(let j = j0; j <= j1; j++) {
+
+			const n = box.n + (j + .5) * box.step;
+			const crossings = [];
+
+			for(let k = 0; k < points.length; k++) {
+				const a = points[k];
+				const b = points[(k + 1) % points.length];
+				if((a.n > n) !== (b.n > n)) {
+					crossings.push(a.x + (n - a.n) * (b.x - a.x) / (b.n - a.n));
+				}
+			}
+
+			crossings.sort((a, b) => a - b);
+
+			for(let k = 0; k + 1 < crossings.length; k += 2) {
+				const i0 = Math.max(0, Math.ceil((crossings[k] - box.x) / box.step - .5));
+				const i1 = Math.min(box.columns - 1, Math.floor((crossings[k + 1] - box.x) / box.step - .5));
+				for(let i = i0; i <= i1; i++) {
+					visit(j * box.columns + i);
+				}
+			}
+
+		}
+
+	}
+
+	// Les cases que le tour du polygone `points` traverse, échantillonné à la demi-case : un polygone plus fin qu'une case y passe aussi
+	outline(points, visit) {
+
+		const step = this.box.step / 2;
+
+		points.forEach((a, k) => {
+			const b = points[(k + 1) % points.length];
+			const count = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.n - a.n) / step));
+			for(let t = 0; t <= count; t++) {
+				const cell = this.cell(a.x + (b.x - a.x) * t / count, a.n + (b.n - a.n) * t / count);
+				if(cell !== -1) {
+					visit(cell);
+				}
+			}
+		});
+
+	}
+
+	/**
+	 * La distance en mètres de chaque case à la plus proche des cases `sources`, par la transformée exacte de Felzenszwalb et
+	 * Huttenlocher, ligne par ligne puis colonne par colonne : un passage linéaire, quel que soit le nombre de planches.
+	 */
+	static distance(sources, columns, rows, step) {
+
+		const squared = new Float32Array(sources.length);
+		const size = Math.max(columns, rows);
+		const f = new Float32Array(size);
+		const v = new Int32Array(size);
+		const z = new Float32Array(size + 1);
+
+		for(let k = 0; k < sources.length; k++) {
+			squared[k] = sources[k] ? 0 : 1e20;
+		}
+
+		// Une ligne ou une colonne de `length` cases, la première à `offset`, les suivantes de `stride` en `stride`
+		const pass = (offset, stride, length) => {
+
+			for(let q = 0; q < length; q++) {
+				f[q] = squared[offset + q * stride];
+			}
+
+			let k = 0;
+			v[0] = 0;
+			z[0] = -Infinity;
+			z[1] = Infinity;
+
+			for(let q = 1; q < length; q++) {
+				let s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
+				while(s <= z[k]) {
+					k--;
+					s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
+				}
+				k++;
+				v[k] = q;
+				z[k] = s;
+				z[k + 1] = Infinity;
+			}
+
+			k = 0;
+
+			for(let q = 0; q < length; q++) {
+				while(z[k + 1] < q) {
+					k++;
+				}
+				const r = v[k];
+				squared[offset + q * stride] = (q - r) * (q - r) + f[r];
+			}
+
+		};
+
+		for(let j = 0; j < rows; j++) {
+			pass(j * columns, 1, columns);
+		}
+
+		for(let i = 0; i < columns; i++) {
+			pass(i, columns, rows);
+		}
+
+		for(let k = 0; k < squared.length; k++) {
+			squared[k] = Math.sqrt(squared[k]) * step;
+		}
+
+		return squared;
+
+	}
+
+	/**
+	 * La distance de chaque case à ce qui reste uni, une fois pour la scène : les jardins tracés et les planches, pleins, et le tour
+	 * des parcelles, une parcelle étant un pré. Elle ne dépend que des tracés, que la scène ne change pas.
+	 */
+	lay() {
+
+		if(this.box === null) {
+			return;
+		}
+
+		const g = this.geometry;
+		const sources = new Uint8Array(this.box.columns * this.box.rows);
+		const mark = cell => { sources[cell] = 1; };
+
+		// Un jardin sans tracé prend le contour de toute sa parcelle (`ScenePlanGeometry`) : c'est le pré de la parcelle, que seuls son
+		// contour, ses jardins tracés et ses planches bordent d'une bande. Un jardin de pérennes est un pré planté : ni lui ni ses
+		// planches ne se bordent
+		const plots = [...g.plots.values()].filter(({ plot, drawn }) => drawn && this.grassed.has(plot.id) === false).map(({ points }) => points);
+		const beds = g.beds.filter(bed => this.grassed.has(bed.plot) === false).map(bed => g.corners(bed));
+
+		for(const points of [...plots, ...beds]) {
+			this.fill(points, mark);
+			this.outline(points, mark);
+		}
+
+		for(const points of g.zones.values()) {
+			this.outline(points, mark);
+		}
+
+		this.distance = MapSceneMeadow.distance(sources, this.box.columns, this.box.rows, this.box.step);
+
+	}
+
+	/**
+	 * Le fond de chaque case : celui de sa zone quand elle en a un, celui de la structure sinon. Le masque porte la bande unie en
+	 * rouge, son bord fondu sur un mètre, et la force des touffes et des fleurs peintes en vert et en bleu, que le filtrage fond d'une
+	 * zone à l'autre.
+	 */
+	paintMask() {
+
+		const M = MapScene.MEADOWS;
+		const names = Object.keys(M);
+
+		this.uniforms.meadowDefault.value.set(M[this.meadow].shaderTufts / MapSceneMeadow.TUFTS_MAX, M[this.meadow].shaderFlowers);
+
+		if(this.box === null) {
+			return;
+		}
+
+		const box = this.box;
+		const cells = box.columns * box.rows;
+
+		this.cells = new Uint8Array(cells).fill(names.indexOf(this.meadow));
+
+		for(const [id, meadow] of this.zones) {
+			if(meadow !== null && this.geometry.zones.has(id)) {
+				const k = names.indexOf(meadow);
+				this.fill(this.geometry.zones.get(id), cell => { this.cells[cell] = k; });
+			}
+		}
+
+		const forces = names.map(name => [Math.round(255 * M[name].shaderTufts / MapSceneMeadow.TUFTS_MAX), Math.round(255 * M[name].shaderFlowers)]);
+		const band = MapSceneMeadow.BAND;
+		const data = new Uint8Array(cells * 4);
+
+		for(let i = 0; i < cells; i++) {
+			const force = forces[this.cells[i]];
+			const fade = this.distance[i] - band + .5;
+			data[i * 4] = (fade <= 0) ? 255 : (fade >= 1) ? 0 : 255 * (1 - fade);
+			data[i * 4 + 1] = force[0];
+			data[i * 4 + 2] = force[1];
+			data[i * 4 + 3] = 255;
+		}
+
+		const THREE = this.THREE;
+		const texture = new THREE.DataTexture(data, box.columns, box.rows, THREE.RGBAFormat);
+		texture.magFilter = THREE.LinearFilter;
+		texture.minFilter = THREE.LinearFilter;
+		texture.needsUpdate = true;
+
+		this.uniforms.meadowMask.value?.dispose();
+		this.uniforms.meadowMask.value = texture;
+		this.uniforms.meadowBox.value.set(box.x, box.n, box.w, box.h);
+
+	}
+
+	/**
+	 * L'herbe d'une parcelle choisie depuis le terrain, null pour celle qui reprend l'herbe de la structure.
+	 */
+	chooseGrass(grass, zone) {
+
+		this.grasses.set(zone, MapScene.readGrass(grass));
+		this.paintGrass();
+
+	}
+
+	/**
+	 * Le masque des herbes des parcelles, sur les cases du masque du pré. Une case porte un rang, que le filtrage ne doit pas fondre
+	 * d'une parcelle à l'autre : il est au plus proche. La boite rendue au nuanceur est celle des cases, que `fill()` place à leur
+	 * centre, et non celle du plan, plus courte d'une fraction de case.
+	 */
+	paintGrass() {
+
+		if(this.box === null) {
+			return;
+		}
+
+		const box = this.box;
+		const names = Object.keys(MapScene.GRASSES);
+		const ranks = new Uint8Array(box.columns * box.rows);
+
+		for(const [id, grass] of this.grasses) {
+			if(grass !== null && this.geometry.zones.has(id)) {
+				const rank = names.indexOf(grass) + 1;
+				this.fill(this.geometry.zones.get(id), cell => { ranks[cell] = rank; });
+			}
+		}
+
+		const THREE = this.THREE;
+		const texture = new THREE.DataTexture(ranks, box.columns, box.rows, THREE.RedFormat);
+		texture.magFilter = THREE.NearestFilter;
+		texture.minFilter = THREE.NearestFilter;
+		texture.generateMipmaps = false;
+		texture.unpackAlignment = 1;
+		texture.needsUpdate = true;
+
+		const uniforms = this.grassZones;
+		uniforms.grassMask.value?.dispose();
+		uniforms.grassMask.value = texture;
+		uniforms.grassBox.value.set(box.x, box.n, box.columns * box.step, box.rows * box.step);
+
+	}
+
+	cell(x, n) {
+
+		const box = this.box;
+		const i = Math.floor((x - box.x) / box.step);
+		const j = Math.floor((n - box.n) / box.step);
+
+		return (i < 0 || j < 0 || i >= box.columns || j >= box.rows) ? -1 : j * box.columns + i;
+
+	}
+
+	/**
+	 * Les places des volumes, tirées à graine fixe sur la lisière, hors de la bande, groupées en taches comme dans un vrai pré. Chacune
+	 * garde son tirage : le fond change ce qui y pousse, pas où.
+	 */
+	sow() {
+
+		if(this.box === null) {
+			return [];
+		}
+
+		const box = this.box;
+		const random = MapSceneCrops.random(77);
+		const seeds = [];
+		const smallest = Math.min(...Object.values(this.kinds).map(kind => kind.geometry.attributes.position.count / 3));
+
+		// Assez de places pour le budget même si toutes prenaient le volume le plus léger
+		const wanted = Math.floor(MapSceneMeadow.TRIANGLES / smallest);
+
+		for(let tries = 0; seeds.length < wanted && tries < wanted * 400; tries++) {
+
+			const x = box.x + random() * box.w;
+			const n = box.n + random() * box.h;
+			const cell = this.cell(x, n);
+
+			// Hors de la bande et de son bord fondu, dans la lisière
+			if(cell === -1 || this.distance[cell] < MapSceneMeadow.BAND + .5 || this.distance[cell] > MapSceneMeadow.BAND + MapSceneMeadow.RING) {
+				continue;
+			}
+
+			const patch = .5 + .5 * Math.sin(x * .09 + Math.sin(n * .07) * 2) * Math.cos(n * .08 + Math.sin(x * .05));
+
+			if(random() > patch * patch + .08) {
+				continue;
+			}
+
+			seeds.push({ x, n, cell, pick: random(), turn: random() * Math.PI * 2, scale: MapSceneMeadow.SCALE * (.75 + random() * .5), shade: random() });
+
+		}
+
+		return seeds;
+
+	}
+
+	/**
+	 * Le fond de la structure ou d'une parcelle choisi depuis le terrain : le masque se repeint, les volumes se reposent à l'image
+	 * suivante. `zone` est null pour la structure, `meadow` null pour une parcelle qui reprend le fond de la structure.
+	 */
+	choose(meadow, zone = null) {
+
+		if(zone === null) {
+			this.meadow = MapScene.readTerrain({ meadow }).meadow;
+		} else {
+			this.zones.set(zone, MapScene.readMeadow(meadow));
+		}
+
+		this.paintMask();
+		this.dirty = true;
+
+	}
+
+	// Le décor prévient de tout ce qui change son rendu, la saison de ses feuilles comprise, donc à chaque jour d'une lecture : le
+	// pré relit les emprises à l'image suivante, et ne se repose que si l'une d'elles a bougé, une touffe ne poussant ni dans un
+	// bâtiment, ni sur un chemin, ni dans l'eau
+	changed() {
+		this.moved = true;
+	}
+
+	frame(week) {
+
+		const bloom = (week >= MapSceneMeadow.FLOWER_WEEKS[0] && week <= MapSceneMeadow.FLOWER_WEEKS[1]);
+
+		if(week !== this.week) {
+			this.week = week;
+			this.uniforms.meadowBloom.value = bloom ? 1 : 0;
+			this.dirty = true;
+		}
+
+		if(this.moved) {
+
+			this.moved = false;
+
+			const footprints = this.occupied();
+			const print = footprints.map(({ pieces }) => pieces.map(({ box }) => [box.x0, box.x1, box.n0, box.n1].map(value => Math.round(value * 100)).join(',')).join(';')).join('|');
+
+			if(print !== this.print) {
+				this.print = print;
+				this.footprints = footprints;
+				this.dirty = true;
+			}
+
+		}
+
+		if(this.dirty) {
+			this.dirty = false;
+			this.settle(bloom);
+		}
+
+	}
+
+	// Les emprises du décor posé, en rectangles avec leur boite
+	occupied() {
+		return this.decor.elements.map(e => MapSceneDecor.footprint(e));
+	}
+
+	static covers(footprints, p) {
+
+		const G = ScenePlanGeometry;
+
+		return footprints.some(({ pieces, box }) => p.x >= box.x0 && p.x <= box.x1 && p.n >= box.n0 && p.n <= box.n1 && pieces.some(({ rectangle: r, box: b }) => {
+
+			if(p.x < b.x0 || p.x > b.x1 || p.n < b.n0 || p.n > b.n1) {
+				return false;
+			}
+
+			const d = G.sub(p, r.origin);
+			const along = G.dot(d, r.w);
+			const across = G.dot(d, r.u);
+
+			return along >= 0 && along <= r.width && across >= 0 && across <= r.length;
+
+		}));
+
+	}
+
+	/**
+	 * Chaque place prend le volume que le fond de sa case lui donne, à la hauteur du sol, et se retire sous le décor. Les fleurs se
+	 * ferment hors de leur saison. Le budget de triangles se compte sur les places dans leur ordre de semis, posées ou non : la première qui le dépasserait arrête
+	 * le semis, au même endroit en toute saison et quel que soit le décor.
+	 */
+	settle(bloom) {
+
+		const names = Object.keys(MapScene.MEADOWS);
+		const footprints = this.footprints;
+		const { tuft, flower } = this.kinds;
+		let budget = 0;
+
+		tuft.mesh.count = 0;
+		flower.mesh.count = 0;
+		this.flowers = [];
+
+		for(const seed of this.seeds) {
+
+			const meadow = MapScene.MEADOWS[names[this.cells[seed.cell]]];
+			const kind = (seed.pick < meadow.tufts) ? tuft : (seed.pick < meadow.tufts + meadow.flowers) ? flower : null;
+
+			if(kind === null) {
+				continue;
+			}
+
+			if(budget + kind.triangles > MapSceneMeadow.TRIANGLES) {
+				break;
+			}
+
+			budget += kind.triangles;
+
+			// Une place couverte ou une fleur fermée garde sa part du budget : le décor posé ou l'hiver feraient sinon pousser au loin
+			// des volumes qu'un retrait ou l'été retireraient
+			if(MapSceneMeadow.covers(footprints, seed) || (kind === flower && bloom === false)) {
+				continue;
+			}
+
+			const y = this.geometry.height(seed.x, seed.n);
+
+			this.quaternion.setFromAxisAngle(this.up, seed.turn);
+			this.matrix.compose(this.position.set(seed.x, y - .01, -seed.n), this.quaternion, this.size.setScalar(seed.scale));
+			kind.mesh.setMatrixAt(kind.mesh.count, this.matrix);
+			kind.mesh.setColorAt(kind.mesh.count, this.color.set(kind.colors[Math.floor(seed.shade * kind.colors.length)]));
+			kind.mesh.count++;
+
+			if(kind === flower) {
+				this.flowers.push({ x: seed.x, n: seed.n, y: y + MapSceneMeadow.FLOWER_HEIGHT * seed.scale });
+			}
+
+		}
+
+		for(const kind of [tuft, flower]) {
+			kind.mesh.instanceMatrix.needsUpdate = true;
+			if(kind.mesh.instanceColor !== null) {
+				kind.mesh.instanceColor.needsUpdate = true;
+			}
+		}
+
+		this.triangles = tuft.mesh.count * tuft.triangles + flower.mesh.count * flower.triangles;
+
+	}
+
+	// Une touffe : sept brins en étoile, penchés vers l'extérieur, la pointe plus claire
+	static tuftGeometry(THREE) {
+
+		const position = [];
+		const color = [];
+		const base = new THREE.Color('#5f8f45');
+		const tip = new THREE.Color('#a9cf7a');
+
+		for(let i = 0; i < 7; i++) {
+			const a = i / 7 * Math.PI * 2 + (i % 2) * .4;
+			const lean = .12 + (i % 3) * .05;
+			const height = .32 + (i % 4) * .07;
+			const w = .05;
+			const ca = Math.cos(a);
+			const sa = Math.sin(a);
+			position.push(-sa * w, 0, ca * w, sa * w, 0, -ca * w, ca * lean, height, sa * lean);
+			color.push(base.r, base.g, base.b, base.r, base.g, base.b, tip.r, tip.g, tip.b);
+		}
+
+		const g = new THREE.BufferGeometry();
+		g.setAttribute('position', new THREE.Float32BufferAttribute(position, 3));
+		g.setAttribute('color', new THREE.Float32BufferAttribute(color, 3));
+		g.computeVertexNormals();
+
+		return g;
+
+	}
+
+	// Une fleur : une corolle de cinq pétales en éventail, levée sur une tige d'un brin. La teinte de l'instance colore les pétales
+	static flowerGeometry(THREE) {
+
+		const position = [];
+		const color = [];
+		const petal = [1, 1, 1];
+		const heart = [1, .85, .3];
+		const stem = [.42, .62, .3];
+		const y = MapSceneMeadow.FLOWER_HEIGHT;
+		const r = .1;
+
+		for(let i = 0; i < 5; i++) {
+			const a0 = i / 5 * Math.PI * 2;
+			const a1 = (i + .8) / 5 * Math.PI * 2;
+			position.push(0, y + .01, 0, Math.cos(a0) * r, y, Math.sin(a0) * r, Math.cos(a1) * r, y, Math.sin(a1) * r);
+			color.push(...heart, ...petal, ...petal);
+		}
+
+		position.push(-.015, 0, 0, .015, 0, 0, 0, y, 0);
+		color.push(...stem, ...stem, ...stem);
+
+		const g = new THREE.BufferGeometry();
+		g.setAttribute('position', new THREE.Float32BufferAttribute(position, 3));
+		g.setAttribute('color', new THREE.Float32BufferAttribute(color, 3));
+		g.computeVertexNormals();
+
+		return g;
+
+	}
+
+	/**
+	 * Les fleurs du pré dans le cadre, où papillons et abeilles se posent.
+	 */
+	flowersInView(frustum, probe) {
+		return this.flowers.filter(f => frustum.containsPoint(probe.set(f.x, f.y, -f.n)));
+	}
+
+	/**
+	 * Le dessin de la vignette d'un fond sur l'herbe `grass`, en SVG de 64 de côté : des touffes en traits, des fleurs en points, dans
+	 * la proportion du fond.
+	 */
+	static art(meadow, grass) {
+
+		const share = MapScene.MEADOWS[meadow];
+		const random = MapSceneCrops.random(5);
+		let art = '<rect x=".5" y=".5" width="63" height="63" rx="6" fill="'+ grass +'" stroke="#000" stroke-opacity=".12"/>';
+
+		for(let i = 0; i < 18; i++) {
+
+			const x = (6 + random() * 52).toFixed(1);
+			const y = (8 + random() * 50).toFixed(1);
+			const pick = random();
+
+			if(pick < share.tufts) {
+				art += '<path d="M'+ x +' '+ y +'l-2.5 -5M'+ x +' '+ y +'l0 -6M'+ x +' '+ y +'l2.5 -5" stroke="#4e7a3a" stroke-width="1.4" stroke-linecap="round"/>';
+			} else if(pick < share.tufts + share.flowers) {
+				art += '<circle cx="'+ x +'" cy="'+ y +'" r="2.2" fill="'+ MapSceneMeadow.FLOWERS[Math.floor(random() * MapSceneMeadow.FLOWERS.length)] +'"/>';
+			}
+
+		}
+
+		return art;
+
+	}
+
+	dispose() {
+
+		for(const kind of Object.values(this.kinds)) {
+			this.parent.remove(kind.mesh);
+			kind.geometry.dispose();
+			kind.mesh.dispose();
+		}
+
+		this.material.dispose();
+		this.uniforms.meadowMask.value?.dispose();
+		this.grassZones.grassMask.value?.dispose();
 
 	}
 

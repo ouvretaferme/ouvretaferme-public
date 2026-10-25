@@ -316,7 +316,7 @@ class MemberUi {
 										$h .= '</td>';
 
 										$h .= '<td>';
-											$h .= '<span class="color-muted font-sm">'.\util\DateUi::numeric($eMember['createdAt'], \util\DateUi::DATE).'</span>';
+											$h .= '<span class="util-annotation">'.\util\DateUi::numeric($eMember['createdAt'], \util\DateUi::DATE).'</span>';
 										$h .= '</td>';
 
 										if($producers) {
@@ -625,7 +625,7 @@ class MemberUi {
 			) {
 
 				$h .= $form->group(
-					content: '<div class="flex-justify-space-between">'.$form->submit(s("Enregistrer")).'<a data-ajax="/structure/member:doDelete" post-id="'.$eMember['id'].'" class="btn btn-danger" data-confirm="'.self::getLeaveConfirm($eStructure, $eMember).'">'.self::getLeaveText($eStructure).'</a></div>'
+					content: '<div class="util-action">'.$form->submit(s("Enregistrer")).'<a data-ajax="/structure/member:doDelete" post-id="'.$eMember['id'].'" class="btn btn-danger" data-confirm="'.self::getLeaveConfirm($eStructure, $eMember).'">'.self::getLeaveText($eStructure).'</a></div>'
 				);
 
 			} else {

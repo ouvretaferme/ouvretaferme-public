@@ -14,6 +14,7 @@ new Page()
 		$selectedPackage = GET('package', 'string', '*');
 		$jobs = GET('jobs', 'int', 1);
 		$counters = GET('counters');
+		$diff = GET('diff');
 
 		\dev\TestLib::$summary = GET('summary', 'bool', stream_isatty(STDOUT) === FALSE);
 
@@ -53,11 +54,34 @@ new Page()
 
 		}
 
+		if($diff !== '') {
+
+			if($selectedFile !== \dev\TestJobLib::PATTERN) {
+				echo "Error: diff only bounds file='".\dev\TestJobLib::PATTERN."', the other tests are not read from a diff\n";
+				exit(2);
+			}
+
+			$paths = \dev\TestDiffLib::getPaths($diff);
+
+			if($paths === NULL) {
+				echo "Error: diff='".$diff."' names neither a commit, nor a patch, nor a file of the repository\n";
+				exit(2);
+			}
+
+			$sentinels = \dev\TestDiffLib::getSentinels($paths);
+			\dev\TestLib::$paths = array_keys($sentinels);
+
+		}
+
 		// Une passe répartie se reconnait dans dev/test:lock, ses processus nommant le sien.
 		$label = 'package='.$selectedPackage.' file='.$selectedFile;
 
 		if($jobs > 1) {
 			$label .= ' jobs='.$jobs;
+		}
+
+		if($diff !== '') {
+			$label .= ' diff='.$diff;
 		}
 
 		if($counters !== '') {
@@ -71,6 +95,18 @@ new Page()
 
 		\dev\TestLib::startOutput();
 
+		if($diff !== '') {
+
+			echo 'Passe bornée à diff='.$diff.' : '.count($sentinels).' sentinelle(s) pour '.count($paths).' fichier(s). La passe complète reste celle de la porte de push.'."\n";
+
+			foreach(array_count_values(array_map(fn(string $reason) => explode(' ', $reason)[0], $sentinels)) as $rule => $count) {
+				echo '  '.$rule.' '.$count."\n";
+			}
+
+			echo "\n";
+
+		}
+
 		if($jobs > 1) {
 
 			$files = [];
@@ -83,7 +119,8 @@ new Page()
 
 			}
 
-			$arguments = array_diff_key($_GET, array_flip(['package', 'file', 'jobs']));
+			// Chaque processus reçoit un seul fichier, déjà choisi : la borne ne se recalcule pas.
+			$arguments = array_diff_key($_GET, array_flip(['package', 'file', 'jobs', 'diff']));
 			$arguments['summary'] = (int)\dev\TestLib::$summary;
 
 			// Un processus arrêté est nommé, par lui-même ou par TestJobLib, mais ses compteurs manquent :
@@ -126,6 +163,21 @@ new Page()
 					echo '  '.$package.' '.$count."\n";
 				}
 
+			}
+
+		}
+
+		// Chaque rouge d'une passe de sentinelles dit s'il rougit aussi sur l'amont. Le rejeu lance
+		// lui-même une passe, qui ne se rejoue pas.
+		if($selectedFile === \dev\TestJobLib::PATTERN and \dev\TestLib::$failedFiles !== [] and \dev\TestUpstreamLib::isReplay() === FALSE) {
+
+			$failedFiles = array_values(array_unique(\dev\TestLib::$failedFiles));
+			[$upstream, $verdicts] = \dev\TestUpstreamLib::getVerdicts($failedFiles);
+
+			echo "\n".($upstream === NULL ? 'Rouges, l\'amont ne s\'est pas relu :' : 'Rouges, rejoués sur '.\dev\SentinelLib::getUpstream().' '.substr($upstream, 0, 9).' :')."\n";
+
+			foreach($verdicts as $file => [$verdict, $reason]) {
+				echo '  '.str_pad($verdict, 14).$file.($reason === '' ? '' : ' ('.$reason.')')."\n";
 			}
 
 		}

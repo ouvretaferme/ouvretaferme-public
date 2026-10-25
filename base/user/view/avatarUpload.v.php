@@ -18,8 +18,8 @@ new AdaptativeView('doCreate', function($data, AjaxTemplate $t) {
 
 	$t->qs('#panel-user-avatar .tab-panel[data-tab="upload"]')->innerHtml($uiUserAvatar->getUpload($form, $data->eUserAvatar));
 	$t->qs('#panel-user-avatar .tab-panel[data-tab="compose"] [data-wrapper="replacesPhoto"]')->outerHtml($uiUserAvatar->getPhotoChoice($form, $data->eUserAvatar));
-	$t->qs('#panel-user-avatar .panel-footer [type="submit"]')->setAttribute('data-confirm', $uiUserAvatar->getSaveConfirm());
-	$t->qs('#panel-user-avatar .user-avatar-delete')->setAttribute('data-confirm', $uiUserAvatar->getDeleteConfirm($data->eUserAvatar));
+	$t->qs('#panel-user-avatar .panel-footer [type="submit"]')->setAttribute('data-confirm', $uiUserAvatar->getSaveConfirm($data->eUserAvatar));
+	$t->qs('#panel-user-avatar .user-avatar-delete')->outerHtml($uiUserAvatar->getDeleteButton($data->eUserAvatar));
 
 	$t->js()->eval('UserAvatarEditor.placed('.json_encode([
 		'url' => \user\UserAvatarUploadUi::url($data->eUserAvatar['eUserAvatarUpload']),

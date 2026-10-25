@@ -190,7 +190,7 @@ class SceneAiTest extends \series\SeriesFixtureAiTest {
 		$scene = $this->getScene();
 
 		$this->assertEquals(
-			['version', 'structure', 'name', 'season', 'center', 'zones', 'plots', 'beds', 'bedsDrawn', 'layers', 'decor', 'buildings', 'decorAdopted', 'decorReach', 'terrain', 'places', 'series', 'actions', 'columns', 'tasks', 'harvests', 'crew', 'team'],
+			['version', 'structure', 'name', 'season', 'center', 'zones', 'plots', 'beds', 'bedsDrawn', 'layers', 'decor', 'buildings', 'objects', 'decorAdopted', 'decorReach', 'terrain', 'places', 'series', 'actions', 'columns', 'tasks', 'harvests', 'crew', 'team'],
 			array_keys($scene)
 		);
 
@@ -256,7 +256,8 @@ class SceneAiTest extends \series\SeriesFixtureAiTest {
 		$plot = $this->findById($scene['plots'], $this->getPlot()['id']);
 		$bed = $this->findById($scene['beds'], $eBed['id']);
 
-		$this->assertEquals(['id', 'name', 'area', 'coordinates'], array_keys($zone));
+		$this->assertEquals(['id', 'name', 'area', 'coordinates', 'decorGrass', 'decorSoil', 'decorMeadow'], array_keys($zone));
+		$this->assertEquals([NULL, NULL, NULL], [$zone['decorGrass'], $zone['decorSoil'], $zone['decorMeadow']], 'une parcelle neuve suit le terrain de la ferme');
 		$this->assertEquals(['id', 'name', 'zone', 'zoneFill', 'mode', 'decorGreenhouse', 'length', 'width', 'area', 'coordinates'], array_keys($plot));
 		$this->assertEquals(['id', 'name', 'plot', 'zoneFill', 'plotFill', 'length', 'width', 'alleyWidth'], array_keys($bed));
 
@@ -268,8 +269,9 @@ class SceneAiTest extends \series\SeriesFixtureAiTest {
 		$this->assertEquals(80, $bed['width']);
 
 		$this->assertEquals(
-			['id' => $ePlace['id'], 'bed' => $eBed['id'], 'series' => $eSeries['id'], 'length' => 10],
-			$this->findById($scene['places'], $ePlace['id'])
+			['id' => $ePlace['id'], 'bed' => $eBed['id'], 'series' => $eSeries['id'], 'length' => 10, 'area' => 12.0],
+			$this->findById($scene['places'], $ePlace['id']),
+			'la place porte sa surface en m², ce qu\'un jardin sans planche dessinée donne à sa bande'
 		);
 
 		$series = $this->findById($scene['series'], $eSeries['id']);
@@ -461,6 +463,7 @@ class SceneAiTest extends \series\SeriesFixtureAiTest {
 				'zone' => new Zone(),
 				'plot' => new Plot(),
 				'building' => new DecorBuilding(),
+				'object' => new DecorObject(),
 				'hedge' => FALSE,
 				'gate' => NULL,
 			]);
@@ -476,7 +479,7 @@ class SceneAiTest extends \series\SeriesFixtureAiTest {
 		$scene = $this->getScene();
 
 		$this->assertEquals(
-			['id' => $decor['posed'], 'layer' => NULL, 'kit' => 'cabane', 'building' => NULL, 'coordinates' => [3.1005, 45.6005], 'angle' => 0.5, 'size' => 1.0, 'seed' => NULL, 'width' => NULL, 'model' => NULL, 'trace' => NULL, 'diameter' => NULL, 'laying' => NULL, 'zone' => NULL, 'plot' => NULL, 'hedge' => FALSE, 'gate' => NULL],
+			['id' => $decor['posed'], 'layer' => NULL, 'kit' => 'cabane', 'building' => NULL, 'object' => NULL, 'coordinates' => [3.1005, 45.6005], 'angle' => 0.5, 'size' => 1.0, 'seed' => NULL, 'width' => NULL, 'model' => NULL, 'trace' => NULL, 'diameter' => NULL, 'laying' => NULL, 'zone' => NULL, 'plot' => NULL, 'hedge' => FALSE, 'gate' => NULL],
 			$this->findById($scene['decor'], $decor['posed'])
 		);
 

@@ -6,7 +6,7 @@ namespace dev;
  */
 class TestRunnerTest extends \Test {
 
-	const COUNTERS = ['files', 'classes', 'missingFixtures', 'notApplicable', 'assertions', 'warnings', 'warningsInFailedTests', 'failures', 'warningsBySource', 'warningsInFailedTestsBySource', 'warningsWithoutSource', 'missingFixtureClasses', 'notApplicableClasses'];
+	const COUNTERS = ['files', 'classes', 'missingFixtures', 'notApplicable', 'assertions', 'warnings', 'warningsInFailedTests', 'failures', 'warningsBySource', 'warningsInFailedTestsBySource', 'warningsWithoutSource', 'missingFixtureClasses', 'notApplicableClasses', 'failedFiles', 'paths'];
 
 	private array $counters = [];
 	private bool $summary = FALSE;
@@ -154,6 +154,27 @@ class TestRunnerTest extends \Test {
 
 		$this->assertEquals(3, TestLib::$assertions, 'une assertion rouge compte dans le total des assertions');
 		$this->assertEquals(1, TestLib::$failures);
+		$this->assertEquals(['framework/dev/test/TestRunnerSubject.t.php'], TestLib::$failedFiles, 'le fichier rouge se nomme pour être rejoué sur l\'amont');
+
+	}
+
+	public function testRunKeepsTheBoundedFiles(): void {
+
+		$this->setSubjectResets();
+		$this->setCounters(0, 0, 0, 0, 0);
+
+		TestRunnerSubjectTest::$failing = FALSE;
+		TestLib::$paths = ['framework/dev/test/AnchorSentinel.t.php'];
+
+		$this->runSubject();
+
+		$this->assertEquals(0, TestLib::$files, 'un fichier hors de la borne ne se joue pas');
+
+		TestLib::$paths = ['framework/dev/test/TestRunnerSubject.t.php'];
+
+		$this->runSubject();
+
+		$this->assertEquals(1, TestLib::$files, 'un fichier de la borne se joue');
 
 	}
 
@@ -648,6 +669,7 @@ class TestRunnerTest extends \Test {
 		$this->assertEquals([4], array_values(TestLib::$warningsBySource), 'deux processus qui lèvent la même notice la disent en une ligne');
 		$this->assertEquals(['transaction left open' => 2], TestLib::$warningsWithoutSource);
 		$this->assertEquals(['dev\\TestRunnerSubjectTest', 'dev\\TestRunnerSubjectTest'], TestLib::$missingFixtureClasses);
+		$this->assertEquals(array_fill(0, 4, 'framework/dev/test/TestRunnerSubject.t.php'), TestLib::$failedFiles, 'les fichiers rouges de deux processus, deux chacun, se mettent bout à bout');
 
 		$this->setCounters(0, 0, 0, 0, 0);
 
@@ -812,6 +834,8 @@ class TestRunnerTest extends \Test {
 		TestLib::$missingFixtureClasses = [];
 		TestLib::$notApplicable = 0;
 		TestLib::$notApplicableClasses = [];
+		TestLib::$failedFiles = [];
+		TestLib::$paths = NULL;
 
 	}
 

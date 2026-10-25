@@ -516,6 +516,19 @@
 	margin-block: var(--space-sm);
 }
 
+/* La vue que couvre util-logo-wait, positionnée comme toute vue qui le porte, assez haute pour que le logo y ait de la marge
+   comme dans une scène, et bordée pour que le fond par défaut s'y distingue de celui du bloc */
+.design-motion-wait {
+	position: relative;
+	min-height: 12rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+}
+
+.design-motion-wait-sky {
+	--util-logo-wait-background: #cfe8f5;
+}
+
 .design-motion-move .util-block {
 	margin: 0 0 var(--space-xs);
 	padding: var(--space-xs) var(--space-sm);

@@ -290,6 +290,8 @@ class AbsenceUi {
 						$h .= '<td class="td-vertical-align-middle hr-absence-upcoming-rail">';
 							$h .= $weeks;
 							$h .= $uiTeammate->getRail($eUser['ranges'], $eUser['segments'], $days, NULL, absencesXs: TRUE, segmentsAbsence: $eUser['segmentsAbsence']);
+							// Pas util-annotation : les dates sont des liens de modification, que .util-annotation a repeindrait
+							// en gris souligné.
 							$h .= '<div class="font-sm color-muted">'.($dates === [] ? s("aucune absence") : implode(', ', $dates)).'</div>';
 						$h .= '</td>';
 

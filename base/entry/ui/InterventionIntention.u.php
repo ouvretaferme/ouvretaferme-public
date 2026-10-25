@@ -75,6 +75,7 @@ class InterventionIntentionUi extends IntentionUi {
 			return match($reading['question']['name']) {
 				'plant' => TimeIntentionUi::getPlantResults($reading['object']['action'], $reading['question']['cPlant']),
 				'series' => TimeIntentionUi::getSeriesResults($reading, $cAction, TimeIntentionUi::getSeriesPlaceholder()),
+				'category' => TimeIntentionUi::getCategoryResults($reading['question']['cCategory']),
 			};
 
 		}
@@ -102,7 +103,7 @@ class InterventionIntentionUi extends IntentionUi {
 			$results = array_merge($results, self::getDateResults($confirmation));
 
 			if($confirmation['tracked']) {
-				$results = array_merge($results, self::getDurationResults(self::getSpentGroup(), $confirmation['minutes']));
+				$results = array_merge($results, DurationComplementUi::getAdditionResults(self::getSpentGroup(), $confirmation['additions']));
 			}
 
 		} else {
@@ -110,7 +111,7 @@ class InterventionIntentionUi extends IntentionUi {
 			$results = array_merge(
 				$results,
 				self::getWeekResults($confirmation),
-				self::getDurationResults(self::getExpectedGroup(), $confirmation['expected'])
+				DurationComplementUi::getAdditionResults(self::getExpectedGroup(), $confirmation['additions'])
 			);
 
 		}
@@ -200,21 +201,6 @@ class InterventionIntentionUi extends IntentionUi {
 	}
 
 	/**
-	 * Les durées courantes (`DurationComplementUi::getOptions()`) : la puce choisie se décoche, et toute autre
-	 * durée se tape.
-	 */
-	private static function getDurationResults(string $group, int $minutesSelected): array {
-
-		return array_map(fn(int $minutes) => [
-			'group' => $group,
-			'label' => DurationComplementUi::getDuration($minutes),
-			'value' => 'duration:'.$minutes,
-			'selected' => ($minutes === $minutesSelected),
-		], DurationComplementUi::getOptions());
-
-	}
-
-	/**
 	 * Sous le refus d'un jour ou d'une semaine qu'une intervention faite n'admet pas, l'état, qui la passe à
 	 * faire d'un geste.
 	 */
@@ -239,6 +225,7 @@ class InterventionIntentionUi extends IntentionUi {
 			'question' => match($reading['question']['name']) {
 				'plant' => HarvestIntentionUi::getObjectPlaceholder(),
 				'series' => TimeIntentionUi::getSeriesPlaceholder(),
+				'category' => TimeIntentionUi::getCategoryQuestion(),
 			},
 			'duration', 'write' => TimeIntentionUi::getDurationPlaceholder(),
 		};
@@ -331,7 +318,7 @@ class InterventionIntentionUi extends IntentionUi {
 		return $toast + [
 			'package' => 'entry',
 			'icon' => self::getPlantIcon($eTask['plant']),
-			'detail' => encode($eTask['action']['name'].' '.mb_strtolower($eTask['plant']['name']).' · '.TimeIntentionUi::getAddedDetail($eTask, s("ajoutée au planning"))),
+			'detail' => encode(TimeIntentionUi::getObjectName($reading['object'], $eTask).' · '.TimeIntentionUi::getAddedDetail($eTask, s("ajoutée au planning"))),
 		];
 
 	}

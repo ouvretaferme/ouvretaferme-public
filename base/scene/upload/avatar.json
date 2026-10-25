@@ -1,6 +1,6 @@
 {
 	"profile": "avatar",
-	"version": 2,
+	"version": 3,
 	"maxBytes": 1048576,
 	"maxTriangles": 3200,
 	"maxNodes": 256,
@@ -20,6 +20,10 @@
 	],
 	"ground": 0.02,
 	"smoothAngle": 60,
+	"skull": {
+		"radius": 0.06,
+		"rays": 9
+	},
 	"bones": [
 		"bassin",
 		"torse",
@@ -390,6 +394,7 @@
 		"missing",
 		"triangles",
 		"bounds",
-		"ground"
+		"ground",
+		"skull"
 	]
 }

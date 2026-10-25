@@ -518,17 +518,13 @@ class ReviewUi {
 			return '';
 		}
 
-		$h = '<a data-dropdown="bottom-end" class="dropdown-toggle btn btn-color-primary">'.\Asset::icon('gear-fill').'</a>';
-		$h .= '<div class="dropdown-list">';
-			$h .= '<div class="dropdown-title">'.s("Avis de {value}", encode($eReview->getAuthorName())).'</div>';
-			$h .= implode('', $items);
-			if($items !== [] and $moderate !== []) {
-				$h .= '<div class="dropdown-divider"></div>';
-			}
-			$h .= implode('', $moderate);
-		$h .= '</div>';
+		$menu = implode('', $items);
+		if($items !== [] and $moderate !== []) {
+			$menu .= '<div class="dropdown-divider"></div>';
+		}
+		$menu .= implode('', $moderate);
 
-		return $h;
+		return \main\DesignUi::getGear($menu, s("Avis de {value}", encode($eReview->getAuthorName())));
 
 	}
 
@@ -875,11 +871,8 @@ class ReviewUi {
 					$h .= '<div class="hide-xs-down">'.$reason.'</div>';
 					$h .= '<div class="hide-xs-down">'.$this->getAdminCourse($eReview).'</div>';
 					$h .= '<div class="learning-row-actions">';
-						$h .= '<a data-dropdown="bottom-end" class="dropdown-toggle btn btn-color-primary">'.\Asset::icon('gear-fill').'</a>';
-						$h .= '<div class="dropdown-list">';
-							$h .= '<div class="dropdown-title">'.s("Avis de {value}", encode($eReview->getAuthorName())).'</div>';
-							$h .= '<a data-ajax="/learning/admin/review:doShow" post-id="'.$eReview['id'].'" class="dropdown-item" data-waiter>'.s("Réafficher l'avis").'</a>';
-						$h .= '</div>';
+						$items = '<a data-ajax="/learning/admin/review:doShow" post-id="'.$eReview['id'].'" class="dropdown-item" data-waiter>'.s("Réafficher l'avis").'</a>';
+						$h .= \main\DesignUi::getGear($items, s("Avis de {value}", encode($eReview->getAuthorName())));
 					$h .= '</div>';
 				$h .= '</div>';
 

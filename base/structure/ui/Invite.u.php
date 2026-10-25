@@ -269,7 +269,7 @@ class InviteUi {
 				$label = '<b>'.encode($eStructureShareable['name']).'</b>';
 
 				if($eStructureShareable['legalCity']) {
-					$label .= '<br/><span class="color-muted font-sm">'.encode($eStructureShareable['legalCity']).'</span>';
+					$label .= '<br/><span class="util-annotation">'.encode($eStructureShareable['legalCity']).'</span>';
 				}
 
 				$values[$eStructureShareable['id']] = $label;
@@ -487,7 +487,7 @@ class InviteUi {
 			$label = '<b>'.encode($eStructureProducer['name']).'</b>';
 
 			if($eStructureProducer['legalCity']) {
-				$label .= '<br/><span class="color-muted font-sm">'.encode($eStructureProducer['legalCity']).'</span>';
+				$label .= '<br/><span class="util-annotation">'.encode($eStructureProducer['legalCity']).'</span>';
 			}
 
 			$values[$eStructureProducer['id']] = $label;
@@ -1005,7 +1005,7 @@ class InviteUi {
 									$h .= ' <span class="badge badge-success">'.s("Terminé").'</span>';
 								}
 								if($eInvite['email'] !== NULL) {
-									$h .= '<div class="color-muted font-sm">'.encode($eInvite['email']).'</div>';
+									$h .= '<div class="util-annotation">'.encode($eInvite['email']).'</div>';
 								}
 							$h .= '</td>';
 							$h .= '<td>';
@@ -1029,11 +1029,11 @@ class InviteUi {
 
 							}
 							$h .= '<td>';
-								$h .= '<span class="color-muted font-sm">'.\util\DateUi::numeric($eInvite['createdAt'], \util\DateUi::DATE).'</span>';
+								$h .= '<span class="util-annotation">'.\util\DateUi::numeric($eInvite['createdAt'], \util\DateUi::DATE).'</span>';
 							$h .= '</td>';
 							$h .= '<td>';
 								if($eInvite['expiresAt'] !== NULL) {
-									$h .= '<span class="color-muted font-sm">'.\util\DateUi::numeric($eInvite['expiresAt']).'</span>';
+									$h .= '<span class="util-annotation">'.\util\DateUi::numeric($eInvite['expiresAt']).'</span>';
 								} else {
 									$h .= '<span class="color-muted">—</span>';
 								}

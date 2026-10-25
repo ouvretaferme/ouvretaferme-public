@@ -36,6 +36,9 @@
 	--map-scene-ring: #c9a46a;
 	--map-scene-ink: #5a3d22;
 	--map-scene-pipe: #1c64b8;
+	/* Le logo de l'attente (DesignUi::getLogoWait()) bat sur le ciel d'horizon de MapSceneAmbience, que la première image
+	   montre à sa place */
+	--util-logo-wait-background: #cfe8f5;
 }
 
 /* Le DS de la scène. Tout bouton posé sur elle prend la forme du bouton du POC, quelle que soit sa variante du produit
@@ -751,15 +754,15 @@
 	mask-image: linear-gradient(to right, transparent, #000 var(--space-xl), #000 calc(100% - var(--space-xl)), transparent);
 }
 
-/* Une souris ne glisse pas une rangée : MapSceneScroll pose une flèche au milieu de son bord, dans l'estompe, du côté où il en
-   reste, sous un pointeur fin seulement (plus bas) */
+/* Une souris ne glisse pas une rangée : MapSceneScroll pose une flèche sur son bord, dans l'estompe, du côté où il en reste. Au
+   doigt, elle double le glissé, d'où la taille d'une commande de la scène */
 #map-scene .map-scene-scroll {
 	position: absolute;
 	z-index: 1;
-	display: none;
+	display: grid;
 	place-items: center;
-	width: var(--scene-control-small);
-	height: var(--scene-control-small);
+	width: var(--scene-control);
+	height: var(--scene-control);
 	border: 1px solid var(--scene-border);
 	border-radius: 50%;
 	background-color: var(--scene-surface);
@@ -773,20 +776,17 @@
 	translate: -100% -50%;
 }
 
-#map-scene .map-scene-scroll .asset-icon {
-	width: 16px;
-	height: 16px;
-	margin-top: 0;
+/* Une rangée sans image, la clé des cultures ou les familles du décor, n'a que des libellés, et le terrain nomme ses groupes à
+   hauteur de ses images : tant qu'elle déborde, la rangée laisse à ses flèches la place de se poser sans en couvrir un
+   (MapSceneScroll.shade()) */
+#map-scene .map-scene-scroll-gutter {
+	margin-inline: var(--scene-control);
 }
 
-/* pointer: fine écarte en plus de hover: hover les écrans tactiles qui se déclarent capables de survol, certains Android : ils
-   auraient une flèche sous le doigt, qui glisse déjà la rangée */
-@media (hover: hover) and (pointer: fine) {
-
-	#map-scene .map-scene-scroll {
-		display: grid;
-	}
-
+#map-scene .map-scene-scroll .asset-icon {
+	width: 20px;
+	height: 20px;
+	margin-top: 0;
 }
 
 /* La vignette du POC, qui garde son contenu en haut et la place de deux lignes de libellé : une rangée a la même hauteur quels
@@ -834,7 +834,8 @@
 	gap: 8px;
 }
 
-#map-scene .map-scene-decor-group + .map-scene-decor-group {
+#map-scene .map-scene-decor-group + .map-scene-decor-group,
+#map-scene .map-scene-decor-fences > .map-scene-decor-tile + .map-scene-decor-group {
 	margin-left: var(--space-sm);
 	padding-left: var(--space-sm);
 	border-left: 1px solid var(--border-light);

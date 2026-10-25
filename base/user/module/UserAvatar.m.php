@@ -53,7 +53,7 @@ class UserAvatarModel extends \ModuleModel {
 			'id' => ['serial32', 'cast' => 'int'],
 			'user' => ['element32', 'user\User', 'unique' => TRUE, 'cast' => 'element'],
 			'source' => ['enum', [\user\UserAvatar::EDITOR, \user\UserAvatar::PHOTO], 'cast' => 'enum'],
-			'composition' => ['json', 'cast' => 'array'],
+			'composition' => ['json', 'null' => TRUE, 'cast' => 'array'],
 			'accessory' => ['text8', 'min' => 1, 'max' => 40, 'null' => TRUE, 'cast' => 'string'],
 			'companion' => ['text8', 'min' => 1, 'max' => 40, 'null' => TRUE, 'cast' => 'string'],
 			'replacesPhoto' => ['bool', 'cast' => 'bool'],

@@ -9,10 +9,12 @@
  * le long. Chaque geste achevé s'écrit aussitôt par les routes unitaires de `page/decor.p.php`, l'une après l'autre, et
  * « Annuler » rejoue à l'envers ce que la séance a écrit.
  *
- * Un tracé, chemin, cours d'eau, haie, bande fleurie ou clôture, se pose point par point, d'un clic chacun, et se termine d'un
- * double-clic, d'Entrée ou de « Terminer » ; Échap retire le dernier point, puis le tracé. Posé, il ne se déplace pas d'un bloc : sa largeur ou son
- * modèle se changent par les outils, et sa ligne par ses poignées : un point se glisse, un milieu de segment en insère un, la
- * pastille du point choisi le retire. « Continuer » le reprend depuis le bout choisi, premier ou dernier point.
+ * Un tracé, chemin, cours d'eau, haie, bande fleurie ou clôture, se dessine d'un glissé, que le relâché simplifie et termine, ou se
+ * pose point par point, d'un clic chacun, et se termine d'un double-clic, d'Entrée ou de « Terminer ». Échap retire le dernier
+ * geste, glissé entier ou point, puis le tracé. Un tuyau et une rampe ne se posent qu'au clic. Posé, un tracé ne se déplace pas
+ * d'un bloc : sa largeur ou son modèle se changent par les outils, et sa ligne par ses poignées : un point se glisse, un milieu de
+ * segment en insère un, la pastille du point choisi le retire. « Continuer » le reprend depuis le bout choisi, premier ou dernier
+ * point.
  *
  * Un clic sur le terrain choisit la parcelle ou le jardin qu'il touche, et la feuille ne propose plus que de le clôturer : une
  * clôture parmi ses modèles, une haie, ou les deux, chacune posée d'un clic sur sa vignette et retirée d'un second. Choisir une
@@ -78,11 +80,17 @@ class MapSceneDecor {
 
 	static THUMB = 128;
 
-	// Un tracé se pose point par point jusqu'à TRACE_LENGTH mètres, et ne se termine pas plus court que TRACE_MIN. Ses virages
-	// s'arrondissent sur TRACE_STEP / 4 de part et d'autre de chaque point
+	// Un tracé court jusqu'à TRACE_LENGTH mètres, et ne se termine pas plus court que TRACE_MIN. Ses virages s'arrondissent sur
+	// TRACE_STEP / 4 de part et d'autre de chaque point
 	static TRACE_STEP = 1.5;
 	static TRACE_MIN = 2;
 	static TRACE_LENGTH = 1000;
+
+	// Un glissé relève un point par FREEHAND_STEP mètres au plus, ce qui garde un tracé dessiné sous le point par mètre que le poids
+	// des tracés compte (`Map.s.php`). Au relâché, la ligne ne s'écarte de la main que de FREEHAND_TOLERANCE, sous la demi-largeur
+	// de la clôture, le plus fin des tracés : l'écart reste sous le trait
+	static FREEHAND_STEP = 1;
+	static FREEHAND_TOLERANCE = .25;
 
 	// Une clôture ou une haie se pose par travées, d'un piquet au suivant : un piquet au plus coudé de chaque virage qui tourne de
 	// BEND au moins, en comptant ensemble les coudes à moins de BEND_REACH mètres l'un de l'autre, et d'autres entre eux au pas du modèle
@@ -306,12 +314,19 @@ class MapSceneDecor {
 	// plus grands, du même facteur pour garder entre eux leurs proportions
 	static VEHICLE_SCALE = 2;
 
+	// Un objet importé de la rangée Matériel s'incline sur la pente comme un banc ou une table tant que sa hauteur ne dépasse pas
+	// TILT_TALLEST fois le plus petit côté de son emprise : au-delà, un épouvantail ou une échelle, il se tient debout comme un
+	// poteau
+	static TILT_TALLEST = 2;
+
 	/**
 	 * Les kits sous la clé que `map\Decor.kit` enregistre. `model` est le modèle cuit d'un kit d'une pièce, `plants` compose un kit
 	 * d'arbres d'après un tirage qui suit l'id de l'élément, et son emprise est le pied de chacun. `grown` agrandit le modèle, emprise
 	 * comprise, quand il ne se lirait pas à sa taille réelle. `size` borne l'outil de taille, qui multiplie ce rendu : un élément à
-	 * la taille 1 garde celui du kit ; un kit sans `size` garde sa taille.
-	 * Le kit `building` pose l'un des bâtiments que la structure a composés (`plan.buildings`), que sa pose cite par `building`.
+	 * la taille 1 garde celui du kit ; un kit sans `size` garde sa taille. Sur le relief, un kit `tilts` à large base posée au sol,
+	 * véhicule, caisse, rocher, s'incline sur la pente (`tilt()`), là où ce qui pousse ou se plante reste debout.
+	 * Le kit `building` pose l'un des bâtiments que la structure a composés (`plan.buildings`), que sa pose cite par `building`. Un kit
+	 * `object` pose l'un des éléments que la structure a importés dans sa rangée (`plan.objects`), que sa pose cite par `object`.
 	 *
 	 * Un kit `traced` se dessine : une bande à plat de couches `layers`, à l'une des largeurs `widths` ou à la largeur fixe `wide`
 	 * sur `across` bandes en travers, ou des travées cuites répétées le long de la ligne, que `pieces` donne pour le modèle choisi
@@ -362,8 +377,8 @@ class MapSceneDecor {
 		roncier: MapSceneDecor.wild('roncier', [.5, 2]),
 		fougeres: MapSceneDecor.wild('fougeres', [.6, 2]),
 		roseaux: MapSceneDecor.wild('roseaux', [.6, 2]),
-		rocher: MapSceneDecor.wild('rocher', [.5, 2.5]),
-		pierrier: MapSceneDecor.wild('pierrier', [.6, 2]),
+		rocher: { ...MapSceneDecor.wild('rocher', [.5, 2.5]), tilts: true },
+		pierrier: { ...MapSceneDecor.wild('pierrier', [.6, 2]), tilts: true },
 		'bande-fleurie': { family: 'tree', traced: true, thick: 1.4, pieces: () => MapSceneDecor.strip() },
 		haie: { family: 'tree', traced: true, thick: 1.6, pieces: () => MapSceneDecor.hedge() },
 		chemin: { family: 'fence', traced: true, widths: [1, 2, 3], layers: MapSceneDecor.TRACK },
@@ -375,18 +390,49 @@ class MapSceneDecor {
 		portail: { family: 'fence', model: 'portail', joins: true },
 		enclos: { family: 'fence', enclosure: true, models: [...Object.keys(MapSceneDecor.FENCES), null] },
 		panneau: { family: 'other', model: 'panneau', size: [.5, 2] },
-		compost: { family: 'other', model: 'compost', size: [.5, 2] },
+		compost: { family: 'other', model: 'compost', size: [.5, 2], tilts: true },
 		pompe: { family: 'irrigation', layer: 'irrigation', shape: 'pump', joins: true, icon: MapSceneDecor.drawing('<rect x="8" y="44" width="48" height="6" rx="2" fill="#7d8a96"/><rect x="10" y="26" width="26" height="18" rx="4" fill="#5e6b78"/><circle cx="44" cy="35" r="10" fill="#1c64b8"/><rect x="40" y="14" width="8" height="12" fill="#164f92"/><rect x="54" y="32" width="8" height="6" fill="#164f92"/>') },
 		vanne: { family: 'irrigation', layer: 'irrigation', shape: 'valve', joins: true, overBeds: true, seats: true, icon: MapSceneDecor.drawing('<path d="M6 40 h52" stroke="#1c64b8" stroke-width="6" stroke-linecap="round"/><rect x="24" y="30" width="16" height="20" rx="3" fill="#fff" stroke="#1c64b8" stroke-width="3"/><path d="M32 30 v-12" stroke="#7d8a96" stroke-width="4"/><ellipse cx="32" cy="16" rx="11" ry="4" fill="none" stroke="#c0392b" stroke-width="4"/>') },
 		electrovanne: { family: 'irrigation', layer: 'irrigation', model: 'electrovanne', joins: true, overBeds: true, seats: true, icon: MapSceneDecor.drawing('<path d="M6 40 h52" stroke="#1c64b8" stroke-width="6" stroke-linecap="round"/><path d="M36 22 q4 14 14 18 t10 16" fill="none" stroke="#f0a020" stroke-width="3" stroke-linecap="round"/><rect x="22" y="30" width="20" height="20" rx="3" fill="#fff" stroke="#1c64b8" stroke-width="3"/><rect x="25" y="12" width="14" height="15" rx="2" fill="#26282b"/>') },
 		tuyau: { family: 'irrigation', layer: 'irrigation', traced: true, pipe: true, joins: true, overBeds: true, icon: MapSceneDecor.drawing('<path d="M8 46 L26 40 L38 24 L56 18" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 46 L26 40 L38 24 L56 18" fill="none" stroke="#1c64b8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>') },
 		rampe: { family: 'irrigation', layer: 'irrigation', traced: true, pipe: true, ramp: true, longest: 60, joins: true, overBeds: true, icon: MapSceneDecor.drawing('<path d="M6 28 h52" stroke="#1c64b8" stroke-width="5" stroke-linecap="round"/><path d="M12 30 v20 M32 30 v20 M52 30 v20" stroke="#7d8a96" stroke-width="3"/><path d="M22 26 v-6 M42 26 v-6" stroke="#164f92" stroke-width="4"/><path d="M14 14 q8 -8 16 0 M34 14 q8 -8 16 0" fill="none" stroke="#1c64b8" stroke-width="2" stroke-dasharray="3 3"/>') },
-		caisses: { family: 'other', model: 'caisses', size: [.5, 2] },
-		tracteur: { family: 'other', model: 'tracteur', grown: MapSceneDecor.VEHICLE_SCALE, size: [.5, 2] },
-		utilitaire: { family: 'other', model: 'utilitaire', grown: MapSceneDecor.VEHICLE_SCALE, size: [.5, 2] },
-		'pick-up': { family: 'other', model: 'pick-up', grown: MapSceneDecor.VEHICLE_SCALE, size: [.5, 2] },
-		remorque: { family: 'other', model: 'remorque', grown: MapSceneDecor.VEHICLE_SCALE, size: [.5, 2] }
+		caisses: { family: 'other', model: 'caisses', size: [.5, 2], tilts: true },
+		tracteur: { family: 'other', model: 'tracteur', grown: MapSceneDecor.VEHICLE_SCALE, size: [.5, 2], tilts: true },
+		utilitaire: { family: 'other', model: 'utilitaire', grown: MapSceneDecor.VEHICLE_SCALE, size: [.5, 2], tilts: true },
+		'pick-up': { family: 'other', model: 'pick-up', grown: MapSceneDecor.VEHICLE_SCALE, size: [.5, 2], tilts: true },
+		remorque: { family: 'other', model: 'remorque', grown: MapSceneDecor.VEHICLE_SCALE, size: [.5, 2], tilts: true },
+		'objet-eau': { family: 'water', object: true },
+		'objet-nature': { family: 'tree', object: true },
+		'objet-materiel': { family: 'other', object: true, tilts: true }
 	};
+
+	// Un élément importé prend l'outil de taille des kits de sa rangée, qui changent de bornes sans qu'on ait à le suivre ici
+	static {
+		for(const def of Object.values(MapSceneDecor.KITS).filter(def => def.object === true)) {
+
+			const size = MapSceneDecor.familySize(def.family);
+
+			if(size !== null) {
+				def.size = size;
+			}
+
+		}
+	}
+
+	// La plus petite borne basse et la plus grande borne haute des kits d'une rangée qui ont un outil de taille, null si aucun n'en a
+	static familySize(family) {
+
+		const sizes = Object.values(MapSceneDecor.KITS)
+			.filter(def => def.family === family && def.object !== true && def.size !== undefined)
+			.map(def => def.size);
+
+		return (sizes.length === 0) ? null : [Math.min(...sizes.map(size => size[0])), Math.max(...sizes.map(size => size[1]))];
+
+	}
+
+	// Un élément importé que la modération a retiré, ou dont le binaire n'est pas encore lu, se pose en cube gris de OBJECT_BOX mètres
+	static OBJECT_BOX = 2;
+	static OBJECT_COLOR = '#9aa0a6';
 
 	// Le réseau d'irrigation, en formes bâties ici en attendant les modèles cuits : sa couleur, le diamètre d'un tuyau neuf en mm,
 	// l'écart entre le sol et un tube posé dessus, et la portée en mètres à laquelle une vanne se cale sur la conduite la plus proche
@@ -692,7 +738,7 @@ class MapSceneDecor {
 
 		return {
 			layer: MapSceneLayer.BASE, diameter: null, laying: null, seated: null,
-			id: null, seed: null, kit, def, p, angle: 0, size: 1, building: null,
+			id: null, seed: null, kit, def, p, angle: 0, size: 1, building: null, object: null,
 			wide: (def.widths === undefined) ? null : def.widths[1],
 			model: (def.models === undefined) ? null : def.models[0],
 			trace: null, root: null, pad: null, label: null,
@@ -870,9 +916,77 @@ class MapSceneDecor {
 		return e.trace.map(q => ScenePlanGeometry.add(q, e.p));
 	}
 
-	// Deux points de la grille, l'un ou l'autre absent, ou bien qui se confondent
+	// Deux points, l'un ou l'autre absent, ou bien qui se confondent
 	static samePoint(a, b) {
 		return (a === null || b === null) ? (a === b) : (Math.abs(a.x - b.x) < 1e-6 && Math.abs(a.n - b.n) < 1e-6);
+	}
+
+	// Un kit qui se dessine d'un glissé et franchit la portée du terrain. Un tuyau et une rampe se posent au clic, d'une vanne à
+	// l'autre, et restent à portée comme les objets
+	static freehand(def) {
+		return (def.traced === true && def.pipe !== true);
+	}
+
+	/**
+	 * La ligne d'un glissé réduite aux points dont elle s'écarte de plus de `tolerance` mètres (Ramer-Douglas-Peucker) : les deux
+	 * bouts restent, et chaque point retiré est à moins de `tolerance` du segment qui le remplace. La pile tient lieu de récursion.
+	 */
+	static simplify(line, tolerance) {
+
+		const kept = new Array(line.length).fill(false);
+		const spans = [[0, line.length - 1]];
+
+		kept[0] = true;
+		kept[line.length - 1] = true;
+
+		while(spans.length > 0) {
+
+			const [from, to] = spans.pop();
+			let farthest = { index: null, distance: tolerance };
+
+			for(let i = from + 1; i < to; i++) {
+
+				const distance = ScenePlanGeometry.distanceToSegment(line[i], line[from], line[to]);
+
+				if(distance > farthest.distance) {
+					farthest = { index: i, distance };
+				}
+
+			}
+
+			if(farthest.index !== null) {
+				kept[farthest.index] = true;
+				spans.push([from, farthest.index], [farthest.index, to]);
+			}
+
+		}
+
+		return line.filter((p, index) => kept[index]);
+
+	}
+
+	/**
+	 * Les rangs des points d'une ligne à l'écran qui portent un rond : les bouts, le point choisi, et chaque point à une cible au
+	 * moins du dernier rond posé. Un tracé dessiné garde un point par mètre dans ses courbes, dont les ronds se recouvriraient en
+	 * vue large : ils s'éclaircissent, et reviennent au zoom.
+	 */
+	static sparse(screen, size, chosen) {
+
+		let last = null;
+
+		return screen.map((p, index) => index).filter(index => {
+
+			const p = screen[index];
+			const shown = (index === 0 || index === screen.length - 1 || index === chosen || Math.hypot(p.x - last.x, p.y - last.y) >= size);
+
+			if(shown) {
+				last = p;
+			}
+
+			return shown;
+
+		});
+
 	}
 
 	// Deux passes de coupe de part et d'autre de chaque sommet, au quart du segment et à TRACE_STEP / 4 au plus : les virages
@@ -1421,6 +1535,8 @@ class MapSceneDecor {
 		this.walked = walked;
 		this.calendar = calendar;
 		this.attached = false;
+		// Le sol se creuse déjà sous les étendues d'eau au montage, avant qu'aucun écran n'écoute
+		this.carved = () => {};
 		this.boards = [];
 		this.sign = [];
 		this.removals = [];
@@ -1439,6 +1555,13 @@ class MapSceneDecor {
 
 		// `MapScene.draw()` lit le terrain du plan par `readTerrain()` avant de monter le décor : chaque valeur a sa couleur
 		this.terrain = { ...plan.terrain };
+
+		// La saison du plan accompagne l'écriture du terrain d'une parcelle : toutes les actions de la page de la parcelle la lisent
+		// (`SeasonLib::getOnline()`), qui refuse une saison absente
+		this.planSeason = plan.season;
+
+		// Le terrain de chaque parcelle, dont une valeur null reprend celle de la structure
+		this.zoneTerrains = new Map(plan.zones.map(zone => [zone.id, { grass: zone.decorGrass, soil: zone.decorSoil, meadow: zone.decorMeadow }]));
 
 		this.material = new THREE.MeshToonMaterial({ vertexColors: true, gradientMap });
 		this.depthMaterial = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking });
@@ -1463,6 +1586,12 @@ class MapSceneDecor {
 		this.buildingUploaded = socle.building?.uploaded ?? null;
 		this.uploadBuffers = new Map();
 		this.buildings.forEach(building => this.readUpload(building));
+
+		// Les éléments importés par la structure, montés comme un bâtiment téléversé, sous la famille de leur rangée, et partagés par
+		// leurs poses
+		this.objects = new Map((plan.objects ?? []).map(object => [object.id, object]));
+		this.objectGeometries = new Map();
+		this.objects.forEach(object => this.readObjectUpload(object));
 
 		// La projection inverse de `ScenePlanGeometry` : de la place dans la scène aux coordonnées enregistrées
 		const [lng0, lat0] = plan.center;
@@ -1490,6 +1619,7 @@ class MapSceneDecor {
 			if(
 				def === undefined || this.available(def) === false ||
 				(def.building === true && this.buildingGeometry(row.building) === null) ||
+				(def.object === true && this.objects.has(row.object) === false) ||
 				(def.traced === true) !== (row.trace !== null) ||
 				(def.enclosure === true) !== (row.zone !== null || row.plot !== null) ||
 				(row.width !== null && def.widths === undefined)
@@ -1504,7 +1634,8 @@ class MapSceneDecor {
 				seed: row.seed,
 				angle: row.angle,
 				size: row.size,
-				building: row.building
+				building: row.building,
+				object: row.object
 			};
 
 			// Un élément dont le calque a disparu revient au calque de base. Un tuyau sans diamètre ni pose prend ceux par défaut
@@ -1561,9 +1692,10 @@ class MapSceneDecor {
 	/**
 	 * Le décor dans l'écran du plan : la carte des calques et ce que l'utilisateur y a masqué, les pastilles qui suivent la vue, et
 	 * la feuille de pose pour qui peut poser. `crew` est le groupe des paysans, qu'un clic choisit comme un élément ; `switched()`
-	 * dit que la pose s'ouvre ou se ferme, `terrain(terrain)` qu'elle a changé l'herbe ou la terre.
+	 * dit que la pose s'ouvre ou se ferme, `terrain(terrain)` qu'elle a changé l'herbe ou la terre, `zoneTerrain(zone, terrain)`
+	 * qu'elle a changé celles d'une parcelle, `carved()` qu'un creux a changé le sol.
 	 */
-	attach({ container, canvas, camera, controls, crew, switched, terrain }) {
+	attach({ container, canvas, camera, controls, crew, switched, terrain, zoneTerrain, carved }) {
 
 		this.container = container;
 		this.canvas = canvas;
@@ -1572,6 +1704,8 @@ class MapSceneDecor {
 		this.crew = crew;
 		this.switched = switched;
 		this.paintTerrain = terrain;
+		this.paintZoneTerrain = zoneTerrain;
+		this.carved = carved;
 		this.attached = true;
 
 		this.layers.attach({
@@ -2872,6 +3006,10 @@ class MapSceneDecor {
 			return this.makeBuilding(e);
 		}
 
+		if(def.object === true) {
+			return this.makeObject(e);
+		}
+
 		if(def.model !== undefined) {
 
 			const [min, max] = this.baked.index.models[def.model].box;
@@ -3081,6 +3219,143 @@ class MapSceneDecor {
 		const box = geometry.boundingBox;
 
 		return { geometry, owned: false, width: box.max.x - box.min.x, depth: box.max.z - box.min.z, height: box.max.y };
+
+	}
+
+	/**
+	 * Un élément importé, centré sur son emprise au sol, ou le cube gris qui le remplace sans modèle lu. Il se monte une fois, partagé
+	 * par ses poses, et se remonte quand son binaire arrive (`objectRemount()`).
+	 */
+	objectGeometry(id) {
+
+		if(this.objectGeometries.has(id) === false) {
+
+			const THREE = this.THREE;
+			const object = this.objects.get(id);
+			const buffer = (object.upload === null || this.buildingUploaded === null) ? null : (this.uploadBuffers.get(object.upload.url) ?? null);
+
+			let pieces;
+			let anchor = null;
+			let trunk = false;
+
+			if(buffer === null) {
+				pieces = [this.paint(new THREE.BoxGeometry(MapSceneDecor.OBJECT_BOX, MapSceneDecor.OBJECT_BOX, MapSceneDecor.OBJECT_BOX).toNonIndexed().translate(0, MapSceneDecor.OBJECT_BOX / 2, 0), MapSceneDecor.OBJECT_COLOR)];
+			} else {
+
+				// Une couleur cuite s'écrit sans dièse
+				const model = this.buildingUploaded(object.upload.index, buffer, object.family);
+
+				pieces = model.parts.map(part => this.paint(part.geometry, '#'+ part.color));
+				anchor = model.anchors?.arbre ?? null;
+				trunk = model.parts.some(part => part.name === 'arbre');
+
+			}
+
+			// Le modèle se recentre avant la fusion, qui pose le point d'attache de chaque sommet (`mark()`) là où il est
+			const box = new THREE.Box3();
+			pieces.forEach(piece => {
+				piece.computeBoundingBox();
+				box.union(piece.boundingBox);
+			});
+
+			const centre = { x: (box.min.x + box.max.x) / 2, z: (box.min.z + box.max.z) / 2 };
+			pieces.forEach(piece => piece.translate(-centre.x, 0, -centre.z));
+
+			const geometry = this.fuse(pieces);
+			geometry.computeBoundingBox();
+
+			geometry.userData.foot = (anchor === null) ? { x: 0, z: 0 } : { x: anchor[0] - centre.x, z: anchor[2] - centre.z };
+			geometry.userData.trunk = trunk;
+
+			this.objectGeometries.set(id, geometry);
+
+		}
+
+		return this.objectGeometries.get(id);
+
+	}
+
+	/**
+	 * Un élément de Nature rend un pied, comme un arbre du catalogue, que l'emprise, la sieste et les ombres lisent : posé sur son
+	 * ancre `arbre`, ou au centre, et sans tronc quand le modèle n'a pas de pièce `arbre`, comme un buisson.
+	 */
+	makeObject(e) {
+
+		const geometry = this.objectGeometry(e.object);
+		const box = geometry.boundingBox;
+		const width = box.max.x - box.min.x;
+		const depth = box.max.z - box.min.z;
+
+		const made = { geometry, owned: false, width, depth, height: box.max.y };
+
+		if(e.def.family === 'tree') {
+
+			const { x, z } = geometry.userData.foot;
+			const half = Math.max(width, depth) / 2;
+
+			made.feet = [{
+				first: 0,
+				last: geometry.attributes.position.count,
+				x, z,
+				half: this.footHalf(geometry, half),
+				trunk: geometry.userData.trunk ? Math.max(MapSceneDecor.TRUNK_MIN / 2, MapSceneDecor.TRUNK_SHARE * half) : null
+			}];
+
+		}
+
+		return made;
+
+	}
+
+	// La demi-largeur de ce qu'une géométrie pose au sol, ses sommets sous FOOT_HEIGHT, comme `foot()` le mesure d'un modèle cuit
+	footHalf(geometry, fallback) {
+
+		const position = geometry.attributes.position;
+		let [x0, x1, z0, z1] = [Infinity, -Infinity, Infinity, -Infinity];
+
+		for(let i = 0; i < position.count; i++) {
+			if(position.getY(i) < MapSceneDecor.FOOT_HEIGHT) {
+				x0 = Math.min(x0, position.getX(i));
+				x1 = Math.max(x1, position.getX(i));
+				z0 = Math.min(z0, position.getZ(i));
+				z1 = Math.max(z1, position.getZ(i));
+			}
+		}
+
+		return (x0 === Infinity) ? fallback : Math.max(x1 - x0, z1 - z0) / 2;
+
+	}
+
+	/**
+	 * Le binaire du modèle d'un élément importé, lu une fois par adresse comme celui d'un bâtiment (`readUpload()`), après quoi ses
+	 * poses se remontent. Seul un élément qui montre encore ce modèle se remonte.
+	 */
+	readObjectUpload(object) {
+
+		if(object.upload === null || this.buildingUploaded === null) {
+			return;
+		}
+
+		const url = object.upload.url;
+
+		if(this.uploadBuffers.has(url)) {
+			return;
+		}
+
+		this.uploadBuffers.set(url, null);
+
+		SceneLoader.read(url, 'arrayBuffer').then(
+			buffer => {
+
+				this.uploadBuffers.set(url, buffer);
+
+				if(this.closed === false && this.objects.get(object.id)?.upload?.url === url) {
+					this.objectRemount(object.id);
+				}
+
+			},
+			() => this.uploadBuffers.delete(url)
+		);
 
 	}
 
@@ -3561,21 +3836,33 @@ class MapSceneDecor {
 
 	settle(e) {
 
-		// Sur le relief, un élément se pose à la hauteur du sol sous son centre, droit comme un arbre sur une pente. Un bâtiment reste
-		// de niveau, posé au plus haut du sol sous lui sur son soubassement. Une étendue d'eau descend au plus bas, et le sol se
-		// creuse sous elle : l'eau ne se tient pas au-dessus d'une pente
+		// Sur le relief, un élément se pose à la hauteur du sol sous son centre, droit comme un arbre sur une pente. Un objet à large
+		// base posée au sol s'incline sur elle. Un bâtiment reste de niveau, posé au plus haut du sol sous lui sur son soubassement.
+		// Une étendue d'eau descend au plus bas, et le sol se creuse sous elle : l'eau ne se tient pas au-dessus d'une pente
 		const founded = (this.geometry.relief !== null && MapSceneDecor.founded(e));
 		const sunk = (this.geometry.relief !== null && MapSceneDecor.sunk(e));
+		const tilted = (this.geometry.relief !== null && MapSceneDecor.tilts(e));
 		let y = this.geometry.height(e.p.x, e.p.n);
+		let basis = null;
 
 		if(founded) {
 			y = this.geometry.relief.highest(MapSceneDecor.rectangle(e));
 		} else if(sunk) {
 			y = this.sink(e);
+		} else if(tilted) {
+			({ y, basis } = this.tilt(e, y));
 		}
 
 		e.root.position.set(e.p.x, y, -e.p.n);
+		// Repartir de la seule rotation de l'élément : celle de la pose précédente garderait sa pente
+		e.root.rotation.x = 0;
+		e.root.rotation.z = 0;
 		e.root.rotation.y = e.angle;
+
+		if(basis !== null) {
+			e.root.quaternion.setFromRotationMatrix(basis);
+		}
+
 		// Le pointeur vise le volume par ses matrices, qui ne se recalculent qu'au rendu : un geste arrivé avant l'image suivante
 		// viserait l'ancienne place
 		e.root.updateMatrixWorld(true);
@@ -3613,6 +3900,51 @@ class MapSceneDecor {
 	// Un bâtiment, que le relief ne penche pas
 	static founded(e) {
 		return e.def.family === 'building';
+	}
+
+	// Un objet à large base posée au sol, que le relief penche (TILT_TALLEST)
+	static tilts(e) {
+		return e.def.tilts === true && (e.def.object !== true || e.height <= MapSceneDecor.TILT_TALLEST * Math.min(e.width, e.depth));
+	}
+
+	/**
+	 * La hauteur et l'inclinaison d'un objet à large base sur le relief, d'après le sol aux quatre coins de son emprise : sa pente
+	 * vers sa droite et vers son avant est celle de ses côtés, sa hauteur celle du milieu des quatre. Le sol n'est plan que par
+	 * triangle, si bien qu'un coin ou le sol sous le centre, `centre`, peut passer au-dessus de ce plan : l'objet monte du plus grand
+	 * de ces écarts, plutôt que d'y enfoncer une roue ou d'être traversé par une crête. L'axe de sa droite reste dans le plan
+	 * vertical qu'il avait, son orientation ne change donc pas (`MapScene.yaw()`).
+	 */
+	tilt(e, centre) {
+
+		const G = ScenePlanGeometry;
+		const relief = this.geometry.relief;
+		const { origin, w, u, width, length } = MapSceneDecor.rectangle(e);
+		const at = (a, b) => {
+			const corner = G.add(origin, G.add(G.mul(w, a * width), G.mul(u, b * length)));
+			return relief.height(corner.x, corner.n);
+		};
+		const heights = [[at(0, 0), at(1, 0)], [at(0, 1), at(1, 1)]];
+
+		const right = (heights[0][1] + heights[1][1] - heights[0][0] - heights[1][0]) / (2 * width);
+		const front = (heights[1][0] + heights[1][1] - heights[0][0] - heights[0][1]) / (2 * length);
+		const middle = (heights[0][0] + heights[0][1] + heights[1][0] + heights[1][1]) / 4;
+
+		let lift = Math.max(0, centre - middle);
+
+		for(const b of [0, 1]) {
+			for(const a of [0, 1]) {
+				lift = Math.max(lift, heights[b][a] - (middle + right * (a - .5) * width + front * (b - .5) * length));
+			}
+		}
+
+		// Les axes de la scène portent le nord en z négatif
+		const THREE = this.THREE;
+		const across = new THREE.Vector3(w.x, right, -w.n).normalize();
+		const up = new THREE.Vector3(u.x, front, -u.n).cross(across).normalize();
+		const along = new THREE.Vector3().crossVectors(across, up);
+
+		return { y: middle + lift, basis: new THREE.Matrix4().makeBasis(across, up, along) };
+
 	}
 
 	// Une étendue d'eau, une mare, un bassin, un puits. Un cours d'eau se trace et suit le sol
@@ -3654,6 +3986,7 @@ class MapSceneDecor {
 
 		this.resettle([box], e);
 		this.regrid(box);
+		this.carved();
 
 	}
 
@@ -3696,11 +4029,11 @@ class MapSceneDecor {
 
 	}
 
-	// Un bâtiment touche une boite du sol dès que son emprise la mord, puisqu'il se pose sur tout le sol sous lui. Un autre élément
-	// se pose sous son centre, et ne la touche que si son centre y tombe
+	// Un bâtiment touche une boite du sol dès que son emprise la mord, puisqu'il se pose sur tout le sol sous lui, comme un objet
+	// incliné sur les coins de la sienne. Un autre élément se pose sous son centre, et ne la touche que si son centre y tombe
 	static rests(e, box) {
 
-		const points = MapSceneDecor.founded(e) ? MapSceneDecor.corners(MapSceneDecor.rectangle(e)) : [e.p];
+		const points = (MapSceneDecor.founded(e) || MapSceneDecor.tilts(e)) ? MapSceneDecor.corners(MapSceneDecor.rectangle(e)) : [e.p];
 
 		return MapSceneDecor.apart(MapSceneDecor.extent(points), box) === false;
 
@@ -3760,7 +4093,8 @@ class MapSceneDecor {
 	 * qui grandit de `e.size`, l'écart s'y divise donc, et le point d'attache de ses feuilles monte avec lui, sans quoi elles se
 	 * rétréciraient vers l'ancienne place. L'emprise suit le sol sommet par sommet, tournée dans les axes de la scène le temps du
 	 * drapé, et descend de ce que la racine, posée à `y`, dépasse le sol sous le centre, d'où `conform()` part : sous un bâtiment
-	 * posé au plus haut du sol, elle flotterait de cet écart.
+	 * posé au plus haut du sol, elle flotterait de cet écart. Un objet incliné (`tilt()`) suit déjà le sol d'un bloc : son plant ne
+	 * monte pas une seconde fois, et son emprise se pose dans la scène avant de revenir dans son repère penché.
 	 */
 	fitGround(e, y) {
 
@@ -3772,7 +4106,7 @@ class MapSceneDecor {
 		const cos = Math.cos(e.angle);
 		const sin = Math.sin(e.angle);
 
-		if(e.plain.kit !== null) {
+		if(e.plain.kit !== null && MapSceneDecor.tilts(e) === false) {
 
 			const geometry = e.root.children[0].geometry;
 			const position = geometry.attributes.position;
@@ -3797,15 +4131,34 @@ class MapSceneDecor {
 
 			const geometry = e.pad.geometry;
 			const position = geometry.attributes.position;
-			const above = y - relief.height(e.p.x, e.p.n);
 
 			position.array.set(e.plain.pad);
-			geometry.rotateY(e.angle);
-			relief.conform(geometry, e.p);
-			geometry.rotateY(-e.angle);
 
-			for(let i = 0; i < position.count; i++) {
-				position.setY(i, position.getY(i) - above);
+			if(MapSceneDecor.tilts(e)) {
+
+				// Comme le soubassement d'un bâtiment (`found()`), sous une racine posée à même la scène
+				const matrix = e.root.matrix;
+
+				geometry.applyMatrix4(matrix);
+
+				for(let i = 0; i < position.count; i++) {
+					position.setY(i, relief.height(position.getX(i), -position.getZ(i)) + e.plain.pad[i * 3 + 1]);
+				}
+
+				geometry.applyMatrix4(new this.THREE.Matrix4().copy(matrix).invert());
+
+			} else {
+
+				const above = y - relief.height(e.p.x, e.p.n);
+
+				geometry.rotateY(e.angle);
+				relief.conform(geometry, e.p);
+				geometry.rotateY(-e.angle);
+
+				for(let i = 0; i < position.count; i++) {
+					position.setY(i, position.getY(i) - above);
+				}
+
 			}
 
 			geometry.computeBoundingSphere();
@@ -4033,12 +4386,14 @@ class MapSceneDecor {
 	/**
 	 * L'îlot où un point de la scène se pose, ou null quand aucun ne le prend : le plus proche de ceux dont la portée le couvre
 	 * et qui le retrouvent. Un point s'enregistre sans le décalage de son îlot et se relit par la zone la plus proche
-	 * (`ScenePlanLand.at()`) : posé sur un îlot qui ne le retrouverait pas ainsi, il changerait de place au rechargement.
+	 * (`ScenePlanLand.at()`) : posé sur un îlot qui ne le retrouverait pas ainsi, il changerait de place au rechargement. Un tracé
+	 * qui se dessine (`MapSceneDecor.freehand()`) franchit la portée, au glissé comme au clic (`bounded` à faux) : seul ce
+	 * relogement le borne, et il garde l'îlot le plus proche.
 	 */
-	islandOf(p) {
+	islandOf(p, bounded = true) {
 
 		const land = this.geometry.land;
-		const islands = land.islands.filter(island => ScenePlanGeometry.inside(p, island.reach) && land.at(ScenePlanGeometry.sub(p, island.offset)) === island);
+		const islands = land.islands.filter(island => (bounded === false || ScenePlanGeometry.inside(p, island.reach)) && land.at(ScenePlanGeometry.sub(p, island.offset)) === island);
 
 		// Deux portées se recouvrent dès que deux îlots sont rapprochés : l'écart à l'enveloppe ne se mesure que là
 		if(islands.length < 2) {
@@ -4051,7 +4406,8 @@ class MapSceneDecor {
 
 	coordinates(p) {
 
-		const island = this.islandOf(p) ?? this.geometry.land.islands[0];
+		// Un point de tracé au-delà de la portée s'enregistre sur l'îlot qui le relira, comme un point en deçà
+		const island = this.islandOf(p, false) ?? this.geometry.land.islands[0];
 		const real = ScenePlanGeometry.sub(p, island.offset);
 		const round = value => Math.round(value * 1e7) / 1e7;
 
@@ -4128,11 +4484,13 @@ class MapSceneDecor {
 	 * Ce que le terrain refuse à une emprise, ou null. `outside` : un coin n'est à portée d'aucun îlot. Un objet ne s'enregistre que
 	 * par son point d'ancrage : son emprise peut couvrir deux îlots, il se rattache à celui de ce point. Un tracé enregistre chacun
 	 * de ses points sans le décalage du sien : tous tiennent sur un même îlot, puisqu'une ligne qui enjamberait le pli entre deux
-	 * îlots sauterait dans la réalité tout l'écart que la scène a resserré, d'où `apart`.
+	 * îlots sauterait dans la réalité tout l'écart que la scène a resserré, d'où `apart`. Un tracé qui se dessine
+	 * (`MapSceneDecor.freehand()`) franchit la portée, au glissé comme au clic ; un objet, un tuyau et une rampe la gardent.
 	 */
 	landRefusal(e, footprint) {
 
-		const islands = new Set(footprint.pieces.flatMap(piece => MapSceneDecor.corners(piece.rectangle).map(p => this.islandOf(p))));
+		const bounded = (MapSceneDecor.freehand(e.def) === false);
+		const islands = new Set(footprint.pieces.flatMap(piece => MapSceneDecor.corners(piece.rectangle).map(p => this.islandOf(p, bounded))));
 
 		if(islands.has(null)) {
 			return 'outside';
@@ -4191,11 +4549,15 @@ class MapSceneDecor {
 			return 'long';
 		}
 
-		if(e.def.traced === true && e.trace.length > this.tracePoints) {
+		// Le glissé en cours relève un point par mètre, que la simplification du relâché réduit : le nombre de points et le poids ne
+		// se jugent qu'après elle
+		const drawing = (this.tracing !== null && this.tracing.e === e && this.tracing.freehand !== null);
+
+		if(e.def.traced === true && drawing === false && e.trace.length > this.tracePoints) {
 			return 'points';
 		}
 
-		if(this.beyondLimit(e)) {
+		if(drawing === false && this.beyondLimit(e)) {
 			return 'limit';
 		}
 
@@ -4435,15 +4797,20 @@ class MapSceneDecor {
 		this.tiles = this.sheet.qsa('[data-kit]');
 		this.createTile = this.sheet.qs('[data-scene-decor-create]');
 		this.buildingTemplate = this.sheet.qs('template[data-scene-decor-building]');
+		this.objectTemplate = this.sheet.qs('template[data-scene-decor-object]');
+		this.importTiles = this.sheet.qsa('[data-scene-decor-import]');
 		this.terrainGroups = this.sheet.qsa('[data-terrain]');
-		this.terrainTiles = this.sheet.qsa('[data-grass], [data-soil]');
+		this.terrainTiles = this.sheet.qsa('[data-terrain] > .map-scene-decor-tile');
 		this.terrainOpening = null;
+		this.zoneTerrainOpening = null;
 		this.families = this.sheet.qs('.map-scene-decor-families');
 		this.kits = this.sheet.qs('[data-scene-decor-kits]');
 		this.place = this.sheet.qs('[data-scene-decor-area]');
 		this.enclosure = this.sheet.qs('[data-scene-decor-enclosure]');
 		this.fences = this.enclosure.qsa('[data-fence]');
 		this.hedgeTile = this.enclosure.qs('[data-hedge]');
+		this.areaTerrainGroups = this.enclosure.qsa('[data-area-terrain]');
+		this.areaTerrainTiles = this.enclosure.qsa('[data-area-terrain] > .map-scene-decor-tile');
 		this.cancelButton = this.container.qs('[data-scene-decor-cancel]');
 		this.doneButton = this.container.qs('[data-scene-decor-done]');
 		this.layerHead = this.sheet.qs('[data-scene-decor-layer]');
@@ -4483,6 +4850,7 @@ class MapSceneDecor {
 
 		this.lines = { grid: lines(MapSceneDecor.GRID_OPACITY), limit: lines(.75), fine: lines(.5) };
 		this.grid = null;
+		this.limit = null;
 		this.fold = null;
 		this.fine = new THREE.LineSegments(new THREE.BufferGeometry(), this.lines.fine);
 		this.fine.visible = false;
@@ -4551,7 +4919,14 @@ class MapSceneDecor {
 		this.sheet.qsa('.map-scene-decor-tile-delete', link => this.bindDelete(link));
 
 		for(const tile of this.terrainTiles) {
-			tile.addEventListener('click', () => this.chooseTerrain((tile.dataset.grass !== undefined) ? { grass: tile.dataset.grass } : { soil: tile.dataset.soil }));
+			const key = MapSceneDecor.terrainKey(tile);
+			tile.addEventListener('click', () => this.chooseTerrain({ [key]: tile.dataset[key] }));
+		}
+
+		// La vignette « Comme la ferme » porte une valeur vide : la parcelle reprend le terrain de la structure
+		for(const tile of this.areaTerrainTiles) {
+			const key = MapSceneDecor.terrainKey(tile);
+			tile.addEventListener('click', () => this.chooseAreaTerrain(this.enclosing(), { [key]: (tile.dataset[key] === '') ? null : tile.dataset[key] }));
 		}
 
 		for(const tile of this.fences) {
@@ -4641,8 +5016,12 @@ class MapSceneDecor {
 				this.endTrace();
 			}
 		});
+		// Pendant un tracé, le bouton droit tourne la vue, et le menu part à l'appui sur certains systèmes : il ne lâche rien, Échap et
+		// « Annuler » abandonnent le tracé
 		this.canvas.addEventListener('contextmenu', event => {
-			if(this.active && this.letGo()) {
+			if(this.active && this.tracing !== null) {
+				event.preventDefault();
+			} else if(this.active && this.letGo()) {
 				event.preventDefault();
 			}
 		});
@@ -4653,12 +5032,15 @@ class MapSceneDecor {
 				return;
 			}
 
-			// Le tracé qu'on pose répond d'abord : Échap y retire le dernier point, Entrée le termine
+			// Le tracé qu'on pose répond d'abord : Échap y annule le glissé en cours, sinon retire le dernier geste, Entrée le termine
+			// hors d'un glissé, que le relâché termine
 			if(this.tracing !== null) {
 
-				if(event.key === 'Escape') {
+				if(event.key === 'Escape' && this.tracing.freehand !== null) {
+					this.cancelFreehand();
+				} else if(event.key === 'Escape') {
 					this.unplot();
-				} else if(event.key === 'Enter') {
+				} else if(event.key === 'Enter' && this.tracing.freehand === null) {
 					event.preventDefault();
 					this.endTrace();
 				}
@@ -4706,20 +5088,22 @@ class MapSceneDecor {
 	}
 
 	/**
-	 * La poubelle d'un bâtiment de la structure confirme sous son nom, et dit qu'il quittera aussi le plan quand une pose le cite,
-	 * retrait pas encore envoyé (`sendRemovals()`) compris, qui le cite encore en base. La confirmation du cadriciel écoute le
-	 * clic sur le document en capture, avant la poubelle : elle se pose donc avant le clic, quand le doigt ou la souris se
-	 * pose, ou quand le clavier y arrive.
+	 * La poubelle d'un bâtiment de la structure ou d'un élément importé confirme sous son nom, et dit qu'il quittera aussi le plan
+	 * quand une pose le cite, retrait pas encore envoyé (`sendRemovals()`) compris, qui le cite encore en base. La confirmation du
+	 * cadriciel écoute le clic sur le document en capture, avant la poubelle : elle se pose donc avant le clic, quand le doigt ou
+	 * la souris se pose, ou quand le clavier y arrive.
 	 */
 	bindDelete(link) {
 
 		const prepare = () => {
 
 			const id = Number(link.getAttribute('post-id'));
-			const posed = [...this.elements, ...this.removals].some(e => e.building === id);
+			const object = (MapSceneDecor.objectOf(link.parentElement.qs('[data-kit]')) !== null);
+			const posed = [...this.elements, ...this.removals].some(e => (object ? e.object : e.building) === id);
+			const name = object ? this.objects.get(id).name : this.buildings.get(id).name;
 
 			// Une fonction, pour que le nom passe tel quel : une chaîne de remplacement lirait `$&` comme un motif
-			link.dataset.confirm = (posed ? link.dataset.confirmPosed : link.dataset.confirmFree).replace('{value}', () => this.buildings.get(id).name);
+			link.dataset.confirm = (posed ? link.dataset.confirmPosed : link.dataset.confirmFree).replace('{value}', () => name);
 
 		};
 
@@ -4733,6 +5117,11 @@ class MapSceneDecor {
 		return (tile.dataset.building === undefined) ? null : Number(tile.dataset.building);
 	}
 
+	// L'élément importé qu'une vignette pose, null pour un kit du catalogue
+	static objectOf(tile) {
+		return (tile.dataset.object === undefined) ? null : Number(tile.dataset.object);
+	}
+
 	// Une vignette se propose si la scène sait monter ce qu'elle pose : les modèles cuits de son kit, ou le bâtiment qu'elle cite
 	offers(tile) {
 
@@ -4741,7 +5130,8 @@ class MapSceneDecor {
 		return (
 			def !== undefined &&
 			this.available(def) &&
-			(def.building !== true || this.buildingGeometry(MapSceneDecor.buildingOf(tile)) !== null)
+			(def.building !== true || this.buildingGeometry(MapSceneDecor.buildingOf(tile)) !== null) &&
+			(def.object !== true || this.objects.has(MapSceneDecor.objectOf(tile)))
 		);
 
 	}
@@ -4777,6 +5167,7 @@ class MapSceneDecor {
 
 				this.journal = [];
 				this.terrainOpening = { ...this.terrain };
+				this.zoneTerrainOpening = new Map([...this.zoneTerrains].map(([id, terrain]) => [id, { ...terrain }]));
 
 				// Le plafond du décor ne se juge que pendant la pose, que seule la feuille ouvre : le bourg monte le même décor sans elle.
 				// Chaque élément y entre avec ce que pèse sa ligne, celles du défaut comprises, que le premier geste adopte
@@ -4832,6 +5223,7 @@ class MapSceneDecor {
 		}
 
 		this.createTile.classList.toggle('hide', family !== 'building');
+		this.importTiles.forEach(tile => tile.classList.toggle('hide', tile.dataset.sceneDecorImport !== family));
 
 		for(const group of this.terrainGroups) {
 			group.classList.toggle('hide', family !== 'terrain');
@@ -4846,8 +5238,8 @@ class MapSceneDecor {
 	}
 
 	/**
-	 * Les vignettes du terrain, peintes des couleurs de la scène : un sol se montre en deux planches sur l'herbe choisie, il se
-	 * repeint donc quand l'herbe change.
+	 * Les vignettes du terrain, peintes des couleurs de la scène : un sol se montre en deux planches et un pré en touffes et en
+	 * fleurs sur l'herbe choisie, ils se repeignent donc quand l'herbe change.
 	 */
 	showTerrain() {
 
@@ -4857,36 +5249,103 @@ class MapSceneDecor {
 		// Les clôtures se montrent sur l'herbe de la scène : sur le fond clair de la feuille, un grillage ou un ruban ne se voit pas
 		this.enclosure.style.setProperty('--map-scene-decor-ground', grass);
 
-		// Le pré d'une vignette est cerné d'un trait léger : la presque blanche se perdrait sans lui sur le fond clair de la feuille
-		const meadow = color => '<rect x=".5" y=".5" width="63" height="63" rx="6" fill="'+ color +'" stroke="#000" stroke-opacity=".12"/>';
-
 		for(const tile of this.terrainTiles) {
 
-			let art;
+			const key = MapSceneDecor.terrainKey(tile);
+			const value = tile.dataset[key];
 
-			if(tile.dataset.grass !== undefined) {
-				art = meadow(MapScenePlanSeason.grassColor(tile.dataset.grass)) +'<path d="M6 20h18M30 40h22M10 52h14M38 14h18" stroke="#000" stroke-opacity=".06" stroke-width="5" stroke-linecap="round"/>';
-			} else {
-				const color = MapScene.SOILS[tile.dataset.soil];
-				art = meadow(grass) +'<rect x="8" y="14" width="48" height="13" rx="2" fill="'+ color +'"/><rect x="8" y="37" width="48" height="13" rx="2" fill="'+ color +'"/>';
-			}
-
-			tile.qs('img').src = svg(art);
-			tile.classList.toggle('selected', tile.dataset.grass === this.terrain.grass || tile.dataset.soil === this.terrain.soil);
+			tile.qs('img').src = svg(MapSceneDecor.terrainArt(key, value, grass));
+			tile.classList.toggle('selected', value === this.terrain[key]);
 
 		}
 
 	}
 
 	/**
-	 * Une herbe ou un sol choisi se voit aussitôt dans la scène et s'enregistre. Le terrain n'entre pas au journal des gestes :
+	 * Le dessin d'une vignette du terrain : une herbe, un sol en deux planches ou un pré en touffes et en fleurs, sur l'herbe `grass`.
+	 */
+	static terrainArt(key, value, grass) {
+
+		// Le pré d'une vignette est cerné d'un trait léger : la presque blanche se perdrait sans lui sur le fond clair de la feuille
+		const meadow = color => '<rect x=".5" y=".5" width="63" height="63" rx="6" fill="'+ color +'" stroke="#000" stroke-opacity=".12"/>';
+
+		if(key === 'grass') {
+			return meadow(MapScenePlanSeason.grassColor(value)) +'<path d="M6 20h18M30 40h22M10 52h14M38 14h18" stroke="#000" stroke-opacity=".06" stroke-width="5" stroke-linecap="round"/>';
+		} else if(key === 'soil') {
+			const color = MapScene.SOILS[value];
+			return meadow(grass) +'<rect x="8" y="14" width="48" height="13" rx="2" fill="'+ color +'"/><rect x="8" y="37" width="48" height="13" rx="2" fill="'+ color +'"/>';
+		} else {
+			return MapSceneMeadow.art(value, grass);
+		}
+
+	}
+
+	/**
+	 * Les vignettes du terrain de la parcelle `zone`, sur l'herbe qu'elle montre dans la scène, la sienne ou celle de la structure :
+	 * « Comme la ferme » se peint du terrain de la structure, et la vignette choisie est celle de la valeur de la parcelle, ou
+	 * « Comme la ferme » quand elle n'en a pas.
+	 */
+	showAreaTerrain(zone) {
+
+		const svg = body => 'data:image/svg+xml,'+ encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'+ body +'</svg>');
+		const terrain = this.zoneTerrains.get(zone.id);
+		const grass = MapScenePlanSeason.grassColor(MapScene.readGrass(terrain.grass) ?? this.terrain.grass);
+
+		for(const tile of this.areaTerrainTiles) {
+
+			const key = MapSceneDecor.terrainKey(tile);
+			const value = (tile.dataset[key] === '') ? null : tile.dataset[key];
+
+			tile.qs('img').src = svg(MapSceneDecor.terrainArt(key, value ?? this.terrain[key], grass));
+			tile.classList.toggle('selected', value === terrain[key]);
+
+		}
+
+	}
+
+	/**
+	 * Une herbe, un sol ou un pré choisi pour la parcelle `area` se voit aussitôt dans la scène et s'enregistre, les trois valeurs
+	 * ensemble : une valeur absente de l'envoi y deviendrait null (`zone:doUpdateDecor`). Comme le terrain de la structure, il
+	 * n'entre pas au journal des gestes : « Annuler » rend celui de l'ouverture.
+	 */
+	chooseAreaTerrain(area, change) {
+
+		const before = this.zoneTerrains.get(area.id);
+		const terrain = { ...before, ...change };
+
+		if(terrain.grass === before.grass && terrain.soil === before.soil && terrain.meadow === before.meadow) {
+			return;
+		}
+
+		this.zoneTerrains.set(area.id, terrain);
+		this.paintZoneTerrain(area.id, terrain);
+		this.showAreaTerrain(area);
+
+		const values = { id: area.id, season: this.planSeason, decorGrass: terrain.grass ?? '', decorSoil: terrain.soil ?? '', decorMeadow: terrain.meadow ?? '' };
+
+		// Dans la file des écritures du décor, avec celles de la structure : deux choix rapprochés arrivent dans l'ordre où ils ont été faits
+		this.queue = this.queue
+			.then(() => new Ajax.Query(this.sheet).url('/map/zone:doUpdateDecor').body(values).fetch())
+			.catch(() => null);
+
+	}
+
+	/**
+	 * Ce qu'une vignette du terrain choisit : l'herbe, le sol ou le pré, d'après l'attribut que `SceneUi` lui pose.
+	 */
+	static terrainKey(tile) {
+		return ['grass', 'soil', 'meadow'].find(key => tile.dataset[key] !== undefined);
+	}
+
+	/**
+	 * Une herbe, un sol ou un pré choisi se voit aussitôt dans la scène et s'enregistre. Le terrain n'entre pas au journal des gestes :
 	 * « Annuler » le ramène à celui de l'ouverture.
 	 */
 	chooseTerrain(change) {
 
 		const terrain = { ...this.terrain, ...change };
 
-		if(terrain.grass === this.terrain.grass && terrain.soil === this.terrain.soil) {
+		if(terrain.grass === this.terrain.grass && terrain.soil === this.terrain.soil && terrain.meadow === this.terrain.meadow) {
 			return;
 		}
 
@@ -4894,7 +5353,7 @@ class MapSceneDecor {
 		this.paintTerrain(terrain);
 		this.showTerrain();
 
-		const values = { structure: this.sheet.dataset.structure, decorGrass: terrain.grass, decorSoil: terrain.soil };
+		const values = { structure: this.sheet.dataset.structure, decorGrass: terrain.grass, decorSoil: terrain.soil, decorMeadow: terrain.meadow };
 
 		// Dans la file des écritures du décor : deux choix rapprochés arrivent dans l'ordre où ils ont été faits
 		this.queue = this.queue
@@ -4916,7 +5375,7 @@ class MapSceneDecor {
 
 		// Une vignette du catalogue montre son kit ou le bâtiment qu'elle cite, une vignette de clôture l'enclos carré de son modèle
 		this.paintThumbnails([
-			...[...this.tiles].filter(tile => this.offers(tile)).map(tile => [tile, { kit: tile.dataset.kit, building: MapSceneDecor.buildingOf(tile) }]),
+			...[...this.tiles].filter(tile => this.offers(tile)).map(tile => [tile, { kit: tile.dataset.kit, building: MapSceneDecor.buildingOf(tile), object: MapSceneDecor.objectOf(tile) }]),
 			...[...this.fences].map(tile => [tile, { kit: 'enclos', model: tile.dataset.fence }]),
 			[this.hedgeTile, { kit: 'enclos', model: null, hedge: true }]
 		]);
@@ -5008,9 +5467,10 @@ class MapSceneDecor {
 
 		const { limit, fold } = this.limitLines();
 
+		this.limit = new THREE.LineSegments(limit, this.lines.limit);
 		this.fold = new THREE.LineSegments(fold, this.lines.limit);
 
-		for(const line of [new THREE.LineSegments(limit, this.lines.limit), this.fold]) {
+		for(const line of [this.limit, this.fold]) {
 			line.frustumCulled = false;
 			this.grid.add(line);
 		}
@@ -5295,7 +5755,8 @@ class MapSceneDecor {
 
 		const kit = tile.dataset.kit;
 		const building = MapSceneDecor.buildingOf(tile);
-		const was = (this.armed !== null && this.armed.kit === kit && this.armed.building === building);
+		const object = MapSceneDecor.objectOf(tile);
+		const was = (this.armed !== null && this.armed.kit === kit && this.armed.building === building && this.armed.object === object);
 		const from = { x: event.clientX, y: event.clientY };
 		const over = ev => document.elementFromPoint(ev.clientX, ev.clientY) === this.canvas;
 		let dragged = false;
@@ -5325,7 +5786,7 @@ class MapSceneDecor {
 				}
 
 				dragged = true;
-				this.arm(kit, ev, building);
+				this.arm(kit, ev, building, object);
 
 			}
 
@@ -5363,7 +5824,7 @@ class MapSceneDecor {
 			} else if(was) {
 				this.disarm();
 			} else {
-				this.arm(kit, null, building);
+				this.arm(kit, null, building, object);
 			}
 
 		};
@@ -5380,7 +5841,7 @@ class MapSceneDecor {
 	 * Un élément choisi au catalogue est « en main » : il suit le pointeur, un clic sur le terrain le pose. Il part du pointeur, ou
 	 * du point regardé quand il vient d'un clic sur sa vignette.
 	 */
-	arm(kit, event, building = null) {
+	arm(kit, event, building = null, object = null) {
 
 		// Un tracé repris par « Continuer » n'est pas en main : il revient à sa ligne d'avant
 		if(this.tracing !== null) {
@@ -5396,6 +5857,7 @@ class MapSceneDecor {
 		// Un tuyau reprend le diamètre et la pose du dernier qu'on a réglé
 		e.layer = this.layers.active;
 		e.building = building;
+		e.object = object;
 
 		if(kit === 'tuyau') {
 			Object.assign(e, this.pipeDraft);
@@ -5404,13 +5866,13 @@ class MapSceneDecor {
 		this.armed = e;
 
 		for(const tile of this.tiles) {
-			tile.classList.toggle('selected', tile.dataset.kit === kit && MapSceneDecor.buildingOf(tile) === building);
+			tile.classList.toggle('selected', tile.dataset.kit === kit && MapSceneDecor.buildingOf(tile) === building && MapSceneDecor.objectOf(tile) === object);
 		}
 
 		// Un tracé se pose point par point, le premier au prochain clic
 		if(e.def.traced === true) {
 
-			this.tracing = { e, points: [], kept: 0, cursor: null, before: null, reversed: false };
+			this.tracing = { e, points: [], kept: 0, cursor: null, before: null, reversed: false, freehand: null, strokes: [] };
 			this.aimTrace(p);
 
 			// La boite d'un tuyau se règle dès la prise en main, avant le premier point
@@ -5505,12 +5967,14 @@ class MapSceneDecor {
 	}
 
 	/**
-	 * Un tracé se pose point par point : un clic pose un point au mètre, et la ligne va du dernier au pointeur. Le double-clic,
-	 * Entrée ou « Terminer », seul des trois qu'ait le doigt, le termine ; Échap retire le dernier point, puis abandonne le tracé.
-	 * « Continuer » reprend de même un tracé posé depuis son premier ou son dernier point. `this.tracing` porte l'élément, ses points
-	 * en coordonnées du plan, le pointeur, l'état d'avant d'un tracé repris (null pour un tracé neuf, l'élément en main), `kept`, le
-	 * nombre de points qu'Échap ne retire pas, ceux du tracé repris, et `reversed`, vrai pour un tracé repris par son premier point,
-	 * dont les points sont alors tenus à l'envers.
+	 * Un tracé se pose au clic, point par point : un clic pose un point au mètre, et la ligne va du dernier au pointeur. Le
+	 * double-clic, Entrée ou « Terminer », seul des trois qu'ait le doigt, le termine. Il se dessine aussi d'un glissé
+	 * (`startFreehand()`), que le relâché termine. Échap retire le dernier geste, puis abandonne le tracé. « Continuer » reprend de
+	 * même un tracé posé depuis son premier ou son dernier point. `this.tracing` porte l'élément, ses points en coordonnées du plan,
+	 * le pointeur, l'état d'avant d'un tracé repris (null pour un tracé neuf, l'élément en main), `kept`, le nombre de points
+	 * qu'Échap ne retire pas, ceux du tracé repris, `reversed`, vrai pour un tracé repris par son premier point, dont les points sont
+	 * alors tenus à l'envers, `freehand`, le glissé en cours ou null, et `strokes`, la place de chaque glissé gardé dans les points,
+	 * qu'Échap retire d'un coup.
 	 */
 	aimTrace(p) {
 
@@ -5527,11 +5991,12 @@ class MapSceneDecor {
 
 	}
 
-	// La ligne du tracé qu'on pose, jusqu'au pointeur, avec sa longueur à son bout ou le refus du point visé. Un tracé neuf ne se
-	// monte qu'à partir de deux points
+	// La ligne du tracé qu'on pose, jusqu'au pointeur ou au bout du glissé en cours, avec sa longueur à son bout ou le refus du point
+	// visé. Un tracé neuf ne se monte qu'à partir de deux points
 	shapeTrace() {
 
-		const { e, points, cursor } = this.tracing;
+		const { e, cursor, freehand } = this.tracing;
+		const points = (freehand === null) ? this.tracing.points : [...this.tracing.points, ...freehand.line];
 		const line = (cursor === null || MapSceneDecor.samePoint(cursor, points.at(-1) ?? null)) ? points : [...points, cursor];
 
 		if(line.length < 2) {
@@ -5575,7 +6040,7 @@ class MapSceneDecor {
 	// ou une serre pour un kit qui n'y passe pas, puisque aucune ligne qui en part n'y échapperait
 	startRefusal(e, p) {
 
-		if(this.islandOf(p) === null) {
+		if(this.islandOf(p, MapSceneDecor.freehand(e.def) === false) === null) {
 			return 'outside';
 		}
 
@@ -5630,6 +6095,174 @@ class MapSceneDecor {
 	}
 
 	/**
+	 * Un glissé dessine le tracé qu'on pose quand son kit le permet (`freehand()`) : au bouton gauche ou au doigt, sans les touches
+	 * qui font tourner la vue (celles de MapControls), sur un tracé qui n'a encore aucun point à lui, ou depuis le rond de son bout
+	 * libre. Ailleurs, l'appui reste à la vue. La vue n'est pas coupée de l'appui, elle cesse seulement de se déplacer : un second
+	 * doigt la reprend pour zoomer et tourner, et annule le glissé. Sous 4 px au relâché, l'appui reste un clic (`up()`).
+	 */
+	startFreehand(event) {
+
+		const tracing = this.tracing;
+
+		if(MapSceneDecor.freehand(tracing.e.def) === false || event.shiftKey || event.ctrlKey || event.metaKey) {
+			return;
+		}
+
+		const fromEnd = this.onFreeEnd(event);
+
+		if(tracing.points.length > tracing.kept && fromEnd === false) {
+			return;
+		}
+
+		const p = this.pick(event);
+
+		if(p === null) {
+			return;
+		}
+
+		const round = MapSceneDecor.centimetre;
+		const start = { x: event.clientX, y: event.clientY };
+		const freehand = { pointer: event.pointerId, line: fromEnd ? [] : [round(p)], joined: fromEnd, drawn: false, end: null };
+
+		const move = ev => {
+
+			if(ev.pointerId !== freehand.pointer || (freehand.drawn === false && Math.hypot(ev.clientX - start.x, ev.clientY - start.y) < 4)) {
+				return;
+			}
+
+			freehand.drawn = true;
+
+			const q = this.pick(ev);
+			const last = freehand.line.at(-1) ?? tracing.points.at(-1);
+
+			if(q === null || ScenePlanGeometry.length(ScenePlanGeometry.sub(q, last)) < MapSceneDecor.FREEHAND_STEP) {
+				return;
+			}
+
+			freehand.line.push(round(q));
+			this.shapeTrace();
+
+		};
+
+		const cancel = ev => {
+			if(ev.pointerId === freehand.pointer) {
+				this.cancelFreehand();
+			}
+		};
+
+		freehand.end = () => {
+			this.canvas.removeEventListener('pointermove', move);
+			this.canvas.removeEventListener('pointercancel', cancel);
+			this.controls.enablePan = true;
+		};
+
+		this.controls.enablePan = false;
+		this.canvas.addEventListener('pointermove', move);
+		this.canvas.addEventListener('pointercancel', cancel);
+
+		tracing.cursor = null;
+		tracing.freehand = freehand;
+
+	}
+
+	// Les points d'un glissé se gardent au centimètre, comme les coordonnées qui les enregistrent
+	static centimetre(p) {
+		return { x: Math.round(p.x * 100) / 100, n: Math.round(p.n * 100) / 100 };
+	}
+
+	// L'appui tombe sur le rond du bout libre du tracé qu'on pose, à une demi-cible au plus de son centre
+	onFreeEnd(event) {
+
+		const end = this.tracing.points.at(-1);
+
+		if(end === undefined) {
+			return false;
+		}
+
+		const box = this.canvas.getBoundingClientRect();
+		const size = parseFloat(getComputedStyle(this.tools).getPropertyValue('--scene-control'));
+		const [at] = this.project([end], box);
+
+		return (Math.hypot(event.clientX - at.x, event.clientY - at.y) <= size / 2);
+
+	}
+
+	/**
+	 * Le relâché d'un glissé : rend faux quand l'appui n'a pas bougé de 4 px, qui reste un clic. Une main de moins de FREEHAND_STEP
+	 * pose un point comme un clic, pour qu'une main qui tremble sur un clic ne dessine pas un bout de ligne trop court pour tenir.
+	 * Le point se pose ici par `plot()` : au-delà de 4 px, `up()` jetterait le geste sans rien poser. Sinon la main se simplifie, à une
+	 * tolérance qui double jusqu'à ce que le tracé tienne sous le plafond de points et sous le poids du décor, ou jusqu'à ses deux
+	 * bouts, qui bornent la boucle. Le point de départ d'un glissé parti du bout libre est ce bout, compté une fois. Le relâché
+	 * termine le tracé, et refusé, le tracé reste en main avec le glissé, qu'Échap retire d'un coup. Le point du relâché finit la
+	 * ligne, à moins d'un mètre du dernier relevé s'il le faut : c'est là que la main a voulu s'arrêter.
+	 */
+	finishFreehand(event) {
+
+		const tracing = this.tracing;
+		const freehand = tracing.freehand;
+
+		this.dropFreehand();
+
+		if(freehand.drawn === false) {
+			return false;
+		}
+
+		const from = tracing.points.length;
+		const head = freehand.joined ? [tracing.points.at(-1)] : [];
+		const hand = [...head, ...freehand.line];
+		const p = this.pick(event);
+
+		if(p !== null && hand.length > 0 && MapSceneDecor.samePoint(MapSceneDecor.centimetre(p), hand.at(-1)) === false) {
+			hand.push(MapSceneDecor.centimetre(p));
+		}
+
+		if(hand.length < 2 || MapSceneDecor.lengthOf(hand) < MapSceneDecor.FREEHAND_STEP) {
+			this.plot(event);
+			return true;
+		}
+
+		const fits = added => {
+			this.lay(tracing.e, [...tracing.points, ...added]);
+			return (from + added.length <= this.tracePoints && this.beyondLimit(tracing.e) === false);
+		};
+
+		let tolerance = MapSceneDecor.FREEHAND_TOLERANCE;
+		let kept = MapSceneDecor.simplify(hand, tolerance);
+
+		while(kept.length > 2 && fits(kept.slice(head.length)) === false) {
+			tolerance *= 2;
+			kept = MapSceneDecor.simplify(hand, tolerance);
+		}
+
+		const added = kept.slice(head.length);
+
+		tracing.strokes.push({ from, to: from + added.length });
+		tracing.points = [...tracing.points, ...added];
+		this.endTrace();
+
+		return true;
+
+	}
+
+	// Le glissé en cours cesse : la vue se déplace de nouveau
+	dropFreehand() {
+
+		const freehand = this.tracing.freehand;
+
+		if(freehand !== null) {
+			freehand.end();
+			this.tracing.freehand = null;
+		}
+
+	}
+
+	// Échap, un second doigt ou un pointeur perdu annulent le glissé en cours : le tracé revient à ses points d'avant
+	cancelFreehand() {
+		this.dropFreehand();
+		this.shapeTrace();
+	}
+
+	/**
 	 * Une vignette ou une famille ne fait pas perdre les points d'un tracé commencé : il se termine d'abord, et trop court ou
 	 * refusé, il le dit et reste en main. Rend vrai quand la main est libre.
 	 */
@@ -5649,6 +6282,8 @@ class MapSceneDecor {
 
 		const tracing = this.tracing;
 		const e = tracing.e;
+
+		this.dropFreehand();
 
 		if(tracing.points.length === tracing.kept) {
 			this.dropTrace();
@@ -5684,11 +6319,17 @@ class MapSceneDecor {
 
 	}
 
+	// Échap retire le dernier geste : un glissé gardé en main d'un coup, un point posé au clic seul
 	unplot() {
 
 		const tracing = this.tracing;
+		const stroke = tracing.strokes.at(-1);
 
-		if(tracing.points.length > tracing.kept) {
+		if(stroke !== undefined && stroke.to === tracing.points.length) {
+			tracing.strokes.pop();
+			tracing.points = tracing.points.slice(0, stroke.from);
+			this.shapeTrace();
+		} else if(tracing.points.length > tracing.kept) {
 			tracing.points = tracing.points.slice(0, -1);
 			this.shapeTrace();
 		} else {
@@ -5701,6 +6342,8 @@ class MapSceneDecor {
 	dropTrace() {
 
 		const tracing = this.tracing;
+
+		this.dropFreehand();
 
 		if(tracing.before === null) {
 			this.disarm();
@@ -5754,8 +6397,9 @@ class MapSceneDecor {
 		const box = this.canvas.getBoundingClientRect();
 		const size = parseFloat(getComputedStyle(this.tools).getPropertyValue('--scene-control'));
 		const screen = this.project(points, box);
+		const shown = MapSceneDecor.sparse(screen, size, chosen);
 		const middles = (tracing === null) ? this.middles(screen, size) : [];
-		const handlesAt = [...screen, ...middles.map(index => ({ x: (screen[index].x + screen[index + 1].x) / 2, y: (screen[index].y + screen[index + 1].y) / 2 }))];
+		const handlesAt = [...shown.map(index => screen[index]), ...middles.map(index => ({ x: (screen[index].x + screen[index + 1].x) / 2, y: (screen[index].y + screen[index + 1].y) / 2 }))];
 
 		let aside = null;
 
@@ -5770,7 +6414,7 @@ class MapSceneDecor {
 		}
 
 		const wanted = [
-			...points.map((p, index) => ({ kind: 'point', index, p })),
+			...shown.map(index => ({ kind: 'point', index, p: points[index] })),
 			...middles.map(index => ({ kind: 'middle', index, p: ScenePlanGeometry.lerp(points[index], points[index + 1], .5) }))
 		];
 
@@ -6222,6 +6866,7 @@ class MapSceneDecor {
 		}
 
 		this.createTile.classList.add('hide');
+		this.importTiles.forEach(tile => tile.classList.add('hide'));
 
 		for(const group of this.terrainGroups) {
 			group.classList.add('hide');
@@ -6607,7 +7252,7 @@ class MapSceneDecor {
 		const points = reversed ? line.reverse() : line;
 
 		this.point = null;
-		this.tracing = { e, points, kept: points.length, cursor: null, before: this.describe(e), reversed };
+		this.tracing = { e, points, kept: points.length, cursor: null, before: this.describe(e), reversed, freehand: null, strokes: [] };
 		this.refresh();
 
 	}
@@ -6689,9 +7334,11 @@ class MapSceneDecor {
 
 		this.outline.visible = (this.active && this.selected === null && this.chosen !== null);
 
-		// Le pli entre deux îlots ne se montre qu'avec un tracé, en cours ou choisi : lui seul bute dessus
+		// Le pli entre deux îlots ne se montre qu'avec un tracé, en cours ou choisi : lui seul bute dessus. Le contour du terrain se
+		// cache pendant un tracé qui se dessine, puisqu'il le franchit, et borne tout le reste
 		if(this.fold !== null) {
 			this.fold.visible = (this.tracing !== null || (this.selected !== null && this.selected.def.traced === true));
+			this.limit.visible = (this.tracing === null || MapSceneDecor.freehand(this.tracing.e.def) === false);
 		}
 
 		this.showPipe();
@@ -6746,6 +7393,17 @@ class MapSceneDecor {
 		}
 
 		this.hedgeTile.classList.toggle('selected', e !== null && e.hedge);
+
+		// Une parcelle choisie sur la scène, sans clôture en main, choisit aussi son sol et son pré
+		const zone = (e === null && area.kind === 'zone');
+
+		for(const group of this.areaTerrainGroups) {
+			group.classList.toggle('hide', zone === false);
+		}
+
+		if(zone) {
+			this.showAreaTerrain(area);
+		}
 
 	}
 
@@ -7071,14 +7729,24 @@ class MapSceneDecor {
 		this.downOnPerson = false;
 		this.downOnTrace = null;
 
+		// Un second doigt rend la main à la vue, et le glissé en cours s'annule
+		if(this.tracing !== null && this.tracing.freehand !== null) {
+			this.cancelFreehand();
+		}
+
 		if(this.active === false || event.button !== 0 || event.isPrimary === false) {
 			return;
 		}
 
 		this.downAt = { x: event.clientX, y: event.clientY };
 
-		// Ce qu'on a en main se pose au relâché, et un glissé fait bouger la vue
-		if(this.armed !== null || this.tracing !== null) {
+		// Ce qu'on a en main se pose au relâché, et un glissé fait bouger la vue, sauf celui qui dessine le tracé qu'on pose
+		if(this.tracing !== null) {
+			this.startFreehand(event);
+			return;
+		}
+
+		if(this.armed !== null) {
 			return;
 		}
 
@@ -7260,6 +7928,11 @@ class MapSceneDecor {
 		const start = this.downAt;
 
 		this.downAt = null;
+
+		// Un glissé qui a dessiné se termine au relâché, à toute distance de l'appui
+		if(this.tracing !== null && this.tracing.freehand !== null && this.finishFreehand(event)) {
+			return;
+		}
 
 		if(this.active === false || this.held !== null || start === null || Math.hypot(event.clientX - start.x, event.clientY - start.y) > 4) {
 			return;
@@ -7503,6 +8176,11 @@ class MapSceneDecor {
 		this.journal = [];
 		this.removals = [];
 		this.chooseTerrain(this.terrainOpening);
+
+		for(const [id, terrain] of this.zoneTerrainOpening) {
+			this.chooseAreaTerrain({ id }, terrain);
+		}
+
 		this.setMode(false);
 
 	}
@@ -7949,7 +8627,7 @@ class MapSceneDecor {
 		e.weighed = this.cost(e);
 
 		// Une pose qui suit une adoption échouée ne part pas : elle ferait du plan celui de la structure, sans le défaut
-		this.send('doCreate', () => (this.fallback.length > 0) ? null : ({ structure: this.sheet.dataset.structure, layer: this.layers.value(e.layer), building: e.building ?? '', kit: e.kit, model: state.model ?? '', diameter: state.diameter ?? '', laying: state.laying ?? '', seed: e.seed ?? '', ...enclosure, ...this.position(e, state) })).then(id => {
+		this.send('doCreate', () => (this.fallback.length > 0) ? null : ({ structure: this.sheet.dataset.structure, layer: this.layers.value(e.layer), building: e.building ?? '', object: e.object ?? '', kit: e.kit, model: state.model ?? '', diameter: state.diameter ?? '', laying: state.laying ?? '', seed: e.seed ?? '', ...enclosure, ...this.position(e, state) })).then(id => {
 
 			// La scène a pu se fermer pendant la requête
 			if(this.closed) {
@@ -8259,8 +8937,6 @@ class MapSceneDecor {
 	saved(building, decor) {
 
 		this.buildings.set(building.id, building);
-		this.buildingGeometries.get(building.id)?.dispose();
-		this.buildingGeometries.delete(building.id);
 
 		let tile = [...this.tiles].find(item => MapSceneDecor.buildingOf(item) === building.id);
 
@@ -8284,11 +8960,6 @@ class MapSceneDecor {
 		}
 
 		tile.qs('span').textContent = building.name;
-		tile.classList.toggle('hide', this.family !== 'building' || this.layers.typeOf(this.layers.active) !== null || this.offers(tile) === false);
-
-		if(this.thumbnails && this.offers(tile)) {
-			this.paintThumbnails([[tile, { kit: 'batiment', building: building.id }]]);
-		}
 
 		const hangar = this.elements.find(e => e.id === decor && e.kit === 'hangar');
 
@@ -8386,6 +9057,107 @@ class MapSceneDecor {
 
 	}
 
+	/**
+	 * Un élément importé depuis son panneau (`MapSceneObject.saved()`) entre dans sa rangée par le gabarit, avant la tuile qui en
+	 * importe un, et s'éclaire à son arrivée. Son kit est celui de sa rangée.
+	 */
+	objectSaved(object) {
+
+		this.objects.set(object.id, object);
+
+		const kit = Object.keys(MapSceneDecor.KITS).find(key => MapSceneDecor.KITS[key].object === true && MapSceneDecor.KITS[key].family === object.family);
+		const own = this.objectTemplate.content.firstElementChild.cloneNode(true);
+		const link = own.qs('.map-scene-decor-tile-delete');
+		const tile = own.qs('[data-kit]');
+
+		tile.dataset.kit = kit;
+		tile.dataset.object = object.id;
+		tile.qs('span').textContent = object.name;
+		link.setAttribute('post-id', object.id);
+
+		[...this.importTiles].find(item => item.dataset.sceneDecorImport === object.family).before(own);
+		this.bindTile(tile);
+		this.bindDelete(link);
+
+		this.tiles = this.sheet.qsa('[data-kit]');
+
+		this.readObjectUpload(object);
+		this.objectRemount(object.id);
+
+		MainJuiciness.flash(own);
+
+	}
+
+	// Les poses d'un élément dont le modèle vient d'être lu, ou d'un élément neuf, et sa vignette
+	objectRemount(id) {
+
+		this.objectGeometries.get(id)?.dispose();
+		this.objectGeometries.delete(id);
+
+		this.elements
+			.filter(e => e.object === id)
+			.forEach(e => this.build(e));
+
+		// La feuille de pose et ses vignettes n'existent que pour une scène liée à ses gestes (`bind()`, d'où `onKey`), et les
+		// vignettes peintes qu'à la première ouverture de la feuille
+		if(this.onKey !== undefined) {
+
+			const tile = [...this.tiles].find(item => MapSceneDecor.objectOf(item) === id);
+
+			tile.classList.toggle('hide', MapSceneDecor.KITS[tile.dataset.kit].family !== this.family || this.layers.typeOf(this.layers.active) !== null || this.offers(tile) === false);
+
+			if(this.thumbnails) {
+				this.paintThumbnails([[tile, { kit: tile.dataset.kit, object: id }]]);
+			}
+
+			this.refresh();
+
+		}
+
+		this.queueWalk();
+		this.changed();
+
+	}
+
+	/**
+	 * Un élément importé retiré de sa rangée, et ses poses de la scène, que le serveur a supprimées avec lui, comme celles d'un
+	 * bâtiment (`deleted()`).
+	 */
+	objectDeleted(id) {
+
+		if(this.armed?.object === id) {
+			this.disarm();
+		}
+
+		const removed = this.elements.filter(e => e.object === id);
+
+		removed.forEach(e => this.drop(e));
+		this.elements = this.elements.filter(e => e.object !== id);
+
+		if(this.active !== undefined) {
+
+			this.journal = this.journal.filter(operation => operation.e?.object !== id);
+			this.removals = this.removals.filter(e => e.object !== id);
+
+			if(removed.includes(this.selected)) {
+				this.select(null);
+			}
+
+		}
+
+		this.objects.delete(id);
+		this.objectGeometries.get(id)?.dispose();
+		this.objectGeometries.delete(id);
+
+		[...this.tiles].find(tile => MapSceneDecor.objectOf(tile) === id)?.parentElement.remove();
+		this.tiles = this.sheet.qsa('[data-kit]');
+
+		this.refresh();
+		this.queueWalk();
+		this.changed();
+
+	}
+
 	dispose() {
 
 		// Un geste en cours écoute la fenêtre : son relâché, après la scène, n'aurait plus de rendu où s'écrire
@@ -8434,6 +9206,7 @@ class MapSceneDecor {
 		this.stripes?.geometry.dispose();
 		this.geometries.forEach(geometry => geometry.dispose());
 		this.buildingGeometries.forEach(geometry => geometry?.dispose());
+		this.objectGeometries.forEach(geometry => geometry.dispose());
 		this.rippleGeometry.dispose();
 		this.xray.dispose();
 		this.layers.dispose();

@@ -41,9 +41,10 @@ class DemoLib {
 		// les structures. Une image de la démonstration se sert depuis le disque sans sa ligne, et
 		// un envoi la recrée (`MediaLib::addMedia()`).
 		'media\Media',
-		// Les modèles 3D téléversés à la place d'un bâtiment, pour la même raison que les documents : leur hash ouvrirait le
-		// fichier de la structure d'origine
+		// Les modèles 3D téléversés à la place d'un bâtiment ou comme élément d'une rangée, pour la même raison que les documents :
+		// leur hash ouvrirait le fichier de la structure d'origine. L'élément n'a rien d'autre à montrer que ce modèle
 		'map\DecorUpload',
+		'map\DecorObject',
 		'company\AccountingHelp',
 		// Les lignes attendues du catalogue ne se lisent que dans l'admin des aides, que la démonstration n'ouvre pas.
 		'aid\Expected',

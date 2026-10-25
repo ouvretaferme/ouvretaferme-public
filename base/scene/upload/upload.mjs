@@ -504,7 +504,60 @@ function readAvatar(rules, pieces, triangles) {
 		refuse('ground');
 	}
 
+	const open = skullOpen(rules, pieces.filter(piece => piece.bone === 'tete'));
+
+	if(open.open > 0) {
+		refuse('skull', open);
+	}
+
 	return { pieces, triangles, min, max, feet };
+
+}
+
+// Le dessus de la tête, vu d'en haut (`skull` des règles) : les rayons verticaux tirés autour du pivot de la tête qui ne
+// rencontrent, au-dessus de lui, aucune face avant d'une pièce de la tête. Le site ne dessine que la face avant, et une face
+// vue de dessus l'est quand ses sommets tournent dans le sens direct autour de +y. Le crâne de corps.glb s'ouvre en haut sous
+// sa calotte, `tete.002` : la retirer sans rien qui referme le dessus laisse voir le sol au travers de la tête
+function skullOpen(rules, heads) {
+
+	const { radius, rays } = rules.skull;
+	const [cx, cy, cz] = rules.pivots.tete;
+	const faces = [];
+
+	for(const { points } of heads) {
+		for(let i = 0; i < points.length; i += 9) {
+			const [ax, ay, az, bx, by, bz, qx, qy, qz] = points.subarray(i, i + 9);
+			const area = (bz - az) * (qx - ax) - (bx - ax) * (qz - az);
+			if(area > 0 && Math.max(ay, by, qy) > cy) {
+				faces.push({ ax, ay, az, bx, by, bz, qx, qy, qz, area });
+			}
+		}
+	}
+
+	// Une face rencontrée l'est par l'intérieur ou sur un bord : les poids barycentriques du point dans le plan horizontal
+	const covers = (x, z) => faces.some(({ ax, ay, az, bx, by, bz, qx, qy, qz, area }) => {
+		const u = ((qz - bz) * (x - bx) - (qx - bx) * (z - bz)) / area;
+		const v = ((az - qz) * (x - qx) - (ax - qx) * (z - qz)) / area;
+		const w = 1 - u - v;
+		return u >= -1e-9 && v >= -1e-9 && w >= -1e-9 && u * ay + v * by + w * qy > cy;
+	});
+
+	let open = 0, total = 0;
+
+	for(let i = 0; i < rays; i++) {
+		for(let j = 0; j < rays; j++) {
+			const dx = radius * (2 * i / (rays - 1) - 1), dz = radius * (2 * j / (rays - 1) - 1);
+			if(dx * dx + dz * dz > radius * radius) {
+				continue;
+			}
+			total++;
+			if(covers(cx + dx, cz + dz) === false) {
+				open++;
+			}
+		}
+	}
+
+	return { open, rays: total };
 
 }
 

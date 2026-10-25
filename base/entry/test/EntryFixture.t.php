@@ -87,6 +87,34 @@ abstract class EntryFixtureTest extends \series\SeriesFixtureAiTest {
 
 	}
 
+	/**
+	 * Une action de la catégorie Administration, « RH 💡 » par défaut, que le décor n'a pas, sans intervention.
+	 */
+	protected function createActionAdministration(string $name = 'RH 💡', array $fqns = [CATEGORIE_ADMINISTRATION]): \work\Action {
+
+		$cCategory = \work\CategoryLib::getByStructure($this->eStructure, fqn: $fqns, index: 'id');
+
+		if($this->assertEquals(count($fqns), $cCategory->count(), 'la structure '.static::STRUCTURE.' a les catégories '.implode(', ', $fqns)) === FALSE) {
+			return new \work\Action();
+		}
+
+		$eAction = new \work\Action([
+			'name' => $name,
+			'structure' => $this->eStructure,
+			'categories' => $cCategory->getIds(),
+		]);
+
+		// Sans `build()` : le décor fixe le nom et les catégories, que le formulaire d'action vérifierait.
+		\work\ActionLib::create($eAction);
+
+		// La première dans l'ordre du planning, que l'action donne à son intervention.
+		$eAction['category'] = $cCategory->first();
+		$eAction['cCategory'] = $cCategory;
+
+		return $eAction;
+
+	}
+
 	protected function createPlant(string $name = 'Entrée'): \plant\Plant {
 
 		$ePlant = new \plant\Plant([

@@ -17,11 +17,18 @@ new Page(function($data) {
 		$data->catalog = \user\UserAvatarLib::getCatalog();
 		$data->families = \user\UserAvatarLib::getFamilies();
 
-		// Un premier avatar part des défauts du catalogue, et remplace la photo de profil comme le veut le schéma
+		// Un premier avatar part des défauts du catalogue, et remplace la photo de profil comme le veut le schéma. Celui
+		// qu'un import a créé sans composition en part aussi, en gardant le choix de la photo fait avec le modèle.
+		// `composed` dit ce qui revient quand on supprime le modèle, que la composition par défaut ne dit plus
 		if($data->eUserAvatar->empty()) {
+			$data->eUserAvatar['composed'] = FALSE;
 			$data->eUserAvatar['composition'] = \user\UserAvatarLib::getDefault();
 			$data->eUserAvatar['replacesPhoto'] = TRUE;
+		} else if($data->eUserAvatar->hasComposition() === FALSE) {
+			$data->eUserAvatar['composed'] = FALSE;
+			$data->eUserAvatar['composition'] = \user\UserAvatarLib::getDefault();
 		} else {
+			$data->eUserAvatar['composed'] = TRUE;
 			$data->eUserAvatar['composition'] = \user\UserAvatarLib::completeComposition($data->eUserAvatar['composition']);
 		}
 
@@ -89,7 +96,10 @@ new Page(function($data) {
 new \user\UserAvatarPage()
 	->remote('render', 'selling', function($data) {
 
-		if($data->e['source'] !== \user\UserAvatar::EDITOR) {
+		if(
+			$data->e['source'] !== \user\UserAvatar::EDITOR or
+			$data->e->hasComposition() === FALSE
+		) {
 			throw new NotExpectedAction('Not an editor composition');
 		}
 

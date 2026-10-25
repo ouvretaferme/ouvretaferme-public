@@ -403,7 +403,7 @@ class DecorHedgeAiTest extends \Test {
 
 				// Le tracé tel qu\'il avance : son deuxième point au pointeur, puis posé, puis un troisième
 				for(const [kept, cursor] of [[1, points[1]], [2, null], [2, points[2]], [3, null]]) {
-					decor.tracing = { e, points: points.slice(0, kept), cursor };
+					decor.tracing = { e, points: points.slice(0, kept), cursor, freehand: null, strokes: [] };
 					decor.shapeTrace();
 				}
 

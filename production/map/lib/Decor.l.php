@@ -43,7 +43,7 @@ class DecorLib extends DecorCrud {
 	// 8 × 364 ; un verger, deux rangs de trois fruitiers, 6 × 298 ; des buissons, neuf `buisson` de 40 ; un alignement, quatre
 	// arbres de 364. La mare porte ses quatre rides, 48 triangles chacune, en plus de son modèle de 221. La pompe et la vanne sont
 	// des formes bâties par la scène (`makeShape()`), 164 triangles chacune. Un bâtiment de la structure, composé ou importé,
-	// pèse le plafond d'un import (`maxTriangles` de `base/scene/upload/decor.json`). Un tracé, un enclos et le réseau
+	// pèse le plafond d'un import (`maxTriangles` de `base/scene/upload/decor.json`), et un élément importé celui de sa famille. Un tracé, un enclos et le réseau
 	// d'irrigation tracé pèsent 0 ici : ils se comptent au mètre sous `DECOR_TRACE_LENGTH`, ou par leur propre mesure (`getTraceCost()`).
 	// Un kit absent du tableau pèse le plus lourd : un kit neuf oublié ici serait compté trop cher, jamais trop peu.
 	// `DecorWeightSentinel` recalcule chaque poids depuis `KITS` et `models.json`, et rougit sur un écart dans un sens ou dans l'autre
@@ -102,10 +102,13 @@ class DecorLib extends DecorCrud {
 		'utilitaire' => 284,
 		'pick-up' => 262,
 		'remorque' => 224,
+		'objet-eau' => 1500,
+		'objet-nature' => 1500,
+		'objet-materiel' => 1500,
 	];
 
 	public static function getPropertiesCreate(?string $origin = NULL): array {
-		return ['layer', 'building', 'kit', 'coordinates', 'angle', 'size', 'seed', 'trace', 'width', 'diameter', 'laying', 'zone', 'plot', 'model', 'hedge', 'gate'];
+		return ['layer', 'building', 'object', 'kit', 'coordinates', 'angle', 'size', 'seed', 'trace', 'width', 'diameter', 'laying', 'zone', 'plot', 'model', 'hedge', 'gate'];
 	}
 
 	/**
@@ -185,7 +188,7 @@ class DecorLib extends DecorCrud {
 
 	public static function create(Decor $e): void {
 
-		$e->expects(['structure', 'building']);
+		$e->expects(['structure', 'building', 'object']);
 
 		$cDecor = self::getForLimit($e['structure']);
 
@@ -218,6 +221,20 @@ class DecorLib extends DecorCrud {
 		) {
 			Decor::model()->commit();
 			Decor::fail('building.owned');
+			return;
+		}
+
+		// L'élément importé de même, que `DecorObjectLib::delete()` verrouille avant ses poses
+		if(
+			$e['object']->notEmpty() and
+			DecorObject::model()
+				->whereStructure($e['structure'])
+				->whereId($e['object'])
+				->option('for-update')
+				->exists() === FALSE
+		) {
+			Decor::model()->commit();
+			Decor::fail('object.owned');
 			return;
 		}
 
@@ -271,6 +288,7 @@ class DecorLib extends DecorCrud {
 			$eDecor->merge([
 				'layer' => new DecorLayer(),
 				'building' => new DecorBuilding(),
+				'object' => new DecorObject(),
 				'trace' => NULL,
 				'width' => NULL,
 				'model' => NULL,
@@ -475,6 +493,27 @@ class DecorLib extends DecorCrud {
 			->select('id')
 			->whereStructure($eDecorBuilding['structure'])
 			->whereBuilding($eDecorBuilding)
+			->option('for-update')
+			->getCollection();
+
+		foreach($cDecor as $eDecor) {
+			self::delete($eDecor);
+		}
+
+	}
+
+	/**
+	 * Les poses d'un élément qui quitte sa rangée, dans la transaction de `DecorObjectLib::delete()`, qui l'a verrouillé :
+	 * lues sous verrou, une pose validée juste avant la suppression part aussi.
+	 */
+	public static function deleteByObject(DecorObject $eDecorObject): void {
+
+		$eDecorObject->expects(['id', 'structure']);
+
+		$cDecor = Decor::model()
+			->select('id')
+			->whereStructure($eDecorObject['structure'])
+			->whereObject($eDecorObject)
 			->option('for-update')
 			->getCollection();
 

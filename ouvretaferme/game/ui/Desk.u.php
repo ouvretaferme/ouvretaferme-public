@@ -25,6 +25,7 @@ class DeskUi {
 	public function getScene(Player $ePlayer, array $scene, \Collection $ccTile, array $bake, string $cellar, string $overlay): string {
 
 		\Asset::js('game', 'path.js');
+		\Asset::js('game', 'court.js');
 		\Asset::js('game', 'board.js');
 		\Asset::js('game', 'desk.js');
 

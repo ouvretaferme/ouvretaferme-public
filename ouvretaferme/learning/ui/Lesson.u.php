@@ -450,26 +450,22 @@ class LessonUi {
 
 	public function getActions(Lesson $eLesson): string {
 
-		$h = '<a class="btn btn-color-primary dropdown-toggle" data-dropdown="bottom-end">'.\Asset::icon('gear-fill').'</a>';
-		$h .= '<div class="dropdown-list">';
-			$h .= '<div class="dropdown-title">'.encode($eLesson['name']).'</div>';
-			$h .= '<a href="/learning/lesson:updateSettings?id='.$eLesson['id'].'" class="dropdown-item">'.s("Modifier la leçon").'</a>';
+		$items = '<a href="/learning/lesson:updateSettings?id='.$eLesson['id'].'" class="dropdown-item">'.s("Modifier la leçon").'</a>';
 
-			if($eLesson->assertDelete()) {
-				$h .= '<div class="dropdown-divider"></div>';
-				$h .= '<a data-ajax="/learning/lesson:doDelete" post-id="'.$eLesson['id'].'" class="dropdown-item" data-confirm="'.s("Supprimer cette leçon ?").'" data-waiter>'.s("Supprimer la leçon").'</a>';
-			} else if($eLesson['holdsCompleted']) {
-				// La dernière leçon d'une formation suivie en entier se garde (`acceptDelete()`) : le
-				// geste se montre fermé, avec ce qui le ferme, comme « Supprimer la formation ».
-				$h .= '<div class="dropdown-divider"></div>';
-				$h .= '<a class="dropdown-item disabled">';
-					$h .= '<div class="util-item-label">'.s("Supprimer la leçon").'</div>';
-					$h .= '<div class="util-item-more">'.s("Un inscrit a suivi toute la formation. Dépubliez-la d'abord.").'</div>';
-				$h .= '</a>';
-			}
-		$h .= '</div>';
+		if($eLesson->assertDelete()) {
+			$items .= '<div class="dropdown-divider"></div>';
+			$items .= '<a data-ajax="/learning/lesson:doDelete" post-id="'.$eLesson['id'].'" class="dropdown-item" data-confirm="'.s("Supprimer cette leçon ?").'" data-waiter>'.s("Supprimer la leçon").'</a>';
+		} else if($eLesson['holdsCompleted']) {
+			// La dernière leçon d'une formation suivie en entier se garde (`acceptDelete()`) : le
+			// geste se montre fermé, avec ce qui le ferme, comme « Supprimer la formation ».
+			$items .= '<div class="dropdown-divider"></div>';
+			$items .= '<a class="dropdown-item disabled">';
+				$items .= '<div class="util-item-label">'.s("Supprimer la leçon").'</div>';
+				$items .= '<div class="util-item-more">'.s("Un inscrit a suivi toute la formation. Dépubliez-la d'abord.").'</div>';
+			$items .= '</a>';
+		}
 
-		return $h;
+		return \main\DesignUi::getGear($items, encode($eLesson['name']));
 
 	}
 

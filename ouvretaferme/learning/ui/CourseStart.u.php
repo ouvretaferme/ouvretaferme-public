@@ -364,7 +364,7 @@ class CourseStartUi {
 				$h .= '<div class="onboarding-field onboarding-field-name" data-wrapper="name['.$index.']">';
 					$h .= $form->text('lessonName['.$index.']', NULL, ['id' => 'lesson-name-'.$index, 'placeholder' => s("Titre de la leçon")]);
 				$h .= '</div>';
-				$h .= '<a class="onboarding-row-remove" onclick="LearningCourseStart.remove(this)" title="'.s("Retirer").'">'.\Asset::icon('x-lg').'</a>';
+				$h .= '<a class="btn btn-only-icon btn-sm btn-outline-danger" onclick="LearningCourseStart.remove(this)" title="'.s("Retirer").'">'.\Asset::icon('x-lg').'</a>';
 			$h .= '</div>';
 		$h .= '</div>';
 

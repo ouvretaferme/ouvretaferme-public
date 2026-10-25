@@ -66,7 +66,7 @@ class DoneIntentionUi extends IntentionUi {
 					'group' => TimeIntentionUi::getQuestion(),
 					'label' => TimeIntentionUi::getTaskLabel($eTask),
 					'value' => 'task:'.$eTask['id'],
-					'sub' => encode(self::getPlanned($eTask)),
+					'sub' => encode(self::getSituation($eTask)),
 				] + self::getIcon($eTask['plant']);
 			}
 
@@ -111,18 +111,9 @@ class DoneIntentionUi extends IntentionUi {
 			return [];
 		}
 
-		// Trois durées, la quatrième faisant défiler la liste au bureau (hypothèse, recette de S4a). Plusieurs
-		// interventions n'en portent aucune : le temps seul ne se pose que sur une.
+		// Plusieurs interventions ne portent aucune durée : le temps seul ne se pose que sur une.
 		if($eTask->notEmpty() and $eTask['timed']) {
-
-			foreach(array_slice(DurationComplementUi::getOptions(), 0, 3) as $minutes) {
-				$results[] = [
-					'group' => TimeIntentionUi::getLabel(),
-					'label' => DurationComplementUi::getDuration($minutes),
-					'value' => 'duration:'.$minutes,
-				];
-			}
-
+			$results = array_merge($results, DurationComplementUi::getAdditionResults(TimeIntentionUi::getLabel(), $eTask['additions']));
 		}
 
 		return $results;
@@ -341,9 +332,21 @@ class DoneIntentionUi extends IntentionUi {
 			$parts[] = $label;
 		}
 
-		$parts[] = self::getPlanned($eTask);
+		$parts[] = self::getSituation($eTask);
 
 		return implode(' · ', $parts);
+
+	}
+
+	/**
+	 * Sa semaine, précédée hors de Culture de sa catégorie, qui départage celles d'une action de plusieurs
+	 * catégories : « Administration · prévue en semaine 44 ».
+	 */
+	private static function getSituation(\series\Task $eTask): string {
+
+		return ($eTask['category']['fqn'] === CATEGORIE_CULTURE) ?
+			self::getPlanned($eTask) :
+			$eTask['category']['name'].' · '.self::getPlanned($eTask);
 
 	}
 
@@ -362,6 +365,17 @@ class DoneIntentionUi extends IntentionUi {
 
 	}
 
+	/**
+	 * Une intervention hors de Culture n'a pas d'espèce : l'action seule la nomme.
+	 */
+	private static function getTaskName(\series\Task $eTask): string {
+
+		return $eTask['plant']->empty() ?
+			$eTask['action']['name'] :
+			$eTask['action']['name'].' '.mb_strtolower($eTask['plant']['name']);
+
+	}
+
 	public static function getWriteToast(array $reading): array {
 
 		$confirmation = $reading['confirmation'];
@@ -376,7 +390,7 @@ class DoneIntentionUi extends IntentionUi {
 				'count' => $confirmation['cTask']->count(),
 			],
 			'icon' => self::getPlantIcon($eTask['plant']),
-			'detail' => encode($eTask['action']['name'].' '.mb_strtolower($eTask['plant']['name']).' · '.self::getTasksDetail($confirmation, ($confirmation['cTask']->count() > 1) ? s("ajoutées au planning") : s("ajoutée au planning"))),
+			'detail' => encode(self::getTaskName($eTask).' · '.self::getTasksDetail($confirmation, ($confirmation['cTask']->count() > 1) ? s("ajoutées au planning") : s("ajoutée au planning"))),
 		];
 
 	}

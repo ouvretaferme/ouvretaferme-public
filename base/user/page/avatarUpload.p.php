@@ -1,8 +1,8 @@
 <?php
 /**
- * Le modèle 3D qu'un utilisateur téléverse à la place de son avatar composé. Seul l'envoi est derrière le drapeau
- * (`UserSetting::$avatarUpload`) : un drapeau refermé laisse à chacun le retour à sa composition et la lecture de son
- * modèle, sans quoi un avatar resterait montré sans qu'on puisse le retirer.
+ * Le modèle 3D qu'un utilisateur téléverse comme avatar, qu'il en ait composé un ou non. Seul l'envoi est derrière le
+ * drapeau (`UserSetting::$avatarUpload`) : un drapeau refermé laisse à chacun la suppression de son modèle et sa lecture,
+ * sans quoi un avatar resterait montré sans qu'on puisse le retirer.
  */
 $checkUploadOpen = function(stdClass $data): void {
 
@@ -163,6 +163,7 @@ new Page(function($data) {
 
 		// `$buildUpload` a passé `$checkUploadOpen` : l'envoi est ouvert
 		$data->eUserAvatar = \user\UserAvatarLib::getByUser($data->eUserOnline);
+		$data->eUserAvatar['composed'] = $data->eUserAvatar->hasComposition();
 		$data->eUserAvatar['eUserAvatarUpload'] = \user\UserAvatarUploadLib::getByAvatar($data->eUserAvatar);
 		$data->eUserAvatar['uploadOpen'] = TRUE;
 		$data->eUserAvatar['uploadRules'] = \scene\UploadLib::getRules('avatar');
@@ -182,7 +183,8 @@ new Page(function($data) {
 
 		$fw = new FailWatch();
 
-		$image = $getImage($eUserAvatar);
+		// Un avatar sans composition part avec son modèle : il n'a pas d'image à rendre
+		$image = $eUserAvatar->hasComposition() ? $getImage($eUserAvatar) : NULL;
 
 		$fw->validate();
 

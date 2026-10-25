@@ -29,10 +29,14 @@ class BoardLib {
 	 * `board` est le plateau que la vue cadre à l'ouverture, NULL pour toute la cour. La scène ne lit aucun joueur :
 	 * l'accueil et la fin de partie montrent la même cour sans personne, et un élément vide n'a pas d'utilisateur à
 	 * qui demander sa fiche. La page pose donc la fiche du joueur regardé (`getFiche()`) sur `avatar` quand il y en a un.
+	 *
+	 * `seed` est la graine de la cour (`GameBoardCourt`, court.js) : le plus petit id des cases, qu'aucun geste ne
+	 * change, et NULL sans case, où la scène prend la cour de l'accueil.
 	 */
 	public static function getScene(\Collection $ccTile, int $boards, bool $readonly, ?int $board): array {
 
 		$scene = [];
+		$ids = [];
 
 		for($position = 1; $position <= GameSetting::BOARDS; $position++) {
 
@@ -41,9 +45,14 @@ class BoardLib {
 				'tiles' => $ccTile->offsetExists($position) ? self::export($ccTile[$position]) : []
 			];
 
+			if($ccTile->offsetExists($position)) {
+				array_push($ids, ...$ccTile[$position]->getIds());
+			}
+
 		}
 
 		return [
+			'seed' => ($ids === []) ? NULL : min($ids),
 			'board' => $board,
 			'readonly' => $readonly,
 			'avatar' => NULL,

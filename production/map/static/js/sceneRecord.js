@@ -7,7 +7,8 @@
  * Seule la saison jouée jusqu'au bout se télécharge. Arrêter, Échap, la sortie du mode photo ou du plein écran, un geste qui arrête
  * la Lecture, la scène qui change de taille ou l'onglet passé en arrière-plan jettent le film : un onglet caché ralentit le
  * battement de la Lecture, et le film en sortirait plus long et saccadé. Ces deux derniers arrêts le disent par un message, parce
- * que l'utilisateur n'a pas fait le geste et ne saurait pas pourquoi aucun film n'arrive ; les autres restent muets.
+ * que l'utilisateur n'a pas fait le geste et ne saurait pas pourquoi aucun film n'arrive ; les autres restent muets. Le message
+ * est le bandeau d'erreur de la page, qui se peint sous la scène en plein écran : il y monte le temps du plein écran.
  */
 class MapSceneRecord {
 
@@ -47,6 +48,7 @@ class MapSceneRecord {
 		this.at = at;
 
 		this.active = false;
+		this.exited = false;
 		this.timer = null;
 		this.recorder = null;
 		this.film = document.createElement('canvas');
@@ -73,10 +75,20 @@ class MapSceneRecord {
 		this.button.addEventListener('click', () => this.start());
 		this.cancelButton.addEventListener('click', () => this.cancel());
 
+		// Un film jeté par la sortie du plein écran que l'onglet caché a provoquée est déjà arrêté : seul le message reste à dire
 		this.onHidden = () => {
-			if(document.hidden) {
+
+			if(document.hidden === false) {
+				return;
+			}
+
+			if(this.exited) {
+				this.exited = false;
+				this.warn(this.button.dataset.hiddenError);
+			} else {
 				this.interrupt(this.button.dataset.hiddenError);
 			}
+
 		};
 
 		document.addEventListener('visibilitychange', this.onHidden);
@@ -84,7 +96,32 @@ class MapSceneRecord {
 		// Sortir du plein écran est un geste, Échap compris : le film s'arrête sans message. Le navigateur envoie `fullscreenchange`
 		// avant les images de la boucle de rendu, et le canevas ne change de taille qu'ensuite, par le `ResizeObserver` de `MapScene` :
 		// `frame()` ne voit donc jamais cette taille-là. Le conteneur survit à la scène que le relief remonte : dispose() retire l'écouteur
-		this.onFullscreen = () => this.cancel();
+		this.onFullscreen = () => {
+
+			// Le bandeau revient où la page le pose, pour qu'une erreur levée ensuite hors de la scène ne s'écrive pas dedans
+			const banner = MapSceneRecord.alert();
+
+			if(document.fullscreenElement !== this.container && banner !== null) {
+				document.body.append(banner);
+			}
+
+			if(this.active === false) {
+				return;
+			}
+
+			this.cancel();
+
+			// Un onglet passé en arrière-plan fait aussi sortir du plein écran, et le navigateur peut l'annoncer avant
+			// `visibilitychange` : la marque dit alors à `onHidden` que l'arrêt n'était pas un geste. Elle tombe à la deuxième image,
+			// qu'un onglet caché ne joue pas : `fullscreenchange` part avant les rappels d'animation de son image, si bien qu'un rappel
+			// demandé ici tourne dans cette même image, l'onglet encore visible
+			this.exited = true;
+			requestAnimationFrame(() => requestAnimationFrame(() => {
+				this.exited = false;
+			}));
+
+		};
+
 		this.container.addEventListener('fullscreenchange', this.onFullscreen);
 
 	}
@@ -230,9 +267,30 @@ class MapSceneRecord {
 		}
 
 		this.cancel();
+		this.warn(message);
+
+	}
+
+	/**
+	 * Le bandeau d'erreur de la page, monté dans la scène en plein écran : posé sur `body`, il se peindrait sous elle. `fixed`, il
+	 * garde sa place à l'écran. La sortie du plein écran le redescend (`onFullscreen`).
+	 */
+	warn(message) {
 
 		Lime.Alert.showStaticError(message);
 
+		// Un message non vide crée toujours le bandeau
+		if(document.fullscreenElement === this.container) {
+			this.container.append(MapSceneRecord.alert());
+		}
+
+	}
+
+	/**
+	 * Le nœud que `Lime.Alert.showStaticError()` crée sur `body` et retrouve par son identifiant. Sa croix le retire du document.
+	 */
+	static alert() {
+		return document.getElementById('alert-danger');
 	}
 
 	/**

@@ -567,6 +567,7 @@ class CssSentinelTest extends SentinelTest {
 		'base/structure/static/css/profileAi.css' => 4,
 		'base/structure/static/css/shareAi.css' => 3,
 		'base/structure/static/css/survey.css' => 1,
+		'base/structure/static/css/weatherAi.css' => 1, // les six heures d'un moment de la météo du menu derrière la colonne de l'icône du vent : un nombre de colonnes, pas une valeur d'échelle
 		'base/user/static/css/admin.css' => 1,
 		'base/user/static/css/avatar.css' => 1,
 		'base/user/static/css/tosAi.css' => 1,

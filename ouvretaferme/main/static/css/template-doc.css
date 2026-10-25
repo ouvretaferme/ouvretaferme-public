@@ -184,7 +184,8 @@ div.doc-content a.doc-anchor:hover {
 	color: var(--primary);
 }
 
-div.doc-content h4,
+/* Le titre d'une étape garde les marges du composant, que cette règle battrait (0,1,2 contre 0,1,0) */
+div.doc-content h4:not(.util-procedure-title),
 div.doc-content h5 {
 	margin-top: 1rem;
 	margin-bottom: 1rem;
@@ -202,6 +203,13 @@ div.doc-content img:not(.asset-icon) {
 	border-radius: var(--radius);
 	margin-top: 1rem;
 	margin-bottom: 1rem !important;
+}
+
+/* Une image d'étape suit son titre comme un paragraphe, sans marge haute ; le !important de la règle
+   précédente ne cède qu'à un !important plus spécifique */
+div.doc-content .util-procedure-step > img:not(.asset-icon) {
+	margin-top: 0;
+	margin-bottom: 0.75rem !important;
 }
 
 /* Le disque est posé dans une phrase, et une ponctuation le suit sans espace */

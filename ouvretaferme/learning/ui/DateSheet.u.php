@@ -88,13 +88,9 @@ class DateSheetUi {
 
 	protected function getActions(DateSheet $eDateSheet): string {
 
-		$h = '<a class="btn btn-color-primary dropdown-toggle" data-dropdown="bottom-end">'.\Asset::icon('gear-fill').'</a>';
-		$h .= '<div class="dropdown-list">';
-			$h .= '<div class="dropdown-title">'.encode($eDateSheet['name']).'</div>';
-			$h .= '<a data-ajax="/learning/dateSheet:doDelete" post-id="'.$eDateSheet['id'].'" class="dropdown-item" data-confirm="'.s("Retirer ce fichier de la date ?").'" data-waiter>'.s("Supprimer le fichier").'</a>';
-		$h .= '</div>';
+		$items = '<a data-ajax="/learning/dateSheet:doDelete" post-id="'.$eDateSheet['id'].'" class="dropdown-item" data-confirm="'.s("Retirer ce fichier de la date ?").'" data-waiter>'.s("Supprimer le fichier").'</a>';
 
-		return $h;
+		return \main\DesignUi::getGear($items, encode($eDateSheet['name']));
 
 	}
 

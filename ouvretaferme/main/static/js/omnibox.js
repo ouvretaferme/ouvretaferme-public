@@ -460,6 +460,11 @@ class UtilOmnibox {
 				item.dataset.value = one.value ?? one.label;
 				item.dataset.label = one.label;
 
+				// Le libellé du jeton, quand il ne redit pas celui de la suggestion : la puce « +30 min » pose 1 h 30.
+				if(one.token !== undefined) {
+					item.dataset.token = one.token;
+				}
+
 				if(one.icon !== undefined) {
 					item.dataset.icon = one.icon;
 				}
@@ -915,7 +920,7 @@ class UtilOmnibox {
 			return;
 		}
 
-		UtilOmnibox.addToken(box, item.dataset.group, item.dataset.value, item.dataset.label);
+		UtilOmnibox.addToken(box, item.dataset.group, item.dataset.value, item.dataset.token ?? item.dataset.label);
 
 		const input = box.qs('.util-omnibox-input');
 

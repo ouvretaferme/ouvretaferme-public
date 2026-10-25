@@ -82,7 +82,7 @@ class DateSequenceUi {
 				$h .= '<div class="onboarding-field onboarding-field-name" data-wrapper="startAt['.$index.']">';
 					$h .= $form->date('startAt['.$index.'][date]', $day, ['id' => 'learning-date-sequence-day-'.$index] + $schedule);
 				$h .= '</div>';
-				$h .= '<a class="onboarding-row-remove" onclick="LearningDate.remove(this)" title="'.s("Retirer").'">'.\Asset::icon('x-lg').'</a>';
+				$h .= '<a class="btn btn-only-icon btn-sm btn-outline-danger" onclick="LearningDate.remove(this)" title="'.s("Retirer").'">'.\Asset::icon('x-lg').'</a>';
 			$h .= '</div>';
 
 			$h .= '<div class="onboarding-row-details">';

@@ -82,18 +82,18 @@ class DecorUploadAiTest extends \dev\ApiTest {
 		$values = ['size' => 25480000, 'max' => 1048576, 'name' => '<b>x</b>', 'pieces' => 'batiment', 'piece' => 'batiment', 'count' => 4812, 'length' => 32, 'width' => 18];
 
 		foreach(\scene\UploadLib::getRules(DecorUploadLib::PROFILE)['refusals'] as $refusal) {
-			$this->assertTrue(AlertUi::getDecorUploadRefusal($refusal, $values) !== '', 'refus '.$refusal.' sans message');
+			$this->assertTrue(AlertUi::getDecorUploadRefusal($refusal, $values, DecorUploadLib::FAMILY_BUILDING) !== '', 'refus '.$refusal.' sans message');
 		}
 
-		$this->assertFalse(str_contains(AlertUi::getDecorUploadRefusal('piece', $values), '<b>x</b>'), 'nom de pièce non échappé');
-		$this->assertFalse(str_contains(AlertUi::getDecorUploadRefusal('anchor', $values), '<b>x</b>'), 'nom d\'ancre non échappé');
+		$this->assertFalse(str_contains(AlertUi::getDecorUploadRefusal('piece', $values, DecorUploadLib::FAMILY_BUILDING), '<b>x</b>'), 'nom de pièce non échappé');
+		$this->assertFalse(str_contains(AlertUi::getDecorUploadRefusal('anchor', $values, DecorUploadLib::FAMILY_BUILDING), '<b>x</b>'), 'nom d\'ancre non échappé');
 
 		// Chaque endroit qui refuse passe à la closure du message les mêmes paramètres nommés : un oubli lève `Unknown named parameter`
 		$fw = new \FailWatch();
 
-		\Fail::log(DecorUpload::getRefusal('weight', ['size' => 25480000]));
-		\Fail::log(DecorUpload::getRefusal('format'));
-		\Fail::log(DecorUpload::getRefusal('bounds', ['length' => 32, 'width' => 18]));
+		\Fail::log(DecorUpload::getRefusal('weight', ['size' => 25480000], DecorUploadLib::FAMILY_BUILDING));
+		\Fail::log(DecorUpload::getRefusal('format', [], DecorUploadLib::FAMILY_BUILDING));
+		\Fail::log(DecorUpload::getRefusal('bounds', ['length' => 32, 'width' => 18], DecorUploadLib::FAMILY_BUILDING));
 
 		$messages = array_column($fw->format(), 1);
 

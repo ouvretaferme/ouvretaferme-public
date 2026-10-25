@@ -5,7 +5,7 @@ namespace game;
  * Le chemin du joueur dans la cour (`GameBoardPath`, static/js/path.js) : il contourne les cases et le décor sans
  * jamais les traverser, et une arrivée visée dans un obstacle, hors d'atteinte ou hors de la cour revient au plus près
  * où l'on peut aller. Les obstacles sont ceux de la cour : un plateau de seize cases de 2 m au pas de 2,35 m, comme
- * `GameBoard.TILE` et `GameBoard.STEP`.
+ * `GameBoardCourt.TILE` et `GameBoardCourt.STEP`.
  */
 class PathAiTest extends \Test {
 
@@ -26,7 +26,7 @@ class PathAiTest extends \Test {
 
 	public function testPassePiedIsClosed(): void {
 
-		// Les cases élargies de `GameBoard.REACH`, comme dans la cour : le passe-pied de 0,35 m se ferme, et un toucher
+		// Les cases élargies de `GameBoardCourt.REACH`, comme dans la cour : le passe-pied de 0,35 m se ferme, et un toucher
 		// au milieu du plateau ramène le joueur à son bord
 		$result = $this->runPath('
 			const reached = tiles.map(t => ({ minX: t.minX - REACH, maxX: t.maxX + REACH, minZ: t.minZ - REACH, maxZ: t.maxZ + REACH }));
@@ -106,14 +106,14 @@ class PathAiTest extends \Test {
 	}
 
 	/**
-	 * Charge `path.js` depuis le disque sous node et joue le scénario, avec le `REACH` de `board.js`. `tiles` est un plateau ouvert centré sur
+	 * Charge `path.js` depuis le disque sous node et joue le scénario, avec le `REACH` de `court.js`. `tiles` est un plateau ouvert centré sur
 	 * l'origine ; `crosses()` dit si un point pris tous les 5 cm le long du chemin tombe dans un obstacle, rétréci de la
 	 * demi-diagonale d'une cellule : un chemin qui suit les centres de cellules libres peut frôler un bord de cette
 	 * distance, pas davantage. Le script part par l'entrée standard (`ShellCommandSentinel`).
 	 */
 	private function runPath(string $scenario): array {
 
-		preg_match('/static REACH = ([0-9.]+);/', file_get_contents(__DIR__.'/../static/js/board.js'), $match);
+		preg_match('/static REACH = ([0-9.]+);/', file_get_contents(__DIR__.'/../static/js/court.js'), $match);
 
 		$script = '
 			const vm = require("vm");

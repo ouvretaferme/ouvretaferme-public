@@ -1,6 +1,7 @@
-# Référence du modèle de bâtiment
+# Référence du modèle de bâtiment et des éléments du décor
 
-Tout ce que `SKILL.md` cite. Les chiffres qui font foi sont dans `decor.json` (règles), `lib/choices.json` (choix de
+Tout ce que `SKILL.md` cite. Un bâtiment suit toutes les sections jusqu'à « Une forme que le cadre n'a pas », un élément
+d'Eau, de Nature ou de Matériel la section qui le nomme, puis « Les couleurs » et « En ligne de commande ». Les chiffres qui font foi sont dans `decor.json` (règles), `lib/choices.json` (choix de
 l'éditeur) et `lib/building.mjs` (catalogue, réglages et leurs défauts, palette `P`).
 
 ## Repères
@@ -137,6 +138,30 @@ style du cadre.
 - **Le budget restant** que `composer.mjs` a imprimé.
 - **Les faces tournées vers l'extérieur** : le site ne dessine que la face avant de chaque triangle, et une face retournée
   se voit comme un trou dans `rendre.mjs`.
+
+## Un élément d'Eau, de Nature ou de Matériel
+
+Un élément ne passe pas par le cadre des bâtiments : il se modèle dans Blender, dans le même style, celui des formes de
+« Une forme que le cadre n'a pas ».
+
+- **Sa famille fixe les règles** : lis dans `decor.json` le bloc de `families` de sa rangée, ses triangles
+  (`maxTriangles`), son emprise (`bounds`), ses pièces et ses ancres. L'emprise est large pour Nature, qui accepte un
+  arbre de haut jet ou une haie entière, et étroite pour Eau et Matériel.
+- **Eau** (`water`) et **Matériel** (`other`) : une seule pièce, `objet`, obligatoire, qui porte tout le volume, en un objet
+  par couleur (`objet.001`, `objet.002`). Un abreuvoir, une citerne, un lavoir ; un broyeur, un motoculteur, un tas de
+  palettes. Pas d'ancre.
+- **Nature** (`tree`) : `arbre` porte le bois, tronc et branches, `feuillage` la ramure, `fruit` les fruits. Aucune n'est
+  obligatoire : un rocher ou une souche n'a que `arbre`, un buisson que `feuillage`. L'ancre `arbre`, au sol au pied du
+  tronc, dit à la scène où le tronc touche terre, ce qu'elle lit pour l'ombre et la place des animaux. Sans elle, la scène
+  prend le milieu de l'emprise. Un modèle sans pièce `arbre` se pose comme un buisson, sans tronc.
+- **Centré sur l'origine, posé au sol** comme un bâtiment, Y vers le haut. La face qu'on regarde le plus souvent vers +Z.
+- **À l'échelle réelle** : la scène pose l'élément à sa taille, puis l'utilisateur l'agrandit ou le réduit avec l'outil de
+  taille de la rangée.
+- **Pas de saison** : un feuillage importé garde sa couleur toute l'année.
+
+Pour l'exporter, passe la famille : `exporter('<sortie>.glb', '<dossier>', 'tree')` dans Blender, ou
+`-- <sortie>.glb tree` en ligne de commande. Pour l'image, `node rendre.mjs --famille=tree <sortie>.glb rendus`.
+`exemples/conforme-eau.glb`, `conforme-nature.glb` et `conforme-materiel.glb` montrent la forme d'un élément accepté.
 
 ## En ligne de commande
 

@@ -308,4 +308,18 @@ new \structure\StructurePage()
 		throw new RedirectAction(\structure\StructureUi::urlSharing($data->e));
 
 	}, validate: ['canManage']);
+
+new \structure\StructurePage()
+	/**
+	 * Le détail d'un jour de la météo du menu, ou sa fermeture sans `date` (L96). La prévision du menu se
+	 * relit avec lui : la route redessine les tuiles en même temps que le détail. Le droit est celui qui
+	 * montre la météo, `canRead`.
+	 */
+	->read('weatherDay', function($data) {
+
+		$data->weather = \structure\WeatherAiLib::getByStructure($data->e, $data->e->getMember(), GET('date'));
+
+		throw new ViewAction($data);
+
+	});
 ?>

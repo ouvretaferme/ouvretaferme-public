@@ -23,10 +23,10 @@ namespace structure;
 class DashboardWeatherAiTest extends \Test {
 
 	/** La case de Tallende : 3.13 / 0.02 = 156.5, arrondi à 157, soit 3.14 ; 45.67 / 0.02 = 2283.5, soit 45.68 */
-	const string KEY = 'weather-icon-3.14-45.68';
+	const string KEY = 'weather-v2-icon-3.14-45.68';
 
 	/** La case voisine à l'ouest, à 0,02° : `%.2f` les distingue. */
-	const string KEY_WEST = 'weather-icon-3.12-45.68';
+	const string KEY_WEST = 'weather-v2-icon-3.12-45.68';
 
 	/** La case de Tallende sans modèle, comme `getCells()` la range. */
 	const string CELL = '3.14-45.68';
@@ -47,7 +47,7 @@ class DashboardWeatherAiTest extends \Test {
 
 		$keys = array_map(fn(string $model) => WeatherAiLib::getKey([3.14, 45.68], $model), WeatherAiLib::MODELS);
 
-		$this->assertEquals(['weather-icon-3.14-45.68', 'weather-meteofrance-3.14-45.68', 'weather-ukmo-3.14-45.68', 'weather-ecmwf-3.14-45.68'], $keys);
+		$this->assertEquals(['weather-v2-icon-3.14-45.68', 'weather-v2-meteofrance-3.14-45.68', 'weather-v2-ukmo-3.14-45.68', 'weather-v2-ecmwf-3.14-45.68'], $keys);
 
 	}
 
@@ -129,7 +129,7 @@ class DashboardWeatherAiTest extends \Test {
 			$values = WeatherAiLib::getByStructure($eStructure);
 
 			$this->assertEquals([NULL, 0.4, NULL], [$values['band'][0]['mm'], $values['band'][1]['mm'], $values['band'][2]['mm']], '6 h sèche, 8 h à 0,4 mm, 10 h sous le seuil');
-			$this->assertEquals([4.3, NULL], [$values['days'][0]['mm'], $values['days'][1]['mm']], 'arrondi au dixième, puis sous le seuil');
+			$this->assertEquals([0.4, NULL], [$values['days'][0]['mm'], $values['days'][1]['mm']], 'la somme des heures du jour, 0,44 arrondi au dixième, puis un jour sec');
 
 		});
 
@@ -249,7 +249,8 @@ class DashboardWeatherAiTest extends \Test {
 			$this->assertEquals('45.68,45.68', $query['latitude']);
 			$this->assertEquals('3.14,3.12', $query['longitude'], 'la longitude dans le même ordre que la latitude');
 			$this->assertEquals('dwd_icon_seamless', $query['models'], 'ICON demandé, pas le choix automatique');
-			$this->assertTrue(str_contains($query['hourly'], ',precipitation,') and str_ends_with($query['daily'], ',precipitation_sum'), 'les millimètres des heures et des jours');
+			$this->assertTrue(str_contains($query['hourly'], ',precipitation,') and str_contains($query['hourly'], ',wind_gusts_10m,') and str_ends_with($query['hourly'], ',is_day'), 'les millimètres, les rafales et la nuit des heures');
+			$this->assertEquals(11, count(explode(',', $query['hourly'])) + count(explode(',', $query['daily'])), 'onze variables, 1,1 appel facturé par position');
 			$this->assertEquals('test', $query['apikey']);
 			$this->assertEquals(WeatherAiLib::FORECAST_DAYS, $query['forecast_days']);
 			$this->assertEquals(date_default_timezone_get(), $query['timezone'], 'le fuseau de \Clock');
@@ -283,11 +284,21 @@ class DashboardWeatherAiTest extends \Test {
 			$response['daily']['temperature_2m_min'][$i] = NULL;
 		}
 
+		$response['hourly']['wind_gusts_10m'] = array_fill(0, 48, NULL);
+
 		$forecast = WeatherAiLib::parse([self::CELL], $response)[self::CELL];
 
 		$this->assertEquals(40, count($forecast['hours']), 'les huit heures vides ne s\'écrivent pas');
+		$this->assertEquals([NULL, NULL], [$forecast['hours'][0]['gust'], $forecast['days'][0]['gust']], 'une rafale absente reste absente');
 		$this->assertEquals(4, count($forecast['days']), 'les jours sans température ne s\'écrivent pas');
 		$this->assertEquals(NULL, $forecast['days'][0]['rain'], 'un risque absent reste absent');
+
+		$response = $this->getResponse('2026-10-05T05:00', '2026-10-05', 12.0);
+		$response['hourly']['is_day'][3] = NULL;
+
+		$times = array_column(WeatherAiLib::parse([self::CELL], $response)[self::CELL]['hours'], 'time');
+
+		$this->assertEquals([47, FALSE], [count($times), in_array('2026-10-05 08:00', $times)], 'une heure sans jour ni nuit ne s\'écrit pas');
 
 	}
 
@@ -376,7 +387,10 @@ class DashboardWeatherAiTest extends \Test {
 	/** Open-Meteo rend une liste pour plusieurs positions, un objet seul pour une seule. */
 	public function testParseFollowsTheOrderOfTheRequest(): void {
 
-		$east = $this->getResponse('2026-10-05T05:00', '2026-10-05', 12.0);
+		$east = $this->getResponse('2026-10-05T05:00', '2026-10-05', 12.0, [0 => 1.25, 3 => 3.0, 20 => 2.0]);
+		$east['hourly']['wind_gusts_10m'][2] = 41.0;
+		$east['hourly']['wind_gusts_10m'][30] = 50.0;
+
 		$west = $this->getResponse('2026-10-05T05:00', '2026-10-05', 7.0);
 
 		$forecasts = WeatherAiLib::parse([self::KEY, self::KEY_WEST], [$east, $west]);
@@ -385,12 +399,52 @@ class DashboardWeatherAiTest extends \Test {
 		$this->assertEquals(12.0, $forecasts[self::KEY]['hours'][0]['temperature']);
 		$this->assertEquals(7.0, $forecasts[self::KEY_WEST]['hours'][0]['temperature']);
 		$this->assertEquals('2026-10-05 05:00', $forecasts[self::KEY]['hours'][0]['time']);
-		$this->assertEquals(['date' => '2026-10-05', 'min' => 6.0, 'max' => 16.0, 'code' => 3, 'rain' => 40, 'mm' => 4.32], $forecasts[self::KEY]['days'][0]);
+		$this->assertEquals(['date' => '2026-10-05', 'min' => 6.0, 'max' => 16.0, 'code' => 3, 'rain' => 40, 'mm' => 4.25, 'gust' => 41.0], $forecasts[self::KEY]['days'][0], 'les millimètres et la rafale du jour tirés de ses heures, 5 h à 23 h');
+		$this->assertEquals([2.0, 50.0], [$forecasts[self::KEY]['days'][1]['mm'], $forecasts[self::KEY]['days'][1]['gust']], 'le lendemain ne compte que les siennes');
+		$this->assertEquals(41.0, $forecasts[self::KEY]['hours'][2]['gust']);
 
 		$forecasts = WeatherAiLib::parse([self::KEY_WEST], $west);
 
 		$this->assertEquals([self::KEY_WEST], array_keys($forecasts));
 		$this->assertEquals(7.0, $forecasts[self::KEY_WEST]['hours'][0]['temperature']);
+
+	}
+
+	/**
+	 * Une tuile ouvre son jour en quatre moments de six heures, dans le modèle du bloc. La prévision
+	 * du décor court du 5 à 5 h au 7 à 4 h : le 6 a ses quatre moments, le 7 n'a que sa nuit, le 8 rien.
+	 */
+	public function testATileOpensItsDayByMoment(): void {
+
+		$this->withOpenMeteoKey(function() {
+
+			$this->setClock('2026-10-05 08:30:00');
+
+			\Cache::redis()->set(self::KEY, $this->getForecast('2026-10-05T05:00', '2026-10-05'), WeatherAiLib::TIMEOUT);
+
+			$eStructure = $this->getStructure(FixtureAiLib::F6);
+
+			$getDay = fn(string $date) => WeatherAiLib::getByStructure($eStructure, date: $date)['day'];
+
+			$day = $getDay('2026-10-06');
+
+			$this->assertEquals(WeatherAiLib::MOMENTS, array_keys($day['moments']));
+			$this->assertEquals([6, 7, 8, 9, 10, 11], array_column($day['moments'][6], 'hour'), 'le matin, de 6 h à 11 h');
+			$this->assertEquals(25.0, $day['moments'][6][0]['gust']);
+			$this->assertEquals([FALSE, TRUE], [$day['moments'][6][0]['day'], $day['moments'][6][1]['day']], 'la nuit finit à 7 h');
+
+			$night = $getDay('2026-10-07');
+
+			$this->assertEquals([0], array_keys($night['moments']), 'un moment sans heure manque');
+			$this->assertEquals(5, count($night['moments'][0]), 'la nuit s\'arrête à la dernière heure prévue');
+
+			$this->assertEquals(NULL, $getDay('2026-10-08'), 'un jour sans heure');
+			$this->assertEquals(NULL, $getDay('2026-10-05'), 'aujourd\'hui n\'a pas de tuile');
+			$this->assertEquals(NULL, $getDay('2026-10-09'), 'ni le quatrième jour');
+			$this->assertEquals(NULL, $getDay('demain'));
+			$this->assertEquals(NULL, $getDay(''), 'aucun jour ouvert');
+
+		});
 
 	}
 
@@ -507,23 +561,26 @@ class DashboardWeatherAiTest extends \Test {
 
 	/**
 	 * Une position de la réponse d'Open-Meteo, dans sa forme documentée : `$hours` heures à partir de `$hour`
-	 * et 9 jours à partir de `$day`, en colonnes parallèles. Il pleut 4,32 mm le premier jour et 0,04 mm
-	 * les suivants, sous le seuil ; les heures sont sèches sauf celles que `$rain` mouille, par rang.
+	 * et 9 jours à partir de `$day`, en colonnes parallèles. Les heures sont sèches sauf celles que `$rain`
+	 * mouille, par rang, la rafale y est de 25 km/h, et il fait jour de 7 h à 18 h.
 	 */
 	private function getResponse(string $hour, string $day, float $temperature, array $rain = [], int $hours = 48): array {
 
-		$hourly = ['time' => [], 'temperature_2m' => [], 'weather_code' => [], 'precipitation_probability' => [], 'precipitation' => [], 'wind_speed_10m' => []];
+		$hourly = ['time' => [], 'temperature_2m' => [], 'weather_code' => [], 'precipitation_probability' => [], 'precipitation' => [], 'wind_speed_10m' => [], 'wind_gusts_10m' => [], 'is_day' => []];
 
 		for($i = 0; $i < $hours; $i++) {
-			$hourly['time'][] = date('Y-m-d\TH:00', strtotime($hour.' + '.$i.' hours'));
+			$at = strtotime($hour.' + '.$i.' hours');
+			$hourly['time'][] = date('Y-m-d\TH:00', $at);
 			$hourly['temperature_2m'][] = $temperature + $i / 10;
 			$hourly['weather_code'][] = 3;
 			$hourly['precipitation_probability'][] = 20;
 			$hourly['precipitation'][] = $rain[$i] ?? 0.0;
 			$hourly['wind_speed_10m'][] = 12.0;
+			$hourly['wind_gusts_10m'][] = 25.0;
+			$hourly['is_day'][] = (int)(date('G', $at) >= 7 and date('G', $at) < 19);
 		}
 
-		$daily = ['time' => [], 'weather_code' => [], 'temperature_2m_max' => [], 'temperature_2m_min' => [], 'precipitation_probability_max' => [], 'precipitation_sum' => []];
+		$daily = ['time' => [], 'weather_code' => [], 'temperature_2m_max' => [], 'temperature_2m_min' => [], 'precipitation_probability_max' => []];
 
 		for($i = 0; $i < 9; $i++) {
 			$daily['time'][] = date('Y-m-d', strtotime($day.' + '.$i.' days'));
@@ -531,7 +588,6 @@ class DashboardWeatherAiTest extends \Test {
 			$daily['temperature_2m_max'][] = 16.0;
 			$daily['temperature_2m_min'][] = 6.0;
 			$daily['precipitation_probability_max'][] = 40;
-			$daily['precipitation_sum'][] = ($i === 0) ? 4.32 : 0.04;
 		}
 
 		return ['latitude' => 45.75, 'longitude' => 3.25, 'timezone' => 'Europe/Paris', 'hourly' => $hourly, 'daily' => $daily];

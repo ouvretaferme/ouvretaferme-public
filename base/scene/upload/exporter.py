@@ -4,14 +4,15 @@ Par le MCP de Blender, dans le code exécuté :
 
     exec(open('<dossier du skill>/exporter.py').read())
     exporter('<sortie>.glb', '<dossier du skill>')
+    exporter('<sortie>.glb', '<dossier du skill>', '<famille>')    pour un élément d'Eau, de Nature ou de Matériel
 
-En ligne de commande :
+En ligne de commande, la famille après le fichier de sortie quand ce n'est pas un bâtiment :
 
-    blender -b --factory-startup <modele>.blend --python <dossier du skill>/exporter.py -- <sortie>.glb
+    blender -b --factory-startup <modele>.blend --python <dossier du skill>/exporter.py -- <sortie>.glb [<famille>]
 
 Seuls les objets visibles partent. Le script lit les règles à côté de lui, dans le seul fichier de règles du dossier
 (avatar.json ou decor.json), dont `profile` dit ce que la scène doit porter. Un objet du décor se juge sous les règles de sa
-famille, `famille` quand les règles en portent plusieurs. Le script dit ce qui ne va pas avant d'exporter, puis fait juger
+famille, `famille`, le bâtiment quand elle n'est pas donnée. Le script dit ce qui ne va pas avant d'exporter, puis fait juger
 le fichier écrit par upload.mjs si node est installé : c'est ce jugement qui fait foi, le même que celui du site.
 
 Avant d'exporter, il contrôle sur la scène les images, l'armature, les formes clés, l'animation, les triangles, le nombre
@@ -50,7 +51,8 @@ def regles(dossier, famille=None):
 	if 'families' not in r:
 		return r
 	familles = r.pop('families')
-	if famille is None and len(familles) == 1:
+	# Sans famille, la première de decor.json, le bâtiment, pour qu'un appel écrit avant les rangées Eau, Nature et Matériel juge encore
+	if famille is None:
 		famille = next(iter(familles))
 	if famille not in familles:
 		raise RuntimeError(f"Famille {famille} inconnue, les familles sont {', '.join(familles)}.")
@@ -270,4 +272,5 @@ def exporter(sortie, dossier=None, famille=None):
 
 # Lu par exec(), le script prend le __file__ de qui l'exécute, ou aucun : seul le lancement par --python exporte de lui-même
 if '--' in sys.argv and pathlib.Path(globals().get('__file__', '')).name == 'exporter.py':
-	exporter(sys.argv[sys.argv.index('--') + 1])
+	arguments = sys.argv[sys.argv.index('--') + 1:]
+	exporter(arguments[0], famille=arguments[1] if len(arguments) > 1 else None)

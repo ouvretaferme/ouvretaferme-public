@@ -191,7 +191,7 @@ class CompositionStartUi {
 						$d->name = 'name['.$index.']';
 					});
 				$h .= '</div>';
-				$h .= '<a class="onboarding-row-remove" data-onboarding-remove-row title="'.s("Retirer ce panier").'">'.\Asset::icon('x-lg').'</a>';
+				$h .= '<a class="btn btn-only-icon btn-sm btn-outline-danger" data-onboarding-remove-row title="'.s("Retirer ce panier").'">'.\Asset::icon('x-lg').'</a>';
 			$h .= '</div>';
 
 			$h .= '<div class="onboarding-row-details">';

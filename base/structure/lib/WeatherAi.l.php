@@ -31,10 +31,11 @@ class WeatherAiLib {
 
 	/**
 	 * Les cases d'une requête. Open-Meteo compte un appel par position, quel que soit le découpage, tant
-	 * qu'une position demande au plus 10 variables sur au plus 2 semaines (ici 10 sur 8 jours : une
-	 * variable de plus double la facture) : la taille du lot ne change donc pas la facture, seulement la
-	 * longueur de l'URL, qui reste sous 2 Ko à 50 cases. Une passe sur les 2 429 cases du parc fait 49
-	 * requêtes et 2 429 appels décomptés par modèle, soit 196 requêtes et 9 716 appels pour les quatre.
+	 * qu'une position demande au plus 10 variables sur au plus 2 semaines ; au-delà, l'appel compte au
+	 * prorata, d'après la grille d'Open-Meteo lue le 2026-10-25. Ici 11 variables sur 8 jours, donc 1,1
+	 * appel par position : la taille du lot ne change pas la facture, seulement la longueur de l'URL, qui
+	 * reste sous 2 Ko à 50 cases. Une passe sur les 2 429 cases du parc fait 49 requêtes par modèle, soit
+	 * 196 requêtes et environ 10 700 appels décomptés pour les quatre.
 	 */
 	const int BATCH = 50;
 
@@ -55,6 +56,20 @@ class WeatherAiLib {
 
 	/** En dessous, une pluie arrondie au dixième ne se lit pas : la cellule ne dit rien plutôt que « 0 mm ». */
 	const float RAIN_MIN = 0.1;
+
+	/**
+	 * Les moments du détail d'un jour, par leur première heure, de six heures chacun (planche L96, piste
+	 * C3) : la nuit, le matin, l'après-midi et le soir.
+	 */
+	const array MOMENTS = [0, 6, 12, 18];
+
+	const int MOMENT_HOURS = 6;
+
+	/** Le moment que le détail montre d'abord quand le modèle le couvre : le matin. */
+	const int MOMENT_FIRST = 6;
+
+	/** Les jours qu'une tuile ouvre en détail, après aujourd'hui : ceux des tuiles du menu. */
+	const int DETAIL_DAYS = 3;
 
 	/** Les jours montrés à partir d'aujourd'hui. */
 	const int DAYS = 7;
@@ -103,11 +118,11 @@ class WeatherAiLib {
 	 * des multiples de 0,5 porte le nom d'une ancienne case de 0,25°, et lirait jusqu'à son expiration une
 	 * prévision sans millimètres. Deux cases voisines diffèrent de 0,02 sur un axe, que `%.2f` écrit.
 	 *
-	 * Le modèle s'y écrit par sa valeur d'enum : celle d'ICON garde à la clé le nom qu'elle portait quand
-	 * ICON était le seul modèle, et les prévisions déjà en cache restent lues.
+	 * Le modèle s'y écrit par sa valeur d'enum. `v2` : les heures et les jours portent leur rafale, et les
+	 * heures leur nuit (L96), qu'une prévision écrite avant n'a pas, et que le rendu lit.
 	 */
 	public static function getKey(array $cell, string $model): string {
-		return 'weather-'.$model.'-'.self::getCellId($cell);
+		return 'weather-v2-'.$model.'-'.self::getCellId($cell);
 	}
 
 	/** Une case sans modèle, telle que `getCells()` la range. */
@@ -141,8 +156,13 @@ class WeatherAiLib {
 	 * et `model` le dit : un modèle qu'Open-Meteo a cessé de servir sur une case ne retire pas la météo de
 	 * l'accueil. Un membre de l'équipe qui visite la structure n'en est pas membre : il lit ICON, et
 	 * `member` vaut `NULL`, son choix n'ayant aucune ligne où s'écrire.
+	 *
+	 * `day` porte le détail du jour qu'une tuile ouvre, lu dans la même prévision que la tuile, pour que
+	 * l'une et l'autre ne puissent pas venir de deux modèles ou de deux lectures du cache.
+	 *
+	 * @param string $date le jour ouvert, `''` quand aucun ne l'est
 	 */
-	public static function getByStructure(Structure $eStructure, Member $eMember = new Member()): ?array {
+	public static function getByStructure(Structure $eStructure, Member $eMember = new Member(), string $date = ''): ?array {
 
 		if(StructureSetting::$openMeteoKey === NULL) {
 			return NULL;
@@ -154,37 +174,17 @@ class WeatherAiLib {
 			return NULL;
 		}
 
-		$cell = self::getCell($eSystem['placeLngLat']);
 		$chosen = $eMember->empty() ? Member::ICON : $eMember['viewWeatherModel'];
+		$forecast = self::read($eSystem['placeLngLat'], $chosen);
+
+		if($forecast === NULL) {
+			return NULL;
+		}
+
+		['model' => $model, 'hours' => $hours, 'days' => $days] = $forecast;
 
 		$hour = \Clock::format('Y-m-d H:00');
 		$today = \Clock::date();
-
-		$model = NULL;
-
-		foreach(array_unique([$chosen, Member::ICON]) as $candidate) {
-
-			$forecast = \Cache::redis()->get(self::getKey($cell, $candidate));
-
-			if(is_array($forecast)) {
-
-				$hours = array_column(array_map(self::prepareRain(...), $forecast['hours']), NULL, 'time');
-				$days = array_map(self::prepareRain(...), array_values(array_filter($forecast['days'], fn(array $entry) => ($entry['date'] >= $today))));
-
-				// La phrase du moment lit le minimum du jour dans la première tuile : un modèle qui porte
-				// l'heure sans porter le jour ne la couvre pas.
-				if(array_key_exists($hour, $hours) and $days !== [] and $days[0]['date'] === $today) {
-					$model = $candidate;
-					break;
-				}
-
-			}
-
-		}
-
-		if($model === NULL) {
-			return NULL;
-		}
 
 		$tomorrow = date('Y-m-d', \Clock::shift('+1 DAY'));
 		$bandDate = ((int)\Clock::format('G') < self::BAND[count(self::BAND) - 1]) ? $today : $tomorrow;
@@ -209,9 +209,94 @@ class WeatherAiLib {
 			'now' => $hours[$hour],
 			'band' => $band,
 			'days' => array_slice($days, 0, self::DAYS),
+			'day' => self::getDay($hours, $days, $date),
 			'today' => $today,
 			'tomorrow' => $tomorrow
 		];
+
+	}
+
+	/**
+	 * Les heures d'un des jours qu'ouvrent les tuiles, rangées par moment (`MOMENTS`). Un moment dont
+	 * aucune heure n'est couverte manque, et le jour qui n'en a aucun, comme une date qu'aucune tuile ne
+	 * montre, rend `NULL`. Les dates admises sont celles des tuiles, lues dans `$days` comme le rendu les
+	 * lit (`DashboardUi::getForecast()`).
+	 */
+	private static function getDay(array $hours, array $days, string $date): ?array {
+
+		$offered = array_column(array_slice($days, 1, self::DETAIL_DAYS), 'date');
+
+		if(in_array($date, $offered, TRUE) === FALSE) {
+			return NULL;
+		}
+
+		$moments = [];
+
+		foreach(self::MOMENTS as $start) {
+
+			$hoursMoment = [];
+
+			for($hour = $start; $hour < $start + self::MOMENT_HOURS; $hour++) {
+
+				$time = $date.' '.sprintf('%02d', $hour).':00';
+
+				if(array_key_exists($time, $hours)) {
+					$hoursMoment[] = $hours[$time] + ['hour' => $hour];
+				}
+
+			}
+
+			if($hoursMoment !== []) {
+				$moments[$start] = $hoursMoment;
+			}
+
+		}
+
+		if($moments === []) {
+			return NULL;
+		}
+
+		return [
+			'date' => $date,
+			'moments' => $moments
+		];
+
+	}
+
+	/**
+	 * La prévision de la case, dans le modèle choisi s'il couvre l'heure et le jour en cours, sinon dans
+	 * ICON, sinon `NULL`. Les heures sont rangées par leur `time`, les jours commencent aujourd'hui.
+	 */
+	private static function read(array $lngLat, string $chosen): ?array {
+
+		$cell = self::getCell($lngLat);
+		$hour = \Clock::format('Y-m-d H:00');
+		$today = \Clock::date();
+
+		foreach(array_unique([$chosen, Member::ICON]) as $candidate) {
+
+			$forecast = \Cache::redis()->get(self::getKey($cell, $candidate));
+
+			if(is_array($forecast)) {
+
+				$hours = array_column(array_map(self::prepareRain(...), $forecast['hours']), NULL, 'time');
+				$days = array_map(self::prepareRain(...), array_values(array_filter($forecast['days'], fn(array $entry) => ($entry['date'] >= $today))));
+
+				// La phrase du moment lit le minimum du jour dans la première tuile : un modèle qui porte
+				// l'heure sans porter le jour ne la couvre pas.
+				if(array_key_exists($hour, $hours) and $days !== [] and $days[0]['date'] === $today) {
+					return [
+						'model' => $candidate,
+						'hours' => $hours,
+						'days' => $days
+					];
+				}
+
+			}
+
+		}
+
+		return NULL;
 
 	}
 
@@ -318,8 +403,8 @@ class WeatherAiLib {
 		return [
 			'latitude' => implode(',', array_map(fn(array $cell) => sprintf('%.2f', $cell[1]), $batch)),
 			'longitude' => implode(',', array_map(fn(array $cell) => sprintf('%.2f', $cell[0]), $batch)),
-			'hourly' => 'temperature_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m',
-			'daily' => 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum',
+			'hourly' => 'temperature_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m,is_day',
+			'daily' => 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max',
 			'models' => self::getApiModel($model),
 			'timezone' => date_default_timezone_get(),
 			'forecast_days' => self::FORECAST_DAYS,
@@ -337,9 +422,15 @@ class WeatherAiLib {
 	 * `\Clock::format('Y-m-d H:00')`.
 	 *
 	 * Un modèle qui ne couvre pas toute la fenêtre rend `NULL` au-delà de sa portée, Météo-France dès le
-	 * quatrième jour au soir. Une heure sans température, ciel ou vent et un jour sans minimum, maximum ou
+	 * quatrième jour au soir. Une heure sans température, ciel, vent ou jour et un jour sans minimum, maximum ou
 	 * ciel ne s'écrivent pas : le rendu les montre tous. Le risque de pluie peut manquer partout
-	 * (Météo-France), et reste alors `NULL`.
+	 * (Météo-France), et reste alors `NULL`, comme la rafale d'une heure.
+	 *
+	 * Les millimètres et la rafale d'un jour se tirent de ses heures, que la source donne de toute façon,
+	 * et non de `precipitation_sum` et `wind_gusts_10m_max` : chaque variable de plus fait compter
+	 * chaque position un dixième d'appel de plus (`BATCH`). Les heures qu'une valeur manquante écarte
+	 * comptent quand même, l'eau tombée et le vent n'en dépendant pas. Un jour dont aucune heure ne
+	 * porte de valeur la laisse à `NULL`.
 	 *
 	 * @param array $keys les clés des cases, dans l'ordre des positions de la requête
 	 */
@@ -355,13 +446,26 @@ class WeatherAiLib {
 			$daily = $locations[$position]['daily'];
 
 			$hours = [];
+			$mmByDate = [];
+			$gustByDate = [];
 
 			foreach($hourly['time'] as $index => $time) {
+
+				$date = substr($time, 0, 10);
+
+				if($hourly['precipitation'][$index] !== NULL) {
+					$mmByDate[$date] = ($mmByDate[$date] ?? 0.0) + $hourly['precipitation'][$index];
+				}
+
+				if($hourly['wind_gusts_10m'][$index] !== NULL) {
+					$gustByDate[$date] = max($gustByDate[$date] ?? 0.0, $hourly['wind_gusts_10m'][$index]);
+				}
 
 				if(
 					$hourly['temperature_2m'][$index] === NULL or
 					$hourly['weather_code'][$index] === NULL or
-					$hourly['wind_speed_10m'][$index] === NULL
+					$hourly['wind_speed_10m'][$index] === NULL or
+					$hourly['is_day'][$index] === NULL
 				) {
 					continue;
 				}
@@ -372,7 +476,9 @@ class WeatherAiLib {
 					'code' => $hourly['weather_code'][$index],
 					'rain' => $hourly['precipitation_probability'][$index],
 					'mm' => $hourly['precipitation'][$index],
-					'wind' => $hourly['wind_speed_10m'][$index]
+					'wind' => $hourly['wind_speed_10m'][$index],
+					'gust' => $hourly['wind_gusts_10m'][$index],
+					'day' => ($hourly['is_day'][$index] === 1)
 				];
 
 			}
@@ -395,7 +501,8 @@ class WeatherAiLib {
 					'max' => $daily['temperature_2m_max'][$index],
 					'code' => $daily['weather_code'][$index],
 					'rain' => $daily['precipitation_probability_max'][$index],
-					'mm' => $daily['precipitation_sum'][$index]
+					'mm' => $mmByDate[$date] ?? NULL,
+					'gust' => $gustByDate[$date] ?? NULL
 				];
 
 			}

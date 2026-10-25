@@ -50,6 +50,7 @@ new Page(function($data) {
 		'lines' => array_values(array_map('intval', array_filter(explode(',', POST('lines')), 'ctype_digit'))),
 		'recap' => POST('recap', 'bool'),
 		'status' => POST('status', '?string'),
+		'category' => POST('category', '?int'),
 		// Les jours qu'un temps ajoute à celui de la phrase, un par jeton (`TimeIntentionLib::getDays()`).
 		'days' => array_values(array_filter(explode(',', POST('days')), fn(string $day) => \Filter::check('date', $day))),
 		// La case d'un jour de récolte poste sa série, son jour et son couple avec chaque lecture (`EntryUi::getHarvestCell()`).

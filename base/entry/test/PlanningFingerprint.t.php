@@ -75,13 +75,21 @@ class PlanningFingerprintTest extends EntryFixtureTest {
 	}
 
 	/**
+	 * Une intervention sans série n'a pas de place : la parcelle la masquerait (`TaskLib::filterPlot()`), et le
+	 * cas qui l'éprouve rend le planning entier.
+	 */
+	private function getPlotId(): ?int {
+		return $this->ePlot->empty() ? NULL : $this->ePlot['id'];
+	}
+
+	/**
 	 * Le conteneur du planning de la semaine, tel que la page le rend.
 	 */
 	private function render(?string $week = NULL): \Dom\HTMLDocument {
 
 		$path = 'ferme/'.$this->eStructure['id'].'/planning/'.\structure\Member::WEEKLY.'/'.($week ?? \Clock::week());
 
-		$action = $this->executePageAction($path, ['plot' => $this->ePlot['id']], 'GET');
+		$action = $this->executePageAction($path, ['plot' => $this->getPlotId()], 'GET');
 
 		$this->assertTrue($action instanceof \ViewAction, 'le planning se rend');
 
@@ -109,7 +117,7 @@ class PlanningFingerprintTest extends EntryFixtureTest {
 		$action = $this->executePageAction('entry/entry:'.$route, $input + [
 			'structure' => $this->eStructure['id'],
 			'week' => $week ?? \Clock::week(),
-			'plot' => $this->ePlot['id'],
+			'plot' => $this->getPlotId(),
 		]);
 
 		$this->assertTrue($action instanceof \ViewAction, $route.' rend ses instructions');
@@ -1021,6 +1029,113 @@ class PlanningFingerprintTest extends EntryFixtureTest {
 		$before = $this->render();
 		$instructions = $this->cancel($this->lastData->reading['undo']);
 		$this->check($before, $instructions, PlanningLib::REMOVE_ACTION, 'la semaine se vide sous une échéance');
+
+	}
+
+	/**
+	 * Une action hors de Culture, « RH 💡 » en Administration, écrite par le temps puis par la nouvelle
+	 * intervention, faite : sans série ni espèce, la ligne rend ce que le rechargement rend (HN-B14). La seconde
+	 * ligne demandait une tête d'espèce que le planning ne dessine pas, et la réponse levait après l'écriture.
+	 */
+	public function testOutsideCulture(): void {
+
+		$eAction = $this->createActionAdministration();
+
+		if($eAction->empty() or $this->requireMember() === FALSE) {
+			return;
+		}
+
+		$this->ePlot = new \map\Plot();
+
+		$before = $this->render();
+		$instructions = $this->getInstructions('doWrite', ['prefix' => '', 'query' => 'temps rh 1 h ']);
+		$this->assertEquals('time', $this->lastData->reading['intention']);
+		$this->check($before, $instructions, PlanningLib::INSERT_ACTION, 'temps sur RH');
+
+		$undoTime = $this->lastData->reading['undo'];
+
+		// L'intervention à faire que le temps vient de créer est dans Fait, par son temps : la faite entre à
+		// côté d'elle, deux lignes sans espèce que nulle tête ne sépare.
+		$before = $this->render();
+		$instructions = $this->getInstructions('doWrite', ['prefix' => '', 'query' => 'intervention rh ']);
+		$this->assertEquals(\series\Task::DONE, $this->lastData->reading['confirmation']['status']);
+		$this->check($before, $instructions, PlanningLib::INSERT, 'intervention RH faite');
+
+		$before = $this->render();
+		$instructions = $this->cancel($this->lastData->reading['undo']);
+		$this->check($before, $instructions, PlanningLib::REMOVE, 'intervention RH faite annulée');
+
+		$before = $this->render();
+		$instructions = $this->cancel($undoTime);
+		$this->check($before, $instructions, PlanningLib::REMOVE_ACTION, 'temps sur RH annulé');
+
+	}
+
+	/**
+	 * Une ligne sans espèce entre en tête du bloc de son action dans Fait, avant la tête d'espèce de la ligne
+	 * plantée déjà faite : le bloc se trie par nom d'espèce, le vide d'abord (`TaskLib::getForPlanning()`), et
+	 * la ligne se pose sous le nom de l'action (`PlanningLib::fillInsert()`).
+	 */
+	public function testWithoutPlantFirst(): void {
+
+		if($this->requireMember() === FALSE) {
+			return;
+		}
+
+		$eAction = new \work\Action([
+			'name' => 'Zzbloc '.substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 8),
+			'structure' => $this->eStructure,
+			'categories' => [$this->getCategoryCulture()['id']],
+		]);
+
+		// Sans `build()` : le décor fixe le nom et la catégorie, que le formulaire d'action vérifierait.
+		\work\ActionLib::create($eAction);
+
+		$eCultivation = $this->createCultivationOnPlot($this->getPlant(), 'Série A');
+
+		$this->ePlot = new \map\Plot();
+
+		foreach([$eCultivation, new \series\Cultivation()] as $eCultivationTask) {
+
+			$done = $eCultivationTask->notEmpty();
+
+			$eTask = new \series\Task([
+				'structure' => $this->eStructure,
+				'series' => $done ? $eCultivationTask['series'] : new \series\Series(),
+				'cultivation' => $eCultivationTask,
+				'plant' => $done ? $eCultivationTask['plant'] : new \plant\Plant(),
+				'action' => $eAction,
+				'category' => $this->getCategoryCulture(),
+				'description' => NULL,
+				'status' => $done ? \series\Task::DONE : \series\Task::TODO,
+				'plannedWeek' => \Clock::week(),
+				'plannedDate' => \Clock::date(),
+				'doneWeek' => $done ? \Clock::week() : NULL,
+				'doneDate' => $done ? \Clock::date() : NULL,
+				'variety' => new \plant\Variety(),
+				'harvestSize' => new \plant\Size(),
+				'repeatMaster' => new \series\Repeat(),
+			]);
+
+			// Sans `build()` : le décor fixe le statut, la semaine et le jour, que `build()` ne prend que d'un
+			// formulaire posté.
+			\series\TaskLib::create($eTask);
+
+		}
+
+		// Le premier temps du bloc y ajoute qui tape : le bloc se redessine (`PlanningLib::getChange()`).
+		$before = $this->render();
+		$instructions = $this->writeTime($eAction, $this->getPlant(), '15 min', ['cultivation' => $eCultivation['id']]);
+		$this->check($before, $instructions, PlanningLib::ACTION, 'premier temps du bloc');
+
+		$before = $this->render();
+		$instructions = $this->getInstructions('doWrite', ['prefix' => '', 'query' => mb_strtolower($eAction['name']).' 1 h ']);
+		$this->assertEquals(['action' => $eAction['id']], $this->lastData->change['anchor'], 'la ligne sans espèce se pose sous le nom de l\'action');
+		$this->check($before, $instructions, PlanningLib::INSERT, 'ligne sans espèce en tête du bloc');
+
+		$before = $this->render();
+		$instructions = $this->cancel($this->lastData->reading['undo']);
+		$this->check($before, $instructions, PlanningLib::REMOVE, 'ligne sans espèce retirée de la tête du bloc');
 
 	}
 

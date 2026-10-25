@@ -1257,7 +1257,7 @@ a.toolbox-composition-species-link:hover {
 
 /* La seule taille restante ne se retire pas : un départ sans taille ne composerait rien. La croix
    garde sa place pour que le champ du nom ne change pas de largeur quand une taille s'ajoute. */
-.toolbox-composition-start-formula:only-child .onboarding-row-remove {
+.toolbox-composition-start-formula:only-child [data-onboarding-remove-row] {
 	visibility: hidden;
 }
 

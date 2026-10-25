@@ -160,10 +160,11 @@ class ReliefMobileAiTest extends \Test {
 	public function testTheLabelsStandOnTheGround(): void {
 
 		$result = $this->run('
-			// Un papillon visite le haut d\'une culture, au-dessus du sol sous elle
+			// Un papillon visite le haut d\'une culture, au-dessus du sol sous elle : le tirage choisit la planche, et le papillon est
+			// seul, tout le cadre lui étant ouvert
 			const blooms = [{ greenhouse: false, height: .5, top: .6, a: { x: 20, n: 0 }, b: { x: 20, n: 0 } }];
-			const insects = geometry => Object.assign(Object.create(MapSceneInsects.prototype), { geometry, frustum: { containsPoint: () => true }, probe: new THREE.Vector3(), random: () => 0 });
-			const spot = MapSceneInsects.prototype.spot.call(insects(slopeGeometry), blooms, { target: new THREE.Vector3() });
+			const insects = geometry => Object.assign(Object.create(MapSceneInsects.prototype), { geometry, meadow: { flowersInView: () => [], footprints: [] }, butterflies: [], frustum: { containsPoint: () => true }, framed: () => true, projection: new THREE.Matrix4(), half: [1, 1], perMetre: 1, scale: 1, probe: new THREE.Vector3(), random: () => 0 });
+			const spot = MapSceneInsects.prototype.spot.call(insects(slopeGeometry), blooms, null);
 
 			// La bulle d\'une série récoltée, au-dessus du sol sous la série
 			const placed = [];

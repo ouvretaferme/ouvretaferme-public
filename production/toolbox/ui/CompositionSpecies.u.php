@@ -82,7 +82,7 @@ class CompositionSpeciesUi {
 
 		$h .= self::getSettings($form, $eCompositionSpecies, $excluded === FALSE, added: FALSE);
 
-		$buttons = '<div class="flex-justify-space-between">';
+		$buttons = '<div class="util-action">';
 
 			$buttons .= $form->submit(s("Enregistrer"));
 

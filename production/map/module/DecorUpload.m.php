@@ -58,11 +58,14 @@ class DecorUploadModel extends \ModuleModel {
 		$this->properties = array_merge($this->properties, [
 			'id' => ['serial32', 'cast' => 'int'],
 			'structure' => ['element32', 'structure\Structure', 'cast' => 'element'],
-			'building' => ['element32', 'map\DecorBuilding', 'cast' => 'element'],
+			'building' => ['element32', 'map\DecorBuilding', 'null' => TRUE, 'cast' => 'element'],
+			'object' => ['element32', 'map\DecorObject', 'null' => TRUE, 'cast' => 'element'],
 			'hash' => ['textFixed', 'min' => 20, 'max' => 20, 'charset' => 'ascii', 'null' => TRUE, 'cast' => 'string'],
 			'bakedIndex' => ['json', 'null' => TRUE, 'cast' => 'array'],
 			'rules' => ['int16', 'min' => 1, 'max' => NULL, 'cast' => 'int'],
 			'sharedAt' => ['datetime', 'null' => TRUE, 'cast' => 'string'],
+			'chosenBy' => ['element32', 'user\User', 'null' => TRUE, 'cast' => 'element'],
+			'chosenAt' => ['datetime', 'null' => TRUE, 'cast' => 'string'],
 			'status' => ['enum', [\map\DecorUpload::NEW, \map\DecorUpload::KEPT, \map\DecorUpload::WITHDRAWN], 'cast' => 'enum'],
 			'reason' => ['enum', [\map\DecorUpload::PERSON, \map\DecorUpload::BRAND, \map\DecorUpload::OFFENSIVE, \map\DecorUpload::OTHER], 'null' => TRUE, 'cast' => 'enum'],
 			'reasonText' => ['text16', 'min' => 1, 'max' => 500, 'null' => TRUE, 'cast' => 'string'],
@@ -73,12 +76,14 @@ class DecorUploadModel extends \ModuleModel {
 		]);
 
 		$this->propertiesList = array_merge($this->propertiesList, [
-			'id', 'structure', 'building', 'hash', 'bakedIndex', 'rules', 'sharedAt', 'status', 'reason', 'reasonText', 'moderatedBy', 'moderatedAt', 'createdAt', 'createdBy'
+			'id', 'structure', 'building', 'object', 'hash', 'bakedIndex', 'rules', 'sharedAt', 'chosenBy', 'chosenAt', 'status', 'reason', 'reasonText', 'moderatedBy', 'moderatedAt', 'createdAt', 'createdBy'
 		]);
 
 		$this->propertiesToModule += [
 			'structure' => 'structure\Structure',
 			'building' => 'map\DecorBuilding',
+			'object' => 'map\DecorObject',
+			'chosenBy' => 'user\User',
 			'moderatedBy' => 'user\User',
 			'createdBy' => 'user\User',
 		];
@@ -86,6 +91,7 @@ class DecorUploadModel extends \ModuleModel {
 		$this->indexConstraints = array_merge($this->indexConstraints, [
 			['structure'],
 			['building'],
+			['object'],
 			['status']
 		]);
 
@@ -165,6 +171,10 @@ class DecorUploadModel extends \ModuleModel {
 		return $this->where('building', ...$data);
 	}
 
+	public function whereObject(...$data): DecorUploadModel {
+		return $this->where('object', ...$data);
+	}
+
 	public function whereHash(...$data): DecorUploadModel {
 		return $this->where('hash', ...$data);
 	}
@@ -179,6 +189,14 @@ class DecorUploadModel extends \ModuleModel {
 
 	public function whereSharedAt(...$data): DecorUploadModel {
 		return $this->where('sharedAt', ...$data);
+	}
+
+	public function whereChosenBy(...$data): DecorUploadModel {
+		return $this->where('chosenBy', ...$data);
+	}
+
+	public function whereChosenAt(...$data): DecorUploadModel {
+		return $this->where('chosenAt', ...$data);
 	}
 
 	public function whereStatus(...$data): DecorUploadModel {

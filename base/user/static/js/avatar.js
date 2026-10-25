@@ -1279,9 +1279,9 @@ class UserAvatarEditor {
 	}
 
 	/**
-	 * Les gestes de l'onglet du modèle. « Valider » vérifie le fichier, « En faire mon avatar » (« Remplacer mon avatar »
-	 * avec un modèle en place) le reposte pour de bon, « Choisir un autre fichier » en ouvre un autre. « Supprimer ce
-	 * modèle » et l'interrupteur de la photo s'appliquent au modèle en place. L'image qui part est celle de ce que l'avatar montrera, rendue avant de poster, et seulement quand il
+	 * Les gestes de l'onglet du modèle. « Valider » vérifie le fichier, « Choisir comme avatar » le reposte pour de bon,
+	 * « Choisir un autre fichier » en ouvre un autre. « Supprimer ce modèle » et l'interrupteur de la photo s'appliquent au
+	 * modèle en place. L'image qui part est celle de ce que l'avatar montrera, rendue avant de poster, et seulement quand il
 	 * remplace la photo de profil. Chaque geste dit qu'il travaille jusqu'à la réponse (`data-waiter`), rendu compris.
 	 */
 	clickUpload(event) {
@@ -1305,7 +1305,13 @@ class UserAvatarEditor {
 		} else if(target.closest('[data-scene-upload-again]') !== null) {
 			this.uploadDrop.chooseAgain();
 		} else if(target.closest('[data-avatar-upload-clear]') !== null) {
-			this.press(target.closest('[data-avatar-upload-clear]'), null, this.isPhotoReplaced() ? '1' : '0', '/user/avatarUpload:doClear');
+
+			// Sans composition, l'avatar part avec le modèle et la photo revient : aucune image à rendre
+			const node = target.closest('[data-avatar-upload-clear]');
+			const replacesPhoto = (node.dataset.avatarUploadClear === 'composition' && this.isPhotoReplaced()) ? '1' : '0';
+
+			this.press(node, null, replacesPhoto, '/user/avatarUpload:doClear');
+
 		} else if(target.closest('[data-avatar-photo]') !== null) {
 			const node = target.closest('[data-avatar-photo]');
 			this.press(node, this.upload, node.dataset.avatarPhoto, '/user/avatarUpload:doPhoto');

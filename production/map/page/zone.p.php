@@ -125,6 +125,13 @@ new \map\ZonePage(function($data) {
 		throw new \ViewAction($data);
 
 	}, ['canUpdate', 'acceptUpdate'])
+	// L'herbe, le sol et le fond du pré de la parcelle, choisis dans la fiche du décor du plan 3D. Les trois partent à chaque choix : build() pose
+	// NULL sur une propriété absente de l'entrée, et NULL dit « comme la ferme ». La scène se repeint seule, d'où la réponse vide
+	->doUpdateProperties('doUpdateDecor', ['decorGrass', 'decorSoil', 'decorMeadow'], function($data) {
+
+		throw new \VoidAction();
+
+	})
 	->doDelete(function($data) {
 
 		// Supprimée depuis la vue Carte, la parcelle y rend la main à la structure, quelle que soit la vue retenue

@@ -40,7 +40,7 @@ class Decor extends DecorElement {
 	 * étapes `near` : chaque point d'un tracé le relirait sinon en base.
 	 *
 	 * L'ordre de `DecorLib::getPropertiesCreate()` porte les étapes qui lisent une autre propriété :
-	 * `building` avant `kit`, `trace` avant `width`, `diameter` et `laying`, `zone` avant `plot`, et `trace`, `zone` et `plot` avant `model`, `hedge`
+	 * `building` et `object` avant `kit`, `trace` avant `width`, `diameter` et `laying`, `zone` avant `plot`, et `trace`, `zone` et `plot` avant `model`, `hedge`
 	 * et `gate`.
 	 * Une telle étape s'abandonne quand la propriété qu'elle lit a été refusée (`skipIfInvalid()`) :
 	 * le refus est déjà dit, et la propriété refusée n'est jamais posée sur l'élément.
@@ -65,6 +65,24 @@ class Decor extends DecorElement {
 
 			});
 
+		// Un élément que la structure a importé (`DecorObject`), relu borné par elle, comme un bâtiment, avec sa famille, que suit
+		// le kit qui le pose
+		$l->property('object')
+			->addAfterCheck('owned', function(DecorObject &$eDecorObject): bool {
+
+				if($eDecorObject->empty()) {
+					return TRUE;
+				}
+
+				$this->expects(['structure']);
+
+				return DecorObject::model()
+					->select(['family'])
+					->whereStructure($this['structure'])
+					->get($eDecorObject);
+
+			});
+
 		$l->property('kit')
 			->addAfterCheck('format', function(string $kit): bool {
 				return (preg_match('/^[a-z0-9-]+$/', $kit) === 1);
@@ -75,6 +93,20 @@ class Decor extends DecorElement {
 				$l->skipIfInvalid('building');
 
 				return (($kit === 'batiment') === $this['building']->notEmpty());
+
+			})
+			// Les kits `objet-*` posent un élément importé de la structure, et seulement de la rangée que le kit désigne
+			->addAfterCheck('object', function(string $kit, \PropertyList $l): bool {
+
+				$l->skipIfInvalid('object');
+
+				if($this['object']->empty()) {
+					return (in_array($kit, DecorObject::KITS, TRUE) === FALSE);
+				}
+
+				$this['object']->expects(['family']);
+
+				return ($kit === DecorObject::KITS[$this['object']['family']]);
 
 			})
 			->addAfterCheck('irrigation', function(string $kit): bool {

@@ -200,7 +200,7 @@ UserAvatar:
   id: serial32
   user: user\User
   source: enum(EDITOR, PHOTO) = EDITOR
-  composition: json # EDITOR : un choix par famille du catalogue fermé ; PHOTO : la fiche rendue par l'agent
+  composition: ?json # EDITOR : un choix par famille du catalogue fermé ; PHOTO : la fiche rendue par l'agent ; NULL, l'avatar ne porte qu'un modèle importé
   accessory: ?text8(1, 40) # clé du catalogue des accessoires, liste à arbitrer
   companion: ?text8(1, 40) # slug d'un animal cuit des ambiances de base/scene (chat, lievre, herisson, coq, merle, rouge-gorge, abeille, papillon)
   replacesPhoto: bool = TRUE # l'image de l'avatar tient lieu de photo de profil sur `User.vignette`

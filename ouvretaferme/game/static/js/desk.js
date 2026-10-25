@@ -129,9 +129,10 @@ class GameDesk {
 	 */
 	static harvested(id, growing, gain) {
 
-		// La marque du cellier vient d'être reposée par `GameBoard.apply()`, et la scène ne la place qu'à sa prochaine
-		// image, déjà demandée : on part après elle
-		requestAnimationFrame(() => GameDesk.fly(id, growing, gain));
+		// La marque du cellier vient d'être reposée par `GameBoard.apply()`, à la place de l'ancienne. La scène ne la
+		// place qu'une fois sa taille lue, qui change quand une réserve vide se remplit : la récolte part vers cette
+		// place, dite par `gameboard:placed`
+		qs('#game-board', node => node.addEventListener('gameboard:placed', () => GameDesk.fly(id, growing, gain), { once: true }));
 
 	}
 

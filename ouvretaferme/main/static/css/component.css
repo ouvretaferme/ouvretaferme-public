@@ -6406,6 +6406,71 @@ body[data-template~="base"] :is(.container, .container .util-start-wrapper) > .u
 
 }
 
+/* L'attente d'une vue lourde, une scène 3D, jusqu'à sa première image : le logo couvre la vue et ses quatre feuilles battent
+   l'une après l'autre (DesignUi::getLogoWait()). Le calque passe au-dessus des commandes de la vue, qui n'ont rien à dire avant
+   la première image, et c'est le script de la vue qui le retire. L'hôte, positionné, en choisit le fond par
+   --util-logo-wait-background, pour que la première image ne change pas de couleur, et l'étage par --util-logo-wait-layer,
+   que seul lui peut placer au-dessus de ses propres commandes */
+.util-logo-wait {
+	position: absolute;
+	inset: 0;
+	z-index: var(--util-logo-wait-layer, 2);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: inherit;
+	background-color: var(--util-logo-wait-background, var(--background-surface));
+	color: var(--color-brand);
+}
+
+.util-logo-wait svg {
+	width: 96px;
+	height: 96px;
+	overflow: visible;
+}
+
+.util-logo-wait path {
+	transform-box: fill-box;
+	transform-origin: center;
+	/* Un battement de 2,4 s, les feuilles décalées d'un dixième de battement l'une après l'autre */
+	animation: util-logo-wait calc(2.4 * var(--duration-loop)) var(--ease-in-out) infinite;
+}
+
+.util-logo-wait path:nth-child(2) {
+	animation-delay: calc(3 * var(--duration-step));
+}
+
+.util-logo-wait path:nth-child(3) {
+	animation-delay: calc(6 * var(--duration-step));
+}
+
+.util-logo-wait path:nth-child(4) {
+	animation-delay: calc(9 * var(--duration-step));
+}
+
+@keyframes util-logo-wait {
+	0%, 55%, 100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	25% {
+		opacity: .35;
+		transform: scale(.86);
+	}
+}
+
+/* Le logo reste plein sans battre : un seul tour infime, arrêté sur sa dernière image, jamais animation: none, selon la règle
+   commune du mouvement réduit (juicinessAi.css) */
+@media (prefers-reduced-motion: reduce) {
+
+	.util-logo-wait path {
+		animation-duration: 0.01ms;
+		animation-iteration-count: 1;
+		animation-fill-mode: forwards;
+	}
+
+}
+
 .util-stamp {
 	--util-stamp: var(--secondary);
 	display: inline-block;
@@ -12065,9 +12130,14 @@ a.util-figures-line-item:hover {
 	display: none;
 }
 
-/* Sur une ligne, la croix vide aussi le texte tapé, pour recommencer : elle se montre dès qu'il y a à effacer, jeton
-   ou texte. Elle lit les jetons eux-mêmes, que le champ de saisie pose sans repasser par `is-filled`. */
-.util-omnibox-scroll:has(.util-omnibox-token, .util-omnibox-input:not(:placeholder-shown)) .util-omnibox-clear {
+/* Sur une ligne, ou dans un champ qui recommence sa saisie, la croix vide aussi le texte tapé : elle se montre dès
+   qu'il y a à effacer, jeton ou texte. Elle lit les jetons eux-mêmes, que le champ de saisie pose sans repasser par
+   `is-filled`. La variante `restart` s'écrit en deux sélecteurs : le relevé des variantes du design system
+   (`DesignSystemSentinelAi`) coupe la règle aux virgules, y compris dans `:has()`, et n'y retrouverait plus le
+   parent `util-omnibox` d'une variante neuve. */
+.util-omnibox-scroll:has(.util-omnibox-token, .util-omnibox-input:not(:placeholder-shown)) .util-omnibox-clear,
+.util-omnibox-restart:has(.util-omnibox-token) .util-omnibox-clear,
+.util-omnibox-restart:has(.util-omnibox-input:not(:placeholder-shown)) .util-omnibox-clear {
 	display: flex;
 }
 
@@ -13302,18 +13372,51 @@ a.util-calendar-sheet-day.util-calendar-sheet-held.util-calendar-sheet-selected:
 }
 
 
-/* La semaine jour par jour : une rangée util-days dont chaque jour ouvre le sélecteur de durée habituel pour
-   saisir sa journée, et la somme de la semaine qui suit le titre de la section (util-days-entry-total). Les jours se
-   partagent la largeur et gardent les états de util-day ; la pastille vient en tête, et peut être un lien qui
-   choisit le jour (util-days-entry-date). */
+/* La semaine jour par jour, une grille d'une colonne par jour (planche R-TempsTactile, R1) : chaque jour ouvre le
+   sélecteur de durée habituel pour saisir sa journée, et la somme de la semaine suit le titre de la section
+   (util-days-entry-total). Un jour range en rangées sa pastille, en tête, qui peut être un lien qui choisit le jour
+   (util-days-entry-date), sa valeur, puis ce qui l'accompagne (util-days-entry-time), que nomme une colonne de tête
+   (util-days-entry-head) ; sans elle, la grille n'a que deux rangées. Chaque jour prend les rangées de la grille
+   (subgrid), pour qu'une pastille de jour férié, plus haute, ne décale pas les valeurs de son jour. Les jours
+   gardent les états de util-day. */
 .util-days.util-days-entry {
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: max-content;
+	grid-template-rows: auto auto;
+	justify-content: start;
+	column-gap: var(--space-md);
 	align-items: stretch;
 }
 
+.util-days-entry:has(> .util-days-entry-head) {
+	grid-template-columns: max-content;
+	grid-template-rows: auto auto auto;
+}
+
+/* L'écart entre les rangées se pose sur chaque jour et non sur la grille : un sous-grille prend celui de son
+   élément, que util-day resserre pour la rangée simple. */
+.util-days-entry > :is(.util-day, .util-days-entry-head) {
+	display: grid;
+	grid-row: 1 / -1;
+	grid-template-rows: subgrid;
+	row-gap: var(--space-md);
+	align-items: center;
+	justify-items: center;
+}
+
 .util-days-entry > .util-day {
-	flex: 1 1 0;
 	min-width: 0;
 	padding: var(--space-xs) var(--space-xxs);
+}
+
+/* La tête se range contre les jours qu'elle nomme, pas contre le bord de la page. */
+.util-days-entry > .util-days-entry-head {
+	justify-items: end;
+	padding: var(--space-xs) var(--space-sm) var(--space-xs) 0;
+	color: var(--muted);
+	font-size: 0.9rem;
+	font-weight: 600;
 }
 
 .util-days-entry > .util-day.is-absent {
@@ -13340,11 +13443,10 @@ a.util-days-entry-date {
 }
 
 /* Une pastille qui porte une valeur, un jour férié, s'allonge : celles de la rangée prennent sa hauteur sans
-   s'élargir à leur jour comme dans util-days, pour que les champs restent alignés sous des pastilles égales. La
+   s'élargir à leur jour comme dans util-days, pour que les valeurs restent alignées sous des pastilles égales. La
    pastille peut être enveloppée de son lien, que util-days ne voit pas. */
 .util-days-entry:has(.util-calendar-value) > .util-day > :is(.util-days-entry-date, .util-calendar.util-calendar-lg) {
-	flex-grow: 1;
-	align-self: center;
+	align-self: stretch;
 }
 
 .util-days-entry:has(.util-calendar-value) > .util-day .util-calendar.util-calendar-lg {
@@ -13360,14 +13462,32 @@ a.util-days-entry-date {
 
 }
 
-/* La valeur prend la largeur du jour : la saisie qu'elle porte peut s'y étendre, en cible de toute la colonne. */
+/* La valeur prend la largeur du jour, la saisie qu'elle porte y étant centrée, et la hauteur d'une cible tactile. */
 .util-days-entry .util-day-value {
-	align-self: stretch;
+	justify-self: stretch;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	min-height: var(--touch-target);
 	font-size: 1rem;
+}
+
+/* Ce qui accompagne la valeur, en second : un chiffre gris, qui passe en alerte quand il dépasse la valeur
+   (is-over). Son libellé ne se lit qu'au téléphone, où la colonne de tête ne le nomme plus. */
+.util-days-entry-time {
+	color: var(--muted);
+	font-size: 0.9rem;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.util-days-entry-time.is-over {
+	color: var(--warning);
+	font-weight: 600;
+}
+
+.util-days-entry-time-label {
+	display: none;
 }
 
 /* La somme suit le titre au lieu de partir au bord que lui donne util-title. Elle s'efface (`display: contents`)
@@ -13410,16 +13530,52 @@ a.util-days-entry-date {
 	background: repeating-linear-gradient(-45deg, var(--warning) 0 0.25rem, color-mix(in srgb, var(--warning) 14%, white) 0.25rem 0.5rem);
 }
 
-/* Au téléphone, la semaine garde ses sept jours sur une ligne (R-Retours-1210 V37, piste B) : un jour n'y a que
-   la largeur de sa colonne, d'où une valeur plus petite et un jour sans retrait de côté. */
+/* Au téléphone, un jour par ligne (planche R-TempsTactile, R1, retouche du 25/10) : la pastille, ce qui accompagne
+   la valeur, puis la valeur au bord droit, sous le pouce. Un filet sépare les jours, que la colonne de tête ne
+   nomme plus : le libellé de util-days-entry-time le dit à sa place. */
 @media (max-width: 575px) {
 
-	.util-days-entry > .util-day {
-		padding: var(--space-xxs) 0;
+	.util-days.util-days-entry {
+		display: flex;
+		flex-direction: column;
+		gap: 0;
 	}
 
-	.util-days-entry .util-day-value {
-		font-size: 0.9rem;
+	.util-days-entry > .util-days-entry-head {
+		display: none;
+	}
+
+	.util-days-entry > .util-day {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: var(--space-md);
+		padding: var(--space-xs) 0;
+		border-radius: 0;
+	}
+
+	.util-days-entry > .util-day + .util-day {
+		border-top: 1px solid var(--border);
+	}
+
+	.util-days-entry > .util-day > :is(.util-days-entry-date, .util-calendar) {
+		flex: 0 0 3rem;
+		justify-content: center;
+	}
+
+	.util-days-entry > .util-day > .util-days-entry-time {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+
+	.util-days-entry > .util-day > .util-day-value {
+		order: 1;
+		flex: 0 0 auto;
+		margin-left: auto;
+	}
+
+	.util-days-entry-time-label {
+		display: inline;
 	}
 
 }
@@ -15267,6 +15423,20 @@ div.tabs-item.tabs-sub {
 
 .util-carousel-dots > button.selected::before {
 	background: currentColor;
+}
+
+/* Les chevrons, de part et d'autre du nom de la diapositive montrée, quand chaque diapositive a un nom
+   qui dit où l'on est : le moment d'une journée dans la météo du menu. */
+.util-carousel-nav {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-xs);
+	margin-bottom: var(--space-xs);
+}
+
+.util-carousel-label {
+	font-weight: bold;
 }
 
 .util-follow {

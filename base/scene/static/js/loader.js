@@ -354,10 +354,11 @@ class SceneLoader {
 			fruit: () => modules.fruit.sceneCreateFruit(THREE, geometry, species().woody),
 			stage: () => modules.stage.sceneCreateStage(),
 			figure: () => modules.figure.sceneCreateFigure(THREE, addons, geometry, sceneBuildModel),
-			// Un bâtiment téléversé se monte comme un modèle cuit, à côté de la composition qu'il remplace
+			// Un bâtiment téléversé se monte comme un modèle cuit, à côté de la composition qu'il remplace. L'index d'un envoi du décor
+			// range son modèle sous sa famille (`base/scene/upload/decor.json`) : un élément d'Eau, de Nature ou de Matériel passe la sienne
 			building: () => ({
 				...modules.building.sceneCreateBuilding(THREE, geometry, choices),
-				uploaded: (index, buffer) => sceneBuildModel(THREE, { index, buffer }, 'building')
+				uploaded: (index, buffer, family = 'building') => sceneBuildModel(THREE, { index, buffer }, family)
 			})
 		};
 

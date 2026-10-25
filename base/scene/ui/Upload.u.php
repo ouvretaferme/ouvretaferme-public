@@ -50,15 +50,6 @@ class UploadUi {
 	}
 
 	/**
-	 * Le lien qui ramène à l'onglet de la composition, depuis l'onglet du modèle.
-	 */
-	public function getComposeLink(string $handler, string $label): string {
-
-		return '<a onclick="'.$handler.'.selectTab(this.closest(\'.tabs\').qs(\'.tab-item[data-tab=compose]\'))">'.$label.'</a>';
-
-	}
-
-	/**
 	 * Le dépôt d'un seul fichier (util-drop). Un refus du fichier, du serveur ou du poids lu par le navigateur, tombe sur le
 	 * champ `file`, que porte la ligne du fichier : la ligne seule rougit, et le refus s'y dit une fois, sous le nom. Le débit
 	 * ou l'import indisponible tombent sur le champ `throttled`, à côté de la liste, et rougissent le cadre : c'est l'envoi

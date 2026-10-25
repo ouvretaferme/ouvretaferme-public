@@ -1851,35 +1851,31 @@ class CourseUi {
 
 		$eCourse->expects(['sheets']);
 
-		$h = '<a class="btn btn-color-primary dropdown-toggle" data-dropdown="bottom-end">'.\Asset::icon('gear-fill').'</a>';
-		$h .= '<div class="dropdown-list">';
-			$h .= '<div class="dropdown-title">'.encode($eCourse['name']).'</div>';
-			$h .= '<a href="/learning/course:updateSettings?id='.$eCourse['id'].'" class="dropdown-item">'.s("Modifier la formation").'</a>';
-			$h .= '<a href="'.self::url($eCourse).'" class="dropdown-item">'.s("Voir la fiche").'</a>';
-			$h .= CatalogUi::getCourseItem($eCourse);
-			if($eCourse->assertTrack()) {
-				$h .= '<a href="'.ProgressUi::urlTrack($eCourse).'" class="dropdown-item">'.s("Suivi des stagiaires").'</a>';
-			}
-			if($eCourse['status'] === Course::PUBLISHED) {
-				$h .= '<a href="/learning/course:unpublish?id='.$eCourse['id'].'" class="dropdown-item">'.s("Dépublier la formation").'</a>';
-			}
-			$h .= '<div class="dropdown-divider"></div>';
-			$h .= '<a href="'.self::urlDuplicate($eCourse).'" class="dropdown-item">'.s("Dupliquer la formation").'</a>';
-			$h .= '<div class="dropdown-divider"></div>';
-			$h .= '<div class="dropdown-subtitle">'.\Asset::icon('exclamation-circle').'  '.s("Zone de danger").'  '.\Asset::icon('exclamation-circle').'</div>';
-			// Une feuille signée garde la formation (`CourseLib::delete()`) : le geste se montre fermé,
-			// avec ce qui le ferme. `sheets` est posé par la page (`DateSheetLib::fillCountByCourse()`).
-			if($eCourse['sheets'] > 0) {
-				$h .= '<a class="dropdown-item disabled">';
-					$h .= '<div class="util-item-label">'.s("Supprimer la formation").'</div>';
-					$h .= '<div class="util-item-more">'.p("{value} feuille signée sur ses dates. Dépubliez-la plutôt.", "{value} feuilles signées sur ses dates. Dépubliez-la plutôt.", $eCourse['sheets']).'</div>';
-				$h .= '</a>';
-			} else {
-				$h .= '<a data-ajax="/learning/course:doDelete" post-id="'.$eCourse['id'].'" class="dropdown-item" data-confirm="'.s("Supprimer cette formation, ses modules, ses leçons et la progression de ses lecteurs ?").'" data-waiter>'.s("Supprimer la formation").'</a>';
-			}
-		$h .= '</div>';
+		$items = '<a href="/learning/course:updateSettings?id='.$eCourse['id'].'" class="dropdown-item">'.s("Modifier la formation").'</a>';
+		$items .= '<a href="'.self::url($eCourse).'" class="dropdown-item">'.s("Voir la fiche").'</a>';
+		$items .= CatalogUi::getCourseItem($eCourse);
+		if($eCourse->assertTrack()) {
+			$items .= '<a href="'.ProgressUi::urlTrack($eCourse).'" class="dropdown-item">'.s("Suivi des stagiaires").'</a>';
+		}
+		if($eCourse['status'] === Course::PUBLISHED) {
+			$items .= '<a href="/learning/course:unpublish?id='.$eCourse['id'].'" class="dropdown-item">'.s("Dépublier la formation").'</a>';
+		}
+		$items .= '<div class="dropdown-divider"></div>';
+		$items .= '<a href="'.self::urlDuplicate($eCourse).'" class="dropdown-item">'.s("Dupliquer la formation").'</a>';
+		$items .= '<div class="dropdown-divider"></div>';
+		$items .= '<div class="dropdown-subtitle">'.\Asset::icon('exclamation-circle').'  '.s("Zone de danger").'  '.\Asset::icon('exclamation-circle').'</div>';
+		// Une feuille signée garde la formation (`CourseLib::delete()`) : le geste se montre fermé,
+		// avec ce qui le ferme. `sheets` est posé par la page (`DateSheetLib::fillCountByCourse()`).
+		if($eCourse['sheets'] > 0) {
+			$items .= '<a class="dropdown-item disabled">';
+				$items .= '<div class="util-item-label">'.s("Supprimer la formation").'</div>';
+				$items .= '<div class="util-item-more">'.p("{value} feuille signée sur ses dates. Dépubliez-la plutôt.", "{value} feuilles signées sur ses dates. Dépubliez-la plutôt.", $eCourse['sheets']).'</div>';
+			$items .= '</a>';
+		} else {
+			$items .= '<a data-ajax="/learning/course:doDelete" post-id="'.$eCourse['id'].'" class="dropdown-item" data-confirm="'.s("Supprimer cette formation, ses modules, ses leçons et la progression de ses lecteurs ?").'" data-waiter>'.s("Supprimer la formation").'</a>';
+		}
 
-		return $h;
+		return \main\DesignUi::getGear($items, encode($eCourse['name']));
 
 	}
 
@@ -2143,17 +2139,16 @@ class CourseUi {
 	 */
 	public static function getCommunityTitle(\structure\Structure $eStructure, int $commentsNew, int $reviewsNew): string {
 
-		$settings = '<a class="btn btn-color-primary dropdown-toggle" data-dropdown="bottom-end">'.\Asset::icon('gear-fill').'</a>';
-		$settings .= '<div class="dropdown-list">';
-			$settings .= '<a href="'.SupervisorUi::urlCommunity($eStructure).'" class="dropdown-item">'.s("Encadrants").'</a>';
-			if(
-				$eStructure->isNetwork() and
-				$eStructure->canManage()
-			) {
-				$settings .= '<a href="/learning/community:updateEnrollment?id='.$eStructure['id'].'" class="dropdown-item">'.s("Réglages des inscriptions").'</a>';
-				$settings .= '<a href="'.DateEnrollmentUi::urlIntegration($eStructure).'" class="dropdown-item">'.s("Intégrer sur votre site").'</a>';
-			}
-		$settings .= '</div>';
+		$items = '<a href="'.SupervisorUi::urlCommunity($eStructure).'" class="dropdown-item">'.s("Encadrants").'</a>';
+		if(
+			$eStructure->isNetwork() and
+			$eStructure->canManage()
+		) {
+			$items .= '<a href="/learning/community:updateEnrollment?id='.$eStructure['id'].'" class="dropdown-item">'.s("Réglages des inscriptions").'</a>';
+			$items .= '<a href="'.DateEnrollmentUi::urlIntegration($eStructure).'" class="dropdown-item">'.s("Intégrer sur votre site").'</a>';
+		}
+
+		$settings = \main\DesignUi::getGear($items);
 
 		return \main\DesignUi::getPageHeader(
 			s("Formations"),

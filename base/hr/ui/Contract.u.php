@@ -20,7 +20,7 @@ class ContractUi {
 
 			$value = \util\TextUi::number($hours, NULL);
 
-			$h .= '<div class="color-muted font-sm">'.match($eContract['hoursPeriod']) {
+			$h .= '<div class="util-annotation">'.match($eContract['hoursPeriod']) {
 				Contract::WEEK => s("{value} h par semaine", $value),
 				Contract::YEAR => s("{value} h par an, annualisé", $value)
 			}.'</div>';

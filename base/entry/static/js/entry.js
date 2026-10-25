@@ -4,7 +4,7 @@
  * d'un jour de récolte : chacun se tient par sa classe `entry-field`, depuis le nœud qui reçoit le geste.
  *
  * L'omnibox porte le châssis, ce fichier ne fait que deux choses : il traduit le choix d'une
- * suggestion selon sa nature (`intention:`, `plant:`, `object:`, `cultivation:`, `task:`, `duration:`, `all`,
+ * suggestion selon sa nature (`intention:`, `plant:`, `object:`, `cultivation:`, `task:`, `category:`, `duration:`, `all`,
  * `write`, pour le récapitulatif d'une vente `recap`, `line:`, `recapAdd`, `date:`, `dateOther`, `status:`, et pour celui
  * d'une intervention les mêmes puces de jour et d'état, avec `week:` et `weekOther`), et il tient à jour ce que la
  * lecture suivante enverra au serveur
@@ -15,6 +15,9 @@
  * rend pour l'écran (`EntryUi::getEntry()`).
  */
 class EntryField {
+
+	// La case ouverte qu'un `pointerdown` a quittée, dont le clic qui suit ne fait que la fermer (HN-B19).
+	static cellOutside = null;
 
 	static getBox(node) {
 		return node.closest('.entry-field');
@@ -27,13 +30,15 @@ class EntryField {
 	 * Un membre sans aucun geste n'a pas de liste : le focus lit alors la phrase vide, et propose les
 	 * verbes.
 	 *
-	 * Le message d'une écriture perdue se relève ici aussi, sur l'enveloppe : le plein écran du bas emporte la
-	 * boîte hors d'elle (`UtilOmnibox.openFullscreen()`) dès le focus, et `setIdle()` passe avant lui.
+	 * Le message d'une écriture perdue et les jetons des verbes se relèvent ici aussi, sur l'enveloppe : le plein
+	 * écran du bas emporte la boîte hors d'elle (`UtilOmnibox.openFullscreen()`) dès le focus, et `setIdle()` passe
+	 * avant lui.
 	 */
 	static setIdle(box) {
 
 		box.entryPlaceholder ??= box.qs('.util-omnibox-input').placeholder;
 		box.entryLostWrite ??= box.closest('[data-lost-write]').dataset.lostWrite;
+		box.entryIntentionTokens ??= JSON.parse(box.closest('[data-intention-tokens]').dataset.intentionTokens);
 		box.entryGestures ??= JSON.parse(box.dataset.suggestionsIdle ?? '[]');
 
 		if(box.entryGestures.length === 0) {
@@ -52,7 +57,6 @@ class EntryField {
 	 * du champ vide ou la liste des verbes : « Temps », que « Temps de travail » dit dans la liste.
 	 */
 	static getIntentionToken(box, intention) {
-		box.entryIntentionTokens ??= JSON.parse(box.closest('[data-intention-tokens]').dataset.intentionTokens);
 		return box.entryIntentionTokens[intention] ?? null;
 	}
 
@@ -252,7 +256,7 @@ class EntryField {
 			.join(',');
 
 		// Les réponses à la question voyagent à part, chacune portée par son jeton.
-		['cultivation', 'task', 'addCultivation', 'addNoSeries'].forEach(group => {
+		['cultivation', 'task', 'addCultivation', 'addNoSeries', 'category'].forEach(group => {
 
 			const answer = UtilOmnibox.getTokens(box).find(token => token.group === group);
 
@@ -279,8 +283,8 @@ class EntryField {
 			box.qsa('.util-omnibox-token[data-group="cultivation"], .util-omnibox-token[data-group="variety"], .util-omnibox-token[data-group="harvestSize"]', token => token.remove());
 		}
 
-		// De même pour l'intervention d'un temps seul et la réponse qui la précisait, ou la série où l'ajouter,
-		// les jours où l'écrire, et pour « Toutes les séries » de la coche, qui n'a pas de jeton.
+		// De même pour l'intervention d'un temps seul et la réponse qui la précisait, la série ou la catégorie où
+		// l'ajouter, les jours où l'écrire, et pour « Toutes les séries » de la coche, qui n'a pas de jeton.
 		const objectRemoved = (
 			(box.entryTokens ?? '').includes('object:') &&
 			UtilOmnibox.getTokens(box).some(token => token.group === 'object') === false
@@ -289,7 +293,7 @@ class EntryField {
 		if(objectRemoved) {
 			delete body.all;
 			delete body.days;
-			['task', 'addCultivation', 'addNoSeries', 'day'].forEach(group => {
+			['task', 'addCultivation', 'addNoSeries', 'category', 'day'].forEach(group => {
 				delete body[group];
 				box.qsa('.util-omnibox-token[data-group="'+ group +'"]', token => token.remove());
 			});
@@ -431,7 +435,7 @@ class EntryField {
 
 	/*
 	 * Le texte tapé moins les mots en attente, que le serveur rend découpés et normalisés comme
-	 * `EntryLib::split()` (minuscules, sans accents, « d' » détaché, « 12kg » coupé) : chaque mot tapé
+	 * `EntryLib::split()` (minuscules, sans accents ni emoji, « d' » détaché, « 12kg » coupé) : chaque mot tapé
 	 * est découpé de la même façon et les morceaux sont retrouvés en partant de la fin. Un mot tapé dont
 	 * un morceau est retrouvé ne garde que ses autres morceaux, élision exceptée : « d'aub » part entier,
 	 * « 12courg » laisse « 12 ».
@@ -440,7 +444,7 @@ class EntryField {
 	 */
 	static withoutPending(value, pending, typingPrefix) {
 
-		const normalize = word => word.toLowerCase().normalize('NFD').replace(/\p{Mn}/gu, '');
+		const normalize = word => word.toLowerCase().normalize('NFD').replace(/\p{Mn}/gu, '').replace(/[\p{So}\p{Sk}\p{Cf}]/gu, ' ');
 
 		const words = value.trim().split(/\s+/).filter(word => word !== '');
 		const pieces = words.flatMap((word, index) => normalize(word)
@@ -531,26 +535,39 @@ class EntryField {
 			case 'task' :
 			case 'addCultivation' :
 			case 'addNoSeries' :
+			case 'category' :
 				EntryField.setSaid(box, kind);
 				UtilOmnibox.addToken(box, kind, value, label, item.dataset.icon, item.dataset.badge);
 				EntryField.refresh(box);
 				break;
 
-			// Une durée proposée sous la coche (`DoneIntentionUi::getResults()`) se pose en jeton, et la phrase
-			// devient un temps. Sous une intervention (`InterventionIntentionUi`), elle remplace aussi la durée tapée,
-			// et la puce retenue, choisie de nouveau, se décoche.
+			// Une puce de durée ajoute au temps déjà dit (`DurationComplementUi::getAdditionResults()`) : sa valeur est
+			// le temps qu'elle donne, qui remplace le jeton ou la durée tapée, et son jeton le dit (`token`). Sous la
+			// coche (`DoneIntentionUi::getResults()`), la phrase devient un temps.
 			case 'duration' : {
+				// Sa valeur est un total, calculé sur le temps de la phrase que la liste a lue. Une puce choisie depuis
+				// change ce temps, et tant qu'aucune lecture n'a répondu à la phrase du champ, en cours ou échouée, la
+				// liste ajouterait au temps d'avant : la puce ne fait rien. `refresh()` oublie la frappe lue, qu'une
+				// réponse seule repose.
+				if(box.omniboxLoaded !== input.value) {
+					break;
+				}
 				const named = box.entry?.complementsNamed?.duration ?? null;
 				box.qs('.util-omnibox-token[data-group="duration"]')?.remove();
 				if(named !== null) {
 					input.value = EntryField.withoutPending(input.value, named, box.entry?.typingPrefix ?? false);
 				}
-				if(item.classList.contains('is-selected') === false) {
-					UtilOmnibox.addToken(box, 'duration', value, label);
-				}
+				UtilOmnibox.addToken(box, 'duration', value, item.dataset.token);
 				EntryField.refresh(box);
 				break;
 			}
+
+			// Une puce qui tape son mot à la suite de la phrase, qui se relit : le colis ou l'unité d'une vente après
+			// un nombre qui ne dit ni l'un ni l'autre, « 2 » devenant « 2 colis » ou « 2 kg ».
+			case 'type' :
+				EntryField.type(box, value +' ');
+				EntryField.refresh(box);
+				break;
 
 			case 'all' :
 				EntryField.refresh(box, {all: 1});
@@ -1291,6 +1308,18 @@ window.addEventListener('focusin', function(e) {
 
 }, true);
 
+// Un clic dans un champ qui a déjà le focus ne déclenche pas de `focusin`, qui ouvre la liste : la liste fermée par
+// la croix ou par Échap se rouvre au clic, comme au focus.
+document.delegateEventListener('click', '.entry-field .util-omnibox-input', function() {
+
+	const box = EntryField.getBox(this);
+
+	if(box.qs('.util-omnibox-list.is-open') === null) {
+		UtilOmnibox.render(box);
+	}
+
+});
+
 // La liste se mesure ouverte, et `omnibox.js` l'ouvre au focus par un délégué du document : la fenêtre reçoit
 // l'événement après tous ceux du document, quel que soit l'ordre dans lequel les scripts se chargent.
 window.addEventListener('focusin', e => {
@@ -1349,6 +1378,69 @@ document.delegateEventListener('keydown', '.entry-cell .util-omnibox-input', fun
 	}
 
 });
+
+// Le premier clic à côté d'une case ouverte avec sa liste ne fait que la fermer, comme Échap : la case couvre ses
+// voisines, et ce clic visait à en sortir, non le total ou la case d'à côté (HN-B19). Tout s'écoute en capture sur
+// `window`, avant les délégués du document, qui sont eux aussi en capture (`delegateEventListener()`, lime.js).
+// La case se lit au `pointerdown` : le focus qui part au lien referme la liste avant le clic (délégué `focusout`
+// de l'omnibox). Le focus ne part pas (`mousedown`), sans quoi une case voisine s'ouvrirait, et le clic qui suit
+// s'arrête là, le lien n'étant pas suivi. Un toucher qui fait défiler s'annule (`pointercancel`) sans clic, et
+// ne doit pas garder la case pour le clic d'après.
+// Seul le bouton principal compte, et le clic du clavier (`detail` à 0) passe : un clic droit ne suit pas de
+// `click`, et laisserait la case retenue pour la prochaine Entrée. Ctrl ou Cmd sur un lien ouvre un onglet sans
+// quitter la case, et passe aussi, comme les clics ailleurs du planning (`PlanningHarvest.outside()`).
+window.addEventListener('pointerdown', e => {
+
+	EntryField.cellOutside = null;
+
+	if(e.button !== 0 || ((e.ctrlKey || e.metaKey) && e.target.closest('a[href]') !== null)) {
+		return;
+	}
+
+	const path = e.composedPath();
+
+	qsa('.entry-cell .util-omnibox-list.is-open', list => {
+
+		const box = list.closest('.util-omnibox');
+
+		if(path.includes(box) === false) {
+			EntryField.cellOutside = box;
+		}
+
+	});
+
+}, true);
+
+window.addEventListener('pointercancel', () => {
+	EntryField.cellOutside = null;
+}, true);
+
+window.addEventListener('mousedown', e => {
+
+	if(EntryField.cellOutside !== null) {
+		e.preventDefault();
+	}
+
+}, true);
+
+window.addEventListener('click', e => {
+
+	const box = EntryField.cellOutside;
+
+	EntryField.cellOutside = null;
+
+	if(box === null || e.detail === 0 || e.composedPath().includes(box)) {
+		return;
+	}
+
+	e.preventDefault();
+	e.stopImmediatePropagation();
+
+	// `reset()` ferme aussi la liste de la case.
+	EntryField.reset(box);
+	box.qs('.util-omnibox-input').blur();
+
+}, true);
 
 // Le grisé suit le curseur et le focus : il ne reste pas sous un champ qu'on a quitté. Le focus dit le champ
 // qu'il quitte ou gagne, la sélection celui qui a le focus.

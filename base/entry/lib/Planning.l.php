@@ -232,7 +232,8 @@ class PlanningLib {
 	 *   `['action' => id]` après la tête du bloc ou après le bloc d'une autre action, `['header' => TRUE]`
 	 *   en tête de Fait ;
 	 * - `eTask` : l'intervention telle que Fait la montre après, vide si elle n'y est plus ;
-	 * - `cTask` : le bloc de son action après, pour `INSERT_ACTION` ;
+	 * - `cTask` : le bloc de son action après, pour `INSERT_ACTION` et `ACTION` ;
+	 * - `cTaskChanged` : pour `ACTION`, la ligne que Fait montre après, à signaler dans le bloc redessiné ;
 	 * - `todo` : À faire se redessine entier, parce que l'intervention y était avant le geste (`$todoBefore`)
 	 *   ou y est après, Retardé compris : l'écriture la termine, Annuler la remet à faire. Une ligne qui
 	 *   part ou revient y change aussi la tête de Retardé et le « Le planning est encore vide. », que seul
@@ -281,13 +282,40 @@ class PlanningLib {
 			self::fillRemove($change, $visibleBefore, $positionBefore, $visibleAfter);
 		}
 
+		// La tête du bloc porte les utilisateurs de toutes ses lignes (`data-filter-user`, `PlanningUi::getTasks()`),
+		// qu'une ligne réécrite, insérée ou retirée seule laisserait tels quels : quand le geste en ajoute ou en
+		// retire un, le bloc se redessine entier.
+		if(
+			in_array($change['level'], [self::LINE, self::INSERT, self::INSERT_PLANT, self::REMOVE, self::REMOVE_PLANT], TRUE) and
+			self::getUsers($ccTaskBefore, $eAction) !== self::getUsers($ccTaskAfter, $eAction)
+		) {
+			$change['level'] = self::ACTION;
+			$change['anchor'] = [];
+			$change['cTaskChanged'] = $change['eTask']->empty() ? new \Collection() : new \Collection([$change['eTask']]);
+		}
+
 		return $change;
 
 	}
 
 	/**
+	 * Les utilisateurs que la tête du bloc d'une action dit, dans l'ordre où `PlanningUi::getTasks()` les pose.
+	 */
+	private static function getUsers(\Collection $ccTask, \work\Action $eAction): array {
+
+		if($ccTask->offsetExists($eAction['id']) === FALSE) {
+			return [];
+		}
+
+		return array_values(array_unique($ccTask[$eAction['id']]->reduce(fn($eTask, $users) => array_merge($users, array_keys($eTask['times'])), [])));
+
+	}
+
+	/**
 	 * Une ligne entre dans Fait : seule si une voisine de la même espèce l'encadre, avec la tête de
-	 * son espèce sinon, avec tout le bloc de son action si elle en est la seule ligne.
+	 * son espèce sinon, avec tout le bloc de son action si elle en est la seule ligne. Une ligne sans
+	 * espèce (« RH » en Administration) n'a jamais de tête (`PlanningUi::getPlantTask()`) : elle entre
+	 * seule, après sa voisine, ou en tête du bloc, avant la tête d'espèce qui ouvrirait la suite.
 	 */
 	private static function fillInsert(array &$change, array $visible, int $position, \Collection $ccTaskAfter, \work\Action $eAction, array $context): void {
 
@@ -299,6 +327,13 @@ class PlanningLib {
 
 			$change['level'] = self::INSERT_ACTION;
 			$change['anchor'] = self::getActionAnchor($ccTaskAfter, $eAction, $context);
+
+		} else if($eTask['plant']->empty()) {
+
+			$change['level'] = self::INSERT;
+			$change['anchor'] = $eTaskPrevious->notEmpty() ?
+				['task' => $eTaskPrevious['id'], 'position' => self::AFTER] :
+				['action' => $eAction['id']];
 
 		} else if(self::isSamePlant($eTask, $eTaskPrevious)) {
 
@@ -323,7 +358,7 @@ class PlanningLib {
 
 	/**
 	 * Une ligne sort de Fait : la tête de son espèce part avec elle si aucune voisine ne la partage,
-	 * le bloc de son action s'il n'en reste rien.
+	 * le bloc de son action s'il n'en reste rien. Une ligne sans espèce part seule, n'ayant pas de tête.
 	 */
 	private static function fillRemove(array &$change, array $visible, int $position, array $visibleAfter): void {
 
@@ -332,6 +367,7 @@ class PlanningLib {
 		if($visibleAfter === []) {
 			$change['level'] = self::REMOVE_ACTION;
 		} else if(
+			$eTask['plant']->empty() or
 			self::isSamePlant($eTask, $visible[$position - 1] ?? new \series\Task()) or
 			self::isSamePlant($eTask, $visible[$position + 1] ?? new \series\Task())
 		) {

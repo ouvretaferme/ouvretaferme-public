@@ -55,6 +55,7 @@ class ConfigurationUi {
 		$d = Configuration::model()->describer($property, [
 			'decorGrass' => s("Herbe"),
 			'decorSoil' => s("Sol"),
+			'decorMeadow' => s("Pré"),
 			'rotationYears' => s("Temps de suivi des rotations"),
 			'rotationExclude' => s("Espèces cultivées exclues du suivi des rotations"),
 			'defaultBedLength' => s("Longueur des planches par défaut"),
@@ -70,8 +71,8 @@ class ConfigurationUi {
 					Configuration::PALE => s("Verte pâle"),
 					Configuration::CLEAR => s("Presque blanche"),
 					Configuration::DRY => s("Sèche d'été"),
-					Configuration::LUSH => s("Foncée humide"),
-					Configuration::GRAZED => s("Rase pâturée"),
+					Configuration::LUSH => s("Verte vive"),
+					Configuration::GRAZED => s("Verte lumineuse"),
 				];
 				break;
 
@@ -86,6 +87,14 @@ class ConfigurationUi {
 					Configuration::SANDSTONE => s("Grès rose"),
 					Configuration::SCHIST => s("Schiste"),
 					Configuration::BROWN => s("Terre brune"),
+				];
+				break;
+
+			case 'decorMeadow' :
+				$d->values = [
+					Configuration::MIXED => s("Mixte"),
+					Configuration::FLOWERY => s("Prairie fleurie"),
+					Configuration::TUFTED => s("Herbe à touffes"),
 				];
 				break;
 

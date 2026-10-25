@@ -2585,23 +2585,57 @@ body:has(> #planning-harvest-sheet) {
 	color: var(--color-neutral);
 }
 
-/* Une tuile vide qui n'attend rien (`TimeDayUi::getWorking()`, `$missing`) garde son crayon seul, centré sans
-   l'écart d'une valeur absente. */
-.planning-duration-tile-value:empty {
+/* La journée en rond de la semaine en champs (`TimeDayUi::getWorkingRound()`, planche R-TempsTactile, R1) : le
+   rond est la touche qui ouvre la saisie, à la taille du doigt. Vide, il se dessine en pointillé autour du crayon
+   par sa valeur (`planning-duration-missing`), qui suit la durée qu'on choisit (`PlanningDuration.write()`) : il se
+   remplit dès qu'une durée est choisie, et se vide si on referme sans enregistrer. Son retrait garde le texte dans
+   le cercle, que la boîte carrée laisserait déborder aux coins. Au téléphone, où la racine rétrécit, il garde la
+   cible tactile. */
+.planning-time-round {
+	display: grid;
+	place-items: center;
+	width: max(3.5rem, var(--touch-target));
+	height: max(3.5rem, var(--touch-target));
+	padding: var(--space-xxs);
+	border: 1px solid var(--border);
+	border-radius: 50%;
+	background-color: var(--background-surface);
+	color: var(--text);
+	font-size: 0.9375rem;
+	font-weight: bold;
+	font-variant-numeric: tabular-nums;
+	line-height: 1.1;
+	text-align: center;
+	text-decoration: none;
+	white-space: normal;
+}
+
+a.planning-time-round {
+	cursor: pointer;
+}
+
+@media (hover: hover) {
+
+	a.planning-time-round:hover {
+		border-color: var(--production);
+		text-decoration: none;
+	}
+
+}
+
+.planning-time-round:has(> .planning-duration-missing) {
+	border: 2px dashed var(--muted);
+	color: var(--text-intermediate);
+	font-size: 1.25rem;
+}
+
+.planning-time-round > svg,
+.planning-time-round > .planning-duration-missing {
 	display: none;
 }
 
-/* Dans la semaine en champs (`TimeDayUi::getEntryDay()`), la tuile d'un jour prend la place de sa valeur, toute
-   la largeur de la colonne : c'est elle entière qui ouvre la saisie, aussi quand elle n'a que son crayon
-   (M-Planning, 22/10). */
-.util-days-entry .planning-time-working {
-	flex: 1;
-	align-self: stretch;
-}
-
-.util-days-entry .planning-duration-tile {
-	flex: 1;
-	justify-content: center;
+.planning-time-round:has(> .planning-duration-missing) > svg {
+	display: block;
 }
 
 /* Le crayon de la tuile d'une ligne ne se montre que sur « 0h00 » (`DurationUi::getStepWindow()`). */
@@ -4315,17 +4349,6 @@ body:has(> #planning-harvest-sheet) {
    lisait plus avec eux (R-Retours-1210 V37). */
 #planning-time .planning-time-week-user {
 	max-width: var(--planning-time-week-width);
-}
-
-/* Au téléphone, « à saisir » ne tient plus dans la colonne d'un jour : le crayon reste seul, et la somme du titre dit
-   combien de jours restent à saisir (R-Retours-1210 V37, piste B). Bornée par la classe du planning et non par
-   l'écran, pour que l'exemple du design system se rende comme lui. */
-@media (max-width: 575px) {
-
-	.util-days-entry .planning-duration-missing {
-		display: none;
-	}
-
 }
 
 #planning-time .planning-time-week-sum {

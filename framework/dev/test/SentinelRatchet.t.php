@@ -26,6 +26,8 @@ class SentinelRatchetTest extends \Test {
 
 		$this->assertEquals(['new' => [], 'stale' => []], SentinelLib::compare(['a.php:3'], ['a.php' => 1]), 'déclaration exacte');
 
+		$this->assertEquals(['a.php' => 2, 'c.php' => 1], SentinelLib::getNewCounts(['a.php:3', 'a.php:9', 'b.php:1', 'c.php:4'], ['a.php' => 1, 'b.php' => 1]), 'comptes des entrées neuves, dans l\'ordre de compare()');
+
 	}
 
 	public function testCompareIgnoresAnUntrackedFile(): void {
@@ -100,7 +102,7 @@ class SentinelRatchetTest extends \Test {
 
 	public function testNewEntryNamesItsCause(): void {
 
-		$cause = fn(string $path, ?array $behind, array $written = [], array $upstream = ['a.php', 'Test.t.php']) => new \ReflectionMethod(SentinelLib::class, 'getNewCause')->invoke(NULL, $path, 'Test.t.php', $behind, $written, $upstream);
+		$cause = fn(string $path, ?array $behind, array $written = [], array $upstream = ['a.php', 'Test.t.php'], ?bool $covered = NULL) => new \ReflectionMethod(SentinelLib::class, 'getNewCause')->invoke(NULL, $path, 'Test.t.php', $behind, $written, $upstream, $covered);
 
 		$this->assertEquals('amont non lu, aucune cause établie', $cause('a.php', NULL), 'git muet');
 		$this->assertTrue(str_starts_with($cause('a.php', ['Test.t.php'], ['a.php']), '/pull d\'abord'), 'un arbre en retard passe avant une écriture en vol');
@@ -108,7 +110,45 @@ class SentinelRatchetTest extends \Test {
 		$this->assertTrue(str_starts_with($cause('a.php', [], ['a.php', 'Test.t.php']), 'écriture en vol'), 'une occurrence modifiée dans l\'arbre passe avant la déclaration');
 		$this->assertTrue(str_starts_with($cause('a.php', [], ['Test.t.php']), 'le fichier de la déclaration'), 'une déclaration réécrite dans l\'arbre');
 
+		$this->assertTrue(str_starts_with($cause('a.php', [], ['Test.t.php'], covered: FALSE), 'le fichier de la déclaration'), 'une déclaration réécrite qui ne couvre pas l\'arbre dans l\'amont non plus');
+		$this->assertTrue(str_starts_with($cause('a.php', [], ['Test.t.php'], covered: TRUE), 'l\'arbre a retiré une entrée que l\'amont porte, ne rien déclarer'), 'une déclaration de l\'amont qui couvre l\'arbre');
+
+		// Un fichier suivi, identique des deux côtés et déclaré nulle part : le rouge est celui de
+		// l'amont, et le verdict nomme le dernier commit du fichier, sauf quand git ne répond pas.
+		$upstream = new \ReflectionMethod(SentinelLib::class, 'getNewCause')->invoke(NULL, 'framework/dev/lib/Sentinel.l.php', 'framework/dev/test/SentinelRatchet.t.php', [], [], ['framework/dev/lib/Sentinel.l.php', 'framework/dev/test/SentinelRatchet.t.php']);
+		$this->assertTrue(str_starts_with($upstream, 'rouge dans origin/main, à corriger ou à déclarer par ') or $upstream === 'amont non lu, aucune cause établie', 'rouge dans l\'amont : '.$upstream);
+
 		$this->assertTrue(str_starts_with(SentinelLib::explainNew(['b.php:doCreate (ligne 3)'], 'Test.t.php')[0], 'b.php:doCreate (ligne 3) ['), 'une entrée de assertDeclared garde sa forme et reçoit son verdict');
+
+		// Sans constante nommée, la déclaration de l'amont n'est pas relue et ne conclut rien.
+		$explained = SentinelLib::explainNew(['a.php (2 pour 1 déclarée(s), lignes 3, 9)'], 'Test.t.php', ['a.php' => 2], ['a.php' => 1])[0];
+		$this->assertTrue(str_contains($explained, '[arbre 2, amont ') and str_contains($explained, ' ; déclaré 1, amont non relu ; '), 'les deux comptes précèdent le verdict : '.$explained);
+
+	}
+
+	public function testReadDeclaration(): void {
+
+		$code = <<<'PHP'
+			<?php
+			class A {
+				const FIRST = [
+					'a.php' => 3,
+				];
+				const SECOND = [
+					'a.php' => 5, // le même chemin, dans une autre constante
+					'b.php:doCreate' => 'une raison, ' . 'écrite en deux',
+					'c\'d.php' => 1,
+				];
+				const COMPUTED = [
+					self::PATH => 1,
+				];
+			}
+			PHP;
+
+		$this->assertEquals(['a.php' => 5, 'b.php:doCreate' => 'présente', 'c\'d.php' => 1], SentinelLib::readDeclaration($code, 'SECOND'), 'la constante nommée, et non la première qui déclare le chemin');
+		$this->assertEquals(['a.php' => 3], SentinelLib::readDeclaration($code, 'FIRST'), 'première constante');
+		$this->assertEquals(NULL, SentinelLib::readDeclaration($code, 'COMPUTED'), 'une clé calculée ne se lit pas');
+		$this->assertEquals(NULL, SentinelLib::readDeclaration($code, 'ABSENT'), 'une constante absente');
 
 	}
 

@@ -1352,7 +1352,7 @@ class SeriesLib extends SeriesCrud {
 	public static function getForScene(\structure\Structure $eStructure, int $season, array $bedIds): array {
 
 		$cPlace = Place::model()
-			->select(['id', 'bed', 'series', 'length'])
+			->select(['id', 'bed', 'series', 'length', 'area'])
 			->whereStructure($eStructure)
 			->whereSeason('IN', [$season - 1, $season, $season + 1])
 			->whereSeries('IN', self::getSceneSeriesModel($eStructure, $season)->getSql())
@@ -1398,7 +1398,8 @@ class SeriesLib extends SeriesCrud {
 	}
 
 	/**
-	 * Les places `$cPlace`, chargées avec `id`, `bed`, `series` et `length`, au format de `getForScene()`.
+	 * Les places `$cPlace`, chargées avec `id`, `bed`, `series`, `length` et `area`, au format de `getForScene()`. La surface, en m²,
+	 * est ce qu'un jardin sans planche dessinée donne à la place dans la scène : elle se pose aussi sans longueur.
 	 */
 	private static function getPlacesForScene(\Collection $cPlace): array {
 
@@ -1407,6 +1408,7 @@ class SeriesLib extends SeriesCrud {
 			'bed' => $ePlace['bed']['id'],
 			'series' => $ePlace['series']['id'],
 			'length' => $ePlace['length'],
+			'area' => $ePlace['area'],
 		]);
 
 	}
@@ -1518,7 +1520,7 @@ class SeriesLib extends SeriesCrud {
 	public static function getSheet(\structure\Structure $eStructure, Series $eSeries, int $season): array {
 
 		$cPlace = Place::model()
-			->select(['id', 'bed', 'series', 'length'])
+			->select(['id', 'bed', 'series', 'length', 'area'])
 			->whereStructure($eStructure)
 			->whereSeason($season)
 			->whereSeries($eSeries)

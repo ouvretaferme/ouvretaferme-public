@@ -63,13 +63,11 @@ class UserAvatarUpload extends UserAvatarUploadElement {
 	}
 
 	/**
-	 * Un modèle se téléverse à la place d'un avatar composé, qui reste là pour y revenir et fait l'image de profil.
+	 * Tout compte dépose un modèle, qu'il ait composé un avatar ou non. Redéfini pour ne pas hériter d'`acceptWrite()`, qui
+	 * juge un envoi sur ce qui le rend montrable (`acceptRead()`), son état et son fichier, qu'un envoi neuf n'a pas.
 	 */
 	public function acceptCreate(): bool {
-
-		$this->expects(['user' => ['eUserAvatar']]);
-		return $this['user']['eUserAvatar']->exists();
-
+		return TRUE;
 	}
 
 	/**

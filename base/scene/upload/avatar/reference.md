@@ -34,8 +34,8 @@ ses propres pièces, décrites plus bas.
 | `jambeG.001`, `jambeD.001` | 100 | la cuisse |
 | `tibiaG.001`, `tibiaD.001` | 60 | le tibia |
 | `tibiaG.002`, `tibiaD.002` | 70 | le pied, dont le bas est le sol |
-| `tete.001` | 280 | le crâne et le visage |
-| `tete.002` | 100 | la calotte du crâne, que des cheveux ou un chapeau cachent |
+| `tete.001` | 280 | le visage et le tour du crâne, ouvert en haut |
+| `tete.002` | 100 | la calotte, qui ferme le dessus du crâne |
 | `tete.003`, `tete.004` | 32 | l'oreille gauche, l'oreille droite |
 | `tete.005`, `tete.008` | 30 | le blanc de l'œil gauche, de l'œil droit |
 | `tete.006`, `tete.009` | 8 | l'iris gauche, droit |
@@ -45,6 +45,10 @@ ses propres pièces, décrites plus bas.
 
 - **Retirer une pièce** de `corps.glb` est permis : une pièce qu'un vêtement ou des cheveux cachent entièrement
   (`tete.002`, `torse.001`, `torse.002`) rend ses triangles. Chaque os doit garder au moins une pièce.
+- **Sans `tete.002`, le crâne est ouvert** : `tete.001` s'arrête sous le sommet de la tête, et le site ne dessine que la
+  face avant, donc on voit le sol au travers. Ne retire `tete.002` que si ce qui la remplace ferme le dessus, des cheveux
+  ou un chapeau d'un seul tenant. Une copie gonflée de `tete.001` ne le ferme pas : elle a le même trou. Le validateur
+  refuse un crâne ouvert (`skull`).
 - **La tête est tournée d'environ 5° vers sa gauche** : l'oreille gauche est plus en arrière que la droite, et le milieu
   des yeux est vers x = 0.04. Un accessoire symétrique (lunettes, chapeau, coiffure) se pose dans ce repère : mesure-le
   sur les oreilles ou sur les yeux, pas sur l'axe du modèle.

@@ -38,7 +38,7 @@ class ClaudeSizeSentinelTest extends \Test {
 			'Environnement de dev' => 2778,
 			'Architecture' => 4919,
 			'Commentaires' => 2064,
-			'Style PHP' => 5123,
+			'Style PHP' => 5519,
 			'Validation et `build()`' => 3836,
 			'Gestion des erreurs' => 1748,
 			'Conventions ORM' => 9168,
@@ -60,7 +60,7 @@ class ClaudeSizeSentinelTest extends \Test {
 		'commercialisation/external/CLAUDE.md' => self::FLOOR,
 		'commercialisation/selling/CLAUDE.md' => self::FLOOR,
 		'commercialisation/shop/CLAUDE.md' => self::FLOOR,
-		'framework/dev/test/CLAUDE.md' => 8210,
+		'framework/dev/test/CLAUDE.md' => 8319,
 		'production/toolbox/CLAUDE.md' => 7851,
 	];
 

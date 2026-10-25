@@ -2,11 +2,12 @@
 namespace design;
 
 /**
- * Les trois sections de la famille « Animer un geste » de la page du design system. #design-motion
+ * Les quatre sections de la famille « Animer un geste » de la page du design system. #design-motion
  * porte les tokens de durée et de courbe de juicinessAi.css, les conventions qui disent quand un
  * mouvement est dû, ce qui ne s'anime jamais, le mouvement réduit, la règle des célébrations, puis la
  * table geste, durée, courbe. #design-feedback porte le retour sur geste (util-flash, util-pending,
- * util-waiting), #design-vanish ce qu'une réponse retire (util-vanish).
+ * util-waiting), #design-vanish ce qu'une réponse retire (util-vanish), #design-logoWait l'attente
+ * d'une vue lourde jusqu'à sa première image (util-logo-wait).
  *
  * Sortie de Design.u.php comme DevAiUi et DecorAiUi : Design.u.php appelle chaque section à sa place
  * dans la page.
@@ -214,6 +215,32 @@ class JuicinessAiUi {
 				$h .= '</div>';
 			$h .= '</div>';
 			$h .= '<label for="design-motion-replay-retrait" class="btn btn-sm btn-outline-primary">'.s("Rejouer").'</label>';
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	/**
+	 * L'attente d'une vue lourde : le vrai util-logo-wait, qui bat sans fin puisque la page ne charge aucun
+	 * script pour le retirer, sur le fond par défaut puis sur celui qu'un hôte choisit.
+	 */
+	public function logoWait(): string {
+
+		$h = '<p>'.s("Une vue qui met plusieurs secondes à montrer sa première image, comme une scène en 3D, se couvre du logo de Ouvretaferme, dont les quatre feuilles battent l'une après l'autre jusqu'à cette image. Sous mouvement réduit, le logo reste plein, sans battre.").'</p>';
+		$h .= '<p class="util-annotation">'.s("DesignUi::getLogoWait() rend le calque, à poser en enfant direct de la vue, qui doit être positionnée. Il la couvre entière, au-dessus de ses commandes, et reprend son arrondi. Le script de la vue le retire à sa première image, et aussi quand elle n'a pas pu s'ouvrir, pour que le message d'erreur ne se lise pas sous un logo qui bat encore. La vue choisit le fond du calque par --util-logo-wait-background, posée sur elle, de la couleur de sa première image : le ciel, pour le plan en 3D. Sans elle, le fond est celui d'une carte. L'étage du calque est 2, et une vue dont une commande monte plus haut le relève par --util-logo-wait-layer.").'</p>';
+
+		$h .= '<div id="convention-mouvement-attente" class="util-block">';
+			$h .= '<div class="design-pair">';
+				$h .= '<div>';
+					$h .= '<h4>'.s("Sur le fond par défaut").'</h4>';
+					$h .= '<div class="design-motion-demo design-motion-wait">'.\main\DesignUi::getLogoWait().'</div>';
+				$h .= '</div>';
+				$h .= '<div>';
+					$h .= '<h4>'.s("Sur le fond que la vue choisit").'</h4>';
+					$h .= '<div class="design-motion-demo design-motion-wait design-motion-wait-sky">'.\main\DesignUi::getLogoWait().'</div>';
+				$h .= '</div>';
+			$h .= '</div>';
 		$h .= '</div>';
 
 		return $h;

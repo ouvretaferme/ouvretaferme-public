@@ -890,11 +890,8 @@ class CatalogUi {
 				break;
 
 			case Course::ACCEPTED :
-				$h .= '<a class="btn btn-color-primary dropdown-toggle" data-dropdown="bottom-end">'.\Asset::icon('gear-fill').'</a>';
-				$h .= '<div class="dropdown-list">';
-					$h .= '<div class="dropdown-title">'.encode($eCourse['name']).'</div>';
-					$h .= '<a href="/learning/admin/catalog:remove?id='.$eCourse['id'].'" class="dropdown-item">'.s("Retirer du catalogue").'</a>';
-				$h .= '</div>';
+				$items = '<a href="/learning/admin/catalog:remove?id='.$eCourse['id'].'" class="dropdown-item">'.s("Retirer du catalogue").'</a>';
+				$h .= \main\DesignUi::getGear($items, encode($eCourse['name']));
 				break;
 
 		}
@@ -907,11 +904,8 @@ class CatalogUi {
 	protected function getFeaturedActions(Course $eCourse): string {
 
 		$h = '<a href="'.CourseUi::url($eCourse).'" class="btn btn-only-icon btn-outline-primary">'.\Asset::icon('eye').'</a>';
-		$h .= '<a class="btn btn-color-primary dropdown-toggle" data-dropdown="bottom-end">'.\Asset::icon('gear-fill').'</a>';
-		$h .= '<div class="dropdown-list">';
-			$h .= '<div class="dropdown-title">'.encode($eCourse['name']).'</div>';
-			$h .= '<a data-ajax="/learning/admin/catalog:doUnfeature" post-id="'.$eCourse['id'].'" class="dropdown-item" data-waiter>'.s("Retirer des premiers pas").'</a>';
-		$h .= '</div>';
+		$items = '<a data-ajax="/learning/admin/catalog:doUnfeature" post-id="'.$eCourse['id'].'" class="dropdown-item" data-waiter>'.s("Retirer des premiers pas").'</a>';
+		$h .= \main\DesignUi::getGear($items, encode($eCourse['name']));
 
 		return $h;
 

@@ -71,6 +71,8 @@ class SceneLib {
 			'decor' => self::getDecor($eStructure, $ground),
 			// Les bâtiments que la structure a composés, posés ou non : une pose `batiment` cite l'un d'eux, la rangée les montre tous
 			'buildings' => DecorBuildingLib::getForScene($eStructure),
+			// Les éléments importés dans Eau, Nature et Matériel, de même : une pose `objet-*` cite l'un d'eux
+			'objects' => DecorObjectLib::getForScene($eStructure),
 			// Le décor par défaut ne se tire que tant que la structure n'a pas son propre décor, même vidé depuis : il se copie au
 			// premier geste, ce que `DecorLib::adopt()` refuse une fois l'adoption faite
 			'decorAdopted' => $decorAdopted,
@@ -113,7 +115,7 @@ class SceneLib {
 	private static function getGround(\structure\Structure $eStructure, int $season): array {
 
 		$cZone = SeasonLib::whereSeason(Zone::model(), $season)
-			->select(['id', 'name', 'area', 'coordinates'])
+			->select(['id', 'name', 'area', 'coordinates', 'decorGrass', 'decorSoil', 'decorMeadow'])
 			->whereStructure($eStructure)
 			->getCollection();
 
@@ -138,6 +140,9 @@ class SceneLib {
 				'name' => $eZone['name'],
 				'area' => $eZone['area'],
 				'coordinates' => $eZone['coordinates'],
+				'decorGrass' => $eZone['decorGrass'],
+				'decorSoil' => $eZone['decorSoil'],
+				'decorMeadow' => $eZone['decorMeadow'],
 			];
 		}
 
@@ -265,7 +270,7 @@ class SceneLib {
 		}
 
 		$cDecor = Decor::model()
-			->select(['id', 'layer' => ['type'], 'kit', 'building', 'coordinates', 'angle', 'size', 'seed', 'width', 'model', 'trace', 'diameter', 'laying', 'zone', 'plot', 'hedge', 'gate'])
+			->select(['id', 'layer' => ['type'], 'kit', 'building', 'object', 'coordinates', 'angle', 'size', 'seed', 'width', 'model', 'trace', 'diameter', 'laying', 'zone', 'plot', 'hedge', 'gate'])
 			->whereStructure($eStructure)
 			->sort(['id' => SORT_ASC])
 			->getCollection();
@@ -299,6 +304,7 @@ class SceneLib {
 				'layer' => $eDecor['layer']->empty() ? NULL : $eDecor['layer']['id'],
 				'kit' => $eDecor['kit'],
 				'building' => $eDecor['building']->empty() ? NULL : $eDecor['building']['id'],
+				'object' => $eDecor['object']->empty() ? NULL : $eDecor['object']['id'],
 				'coordinates' => $eDecor['coordinates'],
 				'angle' => $eDecor['angle'],
 				'size' => $eDecor['size'],
@@ -354,6 +360,7 @@ class SceneLib {
 		return [
 			'grass' => $eConfiguration['decorGrass'],
 			'soil' => $eConfiguration['decorSoil'],
+			'meadow' => $eConfiguration['decorMeadow'],
 		];
 
 	}

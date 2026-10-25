@@ -144,21 +144,18 @@ class SupervisorUi {
 			$h .= '</div>';
 
 			$h .= '<div class="text-end learning-row-actions">';
-				$h .= '<a class="btn btn-color-primary dropdown-toggle" data-dropdown="bottom-end">'.\Asset::icon('gear-fill').'</a>';
-				$h .= '<div class="dropdown-list">';
-					$h .= '<div class="dropdown-title">'.encode($eSupervisor['name']).'</div>';
-					$h .= '<a href="/learning/supervisor:update?id='.$eSupervisor['id'].'" class="dropdown-item">'.s("Modifier l'encadrant").'</a>';
-					$h .= '<div class="dropdown-divider"></div>';
-					$h .= '<div class="dropdown-subtitle">'.\Asset::icon('exclamation-circle').'  '.s("Zone de danger").'  '.\Asset::icon('exclamation-circle').'</div>';
-					if($eSupervisor['courses'] === 0) {
-						$h .= '<a data-ajax="/learning/supervisor:doDelete" post-id="'.$eSupervisor['id'].'" class="dropdown-item" data-confirm="'.s("Supprimer cet encadrant ?").'" data-waiter>'.s("Supprimer l'encadrant").'</a>';
-					} else {
-						$h .= '<a class="dropdown-item disabled">';
-							$h .= '<div class="util-item-label">'.s("Supprimer l'encadrant").'</div>';
-							$h .= '<div class="util-item-more">'.p("Encadre {value} formation", "Encadre {value} formations", $eSupervisor['courses']).'</div>';
-						$h .= '</a>';
-					}
-				$h .= '</div>';
+				$items = '<a href="/learning/supervisor:update?id='.$eSupervisor['id'].'" class="dropdown-item">'.s("Modifier l'encadrant").'</a>';
+				$items .= '<div class="dropdown-divider"></div>';
+				$items .= '<div class="dropdown-subtitle">'.\Asset::icon('exclamation-circle').'  '.s("Zone de danger").'  '.\Asset::icon('exclamation-circle').'</div>';
+				if($eSupervisor['courses'] === 0) {
+					$items .= '<a data-ajax="/learning/supervisor:doDelete" post-id="'.$eSupervisor['id'].'" class="dropdown-item" data-confirm="'.s("Supprimer cet encadrant ?").'" data-waiter>'.s("Supprimer l'encadrant").'</a>';
+				} else {
+					$items .= '<a class="dropdown-item disabled">';
+						$items .= '<div class="util-item-label">'.s("Supprimer l'encadrant").'</div>';
+						$items .= '<div class="util-item-more">'.p("Encadre {value} formation", "Encadre {value} formations", $eSupervisor['courses']).'</div>';
+					$items .= '</a>';
+				}
+				$h .= \main\DesignUi::getGear($items, encode($eSupervisor['name']));
 			$h .= '</div>';
 
 		$h .= '</div>';

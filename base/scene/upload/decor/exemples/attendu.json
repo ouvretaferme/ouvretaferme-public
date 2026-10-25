@@ -16,5 +16,14 @@
 	"refus-sol.glb": {
 		"refusal": "ground",
 		"values": {}
+	},
+	"conforme-eau.glb": {
+		"triangles": 12
+	},
+	"conforme-nature.glb": {
+		"triangles": 44
+	},
+	"conforme-materiel.glb": {
+		"triangles": 44
 	}
 }

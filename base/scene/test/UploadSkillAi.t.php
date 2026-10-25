@@ -89,6 +89,9 @@ class UploadSkillAiTest extends \Test {
 			'decor-ouvretaferme/composer.mjs' => 'decor/composer.mjs',
 			'decor-ouvretaferme/decor.json' => 'decor.json',
 			'decor-ouvretaferme/exemples/attendu.json' => 'decor/exemples/attendu.json',
+			'decor-ouvretaferme/exemples/conforme-eau.glb' => 'decor/exemples/conforme-eau.glb',
+			'decor-ouvretaferme/exemples/conforme-materiel.glb' => 'decor/exemples/conforme-materiel.glb',
+			'decor-ouvretaferme/exemples/conforme-nature.glb' => 'decor/exemples/conforme-nature.glb',
 			'decor-ouvretaferme/exemples/conforme.glb' => 'decor/exemples/conforme.glb',
 			'decor-ouvretaferme/exemples/fiche.json' => 'decor/exemples/fiche.json',
 			'decor-ouvretaferme/exemples/refus-piece.glb' => 'decor/exemples/refus-piece.glb',
@@ -269,6 +272,12 @@ class UploadSkillAiTest extends \Test {
 			$this->assertEquals(['dessus.png', 'dos.png', 'face.png', 'trois-quarts.png'], array_map('basename', glob($directory.'/rendus/*.png')), "rendre.mjs ne rend pas les quatre vues");
 			$this->assertEquals(0, preg_match_all('/\(hors palette\)$/m', $output), "rendre.mjs tient pour hors palette une couleur du cadre : ".$output);
 
+			// Un élément de Nature se rend sous les règles de sa famille, chaque pièce sous son nom
+			[$code, $output] = $this->runNode($skill, ['rendre.mjs', '--famille=tree', $skill.'exemples/conforme-nature.glb', $directory.'/nature']);
+			$this->assertEquals(0, $code, "rendre.mjs ne rend pas l'élément de Nature d'exemple : ".$output);
+			$this->assertTrue(str_contains($output, 'arbre #') and str_contains($output, 'feuillage #'), "rendre.mjs ne nomme pas les pièces d'un élément de Nature : ".$output);
+			$this->assertEquals(4, count(glob($directory.'/nature/*.png')), "rendre.mjs ne rend pas les quatre vues d'un élément de Nature");
+
 		} finally {
 			exec('rm -rf '.escapeshellarg($directory));
 			unlink($file);
@@ -316,11 +325,14 @@ class UploadSkillAiTest extends \Test {
 
 		$expected = json_decode(file_get_contents(self::UPLOAD.'decor/exemples/attendu.json'), TRUE, flags: JSON_THROW_ON_ERROR);
 
-		$this->assertEquals(['conforme.glb', 'refus-piece.glb', 'refus-texture.glb', 'refus-sol.glb'], array_keys($expected));
+		$this->assertEquals(['conforme.glb', 'refus-piece.glb', 'refus-texture.glb', 'refus-sol.glb', 'conforme-eau.glb', 'conforme-nature.glb', 'conforme-materiel.glb'], array_keys($expected));
+
+		// Un élément d'une rangée se juge sous sa famille, un bâtiment sous la sienne
+		$families = ['conforme-eau.glb' => 'water', 'conforme-nature.glb' => 'tree', 'conforme-materiel.glb' => 'other'];
 
 		foreach($expected as $sample => $verdict) {
 
-			$result = UploadLib::run('decor', self::UPLOAD.'decor/exemples/'.$sample, 'building');
+			$result = UploadLib::run('decor', self::UPLOAD.'decor/exemples/'.$sample, $families[$sample] ?? 'building');
 
 			if(isset($verdict['refusal'])) {
 				$this->assertEquals($verdict, ['refusal' => $result['refusal'] ?? NULL, 'values' => $result['values'] ?? NULL], $sample." n'est pas jugé par le serveur comme le validateur du skill le juge");

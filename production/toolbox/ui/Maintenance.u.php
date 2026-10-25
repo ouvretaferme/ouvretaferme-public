@@ -139,6 +139,8 @@ class MaintenanceUi {
 			$h .= '<div>'.$badge.'</div>';
 			$h .= '<div class="util-deck-row-name">';
 				$h .= $name;
+				// Pas util-annotation : le détail porte le lien du matériel, que .util-annotation a
+				// repeindrait en gris souligné.
 				$h .= '<div class="font-sm color-muted">'.$detail.'</div>';
 			$h .= '</div>';
 			if($gestures !== []) {
@@ -332,7 +334,7 @@ class MaintenanceUi {
 		$other = self::getDueOther($eMaintenance);
 
 		if($other !== NULL) {
-			$h .= '<div class="font-sm color-muted">'.$other.'</div>';
+			$h .= '<div class="util-annotation">'.$other.'</div>';
 		}
 
 		return $h;

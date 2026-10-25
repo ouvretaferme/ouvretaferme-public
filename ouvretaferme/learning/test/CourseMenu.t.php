@@ -215,13 +215,14 @@ class CourseMenuTest extends LearningNetworkFixtureTest {
 	}
 
 	/**
-	 * La roue de la formation dans un fragment : du bouton, quelle que soit sa classe, jusqu'à la
-	 * fin de sa liste, que ferme toujours « Supprimer ». Rien n'est normalisé, pour qu'une classe,
-	 * un libellé ou un attribut qui diverge fasse échouer la comparaison.
+	 * La roue de la formation dans un fragment : du bouton, quels que soient sa classe et l'ordre de
+	 * ses attributs, jusqu'à la fin de sa liste, que ferme toujours « Supprimer ». Rien n'est
+	 * normalisé, pour qu'une classe, un libellé ou un attribut qui diverge fasse échouer la
+	 * comparaison.
 	 */
 	private function findMenu(string $html, Course $eCourse): string {
 
-		$pattern = '/<a class="[^"]*dropdown-toggle"[^>]*>'.preg_quote(\Asset::icon('gear-fill'), '/').'<\/a><div class="dropdown-list"><div class="dropdown-title">'.preg_quote(encode($eCourse['name']), '/').'<\/div>.*?data-ajax="\/learning\/course:doDelete" post-id="'.$eCourse['id'].'"[^>]*>[^<]*<\/a><\/div>/s';
+		$pattern = '/<a [^>]*class="[^"]*dropdown-toggle"[^>]*>'.preg_quote(\Asset::icon('gear-fill'), '/').'<\/a><div class="dropdown-list"><div class="dropdown-title">'.preg_quote(encode($eCourse['name']), '/').'<\/div>.*?data-ajax="\/learning\/course:doDelete" post-id="'.$eCourse['id'].'"[^>]*>[^<]*<\/a><\/div>/s';
 
 		if(preg_match($pattern, $html, $match) !== 1) {
 			throw new \Exception('aucune roue de la formation '.$eCourse['id'].' dans '.$html);

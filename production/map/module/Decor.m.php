@@ -60,6 +60,7 @@ class DecorModel extends \ModuleModel {
 			'layer' => ['element32', 'map\DecorLayer', 'null' => TRUE, 'cast' => 'element'],
 			'kit' => ['text8', 'min' => 1, 'max' => 40, 'cast' => 'string'],
 			'building' => ['element32', 'map\DecorBuilding', 'null' => TRUE, 'cast' => 'element'],
+			'object' => ['element32', 'map\DecorObject', 'null' => TRUE, 'cast' => 'element'],
 			'coordinates' => ['point', 'cast' => 'json'],
 			'angle' => ['float32', 'min' => 0, 'max' => 6.2832, 'cast' => 'float'],
 			'size' => ['float32', 'min' => 0.1, 'max' => 10, 'cast' => 'float'],
@@ -79,13 +80,14 @@ class DecorModel extends \ModuleModel {
 		]);
 
 		$this->propertiesList = array_merge($this->propertiesList, [
-			'id', 'structure', 'layer', 'kit', 'building', 'coordinates', 'angle', 'size', 'seed', 'width', 'model', 'trace', 'diameter', 'laying', 'zone', 'plot', 'hedge', 'gate', 'createdAt', 'createdBy', 'updatedAt'
+			'id', 'structure', 'layer', 'kit', 'building', 'object', 'coordinates', 'angle', 'size', 'seed', 'width', 'model', 'trace', 'diameter', 'laying', 'zone', 'plot', 'hedge', 'gate', 'createdAt', 'createdBy', 'updatedAt'
 		]);
 
 		$this->propertiesToModule += [
 			'structure' => 'structure\Structure',
 			'layer' => 'map\DecorLayer',
 			'building' => 'map\DecorBuilding',
+			'object' => 'map\DecorObject',
 			'zone' => 'map\Zone',
 			'plot' => 'map\Plot',
 			'createdBy' => 'user\User',
@@ -94,7 +96,8 @@ class DecorModel extends \ModuleModel {
 		$this->indexConstraints = array_merge($this->indexConstraints, [
 			['structure'],
 			['layer'],
-			['building']
+			['building'],
+			['object']
 		]);
 
 	}
@@ -191,6 +194,10 @@ class DecorModel extends \ModuleModel {
 
 	public function whereBuilding(...$data): DecorModel {
 		return $this->where('building', ...$data);
+	}
+
+	public function whereObject(...$data): DecorModel {
+		return $this->where('object', ...$data);
 	}
 
 	public function whereCoordinates(...$data): DecorModel {

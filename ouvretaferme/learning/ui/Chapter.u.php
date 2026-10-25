@@ -8,26 +8,22 @@ class ChapterUi {
 
 	public function getActions(Chapter $eChapter): string {
 
-		$h = '<a class="btn btn-color-primary dropdown-toggle" data-dropdown="bottom-end">'.\Asset::icon('gear-fill').'</a>';
-		$h .= '<div class="dropdown-list">';
-			$h .= '<div class="dropdown-title">'.encode($eChapter['name']).'</div>';
-			$h .= '<a href="/learning/chapter:update?id='.$eChapter['id'].'" class="dropdown-item">'.s("Modifier le module").'</a>';
+		$items = '<a href="/learning/chapter:update?id='.$eChapter['id'].'" class="dropdown-item">'.s("Modifier le module").'</a>';
 
-			if($eChapter->assertDelete()) {
-				$h .= '<div class="dropdown-divider"></div>';
-				$h .= '<a data-ajax="/learning/chapter:doDelete" post-id="'.$eChapter['id'].'" class="dropdown-item" data-confirm="'.s("Supprimer ce module et toutes ses leçons ?").'" data-waiter>'.s("Supprimer le module").'</a>';
-			} else if($eChapter['holdsCompleted']) {
-				// La dernière leçon d'une formation suivie en entier se garde (`acceptDelete()`) : le
-				// geste se montre fermé, avec ce qui le ferme, comme « Supprimer la formation ».
-				$h .= '<div class="dropdown-divider"></div>';
-				$h .= '<a class="dropdown-item disabled">';
-					$h .= '<div class="util-item-label">'.s("Supprimer le module").'</div>';
-					$h .= '<div class="util-item-more">'.s("Un inscrit a suivi toute la formation. Dépubliez-la d'abord.").'</div>';
-				$h .= '</a>';
-			}
-		$h .= '</div>';
+		if($eChapter->assertDelete()) {
+			$items .= '<div class="dropdown-divider"></div>';
+			$items .= '<a data-ajax="/learning/chapter:doDelete" post-id="'.$eChapter['id'].'" class="dropdown-item" data-confirm="'.s("Supprimer ce module et toutes ses leçons ?").'" data-waiter>'.s("Supprimer le module").'</a>';
+		} else if($eChapter['holdsCompleted']) {
+			// La dernière leçon d'une formation suivie en entier se garde (`acceptDelete()`) : le
+			// geste se montre fermé, avec ce qui le ferme, comme « Supprimer la formation ».
+			$items .= '<div class="dropdown-divider"></div>';
+			$items .= '<a class="dropdown-item disabled">';
+				$items .= '<div class="util-item-label">'.s("Supprimer le module").'</div>';
+				$items .= '<div class="util-item-more">'.s("Un inscrit a suivi toute la formation. Dépubliez-la d'abord.").'</div>';
+			$items .= '</a>';
+		}
 
-		return $h;
+		return \main\DesignUi::getGear($items, encode($eChapter['name']));
 
 	}
 

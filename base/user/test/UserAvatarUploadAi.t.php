@@ -363,7 +363,7 @@ class UserAvatarUploadAiTest extends \dev\TransactionTest {
 		$this->assertFalse($eUserAvatarUpload->canRead(), 'envoi lu par un autre utilisateur');
 
 		$eUserOther = new User(['id' => $eUser['id'], 'eUserAvatar' => new UserAvatar()]);
-		$this->assertFalse(new UserAvatarUpload(['user' => $eUserOther])->acceptCreate(), 'envoi sans avatar composé accepté');
+		$this->assertTrue(new UserAvatarUpload(['user' => $eUserOther])->acceptCreate(), 'envoi refusé sans avatar composé');
 
 		$this->clearThrottle($eUser);
 

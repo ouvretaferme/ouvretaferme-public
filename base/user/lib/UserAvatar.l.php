@@ -315,11 +315,16 @@ class UserAvatarLib extends UserAvatarCrud {
 	 *
 	 * Un modèle téléversé (`upload`) n'y change rien : la fiche est celle de la composition, enregistrée à côté de lui.
 	 * Elle reste le repli du modèle dans les scènes, quand le navigateur ne le lit pas ou que la scène en montre déjà
-	 * autant qu'elle en porte.
+	 * autant qu'elle en porte. Un avatar sans composition, créé par l'import d'un modèle, a pour fiche celle de la
+	 * composition par défaut : la scène y prend les gestes qu'elle monte sur le modèle, et la montre en repli.
 	 */
 	public static function getFiche(UserAvatar $e): array {
 
 		$e->expects(['source', 'composition']);
+
+		if($e->hasComposition() === FALSE) {
+			return self::getFicheByComposition(self::getDefault());
+		}
 
 		return match($e['source']) {
 			UserAvatar::PHOTO => self::getFicheByPhoto($e['composition']),
@@ -563,7 +568,7 @@ class UserAvatarLib extends UserAvatarCrud {
 
 		return UserAvatar::model()
 			->select([
-				'id', 'upload', 'replacesPhoto', 'photo',
+				'id', 'composition', 'upload', 'replacesPhoto', 'photo',
 				'user' => ['vignette']
 			])
 			->whereUser($eUser)
@@ -614,7 +619,7 @@ class UserAvatarLib extends UserAvatarCrud {
 	/**
 	 * Les avatars dont l'image se rend de nouveau (`UserAvatar::acceptRerender()`), parmi ceux des utilisateurs
 	 * nommés, ou de tous quand aucun ne l'est. Seule une composition de l'éditeur se rend dans l'éditeur, une fiche
-	 * rendue d'après une photo n'en étant pas une.
+	 * rendue d'après une photo n'en étant pas une, ni un avatar sans composition, dont l'image est celle de son modèle.
 	 */
 	public static function getForRerender(array $users = []): \Collection {
 
@@ -624,6 +629,7 @@ class UserAvatarLib extends UserAvatarCrud {
 				'user' => ['vignette']
 			])
 			->whereSource(UserAvatar::EDITOR)
+			->whereComposition('!=', NULL)
 			->whereReplacesPhoto(TRUE)
 			->whereUser('IN', $users, if: $users !== [])
 			->getCollection()
@@ -701,14 +707,46 @@ class UserAvatarLib extends UserAvatarCrud {
 	}
 
 	/**
+	 * L'avatar d'un compte qui importe un modèle sans avoir composé : sans composition, et sans remplacer la photo, dont
+	 * l'import pose ensuite le choix (`placeImage()`). L'insertion se tente avant toute lecture sous verrou : un
+	 * SELECT … FOR UPDATE sur une ligne absente verrouille le trou de l'index, que deux imports peuvent tenir ensemble
+	 * avant de s'attendre l'un l'autre à l'insertion. Tentée d'abord, la seconde insertion attend que la première soit
+	 * validée et prend le doublon. L'appelant relit ensuite l'avatar sous verrou (`getByUserForUpdate()`).
+	 */
+	public static function createForUpload(User $eUser): void {
+
+		if(UserAvatar::model()->whereUser($eUser)->exists()) {
+			return;
+		}
+
+		try {
+
+			self::create(new UserAvatar([
+				'user' => $eUser,
+				'composition' => NULL,
+				'replacesPhoto' => FALSE
+			]));
+
+		} catch(\DuplicateException) {
+			// L'import parti d'un autre onglet a posé l'avatar, que la lecture sous verrou de l'appelant rend
+		}
+
+	}
+
+	/**
 	 * La photo de profil n'est mise de côté que par un avatar qui la remplace : l'image d'un avatar ne doit
 	 * jamais prendre sa place.
 	 */
 	public static function create(UserAvatar $e): void {
 
-		$e->expects(['user' => ['vignette'], 'composition', 'replacesPhoto']);
+		$e->expects(['composition', 'replacesPhoto']);
 
-		$e['photo'] = $e['replacesPhoto'] ? $e['user']['vignette'] : NULL;
+		if($e['replacesPhoto']) {
+			$e->expects(['user' => ['vignette']]);
+			$e['photo'] = $e['user']['vignette'];
+		} else {
+			$e['photo'] = NULL;
+		}
 
 		parent::create($e);
 

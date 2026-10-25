@@ -155,7 +155,9 @@ class EntryUi {
 				chips: $chips,
 				searchIcon: $searchIcon,
 				chipsExplicit: TRUE,
-				scroll: $scroll
+				scroll: $scroll,
+				// Effacer recommence la phrase, texte tapé compris.
+				restart: TRUE
 			);
 
 		$h .= '</div>';
@@ -364,7 +366,8 @@ class EntryUi {
 
 		$step = self::getStep($reading);
 
-		// L'intervention qu'un temps ajoute au planning n'a pas encore d'id : sa réponse se dit par sa culture.
+		// L'intervention qu'un temps ajoute au planning n'a pas encore d'id : sa réponse se dit par sa culture, ou
+		// par l'espèce de « Hors série ». Hors de Culture, elle n'a ni l'une ni l'autre et rien ne se répond.
 		$added = ($reading['task']->notEmpty() and $reading['task']->exists() === FALSE);
 
 		$entry = [
@@ -372,7 +375,7 @@ class EntryUi {
 			'cultivation' => $reading['cultivation']->empty() ? NULL : $reading['cultivation']['id'],
 			'task' => $reading['task']->exists() ? $reading['task']['id'] : NULL,
 			'addCultivation' => ($added and $reading['task']['cultivation']->notEmpty()) ? $reading['task']['cultivation']['id'] : NULL,
-			'addNoSeries' => ($added and $reading['task']['cultivation']->empty()) ? $reading['task']['plant']['id'] : NULL,
+			'addNoSeries' => ($added and $reading['task']['cultivation']->empty() and $reading['task']['plant']->notEmpty()) ? $reading['task']['plant']['id'] : NULL,
 			'pending' => $reading['pending'],
 			'typingPrefix' => $reading['typingPrefix'],
 			'completion' => ($completion === NULL) ? NULL : $completion['suffix'],

@@ -73,7 +73,8 @@ class SchoolAiLib {
 		'map\Decor', // le décor posé dans la 3D est propre à la structure, ses positions la situent
 		'map\DecorLayer', // les calques rangent ce décor, qui ne se copie pas
 		'map\DecorBuilding', // les bâtiments composés ne servent qu'à ce décor, et leur nom désigne ceux de la structure
-		'map\DecorUpload', // les modèles 3D téléversés à la place de ces bâtiments, dont le hash ouvrirait le fichier de la source
+		'map\DecorUpload', // les modèles 3D téléversés à la place de ces bâtiments ou comme éléments, dont le hash ouvrirait le fichier de la source
+		'map\DecorObject', // les éléments importés ne montrent que ces modèles, et leur nom vient de la structure
 		'product\Stock', 'product\StockBookmark',
 		'product\Configuration', // les notes de stock sont du texte libre, et la ligne naît avec la structure
 		// Le catalogue des aides est commun à toutes les structures : aucune ligne n'appartient à la source.

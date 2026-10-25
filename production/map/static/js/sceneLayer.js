@@ -2,7 +2,8 @@
  * La carte des calques du décor, posée sur la scène sous le bouton « Calques », en lecture comme en pose. Une ligne par calque :
  * son interrupteur le montre ou le masque, et la toucher en fait le calque actif, celui où l'on pose et sélectionne ; rendre actif
  * un calque masqué l'affiche. Le calque de base « Décor » n'a pas de ligne en base (`layer` nul) et ne se renomme ni ne se supprime.
- * La ligne « Icônes des séries », sous la sienne, montre ou masque les pastilles des cultures et n'est jamais le calque actif.
+ * Les lignes « Icônes des séries » et « Parcelles et jardins », sous la sienne, montrent ou masquent les pastilles des
+ * cultures et les contours au sol, et ne sont jamais le calque actif.
  *
  * Ce qu'on masque est propre à chacun : il se garde dans le navigateur, sous une clé qui porte la structure et l'utilisateur, et
  * un calque neuf est affiché. Créer, renommer et supprimer partent aussitôt, hors de « Annuler » de la pose.
@@ -39,10 +40,11 @@ class MapSceneLayer {
 		this.changed = changed;
 		this.removed = removed;
 
-		// Sans décor, la carte n'a que les lignes des séries et du relief, que `MapScene` tient ; celle du relief n'est là que si la
-		// scène en reçoit un
+		// Sans décor, la carte n'a que les lignes des séries, des limites et du relief, que `MapScene` tient ; celle du relief n'est là
+		// que si la scène en reçoit un
 		this.template = this.card.qs('[data-scene-layers-row]');
 		this.series = this.card.qs('[data-scene-series]');
+		this.limits = this.card.qs('[data-scene-limits]');
 		this.relief = this.card.qsa('[data-scene-relief]');
 
 		this.texts = JSON.parse(this.card.dataset.texts);
@@ -254,8 +256,8 @@ class MapSceneLayer {
 
 		});
 
-		// Les lignes des séries et du relief gardent leur nœud, et l'écouteur que `MapScene` y a posé
-		this.card.qs('[data-scene-layers-rows]').replaceChildren(base, this.series, ...this.relief, ...layers);
+		// Les lignes des séries, des limites et du relief gardent leur nœud, et l'écouteur que `MapScene` y a posé
+		this.card.qs('[data-scene-layers-rows]').replaceChildren(base, this.series, this.limits, ...this.relief, ...layers);
 
 	}
 

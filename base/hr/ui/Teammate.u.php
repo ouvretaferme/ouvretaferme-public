@@ -123,7 +123,7 @@ class TeammateUi {
 								// il élargirait la dernière colonne de ce tableau seul, et les deux tableaux ne s'aligneraient
 								// plus.
 								$h .= '<td class="td-vertical-align-middle">';
-									$h .= '<span class="color-muted font-sm">'.\util\DateUi::numeric($eMember['createdAt'], \util\DateUi::DATE).'</span>';
+									$h .= '<span class="util-annotation">'.\util\DateUi::numeric($eMember['createdAt'], \util\DateUi::DATE).'</span>';
 									$h .= '<a href="'.$urlPlanning.'" class="btn btn-outline-primary ml-2">'.\Asset::icon('person-plus-fill').' '.s("Ajouter au planning").'</a>';
 								$h .= '</td>';
 
@@ -216,7 +216,7 @@ class TeammateUi {
 
 					$h .= '<td class="td-vertical-align-middle">';
 						if($eInvite['expiresAt'] !== NULL) {
-							$h .= '<span class="color-muted font-sm">'.s("expire le {value}", \util\DateUi::numeric($eInvite['expiresAt'])).'</span>';
+							$h .= '<span class="util-annotation">'.s("expire le {value}", \util\DateUi::numeric($eInvite['expiresAt'])).'</span>';
 						}
 					$h .= '</td>';
 

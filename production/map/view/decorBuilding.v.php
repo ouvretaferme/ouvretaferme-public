@@ -28,9 +28,11 @@ new AdaptativeView('doUpdate', function($data, AjaxTemplate $t) {
 
 });
 
+// La poubelle est dans la feuille de pose de la scène, et `sceneBuilding.js` ne vient qu'avec l'éditeur : la réponse s'adresse
+// à la scène
 new AdaptativeView('doDelete', function($data, AjaxTemplate $t) {
 
-	$t->js()->eval('MapSceneBuilding.deleted('.json_encode($data->e['id']).')');
+	$t->js()->eval('MapScene.current?.decor?.deleted('.json_encode($data->e['id']).')');
 
 });
 ?>

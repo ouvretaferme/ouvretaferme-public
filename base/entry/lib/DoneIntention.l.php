@@ -18,6 +18,10 @@ namespace entry;
  * comme pour un temps qui ajoute la sienne au planning (lot S4b, 19/10), ou sur chacune des séries en
  * phase (lot S4d).
  *
+ * Une action d'une autre catégorie que Culture (« rh fait ») coche ses interventions sans espèce de la même façon,
+ * dans chacune de ses catégories. Rien de prévu, la phrase passe à l'intervention (`InterventionIntentionLib`), qui
+ * la crée faite ou à faire, faite d'abord (HN-B18, 25/10).
+ *
  * La lecture et l'écriture portent donc une collection d'interventions (`cTask`), d'une seule dans le cas
  * courant. Une durée dite se répartit à parts égales entre elles, comme Consigner le fait (`fair`).
  *
@@ -83,6 +87,10 @@ class DoneIntentionLib extends IntentionLib {
 		return TimeIntentionLib::getTyped($cElement);
 	}
 
+	public static function isImplicit(\Element $eElement): bool {
+		return TimeIntentionLib::isImplicit($eElement);
+	}
+
 	public static function isSearching(array $reading): bool {
 		return TimeIntentionLib::isSearching($reading);
 	}
@@ -97,6 +105,19 @@ class DoneIntentionLib extends IntentionLib {
 
 	public static function getDateRefusal(string $date): ?array {
 		return self::getPastRefusal($date);
+	}
+
+	/**
+	 * Les puces de durée sous la coche, chacune ajoutée au temps déjà dit (`DurationComplementLib::getAdditions()`) :
+	 * trois, la quatrième faisant défiler la liste au bureau (hypothèse, recette de S4a). La coche écrit son temps
+	 * au jour dit.
+	 */
+	private static function getAdditions(\structure\Structure $eStructure, array $reading): array {
+
+		$minutes = is_int($reading['complements']['duration']) ? $reading['complements']['duration'] : 0;
+
+		return array_slice(DurationComplementLib::getAdditions($minutes, TimeIntentionLib::getWorked($eStructure, [$reading['date']])), 0, 3, TRUE);
+
 	}
 
 	/**
@@ -150,13 +171,20 @@ class DoneIntentionLib extends IntentionLib {
 		// Une action nommée seule, suivie de l'espèce, comme pour le temps.
 		if($ePlant->empty()) {
 
+			// Hors de Culture, l'action n'a ni espèce ni série : ses interventions sans espèce se cochent, dans
+			// chacune de ses catégories. Suivie d'une espèce, elle n'a rien à cocher et le refus le dit plus bas.
+			if(TimeIntentionLib::isCulture($reading['object']['category']) === FALSE and $reading['pending'] === NULL) {
+				self::resolveTasks($eStructure, $reading, $answers, $reading['object']['cCategory'], $eAction, $ePlant, $eAction['name']);
+				return;
+			}
+
 			$cPlant = ($reading['pending'] === NULL) ? new \Collection() : TimeIntentionLib::readPlants($eStructure, $reading['pending']);
 
-			// Le début de plusieurs noms sous une action de culture (`addable`) garde la question de l'espèce, et
+			// Le début de plusieurs noms sous une action de culture (`asksPlant`) garde la question de l'espèce, et
 			// reste en attente : l'espèce choisie le remplace.
 			if($cPlant->count() > 1) {
 
-				if($reading['object']['addable'] and TimeIntentionLib::askPlant($eStructure, $reading, $cPlant)) {
+				if($reading['object']['asksPlant'] and TimeIntentionLib::askPlant($eStructure, $reading, $cPlant)) {
 					return;
 				}
 
@@ -168,9 +196,9 @@ class DoneIntentionLib extends IntentionLib {
 
 			if($cPlant->empty()) {
 
-				// L'action seule que la frappe propose (`TimeIntentionLib::getTyped()`) demande l'espèce, comme pour
-				// le temps.
-				if($reading['pending'] === NULL and $reading['object']['typed'] and TimeIntentionLib::askPlant($eStructure, $reading)) {
+				// L'action seule de culture que la frappe propose (`TimeIntentionLib::getTyped()`) demande l'espèce,
+				// comme pour le temps.
+				if($reading['pending'] === NULL and $reading['object']['typed'] and $reading['object']['asksPlant'] and TimeIntentionLib::askPlant($eStructure, $reading)) {
 					return;
 				}
 
@@ -196,21 +224,44 @@ class DoneIntentionLib extends IntentionLib {
 			return;
 		}
 
-		$cTask = self::getCandidates($eStructure, $eCategory, $eAction, $ePlant, $reading['date']);
+		self::resolveTasks($eStructure, $reading, $answers, new \Collection([$eCategory['id'] => $eCategory]), $eAction, $ePlant, $name);
+
+	}
+
+	/**
+	 * L'intervention à cocher parmi celles de l'action et de l'espèce, ou sans espèce, dans les catégories dites.
+	 * Rien de prévu : une action de culture se crée faite (`resolveAdd()`), et une autre se crée par l'intervention,
+	 * qui demande faite ou à faire, faite d'abord (HN-B18, 25/10).
+	 */
+	private static function resolveTasks(\structure\Structure $eStructure, array &$reading, array $answers, \Collection $cCategory, \work\Action $eAction, \plant\Plant $ePlant, string $name): void {
+
+		$cTask = self::getCandidates($eStructure, $cCategory, $eAction, $ePlant, $reading['date']);
 
 		if($cTask->empty()) {
 
-			$eTaskDone = self::getDone($eStructure, $eCategory, $eAction, $ePlant, $reading['date']);
+			$eTaskDone = self::getDone($eStructure, $cCategory, $eAction, $ePlant, $reading['date']);
 
 			if($eTaskDone->notEmpty()) {
-				$eTaskDone['timed'] = $eStructure->hasTime(); // Faite le jour dit, donc dans sa semaine.
+				// Faite le jour dit, donc dans sa semaine. Aucune ligne n'y écrit la durée dite : les puces restent, et
+				// s'y ajoutent.
+				$eTaskDone['timed'] = $eStructure->hasTime();
+				$eTaskDone['additions'] = $eTaskDone['timed'] ? self::getAdditions($eStructure, $reading) : [];
 				$reading['task'] = $eTaskDone;
 				$reading['outcome'] = EntryLib::ASK;
+			} else if($ePlant->empty()) {
+
+				// Refusée sans verbe, où l'intervention ne se devine pas (`EntryLib::readText()`).
+				self::refuseUnplanned($reading, $name);
+
+				if($cCategory->notEmpty()) {
+					$reading['handover'] = 'intervention';
+				}
+
 			} else if(
 				// Relue pour ses catégories, que seule la création demande : la lecture de chaque phrase ne les paie pas.
-				TimeIntentionLib::isAddable($eCategory, \work\ActionLib::getByStructure($eStructure, id: $eAction['id']))
+				in_array($cCategory->first()['id'], \work\ActionLib::getByStructure($eStructure, id: $eAction['id'])['categories'])
 			) {
-				self::resolveAdd($eStructure, $reading, $answers, $eAction, $ePlant);
+				self::resolveAdd($eStructure, $reading, $answers, $cCategory->first(), $eAction, $ePlant);
 			} else {
 				self::refuseUnplanned($reading, $name);
 			}
@@ -251,6 +302,7 @@ class DoneIntentionLib extends IntentionLib {
 			$eStructure->hasTime() and
 			TimeIntentionLib::isProposed($eTask, $reading['date'])
 		);
+		$eTask['additions'] = $eTask['timed'] ? self::getAdditions($eStructure, $reading) : [];
 
 		$reading['task'] = $eTask;
 
@@ -290,7 +342,7 @@ class DoneIntentionLib extends IntentionLib {
 	 * L'intervention se construit dès la lecture : un refus de `build()` vaut pour la lecture comme pour
 	 * l'écriture.
 	 */
-	private static function resolveAdd(\structure\Structure $eStructure, array &$reading, array $answers, \work\Action $eAction, \plant\Plant $ePlant): void {
+	private static function resolveAdd(\structure\Structure $eStructure, array &$reading, array $answers, \work\Category $eCategory, \work\Action $eAction, \plant\Plant $ePlant): void {
 
 		$cCultivation = CultivationResolveLib::sortByPhase(CultivationResolveLib::getByPlant($eStructure, $ePlant, $reading['date']), $eAction, toWeek($reading['date']));
 
@@ -322,7 +374,7 @@ class DoneIntentionLib extends IntentionLib {
 		$cTask = new \Collection();
 
 		foreach($cCultivationAdded as $eCultivation) {
-			$cTask[] = TimeIntentionLib::buildTask($eStructure, $eAction, $ePlant, $eCultivation, $reading['date'], \series\Task::DONE);
+			$cTask[] = TimeIntentionLib::buildTask($eStructure, $eCategory, $eAction, $ePlant, $eCultivation, $reading['date'], \series\Task::DONE);
 		}
 
 		$fw->validate();
@@ -332,6 +384,7 @@ class DoneIntentionLib extends IntentionLib {
 			// L'espèce lue, la même que celle que `build()` a posée hors série, porte ce que l'écran en montre.
 			$eTask['plant'] = $ePlant;
 			$eTask['timed'] = FALSE;
+			$eTask['additions'] = [];
 
 			TimeIntentionLib::fillNameWithSeason($eTask);
 
@@ -385,7 +438,7 @@ class DoneIntentionLib extends IntentionLib {
 	/**
 	 * Les interventions à cocher, la plus proche de la semaine du jour dit en tête, puis la plus ancienne.
 	 */
-	private static function getCandidates(\structure\Structure $eStructure, \work\Category $eCategory, \work\Action $eAction, \plant\Plant $ePlant, string $date): \Collection {
+	private static function getCandidates(\structure\Structure $eStructure, \Collection $cCategory, \work\Action $eAction, \plant\Plant $ePlant, string $date): \Collection {
 
 		\series\TaskLib::applyOpenSeries();
 
@@ -396,7 +449,7 @@ class DoneIntentionLib extends IntentionLib {
 			->wherePlannedWeek('BETWEEN', new \Sql(\series\Task::model()->format(self::getWeekFrom($date)).' AND '.\series\Task::model()->format(self::getWeekTo($date))))
 			->whereAction($eAction)
 			->wherePlant($ePlant)
-			->whereCategory($eCategory)
+			->whereCategory('IN', $cCategory)
 			->getCollection(index: 'id');
 
 		$week = strtotime(toWeek($date));
@@ -416,7 +469,7 @@ class DoneIntentionLib extends IntentionLib {
 	/**
 	 * L'intervention de l'action et de l'espèce faite le jour dit, la dernière cochée s'il y en a plusieurs.
 	 */
-	private static function getDone(\structure\Structure $eStructure, \work\Category $eCategory, \work\Action $eAction, \plant\Plant $ePlant, string $date): \series\Task {
+	private static function getDone(\structure\Structure $eStructure, \Collection $cCategory, \work\Action $eAction, \plant\Plant $ePlant, string $date): \series\Task {
 
 		return \series\Task::model()
 			->select(self::getSelection())
@@ -426,7 +479,7 @@ class DoneIntentionLib extends IntentionLib {
 			->whereDoneDate($date)
 			->whereAction($eAction)
 			->wherePlant($ePlant)
-			->whereCategory($eCategory)
+			->whereCategory('IN', $cCategory)
 			->sort(['updatedAt' => SORT_DESC, 'id' => SORT_DESC])
 			->get();
 
@@ -437,6 +490,7 @@ class DoneIntentionLib extends IntentionLib {
 		return [
 			'id',
 			'action' => ['name', 'fqn'],
+			'category' => ['name', 'fqn'],
 			'plant' => ['name', 'fqn'],
 			'series' => ['name'],
 			'cultivation', 'description', 'status', 'plannedWeek', 'doneWeek', 'doneDate',

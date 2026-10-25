@@ -133,15 +133,11 @@ class QuestionUi {
 
 	protected function getActions(Question $eQuestion): string {
 
-		$h = '<a class="btn btn-color-primary dropdown-toggle" data-dropdown="bottom-end">'.\Asset::icon('gear-fill').'</a>';
-		$h .= '<div class="dropdown-list">';
-			$h .= '<div class="dropdown-title">'.s("Question {value}", $eQuestion['number']).'</div>';
-			$h .= '<a href="/learning/question:update?id='.$eQuestion['id'].'" class="dropdown-item">'.s("Modifier la question").'</a>';
-			$h .= '<div class="dropdown-divider"></div>';
-			$h .= '<a data-ajax="/learning/question:doDelete" post-id="'.$eQuestion['id'].'" class="dropdown-item" data-confirm="'.s("Supprimer cette question et les réponses des stagiaires ?").'" data-waiter>'.s("Supprimer la question").'</a>';
-		$h .= '</div>';
+		$items = '<a href="/learning/question:update?id='.$eQuestion['id'].'" class="dropdown-item">'.s("Modifier la question").'</a>';
+		$items .= '<div class="dropdown-divider"></div>';
+		$items .= '<a data-ajax="/learning/question:doDelete" post-id="'.$eQuestion['id'].'" class="dropdown-item" data-confirm="'.s("Supprimer cette question et les réponses des stagiaires ?").'" data-waiter>'.s("Supprimer la question").'</a>';
 
-		return $h;
+		return \main\DesignUi::getGear($items, s("Question {value}", $eQuestion['number']));
 
 	}
 

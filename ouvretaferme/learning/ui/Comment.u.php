@@ -160,22 +160,20 @@ class CommentUi {
 			return '';
 		}
 
-		$h = '<a data-dropdown="bottom-end" class="dropdown-toggle btn btn-color-primary">'.\Asset::icon('gear-fill').'</a>';
-		$h .= '<div class="dropdown-list">';
-			$h .= '<div class="dropdown-title">'.s("Commentaire de {value}", ['value' => \user\UserUi::name($eComment['createdBy'])]).'</div>';
-			if($update) {
-				$h .= '<a href="/learning/comment:update?id='.$eComment['id'].'" class="dropdown-item">'.s("Modifier le commentaire").'</a>';
-			}
-			if($update and $delete) {
-				$h .= '<div class="dropdown-divider"></div>';
-			}
-			if($delete) {
-				$confirm = $eComment['cCommentAnswer']->empty() ? s("Supprimer ce commentaire ?") : s("Supprimer ce commentaire et ses réponses ?");
-				$h .= '<a data-ajax="/learning/comment:doDelete" post-id="'.$eComment['id'].'" class="dropdown-item" data-confirm="'.$confirm.'" data-waiter>'.s("Supprimer le commentaire").'</a>';
-			}
-		$h .= '</div>';
+		$items = '';
 
-		return $h;
+		if($update) {
+			$items .= '<a href="/learning/comment:update?id='.$eComment['id'].'" class="dropdown-item">'.s("Modifier le commentaire").'</a>';
+		}
+		if($update and $delete) {
+			$items .= '<div class="dropdown-divider"></div>';
+		}
+		if($delete) {
+			$confirm = $eComment['cCommentAnswer']->empty() ? s("Supprimer ce commentaire ?") : s("Supprimer ce commentaire et ses réponses ?");
+			$items .= '<a data-ajax="/learning/comment:doDelete" post-id="'.$eComment['id'].'" class="dropdown-item" data-confirm="'.$confirm.'" data-waiter>'.s("Supprimer le commentaire").'</a>';
+		}
+
+		return \main\DesignUi::getGear($items, s("Commentaire de {value}", ['value' => \user\UserUi::name($eComment['createdBy'])]));
 
 	}
 

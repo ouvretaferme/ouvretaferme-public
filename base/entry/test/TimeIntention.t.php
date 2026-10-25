@@ -131,6 +131,32 @@ class TimeIntentionTest extends EntryFixtureTest {
 	}
 
 	/**
+	 * Un temps dit garde ses puces, qui s'ajoutent à lui : 1 h puis « +30 min » font 1 h 30, et la suivante
+	 * ajoute encore. Elles s'arrêtent à la journée, temps déjà écrit compris, que l'écriture refuserait au-delà.
+	 */
+	public function testAdditions(): void {
+
+		if($this->requireAction(ACTION_FERTILISATION) === FALSE) {
+			return;
+		}
+
+		if($this->assertDecorPresent(TimeIntentionLib::getWorked($this->eStructure, [\Clock::date()]) === 0, 'aucun temps n\'est écrit aujourd\'hui') === FALSE) {
+			return;
+		}
+
+		$this->createTaskFertilisation($this->createCultivationInPhase(TRUE));
+
+		$this->assertEquals([15 => 75, 30 => 90, 60 => 120, 120 => 180], $this->read($this->getTimeText('1 h '))['confirmation']['additions'], 'chaque puce ajoute à l\'heure dite');
+		$this->assertEquals([15 => 105, 30 => 120, 60 => 150, 120 => 210], $this->read($this->getTimeText(DurationComplementUi::getDuration(90).' '))['confirmation']['additions'], 'la puce choisie se relit, et les suivantes ajoutent encore');
+
+		$reading = $this->read($this->getTimeText('22 h 30 '));
+		EntryLib::write($this->eStructure, $reading);
+
+		$this->assertEquals([15 => 75, 30 => 90], $this->read($this->getTimeText('1 h '))['confirmation']['additions'], 'avec 22 h 30 déjà écrites, la journée borne les puces');
+
+	}
+
+	/**
 	 * Deux interventions de la même action sur la même espèce : une ligne par intervention, et la réponse
 	 * désigne celle qui reçoit le temps.
 	 */
@@ -763,7 +789,7 @@ class TimeIntentionTest extends EntryFixtureTest {
 
 		$ePlant = $this->createPlant('Zzautre');
 
-		$reading = $this->read($eAction['name'].' '.$ePlant['name'].' 1 h ');
+		$reading = $this->read('temps '.$eAction['name'].' '.$ePlant['name'].' 1 h ');
 
 		$this->assertEquals(NULL, $reading['question']);
 		$this->assertEquals(['reason' => 'none', 'name' => $eAction['name'].' '.mb_strtolower($ePlant['name'])], $reading['refusal']);

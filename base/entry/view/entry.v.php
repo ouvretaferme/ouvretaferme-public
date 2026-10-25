@@ -38,7 +38,16 @@ $writePlanning = function(AjaxTemplate $t, \structure\Structure $eStructure, arr
 			break;
 
 		case \entry\PlanningLib::INSERT :
-			$t->qs($done.' #task-item-'.$anchor['task'])->insertAdjacentHtml($anchor['position'], $uiPlanning->getWeekTask($eStructure, $week, $eTask, $context['cUserStructure']));
+
+			$html = $uiPlanning->getWeekTask($eStructure, $week, $eTask, $context['cUserStructure']);
+
+			if(isset($anchor['task'])) {
+				$t->qs($done.' #task-item-'.$anchor['task'])->insertAdjacentHtml($anchor['position'], $html);
+			} else {
+				// Une ligne sans espèce, en tête du bloc (`PlanningLib::fillInsert()`).
+				$t->qs($done.' .tasks-planning-items[data-filter-action="'.$anchor['action'].'"] > .tasks-planning-action')->insertAdjacentHtml(\entry\PlanningLib::AFTER, $html);
+			}
+
 			$t->qs($item)->addClass('tasks-planning-item-appeared', ['lifetime' => 1200]);
 			break;
 

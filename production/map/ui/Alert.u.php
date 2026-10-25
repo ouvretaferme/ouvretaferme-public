@@ -33,6 +33,9 @@ class AlertUi {
 			'Zone::coordinates.drawingMap' => s("Dessinez la parcelle sur la carte avant de la créer."),
 			'Zone::coordinates.redraw' => s("Redessinez la parcelle sur la carte avant d'enregistrer."),
 			'Zone::coordinates.check', 'Zone::coordinates.ring' => s("Ce contour n'a pas pu être enregistré. Il doit compter entre 3 et {value} points différents, chacun à une longitude et une latitude valides.", MapSetting::SHAPE_POINTS_MAX),
+			'Zone::decorGrass.check' => s("Cette herbe n'est pas reconnue."),
+			'Zone::decorMeadow.check' => s("Ce pré n'est pas reconnu."),
+			'Zone::decorSoil.check' => s("Ce sol n'est pas reconnu."),
 			'Zone::name.check' => s("Veuillez choisir un nom pour votre parcelle."),
 			'Zone::seasonLast.consistency' => s("Merci d'être cohérent entre la saison de début et la saison de fin."),
 			'Zone::deleteUsed' => s("Vous ne pouvez pas supprimer une parcelle qui a déjà été cultivée. Vous devez soit modifier les dates d'exploitation de la parcelle, soit supprimer préalablement les séries qui s'y trouvent."),
@@ -90,6 +93,10 @@ class AlertUi {
 			'Decor::diameter.pipe', 'Decor::laying.pipe' => s("Un diamètre ou une pose se donne à un tuyau dessiné."),
 			'Decor::building.check', 'Decor::building.owned' => s("Ce bâtiment n'existe plus. Rechargez la page et recommencez."),
 			'Decor::kit.building' => s("Un bâtiment de la structure se pose depuis sa vignette, dans la rangée des bâtiments."),
+			'Decor::object.check', 'Decor::object.owned' => s("Cet élément n'existe plus. Rechargez la page et recommencez."),
+			'Decor::kit.object' => s("Un élément importé se pose depuis sa vignette, dans sa rangée."),
+			'DecorObject::structure.limit' => s("Votre plan compte déjà {value} éléments importés, le maximum. Supprimez-en un de sa rangée pour en importer un autre.", MapSetting::DECOR_OBJECT_MAX),
+			'DecorObject::name.check' => s("Donnez à l'élément un nom, de {value} caractères au plus.", DecorObject::model()->getPropertyRange('name')[1]),
 
 			'DecorBuilding::type.check' => s("Ce type de bâtiment n'est pas reconnu."),
 			'DecorBuilding::structure.triangles' => s("Votre décor est déjà aussi chargé que la scène peut le montrer. Retirez un bosquet, un verger ou un bâtiment pour personnaliser ce hangar."),
@@ -106,8 +113,13 @@ class AlertUi {
 			'DecorUpload::file.check' => s("Choisissez le fichier .glb de votre modèle."),
 			'DecorUpload::file.throttled' => s("Vous ne pouvez pas envoyer plus de {value} fichiers en 24 heures, en comptant chaque « Valider » et chaque ajout. Ce fichier n'a pas été envoyé.", MapSetting::DECOR_UPLOAD_LIMIT),
 			'DecorUpload::file.unavailable' => s("L'import est indisponible pour le moment, réessayez plus tard."),
-			'DecorUpload::file.conformity' => fn(string $refusal, array $values) => AlertUi::getDecorUploadRefusal($refusal, $values),
+			'DecorUpload::file.conformity' => fn(string $refusal, array $values, string $family) => AlertUi::getDecorUploadRefusal($refusal, $values, $family),
 			'DecorUpload::commitment.check' => s("Cochez l'engagement pour envoyer votre modèle."),
+			'DecorUpload::reason.check', 'DecorUpload::reason.empty' => s("Choisissez le motif du retrait."),
+			'DecorUpload::reasonText.empty' => s("Écrivez la précision que l'auteur lira dans l'e-mail."),
+			'DecorUpload::reasonText.check' => s("La précision tient en {value} caractères au plus.", DecorUpload::model()->getPropertyRange('reasonText')[1]),
+			'DecorUpload::stale' => s("Ce modèle a changé depuis l'affichage de la liste. Rechargez la page."),
+			'DecorUpload::keepAllNone' => s("Aucun des modèles affichés n'est encore à examiner. Rechargez la page pour revoir la file."),
 
 			'DecorLayer::name.check' => s("Donnez au calque un nom, de {value} caractères au plus.", DecorLayer::model()->getPropertyRange('name')[1]),
 			'DecorLayer::type.check' => s("Ce type de calque n'est pas reconnu."),
@@ -115,6 +127,7 @@ class AlertUi {
 			'DecorLayer::structure.limit' => s("Votre plan compte déjà {value} calques, le maximum. Supprimez-en un pour en ajouter un autre.", MapSetting::DECOR_LAYER_MAX),
 
 			'Configuration::decorGrass.check' => s("Cette herbe n'est pas reconnue."),
+			'Configuration::decorMeadow.check' => s("Ce pré n'est pas reconnu."),
 			'Configuration::decorSoil.check' => s("Ce sol n'est pas reconnu."),
 
 			default => NULL
@@ -126,9 +139,12 @@ class AlertUi {
 	/**
 	 * Le refus d'un bâtiment téléversé, par son code (`refusals` de `base/scene/upload/decor.json`) : chaque code a sa branche,
 	 * et un code sans branche lève une erreur plutôt qu'un message vide (`DecorUploadAi.t.php`). Les phrases que le bâtiment
-	 * partage avec l'avatar sont les siennes, pour que les deux éditeurs disent le même refus de la même façon.
+	 * partage avec l'avatar sont les siennes, pour que les deux éditeurs disent le même refus de la même façon. Un élément
+	 * d'Eau, de Nature ou de Matériel n'a ni murs ni toit : les phrases qui en parlent ont la leur.
 	 */
-	public static function getDecorUploadRefusal(string $refusal, array $values): string {
+	public static function getDecorUploadRefusal(string $refusal, array $values, string $family): string {
+
+		$building = ($family === DecorUploadLib::FAMILY_BUILDING);
 
 		if($refusal === 'weight') {
 			// Le poids s'arrondit au dixième supérieur, comme celui de l'avatar (`\user\AlertUi::getAvatarUploadRefusal()`)
@@ -141,16 +157,26 @@ class AlertUi {
 			'texture' => s("Une texture est posée sur une pièce. Chaque pièce prend une seule couleur."),
 			'rig' => s("Il porte une armature, une animation ou des formes animées. Exportez des pièces fixes."),
 			'nodes' => s("Il a trop de pièces ou trop d'objets imbriqués."),
-			'piece' => s("La pièce « {name} » n'est pas une pièce de bâtiment. Nommez-la parmi {pieces}.", ['name' => encode($values['name']), 'pieces' => $values['pieces']]),
-			'missing' => s("Aucune pièce ne s'appelle « {value} ». Le bâtiment porte au moins cette pièce.", $values['piece']),
+			'piece' => $building ?
+				s("La pièce « {name} » n'est pas une pièce de bâtiment. Nommez-la parmi {pieces}.", ['name' => encode($values['name']), 'pieces' => $values['pieces']]) :
+				s("La pièce « {name} » n'est pas une pièce de cet élément. Nommez-la parmi {pieces}.", ['name' => encode($values['name']), 'pieces' => $values['pieces']]),
+			'missing' => $building ?
+				s("Aucune pièce ne s'appelle « {value} ». Le bâtiment porte au moins cette pièce.", $values['piece']) :
+				s("Aucune pièce ne s'appelle « {value} ». L'élément porte au moins cette pièce.", $values['piece']),
 			'triangles' => s("Il compte {count} triangles, pour {max} au plus.", ['count' => \util\TextUi::number($values['count']), 'max' => \util\TextUi::number($values['max'])]),
 			'colors' => s("Il porte {count} couleurs, pour {max} au plus.", ['count' => \util\TextUi::number($values['count']), 'max' => \util\TextUi::number($values['max'])]),
 			'bounds' => s("Il dépasse {length} m de long ou {width} m de large. Vérifiez son échelle : un mètre de votre logiciel vaut un mètre ici.", ['length' => \util\TextUi::number($values['length'], NULL), 'width' => \util\TextUi::number($values['width'], NULL)]),
-			'ground' => s("Il ne repose pas au sol. Placez le bas des murs à la hauteur 0."),
-			'anchor' => s("Le repère « {value} » est placé hors du bâtiment. Posez-le contre ses murs ou sur son toit.", encode($values['name'])),
+			'ground' => $building ?
+				s("Il ne repose pas au sol. Placez le bas des murs à la hauteur 0.") :
+				s("Il ne repose pas au sol. Placez son point le plus bas à la hauteur 0."),
+			'anchor' => $building ?
+				s("Le repère « {value} » est placé hors du bâtiment. Posez-le contre ses murs ou sur son toit.", encode($values['name'])) :
+				s("Le repère « {value} » est placé hors de l'élément. Posez-le sur lui.", encode($values['name'])),
 		};
 
-		return '<b>'.s("Ce fichier ne peut pas devenir votre bâtiment.").'</b><br/>'.$reason.'<br/>'.s("Donnez ce message à Claude, il corrigera le modèle.");
+		$title = $building ? s("Ce fichier ne peut pas devenir votre bâtiment.") : s("Ce fichier ne peut pas devenir un élément de votre décor.");
+
+		return '<b>'.$title.'</b><br/>'.$reason.'<br/>'.s("Donnez ce message à Claude, il corrigera le modèle.");
 
 	}
 
@@ -181,6 +207,10 @@ class AlertUi {
 			'Plot::greenhouseRemoved' => s("L'abri a bien été retiré, le jardin est désormais en plein champ."),
 
 			'Plot::duplicated' => s("Le jardin a bien été dupliqué."),
+
+			'DecorUpload::keptAll' => s("Les modèles sont validés."),
+			'DecorUpload::withdrawn' => s("Le modèle est retiré."),
+			'DecorUpload::chosen' => s("Le modèle est sélectionné."),
 
 			default => NULL
 

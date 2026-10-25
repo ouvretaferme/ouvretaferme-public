@@ -500,60 +500,53 @@ class DateUi {
 	 */
 	protected function getGear(Date $eDate): string {
 
-		$h = '<a class="btn btn-color-primary dropdown-toggle" data-dropdown="bottom-end">'.\Asset::icon('gear-fill').'</a>';
-		$h .= '<div class="dropdown-list">';
+		if($eDate->assertUpdate()) {
 
-			$h .= '<div class="dropdown-title">'.self::getDays($eDate).'</div>';
+			$update = '<a href="/learning/date:update?id='.$eDate['id'].'" class="dropdown-item">'.s("Modifier la date").'</a>';
+			$cancel = '<a href="/learning/date:cancel?id='.$eDate['id'].'" class="dropdown-item">'.s("Annuler la date").'</a>';
 
-			if($eDate->assertUpdate()) {
+		} else {
 
-				$update = '<a href="/learning/date:update?id='.$eDate['id'].'" class="dropdown-item">'.s("Modifier la date").'</a>';
-				$cancel = '<a href="/learning/date:cancel?id='.$eDate['id'].'" class="dropdown-item">'.s("Annuler la date").'</a>';
+			$reason = match($eDate['status']) {
+				Date::CANCELED => s("La date est annulée"),
+				Date::PLANNED => s("La date est passée")
+			};
 
-			} else {
+			$update = '<a class="dropdown-item disabled">';
+				$update .= '<div class="util-item-label">'.s("Modifier la date").'</div>';
+				$update .= '<div class="util-item-more">'.$reason.'</div>';
+			$update .= '</a>';
+			$cancel = '<a class="dropdown-item disabled">';
+				$cancel .= '<div class="util-item-label">'.s("Annuler la date").'</div>';
+				$cancel .= '<div class="util-item-more">'.$reason.'</div>';
+			$cancel .= '</a>';
 
-				$reason = match($eDate['status']) {
-					Date::CANCELED => s("La date est annulée"),
-					Date::PLANNED => s("La date est passée")
-				};
+		}
 
-				$update = '<a class="dropdown-item disabled">';
-					$update .= '<div class="util-item-label">'.s("Modifier la date").'</div>';
-					$update .= '<div class="util-item-more">'.$reason.'</div>';
-				$update .= '</a>';
-				$cancel = '<a class="dropdown-item disabled">';
-					$cancel .= '<div class="util-item-label">'.s("Annuler la date").'</div>';
-					$cancel .= '<div class="util-item-more">'.$reason.'</div>';
-				$cancel .= '</a>';
+		$items = $update;
 
-			}
+		$items .= '<div class="dropdown-divider"></div>';
+		$items .= '<div class="dropdown-subtitle">'.\Asset::icon('exclamation-circle').'  '.s("Zone de danger").'  '.\Asset::icon('exclamation-circle').'</div>';
+		$items .= $cancel;
 
-			$h .= $update;
+		// La même règle que `DateLib::delete()`, qui refuse une date qui a eu des inscrits.
+		$enrolled = self::countEnrolled($eDate);
 
-			$h .= '<div class="dropdown-divider"></div>';
-			$h .= '<div class="dropdown-subtitle">'.\Asset::icon('exclamation-circle').'  '.s("Zone de danger").'  '.\Asset::icon('exclamation-circle').'</div>';
-			$h .= $cancel;
+		if($enrolled > 0) {
 
-			// La même règle que `DateLib::delete()`, qui refuse une date qui a eu des inscrits.
-			$enrolled = self::countEnrolled($eDate);
+			$items .= '<a class="dropdown-item disabled">';
+				$items .= '<div class="util-item-label">'.s("Supprimer la date").'</div>';
+				$items .= '<div class="util-item-more">'.($eDate['canceled'] > 0
+					? p("{value} inscription, annulées comprises", "{value} inscriptions, annulées comprises", $enrolled)
+					: p("{value} inscription sur cette date", "{value} inscriptions sur cette date", $enrolled)
+				).'</div>';
+			$items .= '</a>';
 
-			if($enrolled > 0) {
+		} else {
+			$items .= '<a data-ajax="/learning/date:doDelete" post-id="'.$eDate['id'].'" class="dropdown-item" data-confirm="'.s("Supprimer cette date de la formation ?").'" data-waiter>'.s("Supprimer la date").'</a>';
+		}
 
-				$h .= '<a class="dropdown-item disabled">';
-					$h .= '<div class="util-item-label">'.s("Supprimer la date").'</div>';
-					$h .= '<div class="util-item-more">'.($eDate['canceled'] > 0
-						? p("{value} inscription, annulées comprises", "{value} inscriptions, annulées comprises", $enrolled)
-						: p("{value} inscription sur cette date", "{value} inscriptions sur cette date", $enrolled)
-					).'</div>';
-				$h .= '</a>';
-
-			} else {
-				$h .= '<a data-ajax="/learning/date:doDelete" post-id="'.$eDate['id'].'" class="dropdown-item" data-confirm="'.s("Supprimer cette date de la formation ?").'" data-waiter>'.s("Supprimer la date").'</a>';
-			}
-
-		$h .= '</div>';
-
-		return $h;
+		return \main\DesignUi::getGear($items, self::getDays($eDate));
 
 	}
 

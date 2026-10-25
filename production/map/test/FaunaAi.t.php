@@ -727,7 +727,7 @@ class FaunaAiTest extends \Test {
 
 			const insects = (zoom, height = 800) => {
 				const view = lens({ zoom, intro: null, height });
-				return { view, insects: new MapSceneInsects({ THREE, addons: { mergeGeometries: pieces => pieces[0] }, crops: { blooms }, geometry: { height: () => 0 }, scale: 1.3, canvas: view.canvas, parent: new THREE.Group(), gradientMap: null }) };
+				return { view, insects: new MapSceneInsects({ THREE, addons: { mergeGeometries: pieces => pieces[0] }, crops: { blooms }, meadow, geometry: { height: () => 0 }, scale: 1.3, canvas: view.canvas, covers: () => [], parent: new THREE.Group(), gradientMap: null }) };
 			};
 
 			const I = MapSceneInsects;
@@ -756,7 +756,7 @@ class FaunaAiTest extends \Test {
 				return size();
 			};
 
-			const sizes = [at(10), at(5), at(2.5), at(2), at(6.25), at(2.1), at(2.05), at(10)];
+			const sizes = [at(15), at(5), at(2.5), at(.7), at(6.25), at(.79), at(.77), at(15)];
 
 			// Le canevas perd la moitié de sa hauteur sans que le zoom bouge : 20 pixels par mètre au lieu de 40
 			height = 400;
@@ -765,22 +765,22 @@ class FaunaAiTest extends \Test {
 			const resized = size();
 
 			// Une fenêtre ouverte grande donne la même taille que celle-ci, ouverte grande puis réduite
-			const small = insects(10, 400);
+			const small = insects(15, 400);
 			small.insects.frame(1, "2026-06-01", 20, small.view.camera, small.view.controls);
 
 			emit({ drawn, sizes, reads, resized, small: Math.round(I.BUTTERFLY_SPAN * small.insects.butterflyScale * 100) / 100 });
 		');
 
 		$this->assertEquals([13 => FALSE, 14 => TRUE, 44 => TRUE, 45 => FALSE], $result['drawn'], 'les papillons volent de la semaine 14 à la semaine 44');
-		$this->assertEquals([.39, 15.6, TRUE], $result['sizes'][0], 'à 40 pixels par mètre, un papillon a son envergure naturelle, 0,39 m, soit 3 fois le 1,3 que ce banc donne aux paysans');
-		$this->assertEquals([.6, 12, TRUE], $result['sizes'][1], 'à 20 pixels par mètre il grossit pour tenir 12 pixels, ce qui le porte à son plafond de 0,6 m');
-		$this->assertEquals([.6, 6, TRUE], $result['sizes'][2], 'à 10 pixels par mètre il reste au plafond et fait 6 pixels');
-		$this->assertEquals([0, 0, FALSE], $result['sizes'][3], 'à 8 pixels par mètre il ferait 4,8 pixels, sous ses 5 pixels : il ne se dessine pas');
-		$this->assertEquals([.39, 15.6, TRUE], $result['sizes'][7], 'la vue revenue, il reprend sa taille naturelle');
-		$this->assertEquals([.48, 12, TRUE], $result['sizes'][4], 'à 25 pixels par mètre il fait 0,48 m, entre sa taille naturelle et son plafond, et tient 12 pixels');
-		$this->assertEquals([[.6, 5, TRUE], [0, 0, FALSE]], [$result['sizes'][5], $result['sizes'][6]], 'au bord du seuil, il se dessine encore à 5,04 pixels et plus à 4,92');
+		$this->assertEquals([.39, 23.4, TRUE], $result['sizes'][0], 'à 60 pixels par mètre, un papillon a son envergure naturelle, 0,39 m, soit 3 fois le 1,3 que ce banc donne aux paysans');
+		$this->assertEquals([1.1, 22, TRUE], $result['sizes'][1], 'à 20 pixels par mètre il grossit pour tenir 22 pixels, soit 1,1 m');
+		$this->assertEquals([1.6, 16, TRUE], $result['sizes'][2], 'à 10 pixels par mètre il s\'arrête à son plafond de 1,6 m et fait 16 pixels');
+		$this->assertEquals([0, 0, FALSE], $result['sizes'][3], 'à 2,8 pixels par mètre il ferait 4,5 pixels, sous ses 5 pixels : il ne se dessine pas');
+		$this->assertEquals([.39, 23.4, TRUE], $result['sizes'][7], 'la vue revenue, il reprend sa taille naturelle');
+		$this->assertEquals([.88, 22, TRUE], $result['sizes'][4], 'à 25 pixels par mètre il fait 0,88 m, entre sa taille naturelle et son plafond, et tient 22 pixels');
+		$this->assertEquals([[1.6, 5.1, TRUE], [0, 0, FALSE]], [$result['sizes'][5], $result['sizes'][6]], 'au bord du seuil, il se dessine encore à 5,06 pixels et plus à 4,93');
 		$this->assertEquals(9, $result['reads'], 'la hauteur du canevas se lit une fois par changement de zoom ou de taille, jamais par image : 241 images jouées sur neuf paliers, redimensionnement compris');
-		$this->assertEquals([[.6, 12, TRUE], .6], [$result['resized'], $result['small']], 'le canevas réduit de moitié sans que le zoom bouge, le papillon prend la taille d\'une scène ouverte à cette hauteur');
+		$this->assertEquals([[.73, 22, TRUE], .73], [$result['resized'], $result['small']], 'le canevas réduit de moitié sans que le zoom bouge, le papillon prend la taille d\'une scène ouverte à cette hauteur');
 
 	}
 
@@ -797,7 +797,7 @@ class FaunaAiTest extends \Test {
 
 				const view = lens({ zoom, intro: null });
 				const parent = new THREE.Group();
-				const insects = new MapSceneInsects({ THREE, addons: { mergeGeometries: pieces => { fused.push(points(pieces)); melted.add(pieces[0]); return pieces[0]; } }, crops: { blooms }, geometry: { height: () => 0 }, scale: 1.3, canvas: view.canvas, parent, gradientMap: null });
+				const insects = new MapSceneInsects({ THREE, addons: { mergeGeometries: pieces => { fused.push(points(pieces)); melted.add(pieces[0]); return pieces[0]; } }, crops: { blooms }, meadow, geometry: { height: () => 0 }, scale: 1.3, canvas: view.canvas, covers: () => [], parent, gradientMap: null });
 
 				for(let i = 0; i < 30; i++) {
 					insects.frame(i * 100, "2026-06-01", 26, view.camera, view.controls);
@@ -830,17 +830,17 @@ class FaunaAiTest extends \Test {
 		$this->assertEquals($result['pieces'], $result['fused'], 'et ce sont ces pièces, sommet pour sommet, que la scène fond');
 
 		foreach($result['shapes'] as $zoom => $shapes) {
-			$this->assertEquals([3, 0, 0], $shapes, 'au zoom '.$zoom.', trois maillages en tout sous la scène, enfants compris, tous des pièces du papillon, et chacun porte la géométrie fondue de sa pièce');
+			$this->assertEquals([4, 1, 0], $shapes, 'au zoom '.$zoom.', quatre maillages en tout sous la scène, enfants compris : les trois pièces du papillon, chacune avec la géométrie fondue de sa pièce, et les abeilles');
 		}
 
 	}
 
-	public function testButterfliesAreAThirdFewer(): void {
+	public function testTwelveButterfliesFly(): void {
 
 		$result = $this->run('
 			const blooms = new Map(Array.from({ length: 40 }, (_, i) => [i + 1, { date: "2026-06-01", a: { x: -3, n: i - 20 }, b: { x: 3, n: i - 20 }, top: .5, height: .4, greenhouse: false, perches: [] }]));
 			const view = lens({ zoom: 10, intro: null });
-			const insects = new MapSceneInsects({ THREE, addons: { mergeGeometries: pieces => pieces[0] }, crops: { blooms }, geometry: { height: () => 0 }, scale: 1.3, canvas: view.canvas, parent: new THREE.Group(), gradientMap: null });
+			const insects = new MapSceneInsects({ THREE, addons: { mergeGeometries: pieces => pieces[0] }, crops: { blooms }, meadow, geometry: { height: () => 0 }, scale: 1.3, canvas: view.canvas, covers: () => [], parent: new THREE.Group(), gradientMap: null });
 			const drawn = {};
 
 			for(const week of [14, 26, 44]) {
@@ -852,16 +852,135 @@ class FaunaAiTest extends \Test {
 				drawn[week] = most;
 			}
 
-			// Le tirage de la scène, semé de la même graine sur toute structure
-			const random = MapSceneCrops.random(41)();
-			emit({ count: insects.count, before: 6 + Math.floor(random * 5), drawn });
+			emit({ count: insects.count, drawn });
 		');
 
-		$this->assertEquals([10, 7], [$result['before'], $result['count']], 'une scène portait 10 papillons, elle en porte 7 : un tiers de moins');
+		$this->assertEquals(12, $result['count'], 'une scène porte douze papillons, sur toute structure');
 
 		foreach($result['drawn'] as $week => $drawn) {
 			$this->assertEquals($result['count'], $drawn, 'en semaine '.$week.', au-dessus de quarante planches en culture, ils volent tous et jamais davantage');
 		}
+
+	}
+
+	public function testInsectsSpreadOverTheFrame(): void {
+
+		$result = $this->run('
+			// Quarante planches en culture et un pré fleuri d\'un bout à l\'autre du cadre, à 40 pixels par mètre, dont les fleurs se
+			// lisent comme la scène les lit : rien ne retient les papillons au centre de la vue
+			const blooms = new Map(Array.from({ length: 40 }, (_, i) => [i + 1, { date: "2026-06-01", a: { x: -3, n: i - 20 }, b: { x: 3, n: i - 20 }, top: .5, height: .4, greenhouse: false, perches: [] }]));
+			const flowers = Array.from({ length: 60 * 60 }, (_, i) => ({ x: (i % 60) - 30, n: Math.floor(i / 60) - 30, y: .3 }));
+			const flowery = Object.assign(Object.create(MapSceneMeadow.prototype), { flowers, footprints: [] });
+			const view = lens({ zoom: 10, intro: null });
+			const insects = new MapSceneInsects({ THREE, addons: { mergeGeometries: pieces => pieces[0] }, crops: { blooms }, meadow: flowery, geometry: { height: () => 0 }, scale: 1.3, canvas: view.canvas, covers: () => [], parent: new THREE.Group(), gradientMap: null });
+
+			const screen = (p, camera = view.camera) => { const at = new THREE.Vector3(p.x, p.y, -p.n).project(camera); return [(at.x + 1) * 600, (1 - at.y) * 400]; };
+
+			// Le plus grand groupe : autour de chaque papillon, ceux à moins de 90 pixels à l\'écran, lui compris
+			const group = points => Math.max(0, ...points.map(p => points.filter(q => Math.hypot(p[0] - q[0], p[1] - q[1]) < 90).length));
+
+			// Les quarts du canevas où vole au moins un papillon, et ceux qui volent à plus de 300 pixels de son centre
+			const corners = points => new Set(points.map(([x, y]) => (x < 600 ? "g" : "d") + (y < 400 ? "h" : "b"))).size;
+			const aside = points => points.filter(([x, y]) => Math.hypot(x - 600, y - 400) > 300).length;
+
+			let largest = 0;
+			let fewestCorners = 4;
+			let fewestAside = Infinity;
+			let largestBees = 0;
+			let flown = 0;
+
+			for(let i = 0; i < 300; i++) {
+
+				insects.frame(2600000 + i * 100, "2026-06-01", 26, view.camera, view.controls);
+
+				const points = insects.butterflies.filter(b => b.visible && b.anchor !== null).map(b => screen({ x: b.at.x, n: b.at.n, y: b.y }));
+
+				if(points.length === insects.count) {
+					flown++;
+					largest = Math.max(largest, group(points));
+					fewestCorners = Math.min(fewestCorners, corners(points));
+					fewestAside = Math.min(fewestAside, aside(points));
+				}
+
+				// Une abeille file d\'une fleur à l\'autre en ligne droite et croise les autres en passant : le groupe se compte sur les fleurs
+				largestBees = Math.max(largestBees, group(insects.bees.filter(b => b.visible && b.goal !== null).map(b => screen(b.goal))));
+
+			}
+
+			// À 16 pixels par mètre, le cadre ne montre qu\'une courte planche et trois fleurs : le pré prend les papillons que la planche
+			// grouperait, et les abeilles qui n\'ont pas de fleur attendent
+			const close = lens({ zoom: 4, intro: null });
+			const bed = new Map([[1, { date: "2026-06-01", a: { x: -1, n: 0 }, b: { x: 1, n: 0 }, top: .5, height: .4, greenhouse: false, perches: [] }]]);
+			const three = Object.assign(Object.create(MapSceneMeadow.prototype), { flowers: [{ x: 2, n: 1, y: .3 }, { x: -2, n: -1, y: .3 }, { x: 0, n: 2, y: .3 }], footprints: [] });
+			const scarce = new MapSceneInsects({ THREE, addons: { mergeGeometries: pieces => pieces[0] }, crops: { blooms: bed }, meadow: three, geometry: { height: () => 0 }, scale: 1.3, canvas: close.canvas, covers: () => [], parent: new THREE.Group(), gradientMap: null });
+			let largestClose = 0;
+			let largestCloseBees = 0;
+			let flownClose = 0;
+
+			for(let i = 0; i < 300; i++) {
+
+				scarce.frame(2600000 + i * 100, "2026-06-01", 26, close.camera, close.controls);
+
+				const points = scarce.butterflies.filter(b => b.visible && b.anchor !== null).map(b => screen({ x: b.at.x, n: b.at.n, y: b.y }, close.camera));
+				flownClose = Math.max(flownClose, points.length);
+				largestClose = Math.max(largestClose, group(points));
+				largestCloseBees = Math.max(largestCloseBees, group(scarce.bees.filter(b => b.visible && b.goal !== null).map(b => screen(b.goal, close.camera))));
+
+			}
+
+			emit({ largest, fewestCorners, fewestAside, largestBees, flown, largestClose, largestCloseBees, flownClose });
+		');
+
+		$this->assertEquals(289, $result['flown'], 'les douze papillons sont posés dès la douzième image et le restent pendant les 30 s');
+		$this->assertTrue($result['largest'] <= 3, 'à aucune image plus de trois papillons ne volent à moins de 90 pixels l\'un de l\'autre : '.$result['largest']);
+		$this->assertTrue($result['fewestCorners'] >= 3, 'à chaque image, des papillons volent dans trois quarts du canevas au moins : '.$result['fewestCorners']);
+		$this->assertTrue($result['largestBees'] <= 3, 'les abeilles se répartissent de même : à aucune image plus de trois ne butinent des fleurs à moins de 90 pixels l\'une de l\'autre : '.$result['largestBees']);
+		$this->assertEquals(12, $result['flownClose'], 'sur un cadre qui n\'offre qu\'une courte planche et trois fleurs, les douze papillons volent');
+		$this->assertTrue($result['largestClose'] <= 3, 'et pas plus de trois ensemble, le pré prenant ceux que la planche grouperait : '.$result['largestClose']);
+		$this->assertTrue($result['largestCloseBees'] <= 2, 'les abeilles se posent à deux au plus près de ces trois fleurs, les autres attendent : '.$result['largestCloseBees']);
+		$this->assertTrue($result['fewestAside'] >= 3, 'à chaque image, trois papillons au moins volent à plus de 300 pixels du centre du canevas : '.$result['fewestAside']);
+
+	}
+
+	public function testGrassStaysInFrameOnSlopeAndOffDecor(): void {
+
+		$result = $this->run('
+			// Un pré en forte pente, à 16 pixels par mètre, avec un bâtiment de 10 m sur 10 au centre du cadre, et une seule courte
+			// planche : les papillons vont surtout à l\'herbe
+			const view = lens({ zoom: 4, intro: null });
+			const box = { x0: -5, x1: 5, n0: -5, n1: 5 };
+			const building = { box, pieces: [{ box, rectangle: { origin: { x: -5, n: -5 }, w: { x: 1, n: 0 }, u: { x: 0, n: 1 }, width: 10, length: 10 } }] };
+			const roofed = Object.assign(Object.create(MapSceneMeadow.prototype), { flowers: [], footprints: [building] });
+			const bed = new Map([[1, { date: "2026-06-01", a: { x: 20, n: 20 }, b: { x: 22, n: 20 }, top: .5, height: .4, greenhouse: false, perches: [] }]]);
+			const insects = new MapSceneInsects({ THREE, addons: { mergeGeometries: pieces => pieces[0] }, crops: { blooms: bed }, meadow: roofed, geometry: { height: (x, n) => n * .6 }, scale: 1.3, canvas: view.canvas, covers: () => [], parent: new THREE.Group(), gradientMap: null });
+
+			const inside = p => { const at = new THREE.Vector3(p.x, p.y, -p.n).project(view.camera); return Math.abs(at.x) <= 1 && Math.abs(at.y) <= 1; };
+			const under = p => p.x >= -5 && p.x <= 5 && p.n >= -5 && p.n <= 5;
+
+			let drawn = 0;
+			let outside = 0;
+			let covered = 0;
+			let goalUnder = 0;
+
+			for(let i = 0; i < 300; i++) {
+
+				insects.frame(2600000 + i * 100, "2026-06-01", 26, view.camera, view.controls);
+
+				const points = insects.grass(24);
+				drawn += points.length;
+				outside += points.filter(p => inside(p) === false).length;
+				covered += points.filter(under).length;
+				goalUnder = Math.max(goalUnder, insects.butterflies.filter(b => b.anchor !== null && under(b.goal)).length);
+
+			}
+
+			emit({ drawn, outside, covered, goalUnder });
+		');
+
+		$this->assertTrue($result['drawn'] > 300 * 24 / 2, 'la pente et le bâtiment laissent au pré plus de la moitié de ses points : '.$result['drawn']);
+		$this->assertEquals(0, $result['outside'], 'en pente, aucun point d\'herbe ne sort du cadre');
+		$this->assertEquals(0, $result['covered'], 'aucun point d\'herbe sous le bâtiment');
+		$this->assertEquals(0, $result['goalUnder'], 'aucun papillon ne se pose dans le bâtiment');
 
 	}
 
@@ -954,8 +1073,9 @@ class FaunaAiTest extends \Test {
 			emit({ kits: Object.keys(MapSceneDecor.KITS).filter(kit => MapSceneDecor.KITS[kit].family === "tree"), trees: MapSceneFauna.TREES, lines: MapSceneFauna.LINES });
 		');
 
-		// Ni arbre ni haie : rien ne s'y pose et rien ne les longe
-		$low = ['buissons', 'souche', 'roncier', 'fougeres', 'roseaux', 'rocher', 'pierrier'];
+		// Ni arbre ni haie : rien ne s'y pose et rien ne les longe. Un élément de Nature importé en est, faute de savoir si c'est un
+		// arbre ou un rocher
+		$low = ['buissons', 'souche', 'roncier', 'fougeres', 'roseaux', 'rocher', 'pierrier', 'objet-nature'];
 
 		$sorted = array_merge($result['trees'], $result['lines'], $low);
 		sort($sorted);
@@ -1117,12 +1237,15 @@ class FaunaAiTest extends \Test {
 
 				const source = ["base/scene/static/js/plan.js", "base/scene/static/js/crew.js", "production/series/static/js/seriesSheet.js", "production/map/static/js/scene.js", "production/map/static/js/sceneLayer.js", "production/map/static/js/sceneDecor.js", "production/map/static/js/sceneFauna.js", "production/map/static/js/sceneHedgehog.js"].map(file => readFileSync(directory + "/" + file, "utf8")).join("\n");
 				const context = vm.createContext({ window: {}, document: { addEventListener: () => {} }, console });
-				const { MapScene, MapSceneCrops, MapSceneFauna, MapSceneInsects, MapSceneDecor } = vm.runInContext(source + "\n;({ MapScene, MapSceneCrops, MapSceneFauna, MapSceneInsects, MapSceneDecor })", context);
+				const { MapScene, MapSceneCrops, MapSceneFauna, MapSceneInsects, MapSceneMeadow, MapSceneDecor } = vm.runInContext(source + "\n;({ MapScene, MapSceneCrops, MapSceneFauna, MapSceneInsects, MapSceneMeadow, MapSceneDecor })", context);
 
 				// Les cinq modèles tels que la cuisson les indexe : l’emprise, un pivot par os, et les pièces dans l’ordre de la fusion,
 				// un os pouvant en porter deux qui ne se suivent pas
 				const bird = d => ({ d, pivots: { corps: [0, .07, 0], tete: [.05, .09, 0], queue: [-.06, .06, 0], "aile-g": [.03, .09, -.02], "aile-d": [.03, .09, .02] }, parts: [{ name: "tete", count: 6 }, { name: "queue", count: 3 }, { name: "aile-g", count: 3 }, { name: "aile-d", count: 3 }, { name: "corps", count: 9 }, { name: "tete", count: 3 }] });
 				const models = { merle: bird(.268), "merle.vol": bird(.333), "rouge-gorge": bird(.138), "rouge-gorge.vol": bird(.25), herisson: { d: .277, pivots: { corps: [0, .06, 0], tete: [.045, .04, 0] }, parts: [{ name: "corps", count: 12 }, { name: "tete", count: 6 }] } };
+
+				// Le pré des papillons sans aucune fleur : ils ne visent que les places en culture
+				const meadow = { flowersInView: () => [], footprints: [] };
 
 				// La caméra de la scène : orthographique, de trois quarts, sur un canevas de 800 px de haut et de 1 200 de large
 				const lens = ({ zoom = 4, intro = null, height = 800 } = {}) => {

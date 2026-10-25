@@ -17,13 +17,14 @@ class DecorEquipmentSizeAiTest extends \Test {
 	const KITS = ['panneau', 'compost', 'caisses', 'tracteur', 'utilitaire', 'pick-up', 'remorque'];
 
 	/**
-	 * Les sept kits du matériel, et eux seuls dans leur famille, ouvrent l'outil de taille entre 0,5 et 2.
+	 * Les sept kits du matériel, et eux seuls dans leur famille, ouvrent l'outil de taille entre 0,5 et 2. Le kit d'un élément importé
+	 * (`object`) n'est pas du catalogue : il prend les bornes de sa rangée, celles-ci.
 	 */
 	public function testEachEquipmentKitOpensTheSizeTool(): void {
 
 		$result = $this->run('
-			const kits = Object.entries(MapSceneDecor.KITS).filter(([, def]) => def.family === "other");
-			emit({ kits: kits.map(([kit]) => kit).sort(), sizes: Object.fromEntries(kits.map(([kit, def]) => [kit, def.size ?? null])) });
+			const kits = Object.entries(MapSceneDecor.KITS).filter(([, def]) => def.family === "other" && def.object !== true);
+			emit({ kits: kits.map(([kit]) => kit).sort(), sizes: Object.fromEntries(kits.map(([kit, def]) => [kit, def.size ?? null])), object: MapSceneDecor.KITS["objet-materiel"].size ?? null });
 		');
 
 		$expected = self::KITS;
@@ -34,6 +35,8 @@ class DecorEquipmentSizeAiTest extends \Test {
 		foreach(self::KITS as $kit) {
 			$this->assertEquals([0.5, 2], $result['sizes'][$kit] ?? NULL, $kit." ouvre l'outil de taille entre 0,5 et 2");
 		}
+
+		$this->assertEquals([0.5, 2], $result['object'] ?? NULL, "un élément de Matériel importé ouvre l'outil de taille de sa rangée");
 
 	}
 

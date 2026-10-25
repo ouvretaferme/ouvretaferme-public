@@ -48,13 +48,11 @@ class UserAvatarUi {
 
 		// Lime.Panel.paint() peint le pied après le corps, et dialogOpen ne joue pas de onrender : l'éditeur, qui a
 		// besoin des deux, démarre du pied
-		$footer = '<div class="flex-justify-space-between" onrender="UserAvatarEditor.start(this.closest(\'form\'))">';
+		$footer = '<div class="util-action" onrender="UserAvatarEditor.start(this.closest(\'form\'))">';
 			$footer .= $form->submit(s("Enregistrer mon avatar"), [
-				'data-confirm' => $eUserAvatarUpload->exists() ? $this->getSaveConfirm() : NULL,
+				'data-confirm' => $eUserAvatarUpload->exists() ? $this->getSaveConfirm($eUserAvatar) : NULL,
 			]);
-			if($eUserAvatar->exists()) {
-				$footer .= '<a data-ajax="/user/avatar:doDelete" class="btn btn-outline-primary user-avatar-delete" data-confirm="'.$this->getDeleteConfirm($eUserAvatar).'">'.s("Supprimer mon avatar").'</a>';
-			}
+			$footer .= $this->getDeleteButton($eUserAvatar);
 		$footer .= '</div>';
 
 		// Pas de data-ajax-form : l'image de l'avatar se rend dans la page au moment d'enregistrer, et c'est
@@ -89,8 +87,28 @@ class UserAvatarUi {
 	}
 
 	// Enregistrer une composition retire le modèle en place
-	public function getSaveConfirm(): string {
-		return s("Revenir à votre avatar composé ? Votre modèle 3D sera retiré.");
+	public function getSaveConfirm(UserAvatar $eUserAvatar): string {
+
+		if($eUserAvatar['composed']) {
+			return s("Revenir à votre avatar composé ? Votre modèle 3D sera retiré.");
+		} else {
+			return s("Enregistrer cet avatar ? Votre modèle 3D sera retiré.");
+		}
+
+	}
+
+	/**
+	 * Toujours au pied, masquée tant qu'il n'y a pas d'avatar : un premier import crée l'avatar sans repeindre le pied, que
+	 * l'éditeur a démarré (`avatarUpload.v.php`), et la suppression n'a alors qu'à se montrer.
+	 */
+	public function getDeleteButton(UserAvatar $eUserAvatar): string {
+
+		if($eUserAvatar->exists()) {
+			return '<a data-ajax="/user/avatar:doDelete" class="btn btn-outline-primary user-avatar-delete" data-confirm="'.$this->getDeleteConfirm($eUserAvatar).'">'.s("Supprimer mon avatar").'</a>';
+		} else {
+			return '<a data-ajax="/user/avatar:doDelete" class="btn btn-outline-primary user-avatar-delete hide">'.s("Supprimer mon avatar").'</a>';
+		}
+
 	}
 
 	public function getDeleteConfirm(UserAvatar $eUserAvatar): string {
@@ -146,33 +164,23 @@ class UserAvatarUi {
 	}
 
 	/**
-	 * L'onglet du modèle 3D. Un modèle se téléverse à la place d'une composition enregistrée, qui reprend sa place s'il est
-	 * supprimé : sans elle, l'onglet ne fait que ramener à la composition. Un modèle en place se montre même envoi fermé, pour
-	 * qu'on puisse toujours le supprimer, et reste au-dessus du dépôt pendant qu'un autre fichier se vérifie : sa carte porte
-	 * l'interrupteur de la photo de profil, appliqué tout de suite à ce modèle-là.
+	 * L'onglet du modèle 3D, ouvert à tous, avec ou sans composition enregistrée. Supprimé, le modèle laisse la place à la
+	 * composition, ou à l'avatar par défaut des scènes pour qui n'en a pas. Un modèle en place se montre même envoi fermé,
+	 * pour qu'on puisse toujours le supprimer, et reste au-dessus du dépôt pendant qu'un autre fichier se vérifie : sa carte
+	 * porte l'interrupteur de la photo de profil, appliqué tout de suite à ce modèle-là.
 	 */
 	public function getUpload(\util\FormUi $form, UserAvatar $eUserAvatar): string {
-
-		if($eUserAvatar->exists() === FALSE) {
-
-			$h = '<div class="util-block-info">';
-				$h .= '<p>'.s("Créez d'abord votre avatar dans « Composer en ligne ». Il reviendra si vous supprimez votre modèle.").'</p>';
-				$h .= '<p class="mb-0">'.new \scene\UploadUi()->getComposeLink('UserAvatarEditor', s("Composer mon avatar")).'</p>';
-			$h .= '</div>';
-
-			return $h;
-
-		}
 
 		$h = '';
 
 		if($eUserAvatar['eUserAvatarUpload']->exists()) {
 
-			// L'éditeur rend l'image de la composition avant de poster : elle reprend la place de celle du modèle
+			// Le modèle laisse la place à la composition, dont l'éditeur rend l'image avant de poster quand elle remplace
+			// la photo, ou à rien : l'avatar part avec lui, et la photo revient sans image à rendre
 			$h .= '<div class="util-card mb-1" data-avatar-upload-placed="true">';
 				$h .= '<p class="mb-1">'.\Asset::icon('box').' '.s("Modèle 3D en place depuis le {value}", \util\DateUi::numeric($eUserAvatar['eUserAvatarUpload']['createdAt'], \util\DateUi::DATE)).'</p>';
 				$h .= $this->getPhotoSwitch($eUserAvatar);
-				$h .= '<a class="btn btn-outline-primary mt-1" data-avatar-upload-clear="true" data-waiter="'.s("Suppression...").'" data-confirm="'.s("Supprimer ce modèle 3D ? Vous retrouverez l'avatar de « Composer en ligne ».").'">'.\Asset::icon('trash').' '.s("Supprimer ce modèle").'</a>';
+				$h .= '<a class="btn btn-outline-primary mt-1" data-avatar-upload-clear="'.($eUserAvatar['composed'] ? 'composition' : 'default').'" data-waiter="'.s("Suppression...").'" data-confirm="'.s("Supprimer ce modèle 3D ?").'">'.\Asset::icon('trash').' '.s("Supprimer ce modèle").'</a>';
 			$h .= '</div>';
 
 		}
@@ -254,7 +262,7 @@ class UserAvatarUi {
 				'chooseReplace' => s("Choisir un autre fichier"),
 				'tooHeavy' => AlertUi::getAvatarUploadWeight(\util\TextUi::size('{size}'), \util\TextUi::size($rules['maxBytes'])),
 				'commitment' => s("Ce modèle me représente ou ne représente personne, il est habillé, ne reprend aucune marque et respecte la réglementation en vigueur."),
-				'add' => $placed ? s("Remplacer mon avatar") : s("En faire mon avatar"),
+				'add' => s("Choisir comme avatar"),
 				'adding' => s("Mise en place..."),
 			],
 			$uploadUi->getSkill(

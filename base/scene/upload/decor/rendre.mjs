@@ -1,5 +1,8 @@
-// Rend un bâtiment .glb comme l'éditeur du décor du site l'affichera, sans navigateur ni Blender :
-//   node rendre.mjs <modele.glb> <dossier des images>
+// Rend un bâtiment .glb, ou un élément d'une rangée Eau, Nature ou Matériel, comme l'éditeur du décor du site l'affichera,
+// sans navigateur ni Blender :
+//   node rendre.mjs [--famille=<famille>] <modele.glb> <dossier des images>
+// La famille est une clé de `families` dans `decor.json` (`building` par défaut, `water`, `tree`, `other`), dont le modèle
+// suit les règles.
 // Le modèle passe d'abord par le validateur du site, qui le convertit : les images montrent donc ce qui partira, avec les
 // normales que le site calcule, et non celles du fichier. Un modèle refusé n'est pas rendu, le refus est imprimé.
 // Imprime d'abord une ligne par pièce du modèle converti (son nom, sa couleur, ses triangles, et la clé de la palette du site
@@ -12,10 +15,12 @@ import { join } from 'node:path';
 
 const here = name => new URL(name, import.meta.url);
 
-const [input, output] = process.argv.slice(2);
+const options = process.argv.slice(2).filter(arg => arg.startsWith('--famille='));
+const [input, output] = process.argv.slice(2).filter(arg => arg.startsWith('--') === false);
+const family = options.at(-1)?.slice('--famille='.length) ?? 'building';
 
 if(output === undefined) {
-	process.stderr.write('node rendre.mjs <modele.glb> <dossier des images>\n');
+	process.stderr.write('node rendre.mjs [--famille=<famille>] <modele.glb> <dossier des images>\n');
 	process.exit(2);
 }
 
@@ -23,7 +28,7 @@ const THREE = await import(here('lib/three.mjs'));
 const { sceneBuildModel } = await import(here('lib/model.mjs'));
 const { sceneUploadRules, sceneUploadBake } = await import(here('upload.mjs'));
 const { rendre, png, empreinte } = await import(here('rendu.mjs'));
-const rules = sceneUploadRules(JSON.parse(readFileSync(here('decor.json'), 'utf8')), 'building');
+const rules = sceneUploadRules(JSON.parse(readFileSync(here('decor.json'), 'utf8')), family);
 const choices = JSON.parse(readFileSync(here('lib/choices.json'), 'utf8'));
 
 // La palette du site, lue dans le cadre même, qui n'exporte que sa fabrique : une clé par ligne `nom: '#rrggbb'` du bloc
@@ -55,9 +60,10 @@ try {
 }
 
 const bytes = Buffer.from(baked.buffer, 'base64');
-const model = sceneBuildModel(THREE, { index: baked.index, buffer: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) }, 'building');
+const model = sceneBuildModel(THREE, { index: baked.index, buffer: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) }, family);
 
-// Le corps du bâtiment ne porte pas de nom dans le modèle converti, comme dans ceux du site
+// Le corps d'un bâtiment ou d'un élément ne porte pas de nom dans le modèle converti, comme dans ceux du site. Un élément de
+// Nature n'a pas de corps : chacune de ses pièces garde son nom
 for(const part of model.parts) {
 	const color = '#' + String(part.color).replace('#', '');
 	process.stdout.write(`${part.name ?? rules.body} ${color} ${part.geometry.attributes.position.count / 3} triangles (${palette.get(color) ?? 'hors palette'})\n`);

@@ -3,8 +3,9 @@ namespace entry;
 
 /**
  * « désherbage carotte 2 h » : le temps de l'utilisateur connecté sur une intervention de la semaine, sans
- * récolte (lot 2b). L'objet est l'action, suivie de l'espèce quand l'intervention en a une (« vente directe
- * 1 h » n'en a pas) : la phrase se lit sans verbe, comme la récolte, et `temps` reste admis en tête.
+ * récolte (lot 2b). L'objet est l'action, suivie de l'espèce quand l'intervention en a une (« temps vente
+ * directe 1 h » n'en a pas). Une action de Culture se lit sans verbe, comme la récolte, et `temps` reste admis
+ * en tête ; hors de Culture, le verbe est dû (`isImplicit()`).
  *
  * Les interventions proposées sont celles que la fiche de temps montre sur la semaine du jour dit
  * (`TaskLib::getForWeekExport()`) : à faire cette semaine, faites cette semaine, ou portant déjà du temps
@@ -61,12 +62,17 @@ class TimeIntentionLib extends IntentionLib {
 	 * lit en temps, que `resolve()` refuse quand la semaine n'en a pas, au lieu que la récolte de laitue l'emporte.
 	 * La liste ne la propose pas d'emblée (`listed`, `getListed()`) : la frappe la trouve par le début de son nom
 	 * (`typed`, `getTyped()`, HN-B11) quand la semaine n'en a aucune intervention, celles qu'elle a se proposant
-	 * déjà, et qu'elle est de culture : choisie, elle demande l'espèce où l'ajouter au planning. `addable` dit
+	 * déjà, et qu'elle a une catégorie. De culture, choisie, elle demande l'espèce où l'ajouter au planning ;
+	 * d'une autre catégorie, elle ne demande rien et s'ajoute sans espèce ni série (HN-B14). `asksPlant` dit
 	 * qu'elle est de culture, interventions de la semaine ou non : un début d'espèce tapé après elle garde la
 	 * question de l'espèce, une autre espèce que celles de la semaine pouvant toujours s'ajouter au planning.
 	 *
 	 * Une action nommée seule, proposée ou non, porte aussi dans `cTaskAction` toutes les interventions de
 	 * l'action, où `resolve()` cherche l'espèce qui la suit.
+	 *
+	 * Hors de Culture, une action ne se lit que derrière son verbe (`implicit`, `isImplicit()`) : « temps rh »,
+	 * « intervention rh », jamais « rh » seul. Son nom est libre et croise ceux de tout ce que le champ lit sans
+	 * verbe, espèces, clients ou produits (25/10).
 	 */
 	public static function getObjects(\structure\Structure $eStructure, array $reading, \Collection $cElementRead = new \Collection()): \Collection {
 
@@ -98,7 +104,7 @@ class TimeIntentionLib extends IntentionLib {
 		}
 
 		$cAction = \work\ActionLib::getByStructure($eStructure);
-		$eCategory = \work\CategoryLib::getByStructure($eStructure, fqn: CATEGORIE_CULTURE);
+		$cCategory = \work\CategoryLib::getByStructure($eStructure, index: 'id');
 		$eActionHarvest = $cAction->find(fn(\work\Action $eAction) => $eAction['fqn'] === ACTION_RECOLTE, limit: 1);
 
 		$week = toWeek($reading['date']);
@@ -123,7 +129,14 @@ class TimeIntentionLib extends IntentionLib {
 					'cTask' => new \Collection(),
 					'listed' => TRUE,
 					'typed' => FALSE,
-					'addable' => FALSE,
+					'asksPlant' => FALSE,
+					// Celle de l'intervention, que l'action de la boucle suivante remplace par la sienne : une action inactive
+					// n'y passe pas, et son intervention reste dans sa catégorie.
+					'category' => $eTask['category'],
+					'cCategory' => new \Collection([$eTask['category']['id'] => $eTask['category']]),
+					// Une espèce ne se porte qu'en Culture. Sans espèce, la catégorie de l'intervention le dit, celle
+					// d'une action inactive comprise, que la boucle des actions ne revoit pas.
+					'implicit' => ($eTask['plant']->notEmpty() or self::isCulture($eTask['category'])),
 				]);
 
 			}
@@ -152,6 +165,8 @@ class TimeIntentionLib extends IntentionLib {
 
 			$key = $eAction['id'].'-';
 
+			$eCategory = self::getCategory($cCategory, $eAction);
+
 			$cTaskAction = new \Collection();
 
 			foreach($objects as $eTaskObject) {
@@ -172,17 +187,21 @@ class TimeIntentionLib extends IntentionLib {
 					'cTask' => $cTaskAction,
 					'plannedWeekLate' => NULL,
 					'listed' => FALSE,
-					'typed' => ($cTaskAction->empty() and self::isAddable($eCategory, $eAction)),
-					'addable' => self::isAddable($eCategory, $eAction),
+					'typed' => ($cTaskAction->empty() and $eCategory->notEmpty()),
+					'asksPlant' => self::isCulture($eCategory),
 				]);
 
 			}
 
 			$objects[$key]['cTaskAction'] = $cTaskAction;
-
-			// Entière : ses catégories disent si l'intervention qu'aucune ne porte peut s'ajouter au planning
-			// (`resolveAdd()`).
 			$objects[$key]['action'] = $eAction;
+			// Celle de l'intervention qu'aucune ne porte, quand elle s'ajoute au planning (`resolveAdd()`), et celles où
+			// la choisir (`resolveCategory()`).
+			$objects[$key]['category'] = $eCategory;
+			$objects[$key]['cCategory'] = self::getCategories($cCategory, $eAction);
+			// Posé sur l'objet trouvé comme sur le neuf : l'intervention sans espèce qui partage sa clé se lit alors
+			// comme son action.
+			$objects[$key]['implicit'] = self::isCulture($eCategory);
 
 		}
 
@@ -218,6 +237,10 @@ class TimeIntentionLib extends IntentionLib {
 
 	public static function getTyped(\Collection $cElement): \Collection {
 		return $cElement->find(fn(\series\Task $eTaskObject) => $eTaskObject['typed']);
+	}
+
+	public static function isImplicit(\Element $eElement): bool {
+		return $eElement['implicit'];
 	}
 
 	/**
@@ -317,11 +340,11 @@ class TimeIntentionLib extends IntentionLib {
 
 				// Une seule espèce, sans intervention de l'action cette semaine : l'intervention s'ajoute au
 				// planning (lot 2c). En frappe, le début de plusieurs noms attend la suite, qui dira laquelle.
-				// Le début de plusieurs noms sous une action de culture (`addable`) garde la question de l'espèce,
+				// Le début de plusieurs noms sous une action de culture (`asksPlant`) garde la question de l'espèce,
 				// bornée à ceux qu'il lit. Il reste en attente : l'espèce choisie le remplace.
-				if($cPlant->count() === 1 and self::isAddable(\work\CategoryLib::getByStructure($eStructure, fqn: CATEGORIE_CULTURE), $reading['object']['action'])) {
+				if($cPlant->count() === 1 and self::isCulture($reading['object']['category'])) {
 					self::resolveAdd($eStructure, $reading, $answers, $cPlant->first());
-				} else if($cPlant->count() > 1 and $reading['object']['addable'] and self::askPlant($eStructure, $reading, $cPlant)) {
+				} else if($cPlant->count() > 1 and $reading['object']['asksPlant'] and self::askPlant($eStructure, $reading, $cPlant)) {
 					$reading['pending'] = $pending;
 				} else if($cPlant->count() > 1 and end($words) === $reading['typing']) {
 					$reading['outcome'] = EntryLib::ASK;
@@ -337,10 +360,20 @@ class TimeIntentionLib extends IntentionLib {
 
 		if($cTask->empty()) {
 
-			// L'action seule de culture, sans espèce ni intervention de la semaine, celle que la frappe propose
-			// (`typed`) : l'espèce se demande, et mène aux séries où l'ajouter au planning (HN-B11).
-			if($reading['object']['typed'] and $reading['pending'] === NULL and self::askPlant($eStructure, $reading)) {
-				return;
+			// L'action seule, sans intervention de la semaine, celle que la frappe propose (`typed`). De culture,
+			// l'espèce se demande, et mène aux séries où l'ajouter au planning (HN-B11) ; d'une autre catégorie,
+			// elle n'a ni espèce ni série et s'ajoute telle quelle (« RH », HN-B14).
+			if($reading['object']['typed'] and $reading['pending'] === NULL) {
+
+				if($reading['object']['asksPlant'] === FALSE) {
+					self::resolveAdd($eStructure, $reading, $answers, new \plant\Plant());
+					return;
+				}
+
+				if(self::askPlant($eStructure, $reading)) {
+					return;
+				}
+
 			}
 
 			EntryLib::refuse($reading, ['reason' => 'none', 'name' => $reading['object']['name']]);
@@ -382,7 +415,7 @@ class TimeIntentionLib extends IntentionLib {
 
 		}
 
-		self::resolveDuration($reading, $eTask, $answers);
+		self::resolveDuration($eStructure, $reading, $eTask, $answers);
 
 	}
 
@@ -397,7 +430,7 @@ class TimeIntentionLib extends IntentionLib {
 	 * jour dit. Les puces vont sur la lecture (`days`), vides quand la semaine n'offre que le jour dit, dès que
 	 * l'intervention est retenue : les jours se choisissent avant la durée comme après elle.
 	 */
-	private static function resolveDuration(array &$reading, \series\Task $eTask, array $answers): void {
+	private static function resolveDuration(\structure\Structure $eStructure, array &$reading, \series\Task $eTask, array $answers): void {
 
 		$reading['task'] = $eTask;
 
@@ -424,6 +457,7 @@ class TimeIntentionLib extends IntentionLib {
 			'dates' => $dates,
 			'eTask' => $eTask,
 			'created' => ($eTask->exists() === FALSE),
+			'additions' => DurationComplementLib::getAdditions($minutes, self::getWorked($eStructure, $dates)),
 		];
 
 		$reading['outcome'] = EntryLib::WRITE;
@@ -431,14 +465,61 @@ class TimeIntentionLib extends IntentionLib {
 	}
 
 	/**
-	 * Une intervention de culture se crée sur une action de la catégorie Culture (`$eCategory`), seule à porter
-	 * une espèce (`\series\Task::action.usable`). Les autres gardent le refus : la semaine n'en a pas. La coche
-	 * en crée aussi (`DoneIntentionLib`).
+	 * La catégorie de l'intervention qu'une action ajoute au planning, parmi celles de la structure (`$cCategory`),
+	 * dans l'ordre du planning : Culture quand l'action en est, seule à porter une espèce et une série
+	 * (`\series\TaskLib::getPropertiesCreate()`), sinon la première des siennes (« RH » en Administration). Une
+	 * intervention ne se crée que dans une catégorie de son action (`\series\Task::action.usable`) : vide quand
+	 * l'action n'en a aucune.
 	 */
-	public static function isAddable(\work\Category $eCategory, \work\Action $eAction): bool {
+	public static function getCategory(\Collection $cCategory, \work\Action $eAction): \work\Category {
 
-		return ($eCategory->notEmpty() and in_array($eCategory['id'], $eAction['categories']));
+		$cCategoryAction = self::getCategories($cCategory, $eAction);
 
+		if($cCategoryAction->empty()) {
+			return new \work\Category();
+		}
+
+		return $cCategoryAction->find(fn(\work\Category $eCategory) => $eCategory['fqn'] === CATEGORIE_CULTURE, limit: 1, default: $cCategoryAction->first());
+
+	}
+
+	/**
+	 * Les catégories de l'action parmi celles de la structure (`$cCategory`), dans l'ordre du planning.
+	 */
+	public static function getCategories(\Collection $cCategory, \work\Action $eAction): \Collection {
+		return $cCategory->find(fn(\work\Category $eCategory) => in_array($eCategory['id'], $eAction['categories']));
+	}
+
+	/**
+	 * La catégorie de l'intervention que l'objet ajoute au planning, sans espèce ni série. Une action de plusieurs
+	 * catégories hors de Culture la fait choisir (HN-B18, 25/10) : la réponse à la question `category` la dit, et
+	 * sans réponse qui vaille, la question se pose et la lecture la porte. Une action de Culture y reste, seule à
+	 * porter une espèce (`getCategory()`).
+	 */
+	public static function resolveCategory(array &$reading, array $answers): \work\Category {
+
+		$eCategory = $reading['object']['category'];
+		$cCategory = $reading['object']['cCategory'];
+
+		if(self::isCulture($eCategory) or $cCategory->count() < 2) {
+			return $eCategory;
+		}
+
+		if($answers['category'] !== NULL and $cCategory->offsetExists($answers['category'])) {
+			return $cCategory[$answers['category']];
+		}
+
+		EntryLib::ask($reading, [
+			'name' => 'category',
+			'cCategory' => $cCategory,
+		]);
+
+		return new \work\Category();
+
+	}
+
+	public static function isCulture(\work\Category $eCategory): bool {
+		return ($eCategory->notEmpty() and $eCategory['fqn'] === CATEGORIE_CULTURE);
 	}
 
 	/**
@@ -463,7 +544,8 @@ class TimeIntentionLib extends IntentionLib {
 	 * culture. Elle se pose même pour une seule culture : le temps ne choisit pas la série à la place de
 	 * la personne, la récolte ayant au contraire une intervention à compléter.
 	 *
-	 * « Hors série » répond par l'id de l'espèce : une autre espèce tapée ensuite repose la question.
+	 * « Hors série » répond par l'id de l'espèce : une autre espèce tapée ensuite repose la question. Une action
+	 * d'une autre catégorie que Culture n'a ni espèce ni série (`$ePlant` vide) : rien ne se demande.
 	 *
 	 * L'intervention se construit dès la lecture, comme celle d'une récolte neuve
 	 * (`\planning\HarvestWeekLib::buildTask()`) : un refus de `build()` vaut pour la lecture comme pour
@@ -471,7 +553,13 @@ class TimeIntentionLib extends IntentionLib {
 	 */
 	private static function resolveAdd(\structure\Structure $eStructure, array &$reading, array $answers, \plant\Plant $ePlant): void {
 
-		$eCultivation = self::resolveSeries($eStructure, $reading, $answers, $ePlant);
+		$eCultivation = $ePlant->empty() ? new \series\Cultivation() : self::resolveSeries($eStructure, $reading, $answers, $ePlant);
+
+		if($reading['question'] !== NULL) {
+			return;
+		}
+
+		$eCategory = $ePlant->empty() ? self::resolveCategory($reading, $answers) : $reading['object']['category'];
 
 		if($reading['question'] !== NULL) {
 			return;
@@ -481,11 +569,11 @@ class TimeIntentionLib extends IntentionLib {
 
 		// Prévue au premier jour où le temps s'écrit, que ce soit le jour dit ou une puce qui l'a remplacé (
 		// 24/10).
-		$eTask = self::buildTask($eStructure, $reading['object']['action'], $ePlant, $eCultivation, self::getDates($reading, $answers)[0]);
+		$eTask = self::buildTask($eStructure, $eCategory, $reading['object']['action'], $ePlant, $eCultivation, self::getDates($reading, $answers)[0]);
 
 		$fw->validate();
 
-		self::resolveDuration($reading, $eTask, $answers);
+		self::resolveDuration($eStructure, $reading, $eTask, $answers);
 
 	}
 
@@ -597,20 +685,21 @@ class TimeIntentionLib extends IntentionLib {
 	}
 
 	/**
-	 * Construite comme `\planning\TaskCreateLib::prepare()` construit une intervention : l'espèce ne se
-	 * construit que hors série (`\series\TaskLib::getPropertiesCreate()`), une série la donnant par sa
-	 * culture, et l'unité de récolte ne concerne pas une autre action. À faire, elle est prévue au jour dit ;
+	 * Construite comme `\planning\TaskCreateLib::prepare()` construit une intervention, dans la catégorie que
+	 * l'action lui donne (`getCategory()`) : l'espèce ne se construit qu'en Culture et hors série
+	 * (`\series\TaskLib::getPropertiesCreate()`), une série la donnant par sa culture, et l'unité de récolte ne
+	 * concerne pas une autre action. À faire, elle est prévue au jour dit ;
 	 * faite (la coche, `DoneIntentionLib`), elle est faite ce jour-là : le statut choisit la propriété que
 	 * `getPropertiesWrite()` construit, donc la clé postée.
 	 *
 	 * `$input` remplace ou complète ce qui est posté, comme un formulaire le ferait : une intervention à faire
 	 * prévue à la semaine seule (`['planned' => ['week' => …]]`), son temps prévu (`timeExpected`, en heures).
 	 */
-	public static function buildTask(\structure\Structure $eStructure, \work\Action $eAction, \plant\Plant $ePlant, \series\Cultivation $eCultivation, string $date, string $status = \series\Task::TODO, array $input = []): \series\Task {
+	public static function buildTask(\structure\Structure $eStructure, \work\Category $eCategory, \work\Action $eAction, \plant\Plant $ePlant, \series\Cultivation $eCultivation, string $date, string $status = \series\Task::TODO, array $input = []): \series\Task {
 
 		$eTask = new \series\Task([
 			'structure' => $eStructure,
-			'category' => \work\CategoryLib::getByStructure($eStructure, fqn: CATEGORIE_CULTURE),
+			'category' => $eCategory,
 			'series' => $eCultivation->empty() ? new \series\Series() : $eCultivation['series'],
 			'season' => $eCultivation->empty() ? NULL : $eCultivation['series']['season'],
 			'cultivation' => $eCultivation,
@@ -626,11 +715,11 @@ class TimeIntentionLib extends IntentionLib {
 			\series\Task::DONE => 'done',
 		};
 
+		// L'espèce n'est postée que d'une intervention qui en a une : hors de Culture, `build()` ne la construit pas.
 		$eTask->build(array_values(array_diff(\series\TaskLib::getPropertiesCreate()($eTask), ['harvestUnit'])), array_replace([
 			'action' => $eAction['id'],
-			'plant' => $ePlant['id'],
 			$property => ['date' => $date],
-		], $input), new \PropertyList('create'));
+		] + ($ePlant->empty() ? [] : ['plant' => $ePlant['id']]), $input), new \PropertyList('create'));
 
 		return $eTask;
 
@@ -653,6 +742,24 @@ class TimeIntentionLib extends IntentionLib {
 			$eTask['series']->notEmpty() and
 			$eTask['series']['season'] !== week_year($week)
 		);
+
+	}
+
+	/**
+	 * Le temps que la personne connectée a déjà écrit le plus chargé des jours dits, en minutes : la borne de
+	 * 24 heures vaut pour chaque journée (`HarvestWeekLib::checkTimeDay()`).
+	 */
+	public static function getWorked(\structure\Structure $eStructure, array $dates): int {
+
+		$cTimesheet = \series\Timesheet::model()
+			->select(['date', 'total' => new \Sql('SUM(time)', 'float')])
+			->whereStructure($eStructure)
+			->whereUser(\user\ConnectionLib::getOnline())
+			->whereDate('IN', $dates)
+			->group('date')
+			->getCollection();
+
+		return ($cTimesheet->empty()) ? 0 : (int)round(max($cTimesheet->getColumn('total')) * 60);
 
 	}
 
@@ -982,6 +1089,7 @@ class TimeIntentionLib extends IntentionLib {
 			->select([
 				'id',
 				'action' => ['name', 'fqn'],
+				'category' => ['name', 'fqn'],
 				'plant' => ['name', 'fqn'],
 				'series' => ['name'],
 				'cultivation', 'description', 'status', 'plannedWeek', 'doneWeek',

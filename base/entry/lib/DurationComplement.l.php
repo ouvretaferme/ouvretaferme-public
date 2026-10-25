@@ -24,6 +24,12 @@ class DurationComplementLib extends ComplementLib {
 	const int DAY = 1440;
 
 	/**
+	 * Les durées que la liste ajoute d'un geste au temps déjà dit, en minutes : les plus saisies, au quart d'heure
+	 * près (lot 2, plan § 4). Toute autre se tape.
+	 */
+	const array ADDITIONS = [15, 30, 60, 120];
+
+	/**
 	 * Un nombre en cours de frappe après la quantité, ou seul pour une intention qui ne lit pas de quantité :
 	 * le début d'une durée dont le mot n'est pas encore tapé. Il ne s'écrit pas (`isComplete()`), et n'est pas
 	 * refusé comme un mot que personne ne lit.
@@ -140,6 +146,26 @@ class DurationComplementLib extends ComplementLib {
 		} else if(is_int($value) and ($value <= 0 or $value > self::DAY)) {
 			EntryLib::refuse($reading, ['reason' => 'duration']);
 		}
+
+	}
+
+	/**
+	 * Le temps que donne chaque puce, par la durée qu'elle ajoute au temps déjà dit : une puce ajoute, pour que
+	 * 1 h puis « +30 min » fassent 1 h 30. Celle qui passerait la journée, avec le temps déjà écrit ce jour-là
+	 * (`$worked`, `TimeIntentionLib::getWorked()`), ne se propose pas : l'écriture la refuserait
+	 * (`HarvestWeekLib::checkTimeDay()`).
+	 */
+	public static function getAdditions(int $minutes, int $worked = 0): array {
+
+		$additions = [];
+
+		foreach(self::ADDITIONS as $added) {
+			if($worked + $minutes + $added <= self::DAY) {
+				$additions[$added] = $minutes + $added;
+			}
+		}
+
+		return $additions;
 
 	}
 

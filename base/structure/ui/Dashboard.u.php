@@ -34,7 +34,7 @@ class DashboardUi {
 	public function render(string $name, Structure $eStructure, array $values): string {
 
 		return match($name) {
-			'structure-weather' => $this->getWeather($values),
+			'structure-weather' => $this->getWeather($eStructure, $values),
 			'structure-start' => $this->getStart($eStructure, $values)
 		};
 
@@ -86,10 +86,10 @@ class DashboardUi {
 	 * marque du modèle dessous, puis une tuile par jour qui vient (planche L81, piste A). Les tuiles sont
 	 * côte à côte et de même largeur, pour que les jours se comparent d'un coup d'œil.
 	 */
-	private function getWeather(array $values): string {
+	private function getWeather(Structure $eStructure, array $values): string {
 
 		$now = $values['now'];
-		[$icon, $word] = $this->getSky($now['code']);
+		[$icon, $word] = $this->getSky($now['code'], $now['day']);
 		$rain = $this->getRain($values['days'][0]);
 
 		$h = '<div class="structure-weather">';
@@ -108,32 +108,12 @@ class DashboardUi {
 
 			$h .= '<div class="structure-weather-sky">';
 				$h .= '<span class="util-annotation">';
-					if($values['place'] !== NULL) {
-						$h .= s("{place}, {sky}, vent {wind} km/h", ['place' => encode($values['place']), 'sky' => mb_strtolower($word), 'wind' => (int)round($now['wind'])]);
-					} else {
-						$h .= s("{sky}, vent {wind} km/h", ['sky' => $word, 'wind' => (int)round($now['wind'])]);
-					}
+					$h .= $this->getSentence($values['place'], $word, $now);
 				$h .= '</span>';
 				$h .= $this->getModel($values);
 			$h .= '</div>';
 
-			$h .= '<div class="structure-weather-days">';
-
-				foreach(array_slice($values['days'], 1, 3) as $day) {
-
-					// Le minimum se lit sous le maximum, sans flèche : dans une tuile, leur place suffit à
-					// les distinguer (planche L81, piste A).
-					$h .= '<div class="structure-weather-day">';
-						$h .= '<div class="structure-weather-day-name">'.\util\DateUi::getDayNameShort((int)date('N', strtotime($day['date']))).'</div>';
-						$h .= \Asset::icon($this->getSky($day['code'])[0]);
-						$h .= '<div class="structure-weather-max">'.s("{value}°", (int)round($day['max'])).'</div>';
-						$h .= '<div class="structure-weather-min">'.s("{value}°", (int)round($day['min'])).'</div>';
-						$h .= '<div class="structure-weather-rain">'.$this->getRain($day, '<br/>').'</div>';
-					$h .= '</div>';
-
-				}
-
-			$h .= '</div>';
+			$h .= $this->getForecast($eStructure, $values);
 
 			// Le visiteur n'a pas de menu où la lire (`getModel()`).
 			if($values['member'] === NULL) {
@@ -143,6 +123,135 @@ class DashboardUi {
 		$h .= '</div>';
 
 		return $h;
+
+	}
+
+	/**
+	 * La phrase du moment. La rafale suit le vent quand le modèle la donne pour l'heure (planche L96,
+	 * piste R2).
+	 */
+	private function getSentence(?string $place, string $word, array $now): string {
+
+		$arguments = [
+			'place' => ($place === NULL) ? NULL : encode($place),
+			'sky' => ($place === NULL) ? $word : mb_strtolower($word),
+			'wind' => (int)round($now['wind']),
+			'gust' => ($now['gust'] === NULL) ? NULL : (int)round($now['gust'])
+		];
+
+		if($place === NULL) {
+			return ($now['gust'] === NULL) ?
+				s("{sky}, vent {wind} km/h", $arguments) :
+				s("{sky}, vent {wind} km/h, rafales {gust} km/h", $arguments);
+		} else {
+			return ($now['gust'] === NULL) ?
+				s("{place}, {sky}, vent {wind} km/h", $arguments) :
+				s("{place}, {sky}, vent {wind} km/h, rafales {gust} km/h", $arguments);
+		}
+
+	}
+
+	/**
+	 * Les tuiles des jours qui viennent, puis, sous elles, le détail du jour ouvert (planche L96, piste
+	 * C3). Une tuile ouvre son jour, celle qui est ouverte le referme : son lien ne porte pas de date.
+	 * La route rend toute la rangée, tuiles comprises, pour que le jour cerné et le détail montré ne
+	 * puissent pas se contredire quand deux clics se suivent (`view/structure.v.php`).
+	 *
+	 * @param array|null $day le `day` que rend `WeatherAiLib::getByStructure()`, `NULL` quand aucun jour n'est ouvert
+	 */
+	public function getForecast(Structure $eStructure, array $values, ?array $day = NULL): string {
+
+		$h = '<div class="structure-weather-forecast">';
+
+			$h .= '<div class="structure-weather-days">';
+
+				foreach(array_slice($values['days'], 1, WeatherAiLib::DETAIL_DAYS) as $tile) {
+
+					$selected = ($day !== NULL and $day['date'] === $tile['date']);
+					$url = '/structure/structure:weatherDay?id='.$eStructure['id'].($selected ? '' : '&date='.$tile['date']);
+
+					// Le minimum se lit sous le maximum, sans flèche : dans une tuile, leur place suffit à
+					// les distinguer (planche L81, piste A).
+					$h .= '<a data-ajax="'.$url.'" data-ajax-method="get" class="structure-weather-day'.($selected ? ' selected' : '').'">';
+						$h .= '<div class="structure-weather-day-name">'.\util\DateUi::getDayNameShort((int)date('N', strtotime($tile['date']))).'</div>';
+						$h .= \Asset::icon($this->getSky($tile['code'])[0]);
+						$h .= '<div class="structure-weather-max">'.s("{value}°", (int)round($tile['max'])).'</div>';
+						$h .= '<div class="structure-weather-min">'.s("{value}°", (int)round($tile['min'])).'</div>';
+						$h .= '<div class="structure-weather-rain">'.$this->getRain($tile, '<br/>').'</div>';
+						if($tile['gust'] !== NULL) {
+							$h .= '<div class="structure-weather-gust">'.\Asset::icon('wind').'<span class="util-unit">'.s("{value} km/h", (int)round($tile['gust'])).'</span></div>';
+						}
+					$h .= '</a>';
+
+				}
+
+			$h .= '</div>';
+
+			if($day !== NULL) {
+				$h .= $this->getDay($day);
+			}
+
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	/**
+	 * Un moment par diapositive, six heures chacune, en colonnes : l'heure, le ciel, la température et
+	 * la rafale, que l'icône du vent nomme en tête de sa ligne. Deux chevrons mènent d'un moment à
+	 * l'autre, le doigt fait aussi glisser la piste. Le matin se montre d'abord, ou le premier moment
+	 * que le modèle couvre.
+	 */
+	private function getDay(array $day): string {
+
+		$current = array_key_exists(WeatherAiLib::MOMENT_FIRST, $day['moments']) ? WeatherAiLib::MOMENT_FIRST : array_key_first($day['moments']);
+
+		\Asset::js('main', 'carouselAi.js');
+
+		$h = '<div class="util-carousel structure-weather-hours" onrender="MainCarousel.start(this)">';
+
+			$h .= '<div class="util-carousel-nav">';
+				$h .= '<button type="button" class="btn btn-only-icon btn-xs btn-outline-secondary" data-carousel-step="-1">'.\Asset::icon('chevron-left').'</button>';
+				$h .= '<span class="util-carousel-label">'.$this->getMoment($current).'</span>';
+				$h .= '<button type="button" class="btn btn-only-icon btn-xs btn-outline-secondary" data-carousel-step="1">'.\Asset::icon('chevron-right').'</button>';
+			$h .= '</div>';
+
+			$h .= '<div class="util-carousel-track">';
+
+				foreach($day['moments'] as $start => $hours) {
+
+					$h .= '<div class="util-carousel-slide structure-weather-moment" data-carousel-label="'.encode($this->getMoment($start)).'"'.(($start === $current) ? ' data-carousel-current' : '').'>';
+
+						$h .= '<span class="structure-weather-moment-wind">'.\Asset::icon('wind').'</span>';
+
+						foreach($hours as $hour) {
+							$h .= '<span>'.s("{value} h", $hour['hour']).'</span>';
+							$h .= \Asset::icon($this->getSky($hour['code'], $hour['day'])[0]);
+							$h .= '<span class="structure-weather-moment-temperature">'.s("{value}°", (int)round($hour['temperature'])).'</span>';
+							$h .= '<span class="structure-weather-moment-gust">'.(($hour['gust'] === NULL) ? '' : (int)round($hour['gust'])).'</span>';
+						}
+
+					$h .= '</div>';
+
+				}
+
+			$h .= '</div>';
+
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	private function getMoment(int $start): string {
+
+		return match($start) {
+			0 => s("Nuit"),
+			6 => s("Matin"),
+			12 => s("Après-midi"),
+			18 => s("Soir")
+		};
 
 	}
 
@@ -250,12 +359,15 @@ class DashboardUi {
 	 * ⚠️ Un `default`, contre la règle des `match` sur un enum : la table n'est pas un enum du dépôt, et
 	 * un code que la source ajouterait ferait lever le rendu, donc toute la page d'accueil, le bloc étant
 	 * léger. Il rend le ciel couvert, sans mot plus précis.
+	 *
+	 * La nuit, le soleil laisse la place à la lune, et un ciel sans nuage se dit « Dégagé ». Une tuile
+	 * parle d'un jour entier, et se dessine de jour.
 	 */
-	private function getSky(int $code): array {
+	private function getSky(int $code, bool $day = TRUE): array {
 
 		return match($code) {
-			0, 1 => ['sun', s("Ensoleillé")],
-			2 => ['cloud-sun', s("Éclaircies")],
+			0, 1 => $day ? ['sun', s("Ensoleillé")] : ['moon', s("Dégagé")],
+			2 => [$day ? 'cloud-sun' : 'cloud-moon', s("Éclaircies")],
 			3 => ['cloud', s("Couvert")],
 			45, 48 => ['cloud-fog', s("Brouillard")],
 			51, 53, 55, 56, 57 => ['cloud-drizzle', s("Bruine")],

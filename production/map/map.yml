@@ -35,8 +35,9 @@ Configuration:
   calendarMonthStart: ?int8(7, 12) = 10
   calendarMonthStop: ?int8(1, 6) = 3
   planningDelayedMax: ?int8(1, 6) = 2
-  decorGrass: enum(TENDER, PALE, CLEAR, DRY, LUSH, GRAZED) = TENDER # verte tendre, verte pâle, presque blanche, sèche d'été, foncée humide, rase pâturée
+  decorGrass: enum(TENDER, PALE, CLEAR, DRY, LUSH, GRAZED) = TENDER # verte tendre, verte pâle, presque blanche, sèche d'été, verte vive, verte lumineuse
   decorSoil: enum(LOAM, CLAY, SAND, HUMUS, CHALK, OCHRE, SANDSTONE, SCHIST, BROWN) = LOAM # limon, argile, sable, terre noire, calcaire, ocre, grès rose, schiste, terre brune
+  decorMeadow: enum(MIXED, FLOWERY, TUFTED) = MIXED # le fond du pré : mixte, prairie fleurie, herbe à touffes
   decorAdopted: bool = FALSE # la structure a son propre décor : un plan vidé reste vide, le décor par défaut ne revient plus
   UNIQUE: [
     ["structure"]
@@ -48,6 +49,7 @@ Decor:
   layer: ?map\DecorLayer # NULL : le calque de base « Décor »
   kit: text8(1, 40) # clé du catalogue, jamais confrontée à lui : un kit inconnu se garde
   building: ?map\DecorBuilding # le bâtiment de la structure que pose le kit « batiment », NULL pour tous les autres kits
+  object: ?map\DecorObject # l'élément importé de la structure que pose un kit « objet-eau », « objet-nature » ou « objet-materiel », NULL pour tous les autres kits
   coordinates: point # [lng, lat] du centre de l'élément
   angle: float32(0, 6.2832) = 0 # en radians
   size: float32(0.1, 10) = 1
@@ -67,7 +69,8 @@ Decor:
   INDEX: [
     ["structure"],
     ["layer"],
-    ["building"]
+    ["building"],
+    ["object"]
   ]
 
 DecorBuilding:
@@ -99,14 +102,30 @@ DecorLayer:
     ["structure"]
   ]
 
+DecorObject:
+  id: serial32
+  structure: structure\Structure
+  family: enum(WATER, TREE, OTHER) # la rangée du décor où l'élément se pose : Eau, Nature ou Matériel
+  name: text8(1, 40) @collate(general)
+  upload: ?map\DecorUpload # le modèle montré ; NULL après un retrait, l'élément n'ayant pas de composition de repli
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  updatedAt: ?datetime
+  INDEX: [
+    ["structure"]
+  ]
+
 DecorUpload:
   id: serial32
   structure: structure\Structure
-  building: map\DecorBuilding # le bâtiment qui montre ce modèle à la place de sa composition, posé par le Lib
+  building: ?map\DecorBuilding # l'un ou l'autre, posé par le Lib : le bâtiment qui montre ce modèle à la place de sa composition
+  object: ?map\DecorObject # ou l'élément importé qui le montre
   hash: ?textFixed(20, 20) @charset(ascii) # média `map-decor-upload`, le binaire converti ; NULL une fois retiré ou remplacé
   bakedIndex: ?json # l'index du modèle converti, lu tel quel par sceneBuildModel() ; NULL une fois retiré ou remplacé
   rules: int16(1, null) # version de base/scene/upload/decor.json, qui versionne aussi le texte de l'engagement coché
   sharedAt: ?datetime # quand qui a téléversé a accepté que Ouvretaferme reprenne ce modèle et le propose aux autres utilisateurs, posé par le Lib depuis la case de l'envoi, jamais pré-cochée ; NULL sans accord, y compris pour un envoi qui en remplace un accordé
+  chosenBy: ?user\User # l'admin qui a sélectionné ce modèle pour le proposer aux autres utilisateurs ; NULL tant qu'il ne l'est pas
+  chosenAt: ?datetime # quand ; posé une seule fois, avec l'e-mail de remerciement à qui a téléversé
   status: enum(NEW, KEPT, WITHDRAWN) = NEW # visible dès l'envoi ; KEPT, vu et gardé par un admin ; WITHDRAWN, retiré
   reason: ?enum(PERSON, BRAND, OFFENSIVE, OTHER) # motif d'un retrait, pris dans une liste fermée et envoyé à qui a téléversé
   reasonText: ?text16(1, 500) # ce que l'admin ajoute au motif
@@ -117,6 +136,7 @@ DecorUpload:
   INDEX: [
     ["structure"],
     ["building"],
+    ["object"],
     ["status"]
   ]
 
@@ -184,6 +204,9 @@ Zone:
   structure: structure\Structure
   area: int32(1, null)
   coordinates: ?polygon
+  decorGrass: ?enum(TENDER, PALE, CLEAR, DRY, LUSH, GRAZED) # NULL : l'herbe de la structure (Configuration.decorGrass)
+  decorSoil: ?enum(LOAM, CLAY, SAND, HUMUS, CHALK, OCHRE, SANDSTONE, SCHIST, BROWN) # NULL : le sol de la structure (Configuration.decorSoil)
+  decorMeadow: ?enum(MIXED, FLOWERY, TUFTED) # NULL : le fond du pré de la structure (Configuration.decorMeadow)
   seasonFirst: ?int16(0, null)
   seasonLast: ?int16(0, null)
   createdAt: datetime = SPECIAL(now)

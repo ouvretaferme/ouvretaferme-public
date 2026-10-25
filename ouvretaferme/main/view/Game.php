@@ -5,6 +5,9 @@ class GameTemplate extends BaseTemplate {
 	public ?string $header = '';
 	public ?string $footer = '';
 
+	// La cour prend toute la largeur de l'écran (game.css)
+	public bool $mainContainer = FALSE;
+
 	public function __construct() {
 
 		parent::__construct();

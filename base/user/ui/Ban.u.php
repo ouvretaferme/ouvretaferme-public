@@ -157,7 +157,7 @@ Attention : ce texte sera affiché à l'utilisateur.")])
 		}
 
 		if($eBan['ip'] !== NULL) {
-			$h .= '<div class="font-sm color-muted">'.encode($eBan['ip']).'</div>';
+			$h .= '<div class="util-annotation">'.encode($eBan['ip']).'</div>';
 		}
 
 		return $h;

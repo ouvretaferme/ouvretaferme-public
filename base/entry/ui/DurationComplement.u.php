@@ -24,11 +24,24 @@ class DurationComplementUi {
 	}
 
 	/**
-	 * Les durées que la liste propose d'un geste, en minutes : les plus saisies, au quart d'heure près
-	 * (lot 2, plan § 4). Toute autre se tape.
+	 * Les puces qui ajoutent au temps déjà dit (`DurationComplementLib::getAdditions()`) : chacune dit ce qu'elle
+	 * ajoute, « +30 min », et son jeton le temps qu'elle donne, « 1 h 30 », que la phrase relit.
 	 */
-	public static function getOptions(): array {
-		return [15, 30, 60, 120];
+	public static function getAdditionResults(string $group, array $additions): array {
+
+		$results = [];
+
+		foreach($additions as $added => $minutes) {
+			$results[] = [
+				'group' => $group,
+				'label' => s("+{duration}", ['duration' => self::getDuration($added)]),
+				'token' => self::getDuration($minutes),
+				'value' => 'duration:'.$minutes,
+			];
+		}
+
+		return $results;
+
 	}
 
 	/**

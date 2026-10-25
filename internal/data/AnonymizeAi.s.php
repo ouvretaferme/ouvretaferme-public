@@ -474,6 +474,9 @@ class AnonymizeAiSetting extends \Settings {
 		'map\\DecorLayer' => [
 			'name' => [self::KEEP, 'nom de calque'],
 		],
+		'map\\DecorObject' => [
+			'name' => [self::FAKE, 'nom saisi de l\'élément importé, qui peut nommer une personne (« Mare de Paul »)', 'Objet'],
+		],
 		'map\\Draw' => [
 			'corner' => [self::CLEAR, 'position GPS, qui situe la structure'],
 		],

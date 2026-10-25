@@ -87,7 +87,7 @@
 	--user-avatar-ramp: linear-gradient(to right, hsl(var(--user-avatar-hue) 50% 4%), hsl(var(--user-avatar-hue) 50% 50%), hsl(var(--user-avatar-hue) 50% 95%));
 }
 
-/* Sans avatar composé, l'onglet du modèle n'a rien à porter au pied, qui se retire */
+/* Sans avatar, l'onglet du modèle n'a rien à porter au pied, qui se retire */
 #panel-user-avatar .panel-footer:not(:has(.btn:not(.hide))) {
 	display: none;
 }

@@ -120,7 +120,8 @@ class DecorReachAiTest extends \Test {
 				reread: land.at(ScenePlanGeometry.sub({ x: middle + 1, n: 0 }, anchor.offset)) === anchor,
 				trace: refused(true, middle + 1, 15),
 				traceOnOne: refused(true, westEdge + 10, 5) === null,
-				traceFar: refused(true, westEdge - 300, 15),
+				traceFar: refused(true, westEdge - 300, 15) === null,
+				pipeFar: MapSceneDecor.prototype.landRefusal.call(decor, { def: { traced: true, pipe: true }, p: { x: westEdge - 300, n: 0 } }, footprint(westEdge - 300, 15)),
 				objectFar: refused(false, westEdge - 300, 15),
 				cornerFar: refused(false, westEdge - 190, 15),
 				anchorIn: decor.islandOf({ x: westEdge - 190, n: 0 }) !== null,
@@ -134,7 +135,8 @@ class DecorReachAiTest extends \Test {
 		$this->assertTrue($result['reread'] ?? FALSE, "son point d'ancrage se relit sur cet ilot");
 		$this->assertEquals('apart', $result['trace'] ?? NULL, "un tracé à cheval sur deux ilots est refusé par sa propre raison : chacun de ses points s'enregistre sur le sien");
 		$this->assertTrue($result['traceOnOne'] ?? FALSE, "un tracé sur un seul ilot se pose");
-		$this->assertEquals('outside', $result['traceFar'] ?? NULL, "un tracé hors de toute portée est trop loin, pas entre deux ilots");
+		$this->assertTrue($result['traceFar'] ?? FALSE, "un tracé dessiné franchit la portée, son îlot lu par le relogement");
+		$this->assertEquals('outside', $result['pipeFar'] ?? NULL, "un tuyau hors de toute portée reste refusé, comme un objet");
 		$this->assertEquals('outside', $result['objectFar'] ?? NULL, "un objet hors de toute portée reste refusé");
 		$this->assertTrue($result['anchorIn'] ?? FALSE, "à 90 m de l'enveloppe, le point d'ancrage est à portée");
 		$this->assertEquals('outside', $result['cornerFar'] ?? NULL, "un objet dont un coin sort de la portée est refusé, son ancrage y serait-il");
@@ -362,7 +364,7 @@ class DecorReachAiTest extends \Test {
 				geometry: { height: () => 0 },
 				refusals: { bed: "bed" },
 				sheet: { dataset: { length: "{value} m" } },
-				tracing: { e: { id: 1, seed: 1, def: { traced: true }, p: { x: 0, n: 0 }, height: 0, bad: null }, points: [{ x: 0, n: 0 }], cursor: { x: 10, n: 0 } },
+				tracing: { e: { id: 1, seed: 1, def: { traced: true }, p: { x: 0, n: 0 }, height: 0, bad: null }, points: [{ x: 0, n: 0 }], cursor: { x: 10, n: 0 }, freehand: null, strokes: [] },
 				build: e => { e.bad = verdict; },
 				refresh: () => {},
 				drop: () => {}
@@ -400,7 +402,7 @@ class DecorReachAiTest extends \Test {
 
 		$result = $this->run('
 			// La ligne seule est jugée ici : le terrain l\'admet, aucune planche ni aucun autre élément ne la gêne
-			const tracer = Object.assign(Object.create(MapSceneDecor.prototype), { elements: [], removals: [], areas: [], tracePoints: '.MapSetting::DECOR_TRACE_POINTS.', traceLimit: '.$this->getTraceLimit().', layers: { typeOf: () => null }, landRefusal: () => null, onBed: () => false });
+			const tracer = Object.assign(Object.create(MapSceneDecor.prototype), { tracing: null, elements: [], removals: [], areas: [], tracePoints: '.MapSetting::DECOR_TRACE_POINTS.', traceLimit: '.$this->getTraceLimit().', layers: { typeOf: () => null }, landRefusal: () => null, onBed: () => false });
 			const straight = (length, count) => Array.from({ length: count }, (_, i) => ({ x: length * i / (count - 1), n: 0 }));
 			// Un tracé admis se dit `accepted`, qu\'un résultat absent ne puisse pas passer pour lui
 			const refusal = (kit, line) => tracer.refusal({ ...MapSceneDecor.element(kit, { x: 0, n: 0 }), thick: .6, path: line, trace: line }) ?? "accepted";
@@ -434,7 +436,7 @@ class DecorReachAiTest extends \Test {
 
 		$result = $this->run('
 			const garden = { kind: "zone", id: 1, name: "Jardin", points: square(0, 0, 50) };
-			const tracer = Object.assign(Object.create(MapSceneDecor.prototype), { elements: [], removals: [], areas: [garden], tracePoints: '.MapSetting::DECOR_TRACE_POINTS.', traceLimit: '.$this->getTraceLimit().', layers: { typeOf: () => null }, landRefusal: () => null, onBed: () => false });
+			const tracer = Object.assign(Object.create(MapSceneDecor.prototype), { tracing: null, elements: [], removals: [], areas: [garden], tracePoints: '.MapSetting::DECOR_TRACE_POINTS.', traceLimit: '.$this->getTraceLimit().', layers: { typeOf: () => null }, landRefusal: () => null, onBed: () => false });
 			const straight = length => [{ x: 0, n: 0 }, { x: length, n: 0 }];
 			const element = (kit, length) => ({ ...MapSceneDecor.element(kit, { x: 0, n: 0 }), thick: .6, path: straight(length), trace: straight(length) });
 			// Une ligne enregistrée pèse ce que le serveur en compte

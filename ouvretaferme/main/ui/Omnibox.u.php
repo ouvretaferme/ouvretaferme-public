@@ -67,6 +67,9 @@ class OmniboxUi {
 	 *                           logé dans une piste qu'il ne doit pas élargir.
 	 * @param bool $chipsExplicit Entrée sans suggestion visée ne prend jamais une puce, qui se choisit au clic ou à la
 	 *                           flèche : là où les puces précisent une phrase au lieu de filtrer une liste.
+	 * @param bool $restart La croix recommence la saisie (`util-omnibox-restart`) : elle se montre dès qu'il y a du
+	 *                           texte tapé, pas seulement des jetons. Pour un champ où l'on écrit une phrase, et non des
+	 *                           critères. `$scroll` le fait déjà.
 	 */
 	public static function get(
 		array $suggestions = [],
@@ -88,7 +91,8 @@ class OmniboxUi {
 		array $chips = [],
 		bool $searchIcon = TRUE,
 		bool $chipsExplicit = FALSE,
-		bool $scroll = FALSE
+		bool $scroll = FALSE,
+		bool $restart = FALSE
 	): string {
 
 		if($fullscreenBottom and $fullscreen === FALSE) {
@@ -103,7 +107,7 @@ class OmniboxUi {
 		// is-filled porte l'affichage du bouton d'effacement, ici comme en JS : sans
 		// jeton, il n'y a rien à effacer et un bouton mort dans un champ vide se lit
 		// comme une panne.
-		$h = '<div class="util-omnibox '.($folded ? 'util-omnibox-folded' : '').' '.($tokens === [] ? '' : 'is-filled').' '.($searchIcon ? '' : 'util-omnibox-plain').' '.($scroll ? 'util-omnibox-scroll' : '').' '.$class.'"';
+		$h = '<div class="util-omnibox '.($folded ? 'util-omnibox-folded' : '').' '.($tokens === [] ? '' : 'is-filled').' '.($searchIcon ? '' : 'util-omnibox-plain').' '.($scroll ? 'util-omnibox-scroll' : '').' '.($restart ? 'util-omnibox-restart' : '').' '.$class.'"';
 		if($id !== NULL) {
 			$h .= ' id="'.$id.'"';
 		}

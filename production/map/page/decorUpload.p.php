@@ -49,7 +49,7 @@ $buildUpload = function(bool $create): \map\DecorUpload {
 
 	// Au-delà du plafond de PHP, aucun fichier n'arrive et seul le poids de la requête dit celui du fichier
 	if(in_array($file['error'], [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], TRUE)) {
-		Fail::log(\map\DecorUpload::getRefusal('weight', ['size' => (int)$_SERVER['CONTENT_LENGTH']]));
+		Fail::log(\map\DecorUpload::getRefusal('weight', ['size' => (int)$_SERVER['CONTENT_LENGTH']], \map\DecorUploadLib::FAMILY_BUILDING));
 	} else {
 		$eDecorUpload->build(['file'], ['file' => $path]);
 	}
@@ -66,7 +66,8 @@ new Page(function($data) {
 
 	})
 	/**
-	 * Le fichier se sert par l'envoi et jamais par l'adresse du stockage, publique pour qui connaît le hash. Le droit se juge
+	 * Le fichier, celui d'un bâtiment comme celui d'un élément d'une rangée (`decorObject.p.php`), se sert par l'envoi et
+	 * jamais par l'adresse du stockage, publique pour qui connaît le hash. Le droit se juge
 	 * avant l'état, et tout refus rend la même réponse : un envoi absent, retiré, sans fichier ou hors droit ne se
 	 * distinguent pas, et les ids, qui se suivent, ne disent rien des envois des autres structures.
 	 */
@@ -74,9 +75,10 @@ new Page(function($data) {
 
 		$eDecorUpload = \map\DecorUploadLib::getById(GET('id'));
 
+		// L'équipe le lit aussi, pour l'examiner (`admin/decorUpload.p.php`) : elle n'est pas membre de la structure
 		if(
 			$eDecorUpload->empty() or
-			$eDecorUpload->canRead() === FALSE or
+			($eDecorUpload->canRead() === FALSE and $eDecorUpload->canModerate() === FALSE) or
 			$eDecorUpload->acceptRead() === FALSE
 		) {
 			throw new NotExistsAction('DecorUpload file');
@@ -126,6 +128,8 @@ new Page(function($data) {
 		$fw->validate();
 
 		$eDecorBuilding = $eDecorUpload['building'];
+
+		\map\DecorUploadLib::notify($eDecorUpload);
 
 		$data->decor = $eDecorBuilding['eDecor']->empty() ? NULL : $eDecorBuilding['eDecor']['id'];
 		$data->building = \map\DecorBuildingLib::getScene($eDecorBuilding, $eDecorUpload);

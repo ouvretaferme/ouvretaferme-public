@@ -114,15 +114,11 @@ class AttachmentUi {
 
 	protected function getActions(Attachment $eAttachment): string {
 
-		$h = '<a class="btn btn-color-primary dropdown-toggle" data-dropdown="bottom-end">'.\Asset::icon('gear-fill').'</a>';
-		$h .= '<div class="dropdown-list">';
-			$h .= '<div class="dropdown-title">'.encode($eAttachment['name']).'</div>';
-			$h .= '<a href="/learning/attachment:update?id='.$eAttachment['id'].'" class="dropdown-item">'.s("Renommer le fichier").'</a>';
-			$h .= '<div class="dropdown-divider"></div>';
-			$h .= '<a data-ajax="/learning/attachment:doDelete" post-id="'.$eAttachment['id'].'" class="dropdown-item" data-confirm="'.s("Retirer ce fichier de la leçon ?").'" data-waiter>'.s("Supprimer le fichier").'</a>';
-		$h .= '</div>';
+		$items = '<a href="/learning/attachment:update?id='.$eAttachment['id'].'" class="dropdown-item">'.s("Renommer le fichier").'</a>';
+		$items .= '<div class="dropdown-divider"></div>';
+		$items .= '<a data-ajax="/learning/attachment:doDelete" post-id="'.$eAttachment['id'].'" class="dropdown-item" data-confirm="'.s("Retirer ce fichier de la leçon ?").'" data-waiter>'.s("Supprimer le fichier").'</a>';
 
-		return $h;
+		return \main\DesignUi::getGear($items, encode($eAttachment['name']));
 
 	}
 

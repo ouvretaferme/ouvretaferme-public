@@ -300,7 +300,7 @@ class StockUi {
 						$d->attributes['onfocus'] = 'this.select();';
 						$d->attributes['onrender'] = 'this.focus();';
 					}).
-					'<div class="input-group-addon">'.UnitUi::getSingular($eProduct['unit']).'</div>'
+					$form->addon(UnitUi::getSingular($eProduct['unit']))
 				)
 			);
 
@@ -362,11 +362,11 @@ class StockUi {
 			$h .= $form->group(
 				$label,
 				$form->inputGroup(
-					'<div class="input-group-addon">'.$sign.'</div>'.
+					$form->addon($sign).
 					$form->dynamicField(new Stock(), 'quantity', function(\PropertyDescriber $d) use($eProduct, $sign) {
 						$d->attributes['onrender'] = 'this.focus();';
 					}).
-					'<div class="input-group-addon">'.UnitUi::getSingular($eProduct['unit']).'</div>'
+					$form->addon(UnitUi::getSingular($eProduct['unit']))
 				)
 			);
 

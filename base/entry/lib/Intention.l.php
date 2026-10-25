@@ -94,6 +94,16 @@ abstract class IntentionLib {
 	}
 
 	/**
+	 * Un objet de l'intention se lit-il sans verbe (`EntryLib::readImplicit()`) : ni nommé, ni proposé dans la
+	 * liste. `isExplicit()` en décide pour tous les objets d'une intention, celle-ci pour chacun : le temps et la
+	 * coche ne devinent leur verbe que sur une action de Culture, le nom d'une autre pouvant être celui d'un
+	 * client, d'un produit ou d'une espèce (HN-B14, 25/10 ; `TimeIntentionLib::getObjects()`).
+	 */
+	public static function isImplicit(\Element $eElement): bool {
+		return TRUE;
+	}
+
+	/**
 	 * Ce qui départage, sans verbe, deux intentions qui lisent la même phrase aussi bien et nomment le même
 	 * objet par les mêmes mots (`EntryLib::readImplicit()`) : la plus haute l'emporte, 0 par défaut. La coche
 	 * lit la phrase du temps et ne s'en distingue que par ce qu'elle trouve à cocher.

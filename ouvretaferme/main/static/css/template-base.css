@@ -1,5 +1,6 @@
 :root {
 	--nav-base-height: 3.75rem;
+	--nav-title-indent: .5rem;
 }
 
 body[data-template~="base"] {
@@ -267,7 +268,7 @@ body[data-template~="base"] #root-nav a:not(.btn):hover {
 .root-nav-title {
 
 	@media (max-width: 767px) {
-		margin-left: .5rem;
+		margin-left: var(--nav-title-indent);
 	}
 
 	@media (min-width: 576px) {

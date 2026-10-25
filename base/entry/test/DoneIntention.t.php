@@ -326,6 +326,13 @@ class DoneIntentionTest extends EntryFixtureTest {
 		$this->assertEquals(EntryLib::WRITE, $reading['outcome'], 'le temps se pose sur la faite');
 		$this->assertEquals($eTask['id'], $reading['task']['id']);
 
+		// Sous le verbe, la durée dite reste à la coche : ses puces s'y ajoutent (HN-B20, 25/10).
+		$reading = $this->read('fait '.$this->getDoneText('1 h '));
+
+		$this->assertEquals('done', $reading['intention'], 'le verbe garde la coche');
+		$this->assertTrue($reading['task']['timed'], 'la faite propose encore du temps');
+		$this->assertEquals([15 => 75, 30 => 90, 60 => 120], $reading['task']['additions'], 'chaque puce ajoute à l\'heure dite');
+
 	}
 
 	/**
@@ -583,7 +590,8 @@ class DoneIntentionTest extends EntryFixtureTest {
 	}
 
 	/**
-	 * Une action hors de la catégorie Culture ne se crée pas faite : avec le verbe, le refus dit la fenêtre.
+	 * Une action hors de la catégorie Culture suivie d'une espèce ne se crée pas faite : avec le verbe, le refus dit
+	 * la fenêtre. Seule, elle passe à l'intervention (`ActionOutsideCultureTest::testDoneCreates()`).
 	 */
 	public function testCreateOutsideCulture(): void {
 

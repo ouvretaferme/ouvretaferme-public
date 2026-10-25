@@ -96,6 +96,8 @@ class UserAvatarUploadUi {
 
 				$h .= '<div class="util-table-row">';
 					$h .= '<div>'.$this->getPreview($eUserAvatarUpload, 'list').'</div>';
+					// Pas util-action pour l'état et ses gestes : son retour à la ligne passerait l'engrenage sous l'état
+					// dès que l'état est plus large que la cellule, quand ici c'est l'état qui se replie à côté de lui.
 					$h .= '<div>';
 						$h .= $this->getAuthor($eUserAvatarUpload);
 						$h .= '<div class="hide-sm-up mt-1 flex-justify-space-between">'.$state.'</div>';

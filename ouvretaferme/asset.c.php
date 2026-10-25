@@ -1,3 +1,3 @@
 <?php
-Asset::setVersion('19e02693');
+Asset::setVersion('77e834b8');
 ?>

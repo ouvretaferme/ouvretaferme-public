@@ -1178,25 +1178,20 @@ class DateEnrollmentUi {
 			return '';
 		}
 
-		$h = '<a class="btn btn-color-primary btn-sm dropdown-toggle" data-dropdown="bottom-end">'.\Asset::icon('gear-fill').'</a>';
-		$h .= '<div class="dropdown-list">';
+		$items = '';
 
-			$h .= '<div class="dropdown-title">'.$eDateEnrollment->getName().'</div>';
+		if($eDateEnrollment->acceptPresenceAttestation()) {
+			$items .= '<a href="'.self::urlPresence($eDateEnrollment).'" class="dropdown-item" data-ajax-download data-waiter>';
+				$items .= '<div class="util-item-label">'.s("Attestation de présence").'</div>';
+				if($eDateEnrollment['attestationMailedAt'] !== NULL) {
+					$items .= '<div class="util-item-more">'.s("Envoyée le {value}", \util\DateUi::textual($eDateEnrollment['attestationMailedAt'], \util\DateUi::DAY_MONTH)).'</div>';
+				}
+			$items .= '</a>';
+		} else {
+			$items .= '<a href="'.self::urlObjectives($eDateEnrollment['date']['course']).'" class="dropdown-item">'.s("Écrire les objectifs").'</a>';
+		}
 
-			if($eDateEnrollment->acceptPresenceAttestation()) {
-				$h .= '<a href="'.self::urlPresence($eDateEnrollment).'" class="dropdown-item" data-ajax-download data-waiter>';
-					$h .= '<div class="util-item-label">'.s("Attestation de présence").'</div>';
-					if($eDateEnrollment['attestationMailedAt'] !== NULL) {
-						$h .= '<div class="util-item-more">'.s("Envoyée le {value}", \util\DateUi::textual($eDateEnrollment['attestationMailedAt'], \util\DateUi::DAY_MONTH)).'</div>';
-					}
-				$h .= '</a>';
-			} else {
-				$h .= '<a href="'.self::urlObjectives($eDateEnrollment['date']['course']).'" class="dropdown-item">'.s("Écrire les objectifs").'</a>';
-			}
-
-		$h .= '</div>';
-
-		return $h;
+		return \main\DesignUi::getGear($items, $eDateEnrollment->getName(), 'btn-sm');
 
 	}
 
@@ -1210,44 +1205,39 @@ class DateEnrollmentUi {
 			return '';
 		}
 
-		$h = '<a class="btn btn-color-primary btn-sm dropdown-toggle" data-dropdown="bottom-end">'.\Asset::icon('gear-fill').'</a>';
-		$h .= '<div class="dropdown-list">';
+		$items = '';
 
-			$h .= '<div class="dropdown-title">'.$eDateEnrollment->getName().'</div>';
+		if($eDateEnrollment->acceptConfirm()) {
+			$items .= '<a data-ajax="/learning/dateEnrollment:doConfirm" post-id="'.$eDateEnrollment['id'].'" class="dropdown-item" data-waiter>'.s("Confirmer l'inscription").'</a>';
+		}
 
-			if($eDateEnrollment->acceptConfirm()) {
-				$h .= '<a data-ajax="/learning/dateEnrollment:doConfirm" post-id="'.$eDateEnrollment['id'].'" class="dropdown-item" data-waiter>'.s("Confirmer l'inscription").'</a>';
+		if($eDateEnrollment->acceptGiveSeat()) {
+
+			if(
+				$eDate['seats'] !== NULL and
+				$eDate['taken'] >= $eDate['seats']
+			) {
+				$items .= '<a class="dropdown-item disabled">';
+					$items .= '<div class="util-item-label">'.s("Donner une place").'</div>';
+					$items .= '<div class="util-item-more">'.s("Aucune place libre, {taken} sur {seats}", ['taken' => $eDate['taken'], 'seats' => $eDate['seats']]).'</div>';
+				$items .= '</a>';
+			} else {
+				$items .= '<a data-ajax="/learning/dateEnrollment:doGiveSeat" post-id="'.$eDateEnrollment['id'].'" class="dropdown-item" data-waiter>'.s("Donner une place").'</a>';
 			}
 
-			if($eDateEnrollment->acceptGiveSeat()) {
+		}
 
-				if(
-					$eDate['seats'] !== NULL and
-					$eDate['taken'] >= $eDate['seats']
-				) {
-					$h .= '<a class="dropdown-item disabled">';
-						$h .= '<div class="util-item-label">'.s("Donner une place").'</div>';
-						$h .= '<div class="util-item-more">'.s("Aucune place libre, {taken} sur {seats}", ['taken' => $eDate['taken'], 'seats' => $eDate['seats']]).'</div>';
-					$h .= '</a>';
-				} else {
-					$h .= '<a data-ajax="/learning/dateEnrollment:doGiveSeat" post-id="'.$eDateEnrollment['id'].'" class="dropdown-item" data-waiter>'.s("Donner une place").'</a>';
-				}
+		if($eDateEnrollment['status'] !== DateEnrollment::CONFIRMED) {
+			$items .= '<div class="dropdown-divider"></div>';
+		}
 
-			}
+		$confirm = $eDateEnrollment['losesLessons']
+			? s("Annuler l'inscription de {value} ? Un e-mail le lui dira. Cette personne n'aura plus accès aux leçons de la formation, et sa progression lui sera rendue si son inscription est de nouveau confirmée.", $eDateEnrollment->getName())
+			: s("Annuler l'inscription de {value} ? Un e-mail le lui dira.", $eDateEnrollment->getName());
 
-			if($eDateEnrollment['status'] !== DateEnrollment::CONFIRMED) {
-				$h .= '<div class="dropdown-divider"></div>';
-			}
+		$items .= '<a data-ajax="/learning/dateEnrollment:doCancelByCommunity" post-id="'.$eDateEnrollment['id'].'" class="dropdown-item" data-confirm="'.$confirm.'" data-waiter>'.s("Annuler l'inscription").'</a>';
 
-			$confirm = $eDateEnrollment['losesLessons']
-				? s("Annuler l'inscription de {value} ? Un e-mail le lui dira. Cette personne n'aura plus accès aux leçons de la formation, et sa progression lui sera rendue si son inscription est de nouveau confirmée.", $eDateEnrollment->getName())
-				: s("Annuler l'inscription de {value} ? Un e-mail le lui dira.", $eDateEnrollment->getName());
-
-			$h .= '<a data-ajax="/learning/dateEnrollment:doCancelByCommunity" post-id="'.$eDateEnrollment['id'].'" class="dropdown-item" data-confirm="'.$confirm.'" data-waiter>'.s("Annuler l'inscription").'</a>';
-
-		$h .= '</div>';
-
-		return $h;
+		return \main\DesignUi::getGear($items, $eDateEnrollment->getName(), 'btn-sm');
 
 	}
 

@@ -1,14 +1,14 @@
 /**
- * La cour du jeu (lot 2 du chantier jeu, direction C de la planche) : les quatre plateaux d'un même monde, entourés
- * de l'herbe et du décor du plan (haies, arbres, verger, mare, puits, outils). Chaque case montre sa culture à son
- * stade, sa caisse quand elle est mûre ; un plateau fermé porte sa ganivelle. La vue se glisse, se pince et se zoome
- * à la molette dans les bornes de la cour. Le joueur s'y tient en personne, monté depuis la fiche de son avatar, et
- * marche jusqu'à la case ou au point du sol touché, en contournant les cases et le décor (`GameBoardPath`, path.js).
+ * La cour du jeu : une ile qu'un ruisseau traverse, ses quatre plateaux de cases dispersées le long des rives, et son
+ * décor, tirés de la graine du joueur (`GameBoardCourt`, court.js). Chaque case montre sa culture à son stade, sa
+ * caisse quand elle est mûre ; un plateau fermé porte sa ganivelle. La vue se glisse, se pince et se zoome à la
+ * molette dans les bornes de la cour. Le joueur s'y tient en personne, monté depuis la fiche de son avatar, et marche
+ * jusqu'à la case ou au point du sol touché, en contournant les cases, l'eau et le décor (`GameBoardPath`, path.js).
  * Un toucher ne déplace jamais la vue, qui appartient au joueur.
  *
  * La scène ne connaît que `#game-board` : elle lit la donnée de `data-game-board`, pose les marques que la page rend
  * dans ses `<template data-game-label>`, et dit ce qui se passe par des événements qui remontent de `#game-board`
- * (`gameboard:ready`, `error`, `tile`, `cellar`, `avatar`). L'habillage les écoute (`GameDesk`, desk.js) et lui répond
+ * (`gameboard:ready`, `error`, `tile`, `cellar`, `placed`, `avatar`). L'habillage les écoute (`GameDesk`, desk.js) et lui répond
  * par `apply()`, `react()` et `clear()` ; `locate()` lui dit où une case se trouve à l'écran.
  *
  * Une seule cour vit à la fois, dans un seul contexte WebGL, libéré sur `navigation.sleep`.
@@ -17,42 +17,30 @@ class GameBoard {
 
 	static current = null;
 
-	// Le côté d'une case et le pas d'une case à la suivante, en mètres, de la planche : quatre cases par rang
-	static TILE = 2;
-	static STEP = 2.35;
-	static SIDE = GameBoard.STEP * 3 + GameBoard.TILE;
+	// La cour de l'accueil et de la fin de partie, qui n'ont pas de joueur : `BoardLib::getScene()` donne la graine des
+	// autres, le plus petit id de leurs cases
+	static SEED = 129;
 
-	// L'écart d'un plateau à son voisin dans la cour, allée comprise
-	static SPREAD = GameBoard.SIDE + 7;
-
-	// La ganivelle d'un plateau fermé court à FENCE mètres de son centre, posée à l'échelle FENCE_SCALE
-	static FENCE = GameBoard.SIDE / 2 + .6;
+	// La ganivelle d'un plateau fermé suit ses cases à `GameBoardCourt.FENCE_GAP` mètres, à l'échelle FENCE_SCALE
 	static FENCE_SCALE = 1.6;
 
 	// Les petites espèces sont relevées pour se lire sur une case de 2 m, de la planche
 	static BOOST = { betterave: 2.6, carotte: 2.6, luzerne: 1.6, pois: 1.3 };
 
-	// L'herbe du plan, voulue par Vincent pour la direction C
-	static COLORS = { ground: '#9cbf63', soil: '#8a5a3b', soilHover: '#a77250', soilSelected: '#c09068', soilWatered: '#6b4129' };
+	// `background` est le fond sur lequel l'ile se pose, `stones` les pas japonais
+	static COLORS = { background: '#f7ecda', stones: '#a8987a', soil: '#8a5a3b', soilHover: '#a77250', soilSelected: '#c09068', soilWatered: '#6b4129' };
 
-	// La lumière de la cour, celle de la planche que Vincent a demandée en recette : l'herbe et la terre gardent leur
-	// couleur sous un ciel blanc et un soleil bas, et l'herbe s'assombrit vers les bords (`edge`, qu'elle atteint de
-	// `inner` à `outer` mètres du centre de la cour), comme la vignette de la planche. `ambient` vaut à peu près π :
-	// un matériau de Lambert divise la lumière reçue par π, et c'est à ce prix qu'il rend sa propre couleur
-	static LIGHT = { sky: '#ffffff', earth: '#8a8a6a', ambient: 3.2, sun: '#fff1d6', sunIntensity: .3, edge: '#a6a9d1', inner: 14, outer: 28 };
+	// La lumière de la planche « Soleil et ombres portées » : un ciel chaud, un soleil haut venu du fond à gauche dont
+	// l'ombre pose chaque arbre et chaque plant sur l'herbe. L'ombre se calcule dans un carré de `shadow` mètres autour
+	// du centre, qui contient l'ile
+	static LIGHT = { sky: '#fff8ec', earth: '#6f7f4f', ambient: 1.55, sun: '#fff0d4', sunIntensity: 2.6, sunAt: [-14, 26, 9], shadow: 32, shadowSize: 2048 };
 
 	// La lanterne que le joueur porte, et l'anneau d'or à ses pieds qui le désigne dans la cour. Sa lumière est orangée
 	// parce qu'elle s'ajoute au vert de l'herbe : c'est leur somme qui fait le halo jaune de la planche
 	static LANTERN = { color: '#ff6a00', intensity: 12, distance: 7, decay: 1.6, ring: '#f2c14e' };
 
-	// Où le joueur attend dans la cour : à gauche du puits, pour ne pas le cacher
-	static HOME = { x: -2.2, z: 2.6 };
-
 	// La vitesse de marche du joueur, en mètres par seconde
 	static WALK = 2.2;
-
-	// D'où la caméra regarde le point visé : de trois quarts, toujours du même côté, la rotation étant coupée
-	static VIEW = { x: 20, y: 22, z: 20 };
 
 	// Un toucher reste un toucher tant qu'il bouge de moins de CLICK_PX pixels en moins de CLICK_MS millisecondes ;
 	// au-delà, c'est un glisser de la vue (même règle que le plan de ferme)
@@ -69,50 +57,24 @@ class GameBoard {
 	static ZOOM_MIN = .8;
 	static ZOOM_MAX = 2.5;
 
+	// La marque d'une case déborde de sa case jusqu'à CELLAR_CLEAR pixels de chaque côté quand elle porte une étiquette
+	// (« 30 12 j ») : la marque du cellier s'en écarte d'autant (`placeCellar()`)
+	static CELLAR_CLEAR = 20;
+	static CELLAR_REACH = 90;
+	static CELLAR_STEP = 6;
+
 	// La vue ne quitte pas la cour, et s'arrête à MARGIN mètres de son emprise
 	static MARGIN = .5;
 
-	// La grille du chemin, en cellules de 0,2 m. Les cases et le décor se contournent à REACH mètres, la demi-largeur
-	// du joueur avec ses bras : à moins, son corps mord à l'écran sur le bord des cases qu'il longe. Le passe-pied de
-	// 0,35 m entre deux cases se ferme ainsi, et le joueur fait le tour du plateau
-	static CELL = .2;
-	static REACH = .3;
-
-	// Un modèle ne décrit que l'emprise de toute sa silhouette, couronne comprise : le tronc d'un arbre, seul à barrer
-	// le chemin, en est pris comme cette part de la demi-emprise
-	static TRUNK = .18;
-	static TREES = ['arbre', 'arbre.sapin', 'bouleau', 'chene', 'fruitier'];
-
-	// La marche reste à moins de YARD mètres du centre sur chaque axe. La limite passe derrière le décor, à plus d'une
-	// largeur de joueur : une pièce posée contre elle fermerait une poche d'herbe avec un plateau fermé
-	static YARD = 19;
-
-	// Le décor, le même pour tous les joueurs : [slug, x, z, échelle, rotation]. Il occupe les quatre coins de l'image
-	// laissés libres par les plateaux : au fond les haies, les arbres et le coin d'outils, à l'avant ce qui reste bas,
-	// pour ne cacher aucune case. Les allées restent à la marche. Le cadrage de toute la cour le montre entier
-	// (`getExtent()`, `zoomCourt`)
-	static DECOR = [
-		...[-1.05, .9, 3, 5.1].map(z => ['haie.charmille', -17.6, z, .7, 0]),
-		...[-1.1, .9, 3.05, 5.2].map(x => ['haie.charmille', x, -17.6, .7, Math.PI / 2]),
-		['arbre', -15.4, 2.4, .55, 0], ['bouleau', -16, 5.6, .6, 1.1], ['arbre.sapin', -14.6, 7.8, .6, 0],
-		['chene', 2.2, -14.6, .4, .4], ['fruitier', 5.8, -15.4, .55, .7], ['bouleau', 0, -13.2, .6, 2.3],
-		['compost', -14.4, -.6, .55, 1.6], ['cuve', -16.2, -1.6, .9, 0], ['brouette', -13.6, 1.9, .9, 2.2],
-		['caisses', -16, .6, 1, .5], ['palette', -14, -2.4, 1, .3],
-		['mare', -4.6, 15.4, .5, .3], ['roseaux', -7.8, 14.4, .6, 0], ['roseaux', -1.2, 17.2, .55, 1.4],
-		['puits', 0, 0, .9, .6],
-		['bande-fleurie', 16, .4, 1, 0], ['bande-fleurie', 3, 15.8, 1, Math.PI / 2],
-		['rocher', 15.2, -3.2, .7, .8], ['souche', 14.4, 5, .9, 1.7],
-		['buisson', 16.8, 4.2, .8, 0], ['buisson', 6.4, 16.2, .75, 1], ['buisson', 13.8, 2.6, .7, 2]
-	];
+	// La largeur de la vue au zoom 1, celle de la cour d'avant le ruisseau : deux plateaux carrés de 9,05 m, leur allée
+	// de 7 m, et une marge. Les zooms se comptent par rapport à elle
+	static SPAN = (9.05 * 2 + 7) * 1.45;
 
 	// `cover` est ce que l'habillage pose sur le haut de la scène (bandeaux, rangée de l'Avent), sous lequel la cour se
 	// cadre ; l'accueil et la fin de partie n'en posent pas
 	static start(node, cover = null) {
 
 		GameBoard.stop();
-
-		// L'attente de la cour : son herbe, sous la page déjà en place, jusqu'à la première image
-		node.style.backgroundColor = GameBoard.COLORS.ground;
 
 		const board = new GameBoard(node, cover);
 		GameBoard.current = board;
@@ -195,16 +157,22 @@ class GameBoard {
 		this.pending = null;
 		this.actor = null;
 		this.cellarMark = null;
+		this.cellarSize = null;
+		this.cellarZoom = null;
+		this.wellBox = null;
 
+		this.court = null;
+		this.acting = false;
 		this.models = {};
 		this.materials = {};
-		this.obstacles = [];
 		this.grid = null;
 		this.boxes = [];
 		this.extent = null;
 		this.controls = null;
 		this.zoomBoard = 1;
 		this.zoomCourt = 1;
+		this.zoomOpening = 1;
+		this.opening = false;
 		this.head = 0;
 		this.down = null;
 		this.pointers = new Set();
@@ -214,12 +182,15 @@ class GameBoard {
 	open() {
 
 		const bake = JSON.parse(this.container.dataset.sceneBake);
+		const loading = SceneLoader.loadPair({ directory: this.container.dataset.sceneDirectory, json: bake.json, bin: bake.bin });
 
+		// La cour se tire dès que les modèles sont lus, pendant que three se charge
 		return Promise.all([
 			SceneLoader.load(this.container),
-			SceneLoader.loadPair({ directory: this.container.dataset.sceneDirectory, json: bake.json, bin: bake.bin })
+			loading,
+			loading.then(baked => GameBoardCourt.build(this.data.seed ?? GameBoard.SEED, baked.index))
 		])
-			.then(([three, baked]) => {
+			.then(([three, baked, court]) => {
 
 				if(this.closed) {
 					return;
@@ -227,6 +198,7 @@ class GameBoard {
 
 				this.three = three;
 				this.baked = baked;
+				this.court = court;
 
 				this.mount();
 				this.emit('ready', {});
@@ -249,33 +221,207 @@ class GameBoard {
 
 	}
 
-	// Le sol, en carreaux de 5 m pour que la teinte de chaque sommet porte la vignette : pleine au centre de la cour,
-	// `edge` au-delà de `outer`
-	getGroundGeometry() {
+	/**
+	 * Le sol de la cour : le dessus de l'ile, sa tranche en trois bandes (le rebord d'herbe, la terre, la roche), puis
+	 * ce que la cour pose à plat dessus, l'herbe haute, le sable, l'eau et les pas japonais. Ces formes ne se touchent
+	 * pas : elles se fondent en un maillage coloré par sommet, chacune un peu au-dessus de la précédente pour que
+	 * l'ordre de la cour décide de ce qui recouvre quoi
+	 */
+	buildGround() {
+
+		const { THREE, addons } = this.three;
+		const { top, lip, earth, deep, depth } = this.court.island;
+
+		const outline = new THREE.Shape();
+
+		for(let index = 0; index < 160; index++) {
+
+			const angle = index / 160 * Math.PI * 2, radius = this.court.getRadiusAt(angle);
+
+			if(index === 0) {
+				outline.moveTo(Math.cos(angle) * radius, -Math.sin(angle) * radius);
+			} else {
+				outline.lineTo(Math.cos(angle) * radius, -Math.sin(angle) * radius);
+			}
+
+		}
+
+		const disc = new THREE.ShapeGeometry(outline);
+		disc.rotateX(-Math.PI / 2);
+
+		this.addGround(disc, new THREE.MeshLambertMaterial({ color: top }));
+
+		const side = color => new THREE.MeshLambertMaterial({ color, flatShading: true, side: THREE.DoubleSide });
+
+		this.addGround(this.getIslandBand(0, .05, 0, -.28), side(lip));
+		this.addGround(this.getIslandBand(.05, .45, -.28, -.28 - depth * .55), side(earth));
+		this.addGround(this.getIslandBand(.45, 1.3, -.28 - depth * .55, -.28 - depth), side(deep));
+
+		const flats = [...this.court.patches, ...this.court.layers];
+		const color = new THREE.Color();
+
+		const geometries = flats.map((layer, index) => {
+			const geometry = this.getFlatGeometry(layer);
+			geometry.translate(0, .012 + index * .002, 0);
+			return this.paintGeometry(geometry, color.set(layer[layer.length - 1]));
+		});
+
+		const stones = this.court.stones.map(([x, z, radius]) => {
+			const geometry = new THREE.CircleGeometry(radius, 7);
+			geometry.rotateX(-Math.PI / 2);
+			geometry.translate(x, .012 + (flats.length + 1) * .002, z);
+			return this.paintGeometry(geometry, color.set(GameBoard.COLORS.stones));
+		});
+
+		const merged = addons.mergeGeometries([...geometries, ...stones]);
+		[...geometries, ...stones].forEach(geometry => geometry.dispose());
+
+		this.addGround(merged, new THREE.MeshLambertMaterial({ vertexColors: true }));
+
+		// Les passerelles : des boites, fondues par couleur
+		const boxes = {};
+
+		this.court.boxes.forEach(box => {
+			const geometry = new THREE.BoxGeometry(box.w, box.h, box.d);
+			geometry.rotateY(box.angle);
+			geometry.translate(box.x, box.y + box.h / 2, box.z);
+			(boxes[box.color] ??= []).push(geometry);
+		});
+
+		Object.entries(boxes).forEach(([color, geometries]) => {
+			this.scene.add(this.cast(new THREE.Mesh(addons.mergeGeometries(geometries), new THREE.MeshLambertMaterial({ color }))));
+			geometries.forEach(geometry => geometry.dispose());
+		});
+
+	}
+
+	addGround(geometry, material) {
 
 		const { THREE } = this.three;
 
-		const geometry = new THREE.PlaneGeometry(400, 400, 80, 80);
-		const position = geometry.attributes.position;
-		const colors = new Float32Array(position.count * 3);
+		const mesh = new THREE.Mesh(geometry, material);
+		mesh.receiveShadow = true;
+		this.scene.add(mesh);
 
-		const center = new THREE.Color(1, 1, 1);
-		const edge = new THREE.Color(GameBoard.LIGHT.edge);
-		const color = new THREE.Color();
+		return mesh;
 
-		for(let index = 0; index < position.count; index++) {
+	}
 
-			const radius = Math.hypot(position.getX(index), position.getY(index));
-			const ratio = THREE.MathUtils.smoothstep(radius, GameBoard.LIGHT.inner, GameBoard.LIGHT.outer);
+	paintGeometry(geometry, color) {
 
-			color.copy(center).lerp(edge, ratio).toArray(colors, index * 3);
+		const { THREE } = this.three;
 
+		const count = geometry.attributes.position.count;
+		const colors = new Float32Array(count * 3);
+
+		for(let index = 0; index < count; index++) {
+			color.toArray(colors, index * 3);
 		}
 
 		geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
 		return geometry;
 
+	}
+
+	// Une bande de la tranche de l'ile, de `inset0` à `inset1` mètres en retrait du bord et de `y0` à `y1` en hauteur
+	getIslandBand(inset0, inset1, y0, y1) {
+
+		const { THREE } = this.three;
+
+		const count = 120, positions = [];
+		const at = (angle, inset, y) => {
+			const radius = this.court.getRadiusAt(angle) - inset;
+			return [Math.cos(angle) * radius, y, Math.sin(angle) * radius];
+		};
+
+		for(let index = 0; index < count; index++) {
+
+			const a0 = index / count * Math.PI * 2, a1 = (index + 1) / count * Math.PI * 2;
+			const t0 = at(a0, inset0, y0), t1 = at(a1, inset0, y0), b0 = at(a0, inset1, y1), b1 = at(a1, inset1, y1);
+
+			positions.push(...t0, ...b0, ...t1, ...t1, ...b0, ...b1);
+
+		}
+
+		const geometry = new THREE.BufferGeometry();
+		geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+		geometry.computeVertexNormals();
+
+		return geometry;
+
+	}
+
+	// Une forme posée à plat par la cour (`GameBoardCourt`, `layers` et `patches`) : un rectangle, un rond, une tache, un
+	// polygone ou un ruban le long d'une suite de points
+	getFlatGeometry(layer) {
+
+		const { THREE } = this.three;
+		const [kind, ...rest] = layer;
+		const shape = new THREE.Shape();
+
+		const trace = points => {
+			points.forEach(([x, z], index) => {
+				if(index === 0) {
+					shape.moveTo(x, -z);
+				} else {
+					shape.lineTo(x, -z);
+				}
+			});
+			shape.closePath();
+		};
+
+		if(kind === 'rect') {
+
+			const [x0, z0, x1, z1] = rest;
+			trace([[x0, z0], [x1, z0], [x1, z1], [x0, z1]]);
+
+		} else if(kind === 'disc') {
+
+			const [x, z, radius] = rest;
+			shape.absarc(x, -z, radius, 0, Math.PI * 2, false);
+
+		} else if(kind === 'blob') {
+
+			const [x, z, rx, rz, n] = rest;
+
+			trace(Array.from({ length: 64 }, (_, index) => {
+				const angle = index / 64 * Math.PI * 2, cos = Math.cos(angle), sin = Math.sin(angle);
+				return [x + rx * Math.sign(cos) * Math.pow(Math.abs(cos), 2 / n), z + rz * Math.sign(sin) * Math.pow(Math.abs(sin), 2 / n)];
+			}));
+
+		} else if(kind === 'poly') {
+
+			trace(rest[0]);
+
+		} else if(kind === 'ribbon') {
+
+			const [points, half] = rest;
+			const left = [], right = [];
+
+			points.forEach((point, index) => {
+				const a = points[Math.max(0, index - 1)], b = points[Math.min(points.length - 1, index + 1)];
+				const dx = b[0] - a[0], dz = b[1] - a[1], length = Math.hypot(dx, dz) || 1;
+				left.push([point[0] - dz / length * half, point[1] + dx / length * half]);
+				right.push([point[0] + dz / length * half, point[1] - dx / length * half]);
+			});
+
+			trace([...left, ...right.reverse()]);
+
+		}
+
+		const geometry = new THREE.ShapeGeometry(shape, 24);
+		geometry.rotateX(-Math.PI / 2);
+
+		return geometry;
+
+	}
+
+	// Tout ce qui se tient debout dans la cour porte son ombre et reçoit celle des autres
+	cast(mesh) {
+		mesh.castShadow = true;
+		mesh.receiveShadow = true;
+		return mesh;
 	}
 
 	emit(name, detail) {
@@ -286,25 +432,31 @@ class GameBoard {
 
 		const { THREE, addons } = this.three;
 
-		this.origins = {};
-
 		this.scene = new THREE.Scene();
+		this.scene.background = new THREE.Color(GameBoard.COLORS.background);
 		this.scene.add(new THREE.HemisphereLight(GameBoard.LIGHT.sky, GameBoard.LIGHT.earth, GameBoard.LIGHT.ambient));
 
+		// Le soleil vient de `sunAt`, à 30 m du centre : sa caméra d'ombre, centrée sur lui, couvre toute l'ile, sa
+		// tranche comprise, entre `near` et `far`
 		const sun = new THREE.DirectionalLight(GameBoard.LIGHT.sun, GameBoard.LIGHT.sunIntensity);
-		sun.position.set(-12, 5, 6);
+		const shadow = GameBoard.LIGHT.shadow;
+		sun.position.set(...GameBoard.LIGHT.sunAt).normalize().multiplyScalar(30);
+		sun.castShadow = true;
+		sun.shadow.mapSize.set(GameBoard.LIGHT.shadowSize, GameBoard.LIGHT.shadowSize);
+		Object.assign(sun.shadow.camera, { left: -shadow, right: shadow, top: shadow, bottom: -shadow, near: -60, far: 80 });
+		sun.shadow.bias = -.0006;
+		sun.shadow.normalBias = .03;
 		this.scene.add(sun);
+		this.scene.add(sun.target);
 
 		// Le nombre de lumières entre dans chaque matériau compilé : la lanterne du joueur, qui arrive après la
 		// première image, est donc posée ici, éteinte, et lui sera seulement rattachée
 		this.lantern = new THREE.PointLight(GameBoard.LANTERN.color, 0, GameBoard.LANTERN.distance, GameBoard.LANTERN.decay);
 		this.scene.add(this.lantern);
 
-		const ground = new THREE.Mesh(this.getGroundGeometry(), new THREE.MeshLambertMaterial({ color: GameBoard.COLORS.ground, vertexColors: true }));
-		ground.rotation.x = -Math.PI / 2;
-		this.scene.add(ground);
+		this.buildGround();
 
-		this.soilGeometry = new THREE.BoxGeometry(GameBoard.TILE, .16, GameBoard.TILE);
+		this.soilGeometry = new THREE.BoxGeometry(GameBoardCourt.TILE, .16, GameBoardCourt.TILE);
 
 		Object.keys(this.data.boards).forEach(board => this.buildBoard(board));
 
@@ -313,6 +465,13 @@ class GameBoard {
 		this.renderer = new THREE.WebGLRenderer({ antialias: true });
 		this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
 		this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+		this.renderer.shadowMap.enabled = true;
+		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+		// Le soleil ne bouge pas avec la vue : l'ombre ne se recalcule que lorsque ce qui la porte change, une culture
+		// ou le joueur qui marche (`draw()`), et un glisser ne paie qu'une passe sur deux
+		this.renderer.shadowMap.autoUpdate = false;
+		this.renderer.shadowMap.needsUpdate = true;
 		this.renderer.domElement.style.display = 'block';
 		this.container.append(this.renderer.domElement);
 
@@ -340,6 +499,7 @@ class GameBoard {
 		this.controls.zoomToCursor = true;
 		this.controls.touches.TWO = THREE.TOUCH.DOLLY_PAN;
 		this.controls.addEventListener('change', () => this.request());
+		this.controls.addEventListener('start', () => this.opening = false);
 
 		canvas.addEventListener('pointermove', event => this.hover(event), { signal });
 		canvas.addEventListener('pointerdown', event => this.press(event), { signal });
@@ -361,16 +521,20 @@ class GameBoard {
 
 		document.addEventListener('visibilitychange', () => this.request(), { signal });
 
-		Object.keys(this.data.boards).filter(board => this.data.boards[board].open === false).forEach(board => this.mark(this.roots[board], 0, 0, 'board-'+ board, 1.4, false, null));
+		Object.keys(this.data.boards).filter(board => this.data.boards[board].open === false).forEach(board => {
+			const parcel = this.getParcel(board);
+			this.mark(this.roots[board], parcel.cx, parcel.cz, 'board-'+ board, 1.4, false, null);
+		});
 
 		this.drawCellar();
 
 		this.frame();
 
 		// Un plateau demandé par l'adresse (`?board=`, depuis l'annonce de son ouverture) cadre la vue sur lui, sinon
-		// elle s'ouvre sur toute la cour
+		// elle s'ouvre sur ses plateaux
 		if(this.data.board === null) {
-			this.look(new THREE.Vector3(), this.zoomCourt);
+			this.look(this.getOpening(), this.zoomOpening);
+			this.opening = true;
 		} else {
 			this.look(this.getAim(String(this.data.board)), this.zoomBoard);
 		}
@@ -381,55 +545,145 @@ class GameBoard {
 
 	}
 
-	// Les quatre plateaux en carré, le premier en haut à gauche
+	getParcel(board) {
+		return this.court.parcels[Number(board) - 1];
+	}
+
+	/**
+	 * Un plateau à sa place dans la cour, chaque case tournée comme la cour l'a posée. Ses cases et leurs cultures
+	 * sont les enfants directs de son groupe, que `pick()` reconnait
+	 */
 	buildBoard(board) {
 
 		const { THREE } = this.three;
 
-		const index = Number(board) - 1;
-		const origin = new THREE.Vector3((index % 2 === 0 ? -1 : 1) * GameBoard.SPREAD / 2, 0, (index < 2 ? -1 : 1) * GameBoard.SPREAD / 2);
-
-		this.origins[board] = origin;
+		const parcel = this.getParcel(board);
+		const closed = (this.data.boards[board].open === false);
 
 		const root = new THREE.Group();
-		root.position.copy(origin);
 		this.scene.add(root);
+		this.roots[board] = root;
 
 		// Fermé, le plateau compte sa ganivelle. Ouvert, ses cases et un mètre de cultures, pas la plus haute : la cour
-		// se cadrerait autrement à chaque semis et chaque récolte, et la pointe d'un maïs mûr au fond du plateau peut
-		// passer sous le bandeau de tête
-		const [half, high] = (this.data.boards[board].open === false) ? [GameBoard.FENCE, this.getModel('cloture.ganivelle').box.max.y * GameBoard.FENCE_SCALE] : [GameBoard.SIDE / 2, 1];
-		this.boxes.push(new THREE.Box3(new THREE.Vector3(origin.x - half, 0, origin.z - half), new THREE.Vector3(origin.x + half, high, origin.z + half)));
-		this.roots[board] = root;
+		// se cadrerait autrement à chaque semis et chaque récolte
+		const high = closed ? this.getModel('cloture.ganivelle').box.max.y * GameBoard.FENCE_SCALE : 1;
+		const reach = closed ? GameBoardCourt.FENCE_GAP : 0;
+
+		parcel.tiles.forEach(tile => {
+			const half = GameBoardCourt.tileHalf(tile.a) + reach;
+			this.boxes.push(new THREE.Box3(new THREE.Vector3(tile.x - half, 0, tile.z - half), new THREE.Vector3(tile.x + half, high, tile.z + half)));
+		});
 
 		this.tiles[board] = {};
 
 		this.data.boards[board].tiles.forEach(data => {
 
-			const row = Math.floor((data.tile - 1) / 4), column = (data.tile - 1) % 4;
-			const x = (column - 1.5) * GameBoard.STEP, z = (row - 1.5) * GameBoard.STEP;
+			const tile = parcel.tiles[data.tile - 1];
 
-			const soil = new THREE.Mesh(this.soilGeometry, new THREE.MeshLambertMaterial());
-			soil.position.set(x, .08, z);
+			const soil = this.cast(new THREE.Mesh(this.soilGeometry, new THREE.MeshLambertMaterial()));
+			soil.position.set(tile.x, .08, tile.z);
+			soil.rotation.y = tile.a;
 			root.add(soil);
 
 			const plants = new THREE.Group();
-			plants.position.set(x, .16, z);
+			plants.position.set(tile.x, .16, tile.z);
+			plants.rotation.y = tile.a;
 			root.add(plants);
 
-			const entry = { board, soil, plants, x, z, data: null, mark: null };
+			const entry = { board, soil, plants, x: tile.x, z: tile.z, data: null, mark: null };
 
 			this.tiles[board][data.tile] = entry;
 			this.plant(entry, data);
 
 		});
 
-		if(this.data.boards[board].open === false) {
-			for(let side = 0; side < 4; side++) {
-				const angle = side / 4 * Math.PI * 2;
-				this.place('cloture.ganivelle', root, Math.cos(angle) * GameBoard.FENCE, Math.sin(angle) * GameBoard.FENCE, GameBoard.FENCE_SCALE, -angle + Math.PI / 2);
-			}
+		if(closed) {
+			this.buildFence(parcel, root);
 		}
+
+	}
+
+	/**
+	 * La ganivelle d'un plateau fermé : elle suit l'enveloppe de ses cases à `FENCE_GAP` mètres, la marche s'arrêtant
+	 * au même tracé (`GameBoardCourt.getFence()`). Chaque côté de l'enveloppe reçoit des segments d'égale longueur :
+	 * une ganivelle à FENCE_SCALE s'y étire d'au plus 15 % plutôt que d'ajouter un segment trop court. Elle n'est pas
+	 * tirée par la cour et ne compte pas dans son budget : la cour reste la même quand un plateau ouvre. Ses segments se
+	 * fondent par matériau, comme le décor : un plateau en porte une quinzaine, que l'ombre ferait dessiner deux fois
+	 * chacun
+	 */
+	buildFence(parcel, root) {
+
+		const { THREE, addons } = this.three;
+
+		const model = this.getModel('cloture.ganivelle');
+		const depth = model.box.max.z - model.box.min.z;
+		const scale = GameBoard.FENCE_SCALE;
+
+		const matrix = new THREE.Matrix4();
+		const rotation = new THREE.Quaternion();
+		const up = new THREE.Vector3(0, 1, 0);
+		const geometries = model.parts.map(() => []);
+
+		this.getFenceLine(parcel).forEach(([from, to]) => {
+
+			const dx = to[0] - from[0], dz = to[1] - from[1], side = Math.hypot(dx, dz);
+			const count = Math.max(1, Math.ceil(side / (depth * scale) - .15));
+
+			rotation.setFromAxisAngle(up, Math.atan2(dx, dz));
+
+			for(let index = 0; index < count; index++) {
+
+				// Un segment plus court qu'une ganivelle se resserre dans sa longueur, pas dans sa hauteur
+				matrix.compose(new THREE.Vector3(from[0] + dx * index / count, 0, from[1] + dz * index / count), rotation, new THREE.Vector3(scale, scale, side / count / depth));
+
+				model.parts.forEach((part, position) => geometries[position].push(part.geometry.clone().applyMatrix4(matrix)));
+
+			}
+
+		});
+
+		model.parts.forEach((part, position) => {
+			root.add(this.cast(new THREE.Mesh(addons.mergeGeometries(geometries[position]), this.getMaterial(part))));
+			geometries[position].forEach(geometry => geometry.dispose());
+		});
+
+	}
+
+	/**
+	 * Les côtés de l'enveloppe convexe des cases, chacun écarté de `FENCE_GAP` vers l'extérieur et prolongé jusqu'à
+	 * croiser ses voisins. Un côté de moins de 0,3 m, au coin arrondi de deux cases, se fond dans le suivant
+	 */
+	getFenceLine(parcel) {
+
+		const hull = GameBoardCourt.getOutline(parcel);
+		const gap = GameBoardCourt.FENCE_GAP;
+
+		// L'enveloppe tourne dans le sens direct : l'extérieur d'un côté est à sa droite
+		const lines = hull.map((point, index) => {
+			const next = hull[(index + 1) % hull.length], dx = next[0] - point[0], dz = next[1] - point[1], length = Math.hypot(dx, dz);
+			return { point, next, dx: dx / length, dz: dz / length, length };
+		}).filter(line => line.length >= .3).map(line => ({ ...line, nx: line.dz, nz: -line.dx }));
+
+		const corners = lines.map((line, index) => {
+
+			const previous = lines[(index + lines.length - 1) % lines.length];
+
+			const ax = previous.point[0] + previous.nx * gap, az = previous.point[1] + previous.nz * gap;
+			const bx = line.point[0] + line.nx * gap, bz = line.point[1] + line.nz * gap;
+			const cross = previous.dx * line.dz - previous.dz * line.dx;
+
+			// Deux côtés presque alignés se rejoignent au départ du second
+			if(Math.abs(cross) < 1e-6) {
+				return [bx, bz];
+			}
+
+			const t = ((bx - ax) * line.dz - (bz - az) * line.dx) / cross;
+
+			return [ax + previous.dx * t, az + previous.dz * t];
+
+		});
+
+		return corners.map((corner, index) => [corner, corners[(index + 1) % corners.length]]);
 
 	}
 
@@ -438,6 +692,10 @@ class GameBoard {
 
 		entry.data = data;
 		entry.plants.clear();
+
+		if(this.renderer !== null) {
+			this.renderer.shadowMap.needsUpdate = true;
+		}
 		entry.soil.material.color.set(this.getSoilColor(entry));
 
 		if(data.growing === null) {
@@ -450,25 +708,25 @@ class GameBoard {
 		const model = this.getModel(data.growing);
 		const boost = GameBoard.BOOST[data.growing] ?? 1;
 		const side = Math.max(2, Math.min(3, Math.floor(1.75 / Math.max(model.d * boost, .45))));
-		const pitch = GameBoard.TILE / side;
+		const pitch = GameBoardCourt.TILE / side;
 		const stage = data.companion ? 1 : Math.max(.15, data.stage);
 
 		for(let i = 0; i < side; i++) {
 			for(let j = 0; j < side; j++) {
-				const x = -GameBoard.TILE / 2 + pitch * (i + .5) + (random() - .5) * pitch * .2;
-				const z = -GameBoard.TILE / 2 + pitch * (j + .5) + (random() - .5) * pitch * .2;
+				const x = -GameBoardCourt.TILE / 2 + pitch * (i + .5) + (random() - .5) * pitch * .2;
+				const z = -GameBoardCourt.TILE / 2 + pitch * (j + .5) + (random() - .5) * pitch * .2;
 				this.place(data.growing, entry.plants, x, z, boost * (.35 + .65 * stage) * (.9 + random() * .2), random() * Math.PI * 2);
 			}
 		}
 
 		if(data.ripe) {
-			this.place('caisse', entry.plants, GameBoard.TILE / 2 - .1, GameBoard.TILE / 2 + .35, .7, .3);
+			this.place('caisse', entry.plants, GameBoardCourt.TILE / 2 - .1, GameBoardCourt.TILE / 2 + .35, .7, .3);
 		}
 
 	}
 
-	// Le décor de la cour n'est porté par aucune donnée : le même pour tous les joueurs. Rien ne s'y touche, il est donc
-	// fondu en un maillage par matériau, ce qui le dessine en quelques appels au lieu d'un par pièce de chaque objet
+	// Le décor de la cour ne porte aucune donnée et rien ne s'y touche : il est fondu en un maillage par matériau, ce
+	// qui le dessine en quelques appels au lieu d'un par pièce de chaque objet
 	buildDecor() {
 
 		const { THREE, addons } = this.three;
@@ -478,13 +736,11 @@ class GameBoard {
 		const rotation = new THREE.Quaternion();
 		const up = new THREE.Vector3(0, 1, 0);
 
-		this.obstacles = [];
-
-		GameBoard.DECOR.forEach(([slug, x, z, scale, angle]) => {
+		this.court.decor.forEach(([slug, x, z, scale, angle, y]) => {
 
 			const model = this.getModel(slug);
 
-			matrix.compose(new THREE.Vector3(x, 0, z), rotation.setFromAxisAngle(up, angle), new THREE.Vector3(scale, scale, scale));
+			matrix.compose(new THREE.Vector3(x, y, z), rotation.setFromAxisAngle(up, angle), new THREE.Vector3(scale, scale, scale));
 
 			// La géométrie d'un modèle est partagée avec les cultures et le cellier, qui la posent ailleurs : la fonte en
 			// transforme une copie
@@ -493,74 +749,56 @@ class GameBoard {
 				(pieces[key] ??= { part, geometries: [] }).geometries.push(part.geometry.clone().applyMatrix4(matrix));
 			});
 
-			const box = model.box.clone().applyMatrix4(matrix);
-			this.boxes.push(box);
+			this.boxes.push(model.box.clone().applyMatrix4(matrix));
 
-			if(GameBoard.TREES.includes(slug)) {
-				const radius = Math.min(box.max.x - box.min.x, box.max.z - box.min.z) / 2 * GameBoard.TRUNK;
-				this.obstacles.push({ minX: x - radius, maxX: x + radius, minZ: z - radius, maxZ: z + radius });
-			} else {
-				this.obstacles.push(GameBoard.getFootprint(box, GameBoard.REACH));
+			if(slug === 'puits') {
+				this.wellBox = this.boxes.at(-1);
 			}
 
 		});
 
 		Object.values(pieces).forEach(({ part, geometries }) => {
 
-			this.scene.add(new THREE.Mesh(addons.mergeGeometries(geometries), this.getMaterial(part)));
+			this.scene.add(this.cast(new THREE.Mesh(addons.mergeGeometries(geometries), this.getMaterial(part))));
 
 			geometries.forEach(geometry => geometry.dispose());
 
 		});
 
-		// Le cellier : les caisses empilées près du puits, que l'habillage ouvre sur les récoltes du joueur. Il se touche,
-		// et reste donc hors de la fonte
+		// Le cellier : les caisses empilées près du puits, tournées avec lui, que l'habillage ouvre sur les récoltes du
+		// joueur. Il se touche, et reste donc hors de la fonte
 		this.cellar = new THREE.Group();
-		this.cellar.position.set(2.4, 0, -1.6);
+		this.cellar.position.set(this.court.cellar.x, 0, this.court.cellar.z);
+		this.cellar.rotation.y = this.court.cellar.angle;
 		[[0, 0, 0], [.95, 0, .2], [.45, .55, .1]].forEach(([x, y, rotation]) => this.place('caisse', this.cellar, x, 0, .8, rotation).position.y = y);
 		this.scene.add(this.cellar);
 
-		const cellar = new THREE.Box3().setFromObject(this.cellar);
-		this.boxes.push(cellar);
-		this.obstacles.push(GameBoard.getFootprint(cellar, GameBoard.REACH));
+		this.boxes.push(new THREE.Box3().setFromObject(this.cellar));
+
+		// L'ile et sa tranche
+		const depth = this.court.island.depth;
+
+		for(let index = 0; index < 72; index++) {
+			const angle = index / 72 * Math.PI * 2, radius = this.court.getRadiusAt(angle), x = Math.cos(angle) * radius, z = Math.sin(angle) * radius;
+			this.boxes.push(new THREE.Box3(new THREE.Vector3(x, -depth, z), new THREE.Vector3(x, 0, z)));
+		}
 
 	}
 
-	// L'emprise au sol d'une boite, élargie de `margin`
-	static getFootprint(box, margin) {
-		return { minX: box.min.x - margin, maxX: box.max.x + margin, minZ: box.min.z - margin, maxZ: box.max.z + margin };
-	}
-
-	// Ce qui barre le chemin du joueur : chaque case, cultivée ou non, le bac de terre étant une planche, le carré d'un plateau fermé jusqu'à sa ganivelle,
-	// et le décor posé par `buildDecor()`. La grille se calcule à la première marche, après la première image
+	/**
+	 * Ce qui barre le chemin du joueur (`GameBoardCourt.getObstacles()`) : l'eau, le décor, le cellier, le bord de
+	 * l'ile, et chaque plateau, ouvert jusqu'à ses cases, fermé jusqu'à sa ganivelle. La grille se calcule à la première
+	 * marche, après la première image
+	 */
 	getGrid() {
 
 		if(this.grid === null) {
 
-			const rectangles = [...this.obstacles];
+			const closed = {};
 
-			Object.keys(this.tiles).forEach(board => {
+			Object.keys(this.data.boards).forEach(board => closed[board] = (this.data.boards[board].open === false));
 
-				const origin = this.origins[board];
-
-				if(this.data.boards[board].open === false) {
-					const half = GameBoard.FENCE + GameBoard.REACH;
-					rectangles.push({ minX: origin.x - half, maxX: origin.x + half, minZ: origin.z - half, maxZ: origin.z + half });
-					return;
-				}
-
-				const half = GameBoard.TILE / 2 + GameBoard.REACH;
-
-				Object.values(this.tiles[board]).forEach(entry => {
-					const world = this.getWorld(entry);
-					rectangles.push({ minX: world.x - half, maxX: world.x + half, minZ: world.z - half, maxZ: world.z + half });
-				});
-
-			});
-
-			const extent = GameBoard.YARD;
-
-			this.grid = new GameBoardPath({ minX: -extent, maxX: extent, minZ: -extent, maxZ: extent }, GameBoard.CELL, rectangles);
+			this.grid = this.court.getPath(closed);
 
 		}
 
@@ -600,7 +838,8 @@ class GameBoard {
 		const { THREE } = this.three;
 		const key = part.vertex ? 'vertex' : part.color;
 
-		this.materials[key] ??= part.vertex ? new THREE.MeshLambertMaterial({ vertexColors: true }) : new THREE.MeshLambertMaterial({ color: '#'+ part.color });
+		// Une pièce mince (feuille, planche) porte son ombre des deux côtés : vue par sa face arrière, elle n'en porterait aucune
+		this.materials[key] ??= part.vertex ? new THREE.MeshLambertMaterial({ vertexColors: true, shadowSide: THREE.DoubleSide }) : new THREE.MeshLambertMaterial({ color: '#'+ part.color, shadowSide: THREE.DoubleSide });
 
 		return this.materials[key];
 
@@ -611,7 +850,7 @@ class GameBoard {
 		const { THREE } = this.three;
 
 		const group = new THREE.Group();
-		this.getModel(slug).parts.forEach(part => group.add(new THREE.Mesh(part.geometry, this.getMaterial(part))));
+		this.getModel(slug).parts.forEach(part => group.add(this.cast(new THREE.Mesh(part.geometry, this.getMaterial(part)))));
 		group.position.set(x, 0, z);
 		group.scale.setScalar(scale);
 		group.rotation.y = rotation;
@@ -715,13 +954,138 @@ class GameBoard {
 
 	}
 
-	// La marque du cellier, que la page remplace quand le stock change ; sans elle, le cellier ne se marque pas
+	// La marque du cellier, que la page remplace quand le stock change ; sans elle, le cellier ne se marque pas.
+	// `placeCellar()` ne la place qu'une fois sa taille lue, à l'image qui suit son entrée dans la page : d'ici là, elle
+	// garde la place de celle qu'elle remplace, et la première se cache. La récolte attend cette place
+	// (`gameboard:placed`, `GameDesk.harvested()`)
 	drawCellar() {
 
-		this.cellarMark?.removeFromParent();
-		this.cellarMark = this.mark(this.cellar, .45, .2, 'cellar', 1.9, true, null);
+		const previous = this.cellarMark;
 
-		this.cellarMark?.element.addEventListener('click', () => this.emit('cellar', {}));
+		previous?.removeFromParent();
+		this.cellarMark = this.mark(this.scene, 0, 0, 'cellar', 0, true, null);
+		this.cellarSize = null;
+
+		if(this.cellarMark === null) {
+			return;
+		}
+
+		if(previous === null) {
+			this.cellarMark.element.style.visibility = 'hidden';
+		} else {
+			this.cellarMark.position.copy(previous.position);
+			this.cellarMark.center.copy(previous.center);
+		}
+
+		this.cellarMark.element.addEventListener('click', () => this.emit('cellar', {}));
+
+		this.request();
+
+	}
+
+	/**
+	 * La marque du cellier se pose au plus près des caisses dans l'image, à la première place où elle ne couvre ni le
+	 * puits, ni une case, ni le bord de la vue : les places se cherchent sur une grille de CELLAR_STEP pixels, jusqu'à
+	 * CELLAR_REACH pixels des caisses. Entre places qui couvrent autant, celle qui est plus proche du puits que des
+	 * caisses passe après les autres, la marque s'y lirait comme celle du puits. À distance égale, elle prend la place qui empiète le moins sur les
+	 * étiquettes des cases ; quand aucune n'est libre, celle qui couvre le moins. Ce qu'elle couvre dépend du zoom, sa taille
+	 * étant en pixels : elle se replace quand il change. Toutes les mesures se font dans le plan de l'image, en
+	 * pixels, sans lire la page
+	 */
+	placeCellar() {
+
+		const { THREE } = this.three;
+
+		const scale = this.pixels * this.camera.zoom;
+		const step = GameBoard.CELLAR_STEP, reach = GameBoard.CELLAR_REACH;
+		const { width, height } = this.cellarSize;
+
+		const extentOf = (box, grow = 0) => {
+			const extent = GameBoardCourt.getEmptyExtent();
+			GameBoardCourt.projectBox(box, extent);
+			return { minX: extent.minX * scale - grow, maxX: extent.maxX * scale + grow, minY: extent.minY * scale - grow, maxY: extent.maxY * scale + grow };
+		};
+
+		const tiles = this.court.parcels.flatMap(parcel => parcel.tiles.map(tile => {
+			const half = GameBoardCourt.tileHalf(tile.a);
+			return { min: { x: tile.x - half, y: 0, z: tile.z - half }, max: { x: tile.x + half, y: 1, z: tile.z + half } };
+		}));
+
+		const obstacles = tiles.map(tile => extentOf(tile));
+		const labels = tiles.map(tile => extentOf(tile, GameBoard.CELLAR_CLEAR));
+		const well = (this.wellBox === null) ? null : extentOf(this.wellBox);
+
+		if(well !== null) {
+			obstacles.push(well);
+		}
+
+		// La vue, sous ce que l'habillage pose en haut
+		const [targetX, targetY] = GameBoardCourt.project(this.controls.target.x, this.controls.target.y, this.controls.target.z);
+		const view = {
+			minX: targetX * scale - this.camera.right * this.pixels,
+			maxX: targetX * scale + this.camera.right * this.pixels,
+			minY: targetY * scale - this.camera.top * this.pixels,
+			maxY: targetY * scale + this.camera.top * this.pixels - this.head
+		};
+
+		// Les caisses, et leur abord, que la marque ne couvre pas
+		const body = extentOf(new THREE.Box3().setFromObject(this.cellar));
+		const crates = { minX: body.minX - .2 * scale, maxX: body.maxX + .2 * scale, minY: body.minY - .2 * scale, maxY: body.maxY + .2 * scale };
+
+		// Seuls comptent les obstacles qu'une place de la grille peut toucher : le reste du plateau ne change rien au
+		// choix, et la recherche se refait à chaque image d'un zoom
+		const zone = { minX: crates.minX - width - reach, maxX: crates.maxX + width + reach, minY: crates.minY - height - reach, maxY: crates.maxY + height + reach };
+		const touches = extent => extent.maxX > zone.minX && extent.minX < zone.maxX && extent.maxY > zone.minY && extent.minY < zone.maxY;
+		const near = obstacles.filter(touches), crowded = labels.filter(touches);
+
+		const overlap = (a, b) => Math.max(0, Math.min(a.maxX, b.maxX) - Math.max(a.minX, b.minX)) * Math.max(0, Math.min(a.maxY, b.maxY) - Math.max(a.minY, b.minY));
+		const apart = (a, b) => Math.hypot(Math.max(0, b.minX - a.maxX, a.minX - b.maxX), Math.max(0, b.minY - a.maxY, a.minY - b.maxY));
+
+		let best = null;
+
+		// Le coin bas gauche de la marque parcourt la grille ; `gap` compte en pas de grille sa distance aux caisses
+		for(let minX = crates.minX - width - reach; minX <= crates.maxX + reach; minX += step) {
+
+			for(let minY = crates.minY - height - reach; minY <= crates.maxY + reach; minY += step) {
+
+				const rectangle = { minX, maxX: minX + width, minY, maxY: minY + height };
+
+				if(overlap(rectangle, crates) > 0) {
+					continue;
+				}
+
+				const distance = apart(rectangle, crates);
+				const gap = Math.ceil(distance / step);
+
+				if(gap * step > reach) {
+					continue;
+				}
+
+				// Arrondi au pixel : l'aire hors de la vue est une différence de flottants, dont le bruit ferait passer une
+				// place libre lointaine avant une place libre contre les caisses
+				const cost = Math.round(near.reduce((sum, obstacle) => sum + overlap(rectangle, obstacle), 0) + width * height - overlap(rectangle, view));
+				const crowding = crowded.reduce((sum, label) => sum + overlap(rectangle, label), 0);
+				const astray = (well !== null && apart(rectangle, well) < apart(rectangle, body)) ? 1 : 0;
+
+				if(
+					best === null ||
+					cost < best.cost ||
+					(cost === best.cost && (astray < best.astray || (astray === best.astray && (gap < best.gap || (gap === best.gap && crowding < best.crowding)))))
+				) {
+					best = { x: minX, y: minY, cost, astray, gap, crowding };
+				}
+
+			}
+
+		}
+
+		const center = new THREE.Box3().setFromObject(this.cellar).getCenter(new THREE.Vector3());
+		const [centerX, centerY] = GameBoardCourt.project(center.x, center.y, center.z);
+
+		this.cellarMark.position.copy(center)
+			.addScaledVector(new THREE.Vector3(...GameBoardCourt.RIGHT), best.x / scale - centerX)
+			.addScaledVector(new THREE.Vector3(...GameBoardCourt.UP), best.y / scale - centerY);
+		this.cellarMark.center.set(0, 1);
 
 	}
 
@@ -950,9 +1314,10 @@ class GameBoard {
 	}
 
 	/**
-	 * L'emprise de la cour dans le plan de l'image : le décor, les plateaux jusqu'à leur ganivelle et le cellier, en
-	 * mètres le long des axes de la vue, `right` vers la droite de l'image et `up` vers son haut. La vue ne tourne
-	 * jamais, ses axes se déduisent de VIEW et l'emprise se calcule une fois
+	 * L'emprise de la cour dans le plan de l'image : l'ile et sa tranche, le décor, les plateaux jusqu'à leur ganivelle
+	 * et le cellier, en mètres le long des axes de la vue, `right` vers la droite de l'image et `up` vers son haut.
+	 * `plateaus` est celle des seules cases, que le cadrage d'ouverture serre, et `board` la plus grande
+	 * largeur d'un plateau. La vue ne tourne jamais, ses axes se déduisent de VIEW et l'emprise se calcule une fois
 	 */
 	getExtent() {
 
@@ -960,25 +1325,28 @@ class GameBoard {
 
 			const { THREE } = this.three;
 
-			const forward = new THREE.Vector3(-GameBoard.VIEW.x, -GameBoard.VIEW.y, -GameBoard.VIEW.z).normalize();
-			const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
-			const up = new THREE.Vector3().crossVectors(right, forward);
+			const extent = {
+				right: new THREE.Vector3(...GameBoardCourt.RIGHT),
+				up: new THREE.Vector3(...GameBoardCourt.UP),
+				...GameBoardCourt.getEmptyExtent(),
+				plateaus: GameBoardCourt.getEmptyExtent(),
+				board: 0
+			};
 
-			const extent = { right, up, minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };
-			const corner = new THREE.Vector3();
+			this.boxes.forEach(box => GameBoardCourt.projectBox(box, extent));
 
-			this.boxes.forEach(box => {
+			this.court.parcels.forEach(parcel => {
 
-				for(let index = 0; index < 8; index++) {
+				const own = GameBoardCourt.getEmptyExtent();
 
-					corner.set((index & 1) ? box.max.x : box.min.x, (index & 2) ? box.max.y : box.min.y, (index & 4) ? box.max.z : box.min.z);
+				parcel.tiles.forEach(tile => {
+					const rectangle = GameBoardCourt.tileRect(tile, 0);
+					const box = { min: { x: rectangle.minX, y: 0, z: rectangle.minZ }, max: { x: rectangle.maxX, y: 0, z: rectangle.maxZ } };
+					GameBoardCourt.projectBox(box, own);
+					GameBoardCourt.projectBox(box, extent.plateaus);
+				});
 
-					extent.minX = Math.min(extent.minX, corner.dot(right));
-					extent.maxX = Math.max(extent.maxX, corner.dot(right));
-					extent.minY = Math.min(extent.minY, corner.dot(up));
-					extent.maxY = Math.max(extent.maxY, corner.dot(up));
-
-				}
+				extent.board = Math.max(extent.board, own.maxX - own.minX);
 
 			});
 
@@ -1041,7 +1409,7 @@ class GameBoard {
 	look(target, zoom) {
 
 		this.controls.target.copy(target);
-		this.camera.position.set(target.x + GameBoard.VIEW.x, GameBoard.VIEW.y, target.z + GameBoard.VIEW.z);
+		this.camera.position.set(target.x + GameBoardCourt.VIEW.x, GameBoardCourt.VIEW.y, target.z + GameBoardCourt.VIEW.z);
 		this.camera.lookAt(target);
 		this.camera.zoom = zoom;
 		this.camera.updateProjectionMatrix();
@@ -1059,28 +1427,49 @@ class GameBoard {
 		const head = this.head / this.container.clientHeight * 2 * this.camera.top / this.zoomBoard;
 		const ground = new THREE.Vector3(up.x, 0, up.z).normalize();
 
-		return this.origins[board].clone().addScaledVector(ground, head / 2 / ground.dot(up));
+		const parcel = this.getParcel(board);
+
+		return new THREE.Vector3(parcel.cx, 0, parcel.cz).addScaledVector(ground, head / 2 / ground.dot(up));
 
 	}
 
-	// Où le joueur attend devant un plateau : sur l'allée de son bord gauche, que le cadrage du plateau garde dans
-	// l'image, derrière les cases pour n'en cacher aucune, et hors de ce qui barre le chemin, ganivelle comprise
+	// Où le joueur attend devant un plateau : à son entrée, tournée vers le puits ou vers le pont, hors de ce qui barre le
+	// chemin, ganivelle comprise (`GameBoardCourt.getEntry()`)
 	getWaiting(board) {
 
-		const origin = this.origins[board];
-		const half = (this.data.boards[board].open === false) ? GameBoard.FENCE : GameBoard.SIDE / 2;
+		const parcel = this.getParcel(board);
 
-		return { x: origin.x - half - GameBoard.REACH - GameBoard.CELL, z: origin.z + 1.5, board: origin };
+		return { x: parcel.entry.x, z: parcel.entry.z, board: { x: parcel.cx, z: parcel.cz } };
 
 	}
 
 	getWorld(entry) {
-		return { x: entry.x + this.origins[entry.board].x, z: entry.z + this.origins[entry.board].z };
+		return { x: entry.x, z: entry.z };
 	}
 
-	// Le zoom 1 tient les plateaux et leurs allées dans la largeur ; celui de toute la cour, `zoomCourt`, tient son
-	// emprise entière sous ce que l'habillage pose en haut ; celui d'un plateau, `zoomBoard`, tient sa diagonale. Le zoom
-	// courant appartient au joueur, et se garde d'une taille de la vue à l'autre
+	/**
+	 * Le point visé à l'ouverture sur toute la cour : le milieu de ses plateaux, remonté d'une demi-tête pour qu'ils se
+	 * centrent sous ce que l'habillage pose en haut. `getBounded()` le ramène au milieu de la cour quand elle tient
+	 * entière dans la vue
+	 */
+	getOpening() {
+
+		const { THREE } = this.three;
+		const { right, up, plateaus } = this.getExtent();
+
+		const head = this.head / this.container.clientHeight * 2 * this.camera.top / this.zoomOpening;
+		const ground = new THREE.Vector3(up.x, 0, up.z).normalize();
+
+		return new THREE.Vector3()
+			.addScaledVector(right, (plateaus.minX + plateaus.maxX) / 2)
+			.addScaledVector(ground, ((plateaus.minY + plateaus.maxY) / 2 + head / 2) / ground.dot(up));
+
+	}
+
+	// Le zoom 1 tient SPAN dans la largeur ; celui de toute la cour, `zoomCourt`, tient son emprise entière sous ce que
+	// l'habillage pose en haut ; celui d'un plateau, `zoomBoard`, tient le plus large ; celui de l'ouverture,
+	// `zoomOpening`, tient ses plateaux. Le zoom courant appartient au joueur dès qu'il a touché la cour, et se garde
+	// alors d'une taille de la vue à l'autre
 	frame() {
 
 		if(this.renderer === null) {
@@ -1100,6 +1489,10 @@ class GameBoard {
 		this.renderer.setSize(width, height);
 		this.labelRenderer.setSize(width, height);
 
+		// La largeur change ce que la pastille montre sous 576 px (game.css) : sa taille se relit
+		this.cellarSize = null;
+		this.cellarZoom = null;
+
 		const fit = span => {
 
 			let halfWidth = span / 2, halfHeight = halfWidth / (width / height);
@@ -1114,16 +1507,21 @@ class GameBoard {
 
 		};
 
-		const { halfWidth, halfHeight } = fit((GameBoard.SPREAD + GameBoard.SIDE) * 1.45);
+		const { halfWidth, halfHeight } = fit(GameBoard.SPAN);
 
 		// Les pixels d'un mètre au zoom 1
 		this.pixels = width / (2 * halfWidth);
 
-		this.zoomBoard = halfWidth / fit(GameBoard.SIDE * 1.42 * (width < 600 ? 1.02 : 1.18)).halfWidth;
-		const { minX, maxX, minY, maxY } = this.getExtent();
+		const { minX, maxX, minY, maxY, plateaus, board } = this.getExtent();
 		const visible = (height - this.head) / height;
+		const zoomOf = extent => Math.min(2 * halfWidth / (extent.maxX - extent.minX + 2 * GameBoard.MARGIN), 2 * halfHeight * visible / (extent.maxY - extent.minY + 2 * GameBoard.MARGIN));
 
-		this.zoomCourt = Math.min(1, 2 * halfWidth / (maxX - minX + 2 * GameBoard.MARGIN), 2 * halfHeight * visible / (maxY - minY + 2 * GameBoard.MARGIN));
+		this.zoomBoard = halfWidth / fit(board * (width < 600 ? 1.02 : 1.18)).halfWidth;
+		this.zoomCourt = Math.min(1, zoomOf({ minX, maxX, minY, maxY }));
+
+		// L'ouverture serre les plateaux, et laisse déborder la lisière, que le glisser et le pincement rendent : la cour
+		// entière laisserait le fond autour de l'ile, et en portrait ses cases tomberaient sous le doigt
+		this.zoomOpening = Math.max(this.zoomCourt, Math.min(this.zoomBoard, zoomOf(plateaus)));
 		this.controls.minZoom = this.zoomCourt * ((width < 600) ? 1 : GameBoard.ZOOM_MIN);
 		this.controls.maxZoom = this.zoomBoard * GameBoard.ZOOM_MAX;
 
@@ -1132,6 +1530,12 @@ class GameBoard {
 		this.camera.top = halfHeight;
 		this.camera.bottom = -halfHeight;
 		this.camera.updateProjectionMatrix();
+
+		// Tant que le joueur n'a pas touché la cour, la vue reste celle de l'ouverture, qui change avec la forme de la
+		// vue : un téléphone qu'on tourne recadre ses plateaux
+		if(this.opening) {
+			this.look(this.getOpening(), this.zoomOpening);
+		}
 
 		this.request();
 
@@ -1154,7 +1558,7 @@ class GameBoard {
 
 	draw(now) {
 
-		let moving = false;
+		let moving = false, placed = false;
 
 		moving = this.controls.update() || moving;
 
@@ -1167,7 +1571,21 @@ class GameBoard {
 			this.camera.position.add(shift);
 		}
 
-		const marked = (GameBoard.TILE * this.pixels * this.camera.zoom >= GameBoard.MARK_PX);
+		const marked = (GameBoardCourt.TILE * this.pixels * this.camera.zoom >= GameBoard.MARK_PX);
+
+		// La taille de la marque du cellier se lit dans la page avant que l'image n'y écrive, une fois par marque et par
+		// largeur ; posée par l'image précédente, elle se lit à la suivante
+		if(this.cellarMark !== null && this.cellarMark.element.isConnected && (this.cellarSize === null || this.cellarZoom !== this.camera.zoom)) {
+
+			this.cellarSize ??= { width: this.cellarMark.element.offsetWidth, height: this.cellarMark.element.offsetHeight };
+			this.cellarZoom = this.camera.zoom;
+			this.placeCellar();
+			this.cellarMark.element.style.visibility = '';
+			placed = true;
+
+		} else if(this.cellarMark !== null && this.cellarSize === null) {
+			moving = true;
+		}
 
 		if(marked !== this.marked) {
 			this.marked = marked;
@@ -1175,11 +1593,26 @@ class GameBoard {
 		}
 
 		if(this.actor !== null) {
-			moving = this.actor.update(now / 1000) || moving;
+
+			const acting = this.actor.update(now / 1000);
+
+			// L'image où le joueur s'arrête le pose encore : son ombre suit jusqu'à elle
+			if(acting || this.acting) {
+				this.renderer.shadowMap.needsUpdate = true;
+			}
+
+			this.acting = acting;
+			moving = acting || moving;
+
 		}
 
 		this.renderer.render(this.scene, this.camera);
 		this.labelRenderer.render(this.scene, this.camera);
+
+		// Une fois la marque du cellier écrite à sa place : ce qui vise la marque se mesure à partir de là
+		if(placed) {
+			this.emit('placed', {});
+		}
 
 		if(moving) {
 			this.request();
@@ -1203,6 +1636,12 @@ class GameBoard {
 		const model = loaded.avatar.build(this.data.avatar);
 		const figure = loaded.figure.assemble(model, 'avatar', new THREE.MeshToonMaterial({ color: '#fff', vertexColors: true, gradientMap: ramp }));
 
+		figure.root.traverse(object => {
+			if(object.isMesh) {
+				this.cast(object);
+			}
+		});
+
 		const holder = new THREE.Group();
 		holder.scale.setScalar(1.25);
 		holder.add(figure.root);
@@ -1225,12 +1664,13 @@ class GameBoard {
 		}
 
 		this.ramp = ramp;
-		this.actor = new GameBoardActor(loaded, model, figure, holder, GameBoard.HOME);
+		this.actor = new GameBoardActor(loaded, model, figure, holder, this.court.home);
 
 		if(this.data.board !== null) {
 			this.actor.wait(this.getWaiting(String(this.data.board)));
 		}
 
+		this.renderer.shadowMap.needsUpdate = true;
 		this.request();
 
 	}

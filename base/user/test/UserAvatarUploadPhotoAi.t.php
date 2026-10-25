@@ -16,10 +16,14 @@ namespace user;
  *    le rendu a échoué ; un avatar qui montre de nouveau un modèle ou ne remplace plus la photo est laissé tel quel ;
  * 6. le retrait d'un modèle qui faisait la photo ne la laisse jamais à l'image du modèle ;
  * 7. la page refuse l'interrupteur sans modèle en place, une photo remplacée sans image, et la suppression comme
- *    l'interrupteur à qui n'a pas d'avatar, sans rien écrire.
+ *    l'interrupteur à qui n'a pas d'avatar, sans rien écrire ;
+ * 8. un compte sans composition importe un modèle, qui lui crée un avatar sans composition, dont la fiche est celle par
+ *    défaut ; supprimé par son auteur, par la page sans image ou retiré par l'équipe, le modèle emporte cet avatar, et la
+ *    photo reprend sa place ; avec une composition, celle-ci revient intacte.
  *
  * Décor : un utilisateur sans avatar, dont la photo de profil devient un média fictif, et à qui le test compose un avatar
- * qui ne remplace pas sa photo, dans une transaction annulée à la fin de chaque méthode. Les modèles sont posés sur une
+ * qui ne remplace pas sa photo, sauf pour éprouver un import sans composition, dans une transaction annulée à la fin de
+ * chaque méthode. Les modèles sont posés sur une
  * conversion fictive, sans `build()`, qui lancerait node sur un GLB : la conversion s'éprouve dans `UserAvatarUploadAi`.
  * Les fichiers que les images et les modèles posent dans le stockage sont effacés à la fin.
  *
@@ -137,6 +141,13 @@ class UserAvatarUploadPhotoAiTest extends \dev\TransactionTest {
 		$vignetteCleared = $this->getVignette($eUser);
 
 		$this->assertTrue($this->getAvatar($eUser)['upload']->empty(), 'modèle gardé');
+		// MySQL range les clés d'un json à sa façon : seules les valeurs se comparent
+		$composition = $this->getAvatar($eUser)['composition'];
+		$default = UserAvatarLib::getDefault();
+		ksort($composition);
+		ksort($default);
+
+		$this->assertEquals($default, $composition, 'composition non revenue');
 		$this->assertEquals(substr($vignette, 0, 20), substr($vignetteCleared, 0, 20), 'média neuf pour l\'image de la composition');
 		$this->assertDiffer($vignette, $vignetteCleared, 'image du modèle gardée après sa suppression');
 		$this->assertEquals(self::PHOTO.'#000000001', $this->getAvatar($eUser)['photo'], 'photo de côté perdue');
@@ -147,6 +158,65 @@ class UserAvatarUploadPhotoAiTest extends \dev\TransactionTest {
 
 		$this->assertTrue($this->getAvatar($eUser)['upload']->empty(), 'modèle gardé sans photo remplacée');
 		$this->assertEquals(self::PHOTO.'#000000001', $this->getVignette($eUser), 'photo de profil touchée sans être remplacée');
+
+	}
+
+	public function testWithoutComposition(): void {
+
+		$eUser = $this->getUser(composed: FALSE);
+
+		if($eUser->empty()) {
+			return;
+		}
+
+		$eUserAvatarUpload = $this->create($eUser, TRUE);
+
+		$eUserAvatar = $this->getAvatar($eUser);
+
+		$this->assertTrue($eUserAvatar->exists(), 'aucun avatar créé par l\'import');
+		$this->assertFalse($eUserAvatar->hasComposition(), 'composition posée par l\'import');
+		$this->assertTrue($eUserAvatar['upload']->is($eUserAvatarUpload), 'modèle importé non montré');
+		$this->assertTrue($eUserAvatar['replacesPhoto'], 'choix de remplacer la photo perdu');
+		$this->assertEquals(self::PHOTO.'#000000001', $eUserAvatar['photo'], 'photo de profil non mise de côté');
+		$this->assertDiffer(self::PHOTO, substr($this->getVignette($eUser), 0, 20), 'image du modèle non posée');
+		$this->assertEquals(UserAvatarLib::getFiche(new UserAvatar(['source' => UserAvatar::EDITOR, 'composition' => UserAvatarLib::getDefault()])), UserAvatarLib::getFiche($eUserAvatar), 'fiche d\'un avatar sans composition autre que celle par défaut');
+
+		UserAvatarUploadLib::clear($eUserAvatar, NULL);
+
+		$this->assertTrue(UserAvatarLib::getByUser($eUser)->empty(), 'avatar sans composition gardé après la suppression du modèle');
+		$this->assertEquals(self::PHOTO.'#000000001', $this->getVignette($eUser), 'photo de profil non revenue');
+		$this->assertEquals(NULL, UserAvatarUpload::model()->select('hash')->whereId($eUserAvatarUpload['id'])->getValue('hash'), 'fichier du modèle gardé');
+
+		// Par la page, sans image : l'avatar remplace la photo, mais n'a pas de composition dont rendre l'image
+		$this->create($eUser, TRUE);
+
+		$this->assertEquals('ReloadAction', $this->post($eUser, 'doClear', []), 'modèle sans composition non supprimé sans image');
+		$this->assertTrue(UserAvatarLib::getByUser($eUser)->empty(), 'avatar sans composition gardé par la page');
+		$this->assertEquals(self::PHOTO.'#000000001', $this->getVignette($eUser), 'photo de profil non revenue par la page');
+
+	}
+
+	public function testWithdrawWithoutComposition(): void {
+
+		$eUser = $this->getUser(composed: FALSE);
+
+		if($eUser->empty()) {
+			return;
+		}
+
+		$eUserAvatarUpload = $this->create($eUser, TRUE);
+
+		$eUserAvatarUploadWithdrawn = UserAvatarUploadLib::getById($eUserAvatarUpload['id'], UserAvatarUpload::getSelection() + ['user' => User::getSelection()]);
+		$eUserAvatarUploadWithdrawn['user']['email'] = NULL;
+
+		$fw = new \FailWatch();
+		$eUserAvatarUploadWithdrawn->build(UserAvatarUploadLib::getPropertiesWithdraw(), ['reason' => UserAvatarUpload::OTHER, 'reasonText' => 'Il s\'affiche mal.']);
+		$this->assertFalse($fw->ko(), 'motif refusé');
+
+		$this->assertTrue(UserAvatarUploadLib::withdraw($eUserAvatarUploadWithdrawn), 'retrait refusé');
+
+		$this->assertTrue(UserAvatarLib::getByUser($eUser)->empty(), 'avatar sans composition gardé après le retrait');
+		$this->assertEquals(self::PHOTO.'#000000001', $this->getVignette($eUser), 'photo de profil non revenue après le retrait');
 
 	}
 
@@ -432,9 +502,9 @@ class UserAvatarUploadPhotoAiTest extends \dev\TransactionTest {
 
 	/**
 	 * Un utilisateur sans avatar, dont la photo de profil devient un média fictif : la vraie n'est ni lue ni écrite. Son
-	 * avatar composé ne remplace pas la photo.
+	 * avatar composé, que `$composed` lui donne, ne remplace pas la photo.
 	 */
-	private function getUser(): User {
+	private function getUser(bool $composed = TRUE): User {
 
 		$eUser = User::model()
 			->select('id', 'vignette')
@@ -460,7 +530,9 @@ class UserAvatarUploadPhotoAiTest extends \dev\TransactionTest {
 		$eUser['vignette'] = self::PHOTO.'#000000001';
 		UserLib::update($eUser, ['vignette']);
 
-		UserAvatarLib::create(new UserAvatar(['user' => $eUser, 'composition' => UserAvatarLib::getDefault(), 'replacesPhoto' => FALSE]));
+		if($composed) {
+			UserAvatarLib::create(new UserAvatar(['user' => $eUser, 'composition' => UserAvatarLib::getDefault(), 'replacesPhoto' => FALSE]));
+		}
 
 		ConnectionLib::setOnline($eUser);
 

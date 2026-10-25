@@ -101,6 +101,10 @@ class TimeIntentionUi extends IntentionUi {
 			return self::getPlantResults($reading['object']['action'], $reading['question']['cPlant']);
 		}
 
+		if($reading['question'] !== NULL and $reading['question']['name'] === 'category') {
+			return self::getCategoryResults($reading['question']['cCategory']);
+		}
+
 		if($reading['question'] !== NULL) {
 
 			foreach($reading['question']['cTask'] as $eTask) {
@@ -129,6 +133,7 @@ class TimeIntentionUi extends IntentionUi {
 		if($reading['outcome'] === EntryLib::WRITE) {
 
 			$results[] = self::getWriteResult($reading);
+			$results = array_merge($results, DurationComplementUi::getAdditionResults(self::getLabel(), $reading['confirmation']['additions']));
 			$results = array_merge($results, self::getDayResults($reading['days']));
 
 			// La coche écrit le jour dit, seul : elle ne se propose que si le temps va sur lui seul, pas sur une puce
@@ -295,6 +300,7 @@ class TimeIntentionUi extends IntentionUi {
 				'series' => self::getSeriesPlaceholder(),
 				'plant' => HarvestIntentionUi::getObjectPlaceholder(),
 				'task' => self::getQuestion(),
+				'category' => self::getCategoryQuestion(),
 			},
 			'duration', 'write' => self::getDurationPlaceholder(),
 		};
@@ -418,6 +424,30 @@ class TimeIntentionUi extends IntentionUi {
 		return s("Sur quelle série ?");
 	}
 
+	/**
+	 * Les catégories d'une action qui en a plusieurs hors de Culture, où ajouter son intervention
+	 * (`TimeIntentionLib::resolveCategory()`). Chacune répond par un jeton, comme une série.
+	 */
+	public static function getCategoryResults(\Collection $cCategory): array {
+
+		$results = [];
+
+		foreach($cCategory as $eCategory) {
+			$results[] = [
+				'group' => self::getCategoryQuestion(),
+				'label' => $eCategory['name'],
+				'value' => 'category:'.$eCategory['id'],
+			];
+		}
+
+		return $results;
+
+	}
+
+	public static function getCategoryQuestion(): string {
+		return s("Dans quelle catégorie ?");
+	}
+
 	public static function getNoSeries(): string {
 		return s("Hors série");
 	}
@@ -438,8 +468,9 @@ class TimeIntentionUi extends IntentionUi {
 
 	/**
 	 * Sa seconde ligne, en texte brut : son état, puis sa description quand la série la nomme déjà, ce qui
-	 * départage deux interventions de la même série. La semaine ne s'y dit que d'une intervention en retard,
-	 * les autres étant de la semaine du jour dit.
+	 * départage deux interventions de la même série, ou sa catégorie hors de Culture, qui départage celles d'une
+	 * action de plusieurs catégories. La semaine ne s'y dit que d'une intervention en retard, les autres étant de
+	 * la semaine du jour dit.
 	 */
 	public static function getTaskSub(\series\Task $eTask): string {
 
@@ -454,6 +485,10 @@ class TimeIntentionUi extends IntentionUi {
 
 		if($eTask['series']->notEmpty() and $eTask['description'] !== NULL) {
 			return $status.' · '.$eTask['description'];
+		}
+
+		if($eTask['category']['fqn'] !== CATEGORIE_CULTURE) {
+			return $status.' · '.$eTask['category']['name'];
 		}
 
 		return $status;
@@ -502,8 +537,8 @@ class TimeIntentionUi extends IntentionUi {
 
 	/**
 	 * « Désherbage carotte · FREIJA 01 · à faire » : l'intervention qui reçoit le temps, en texte brut.
-	 * Celle qu'un temps ajoute au planning se dit par sa série, ou « Hors série », sans l'action ni
-	 * l'espèce que le champ montre déjà en jetons.
+	 * Celle qu'un temps ajoute au planning se dit par sa série, ou « Hors série », ou hors de Culture par sa
+	 * catégorie, sans l'action ni l'espèce que le champ montre déjà.
 	 */
 	public static function getConfirmationDetail(\series\Task $eTaskObject, \series\Task $eTask): string {
 
@@ -538,9 +573,9 @@ class TimeIntentionUi extends IntentionUi {
 	}
 
 	/**
-	 * Une action nommée seule ne dit pas l'espèce, que dit alors l'intervention.
+	 * Une action nommée seule ne dit pas l'espèce, que dit alors l'intervention, quand elle en a une.
 	 */
-	private static function getObjectName(\series\Task $eTaskObject, \series\Task $eTask): string {
+	public static function getObjectName(\series\Task $eTaskObject, \series\Task $eTask): string {
 
 		return ($eTaskObject['plant']->empty() and $eTask['plant']->notEmpty()) ?
 			$eTaskObject['name'].' '.mb_strtolower($eTask['plant']['name']) :
@@ -552,7 +587,10 @@ class TimeIntentionUi extends IntentionUi {
 
 		$parts = [];
 
-		if($eTask['series']->empty()) {
+		// Hors de Culture, une intervention n'a jamais de série : sa catégorie la situe (« Administration »).
+		if($eTask['category']['fqn'] !== CATEGORIE_CULTURE) {
+			$parts[] = $eTask['category']['name'];
+		} else if($eTask['series']->empty()) {
 			$parts[] = self::getNoSeries();
 		} else {
 

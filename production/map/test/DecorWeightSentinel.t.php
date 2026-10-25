@@ -58,6 +58,7 @@ class DecorWeightSentinelTest extends \Test {
 			$expected[$kit] = match($measure['kind']) {
 				'traced' => 0,
 				'building' => $rules['families']['building']['maxTriangles'],
+				'object' => $rules['families'][$measure['family']]['maxTriangles'],
 				'shape' => $measure['triangles'],
 				'model' => $index[$measure['model']]['triangles'] + $measure['ripples'],
 				'trees' => $this->weighTrees($kit, $measure, $index),
@@ -111,7 +112,7 @@ class DecorWeightSentinelTest extends \Test {
 
 	/**
 	 * Chaque kit de `MapSceneDecor.KITS`, rangé d'après sa définition : `traced` (tracé, enclos ou tuyau, comptés au mètre),
-	 * `building` (bâtiment de la structure), `shape` (forme bâtie, ses triangles mesurés), `model` (modèle cuit, et les rides d'une
+	 * `building` (bâtiment de la structure), `object` (élément importé, au plafond de sa famille), `shape` (forme bâtie, ses triangles mesurés), `model` (modèle cuit, et les rides d'une
 	 * étendue d'eau qui en porte), `trees` (le plus de plants et les modèles tirés sur `SEEDS` graines).
 	 */
 	private function measure(): array {
@@ -163,6 +164,8 @@ class DecorWeightSentinelTest extends \Test {
 						measures[kit] = { kind: "traced" };
 					} else if(def.building === true) {
 						measures[kit] = { kind: "building" };
+					} else if(def.object === true) {
+						measures[kit] = { kind: "object", family: def.family };
 					} else if(def.shape !== undefined) {
 						measures[kit] = { kind: "shape", triangles: triangles(decor.makeShape({ kit, def, seated: null }).geometry) };
 					} else if(def.wild !== undefined) {

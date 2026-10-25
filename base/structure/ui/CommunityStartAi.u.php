@@ -836,7 +836,7 @@ class CommunityStartAiUi {
 				$h .= '<div class="onboarding-field onboarding-field-name" data-wrapper="name['.$index.']">';
 					$h .= $form->text('name['.$index.']', NULL, ['placeholder' => s("Ex. : BPREA 2027")]);
 				$h .= '</div>';
-				$h .= '<a data-action="onboarding-remove-row" class="onboarding-row-remove" title="'.s("Retirer cette promotion").'">'.\Asset::icon('x-lg').'</a>';
+				$h .= '<a data-action="onboarding-remove-row" class="btn btn-only-icon btn-sm btn-outline-danger" title="'.s("Retirer cette promotion").'">'.\Asset::icon('x-lg').'</a>';
 			$h .= '</div>';
 		$h .= '</div>';
 
@@ -931,7 +931,7 @@ class CommunityStartAiUi {
 				);
 
 				if(array_key_exists('member', $eStructure->getAudienceRoles())) {
-					$h .= self::getLink($eStructure, $eInviteLink, $origin);
+					$h .= self::getLink($form, $eStructure, $eInviteLink, $origin);
 				}
 
 				// La dernière : passer ici ne mène à aucune étape suivante, le lien ferme donc
@@ -958,17 +958,13 @@ class CommunityStartAiUi {
 	 * ⚠️ `doCopy()` ne lit pas l'élément cliqué mais celui que `data-selector` désigne
 	 * (`lime.js:165`) : sans lui, la copie part sur `undefined`.
 	 */
-	protected static function getLinkBox(string $id, string $link): string {
+	protected static function getLinkBox(\util\FormUi $form, string $id, string $link): string {
 
-		$h = '<div class="input-group onboarding-link">';
-
-			$h .= '<div class="form-control" id="'.$id.'">'.encode($link).'</div>';
-
-			$h .= '<a onclick="doCopy(this)" data-selector="#'.$id.'" data-message="'.s("Lien copié !").'" class="btn btn-primary">'.\Asset::icon('clipboard').' '.s("Copier").'</a>';
-
-		$h .= '</div>';
-
-		return $h;
+		return $form->inputGroup(
+			'<div class="form-control" id="'.$id.'">'.encode($link).'</div>'.
+			'<a onclick="doCopy(this)" data-selector="#'.$id.'" data-message="'.s("Lien copié !").'" class="btn btn-primary">'.\Asset::icon('clipboard').' '.s("Copier").'</a>',
+			['class' => 'onboarding-link']
+		);
 
 	}
 
@@ -981,7 +977,7 @@ class CommunityStartAiUi {
 	 * porterait dix liens. Le lien naît d'un clic, et il est réutilisé ensuite — c'est `$eInviteLink`,
 	 * que la page a préparé.
 	 */
-	protected static function getLink(Structure $eStructure, Invite $eInviteLink, string $origin): string {
+	protected static function getLink(\util\FormUi $form, Structure $eStructure, Invite $eInviteLink, string $origin): string {
 
 		$h = '<div class="form-group" data-onboarding-links>';
 
@@ -989,7 +985,7 @@ class CommunityStartAiUi {
 
 			if($eInviteLink->notEmpty()) {
 
-				$h .= self::getLinkBox('community-start-link', $eInviteLink->getLink());
+				$h .= self::getLinkBox($form, 'community-start-link', $eInviteLink->getLink());
 
 			} else {
 

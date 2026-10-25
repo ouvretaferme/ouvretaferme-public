@@ -89,8 +89,9 @@ class ImplicitIntentionTest extends EntryFixtureTest {
 	}
 
 	/**
-	 * Un verbe obligatoire peut commencer le nom d'une action : « vente directe 1 h » reste un temps sur
-	 * l'action Vente directe, la vente n'ayant aucun client à ce nom (CL-07).
+	 * Un verbe obligatoire peut commencer le nom d'une action : « temps vente directe 1 h » reste un temps sur
+	 * l'action Vente directe, la vente n'ayant aucun client à ce nom (CL-07). Hors de Culture, l'action ne se lit
+	 * que derrière son verbe (HN-B14) : sans lui, la phrase n'est pas un temps.
 	 */
 	public function testVerbInsideActionName(): void {
 
@@ -109,10 +110,12 @@ class ImplicitIntentionTest extends EntryFixtureTest {
 		// Sans `build()` : le décor fixe le nom et la catégorie, que le formulaire d'action vérifierait.
 		\work\ActionLib::create($eAction);
 
-		$reading = $this->read($eAction['name'].' 1 h ');
+		$reading = $this->read('temps '.$eAction['name'].' 1 h ');
 
 		$this->assertEquals('time', $reading['intention'], 'la phrase se lit en temps');
-		$this->assertEquals($eAction['name'], $reading['object']['name'] ?? NULL, 'sur l\'action qu\'elle nomme');
+		$this->assertEquals($eAction['name'], $reading['object']['name'], 'sur l\'action qu\'elle nomme');
+
+		$this->assertTrue($this->read($eAction['name'].' 1 h ')['intention'] !== 'time', 'sans verbe, l\'action ne se devine pas');
 
 	}
 

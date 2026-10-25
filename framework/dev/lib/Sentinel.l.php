@@ -392,32 +392,75 @@ class SentinelLib {
 	 * rend « amont non lu » et ne conclut rien, un silence de git se lisant comme une absence.
 	 *
 	 * Les entrées viennent de `compare()` (`chemin (…)`) ou d'`assertDeclared()` (`chemin:clé (…)`).
+	 * Quand l'appelant donne `$counts`, une clé par entrée dans l'ordre de `$new`, le verdict est
+	 * précédé des deux comptes, arbre et amont, de l'occurrence puis de la déclaration : sans eux,
+	 * celui qui lit le rouge refait la mesure à la main. L'occurrence de l'amont n'est connue que
+	 * lorsque son fichier y est identique, la sentinelle ne se rejouant pas sur une autre version.
 	 *
 	 * @param string[] $new
+	 * @param array<string, int> $counts
+	 * @param array<string, int|string> $declared
 	 * @return string[]
 	 */
-	public static function explainNew(array $new, string $declaration): array {
+	public static function explainNew(array $new, string $declaration, array $counts = [], array $declared = [], ?string $constant = NULL): array {
 
 		$behind = self::getGitPaths('diff', '--name-only', 'HEAD', self::getUpstream());
 		$written = self::getGitPaths('diff', '--name-only', 'HEAD');
 		$upstream = self::getGitPaths('ls-tree', '-r', '--name-only', self::getUpstream());
 
-		return array_map(function(string $entry) use($declaration, $behind, $written, $upstream): string {
+		$declaredUpstream = ($counts !== [] and $constant !== NULL) ? self::getUpstreamDeclaration($declaration, $constant) : NULL;
+		$keys = array_keys($counts);
 
-			$path = strtok(strtok($entry, ' '), ':');
+		$explained = [];
 
-			return $entry.' ['.self::getNewCause($path, $declaration, $behind, $written, $upstream).']';
+		foreach($new as $position => $entry) {
 
-		}, $new);
+			$key = $keys[$position] ?? NULL;
+			$path = strtok(strtok($key ?? $entry, ' '), ':');
+
+			$covered = NULL;
+			$measure = '';
+
+			if($key !== NULL) {
+
+				if($behind === NULL or $written === NULL or $upstream === NULL) {
+					$found = 'non relu';
+				} else if(in_array($path, $upstream, TRUE) === FALSE) {
+					$found = 0;
+				} else if(in_array($path, $behind, TRUE) or in_array($path, $written, TRUE)) {
+					$found = 'non relu';
+				} else {
+					$found = $counts[$key];
+				}
+
+				$amount = fn(array $values) => array_key_exists($key, $values) ? (is_int($values[$key]) ? $values[$key] : 1) : 0;
+
+				$measure = 'arbre '.$counts[$key].', amont '.$found.' ; déclaré '.$amount($declared).', amont '.($declaredUpstream === NULL ? 'non relu' : $amount($declaredUpstream)).' ; ';
+
+				if($declaredUpstream !== NULL) {
+					$covered = ($amount($declaredUpstream) >= $counts[$key]);
+				}
+
+			}
+
+			$explained[] = $entry.' ['.$measure.self::getNewCause($path, $declaration, $behind, $written, $upstream, $covered).']';
+
+		}
+
+		return $explained;
 
 	}
 
 	/**
+	 * `$covered` dit si la déclaration de l'amont couvre ce que l'arbre trouve, NULL quand les deux
+	 * déclarations n'ont pas été comparées : sans cette comparaison, une déclaration réécrite dans
+	 * l'arbre ne dit pas si elle a retiré une entrée ou si elle en attend une.
+	 *
 	 * @param string[]|null $behind
 	 * @param string[]|null $written
 	 * @param string[]|null $upstream
 	 */
-	private static function getNewCause(string $path, string $declaration, ?array $behind, ?array $written, ?array $upstream): string {
+	private static function getNewCause(string $path, string $declaration, ?array $behind, ?array $written, ?array $upstream, ?bool $covered = NULL): string {
 
 		if($behind === NULL or $written === NULL or $upstream === NULL) {
 			return 'amont non lu, aucune cause établie';
@@ -440,7 +483,13 @@ class SentinelLib {
 		}
 
 		if(in_array($declaration, $written, TRUE)) {
+
+			if($covered === TRUE) {
+				return 'l\'arbre a retiré une entrée que l\'amont porte, ne rien déclarer et voir avec qui tient la déclaration';
+			}
+
 			return 'le fichier de la déclaration diffère de origin/main dans l\'arbre, voir avec qui le tient avant de déclarer';
+
 		}
 
 		// L'occurrence vient du dernier commit qui a écrit le fichier ; un commit plus récent sur la
@@ -459,6 +508,69 @@ class SentinelLib {
 		}
 
 		return $cause;
+
+	}
+
+	/**
+	 * La déclaration `$constant` telle que l'amont la porte, ou NULL quand git ne répond pas ou que
+	 * la constante n'y est pas une liste littérale.
+	 *
+	 * @return array<string, int|string>|null
+	 */
+	private static function getUpstreamDeclaration(string $file, string $constant): ?array {
+
+		$code = self::getGitOutput('show', self::getUpstream().':'.$file);
+
+		return ($code === NULL) ? NULL : self::readDeclaration($code, $constant);
+
+	}
+
+	/**
+	 * Les entrées d'une constante `chemin => valeur` lues dans les jetons, et non par un motif : un
+	 * fichier de sentinelle déclare souvent le même chemin dans plusieurs constantes, et un motif
+	 * recopié rendrait la valeur de la première. Une clé qui n'est pas une chaîne littérale rend
+	 * NULL, comme une constante absente. Une valeur entière se garde, toute autre vaut sa présence.
+	 *
+	 * @return array<string, int|string>|null
+	 */
+	public static function readDeclaration(string $code, string $constant): ?array {
+
+		$tokens = self::getTokens($code);
+		$count = count($tokens);
+
+		for($i = 0; $i < $count - 3; $i++) {
+
+			if($tokens[$i][0] !== T_CONST or $tokens[$i + 1][1] !== $constant or $tokens[$i + 2][0] !== '=' or $tokens[$i + 3][0] !== '[') {
+				continue;
+			}
+
+			$closing = self::getClosing($tokens, $i + 3);
+			$entries = [];
+			$j = $i + 4;
+
+			while($j < $closing) {
+
+				if($tokens[$j][0] !== T_CONSTANT_ENCAPSED_STRING or str_starts_with($tokens[$j][1], "'") === FALSE or $tokens[$j + 1][0] !== T_DOUBLE_ARROW) {
+					return NULL;
+				}
+
+				$key = str_replace(['\\\'', '\\\\'], ['\'', '\\'], substr($tokens[$j][1], 1, -1));
+				$end = $j + 2;
+
+				while($end < $closing and $tokens[$end][0] !== ',') {
+					$end = in_array($tokens[$end][0], ['(', '['], TRUE) ? self::getClosing($tokens, $end) + 1 : $end + 1;
+				}
+
+				$entries[$key] = ($end === $j + 3 and $tokens[$j + 2][0] === T_LNUMBER) ? (int)$tokens[$j + 2][1] : 'présente';
+				$j = $end + 1;
+
+			}
+
+			return $entries;
+
+		}
+
+		return NULL;
 
 	}
 
@@ -536,6 +648,43 @@ class SentinelLib {
 	}
 
 	/**
+	 * Le compte des fichiers que `compare()` rend dans `new`, dans le même ordre, pour que le message
+	 * du cliquet dise combien l'arbre en trouve sans relire l'entrée.
+	 *
+	 * @param string[] $found
+	 * @param array<string, int> $declared
+	 * @return array<string, int>
+	 */
+	public static function getNewCounts(array $found, array $declared): array {
+
+		$counts = array_map(count(...), self::getLinesByFile($found));
+
+		return array_filter($counts, fn(int $count, string $file) => $count > ($declared[$file] ?? 0), ARRAY_FILTER_USE_BOTH);
+
+	}
+
+	/**
+	 * @param string[] $found
+	 * @return array<string, string[]>
+	 */
+	private static function getLinesByFile(array $found): array {
+
+		$lines = [];
+
+		foreach($found as $occurrence) {
+
+			$separator = strrpos($occurrence, ':');
+			$lines[substr($occurrence, 0, $separator)][] = substr($occurrence, $separator + 1);
+
+		}
+
+		ksort($lines);
+
+		return $lines;
+
+	}
+
+	/**
 	 * Confronte les occurrences trouvées (`chemin:ligne`) à la déclaration (`chemin => nombre`).
 	 *
 	 * Rend deux listes de messages, une par sens : `new`, les fichiers qui portent plus
@@ -548,16 +697,7 @@ class SentinelLib {
 	 */
 	public static function compare(array $found, array $declared): array {
 
-		$lines = [];
-
-		foreach($found as $occurrence) {
-
-			$separator = strrpos($occurrence, ':');
-			$lines[substr($occurrence, 0, $separator)][] = substr($occurrence, $separator + 1);
-
-		}
-
-		ksort($lines);
+		$lines = self::getLinesByFile($found);
 
 		$new = [];
 		$stale = [];

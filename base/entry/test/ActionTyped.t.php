@@ -114,8 +114,9 @@ class ActionTypedTest extends EntryFixtureTest {
 	}
 
 	/**
-	 * Une action hors de la catégorie Culture, sans intervention de la semaine, ne mène nulle part : la frappe
-	 * ne la propose pas.
+	 * Une action hors de la catégorie Culture, sans intervention de la semaine, se propose comme une autre, et
+	 * nommée en entier attend sa durée sans demander d'espèce : elle s'ajoute au planning dans sa catégorie
+	 * (HN-B14, `ActionOutsideCultureTest`).
 	 */
 	public function testTypedOutsideCulture(): void {
 
@@ -129,8 +130,13 @@ class ActionTypedTest extends EntryFixtureTest {
 
 		[$reading, $cElementShown] = $this->readShown('temps '.mb_strtolower(mb_substr($eAction['name'], 0, 6)));
 
-		$this->assertFalse($cElementShown->offsetExists(-$eAction['id']));
-		$this->assertEquals(['reason' => 'none', 'name' => $eAction['name']], $this->read($eAction['name'])['refusal'], 'nommée en entier, elle garde le refus');
+		$this->assertTrue($cElementShown->offsetExists(-$eAction['id']));
+
+		$reading = $this->read($eAction['name']);
+
+		$this->assertEquals(NULL, $reading['refusal'], 'nommée en entier, elle ne se refuse pas');
+		$this->assertEquals(NULL, $reading['question'], 'ni espèce ni série à demander');
+		$this->assertEquals(EntryLib::ASK, $reading['outcome'], 'la durée reste à dire');
 
 	}
 

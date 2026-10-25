@@ -48,6 +48,55 @@
 				"faitage"
 			],
 			"top": "faitage"
+		},
+		"water": {
+			"maxTriangles": 1500,
+			"bounds": {
+				"length": 12,
+				"width": 12,
+				"height": 4
+			},
+			"pieces": [
+				"objet"
+			],
+			"required": [
+				"objet"
+			],
+			"body": "objet",
+			"anchors": []
+		},
+		"tree": {
+			"maxTriangles": 1500,
+			"bounds": {
+				"length": 50,
+				"width": 50,
+				"height": 12
+			},
+			"pieces": [
+				"arbre",
+				"feuillage",
+				"fruit"
+			],
+			"required": [],
+			"anchors": [
+				"arbre"
+			]
+		},
+		"other": {
+			"maxTriangles": 1500,
+			"bounds": {
+				"length": 10,
+				"width": 6,
+				"height": 4
+			},
+			"pieces": [
+				"objet"
+			],
+			"required": [
+				"objet"
+			],
+			"body": "objet",
+			"anchors": []
 		}
 	}
 }

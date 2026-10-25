@@ -847,13 +847,23 @@ class TimeDayUi {
 	 * `$cWorkingTime` sont les journées saisies de la personne, par date (`TimeDayLib::get()`).
 	 *
 	 * Pour une personne hors horaires, c'est la semaine en champs (`util-days-entry`, `getEntryDay()`), dont
-	 * `$entry` dit les jours à saisir (`TimeDayLib::getEntry()`).
+	 * `$entry` dit les jours à saisir (`TimeDayLib::getEntry()`), une grille d'une colonne par jour, que précède sa
+	 * tête sous le temps de travail.
 	 */
 	public function getDays(\structure\Structure $eStructure, string $week, ?string $date, \user\User $eUser, array $days, \Collection $cWorkingTime = new \Collection(), array $entry = []): string {
 
 		$entered = ($eUser->notEmpty() and self::hasEntry($eStructure));
 
 		$h = '<div class="util-days'.($entered ? ' util-days-entry' : '').'">';
+
+			// La tête nomme les deux temps d'un jour, qui sont deux chiffres sans unité qui les distingue.
+			if($entered and $eStructure->hasTime()) {
+				$h .= '<div class="util-days-entry-head">';
+					$h .= '<span></span>';
+					$h .= '<span>'.s("Journée").'</span>';
+					$h .= '<span>'.s("Interventions").'</span>';
+				$h .= '</div>';
+			}
 
 			foreach($days as $dayDate => $day) {
 
@@ -890,7 +900,7 @@ class TimeDayUi {
 		$id = 'planning-time-day-'.$date;
 
 		if($eUser->notEmpty() and self::hasEntry($eStructure)) {
-			return $this->getEntryDay($eStructure, $week, $date, $selected, $eUser, $day, $entry['warnings'][$date]);
+			return $this->getEntryDay($eStructure, $week, $date, $selected, $eUser, $day);
 		}
 
 		if($eUser->notEmpty() and $eStructure->hasTime() === FALSE) {
@@ -913,21 +923,24 @@ class TimeDayUi {
 	}
 
 	/**
-	 * Un jour de la semaine en champs (planche rh-heures-pistes, piste B, 19/10) : sa pastille, puis la
-	 * tuile de sa journée, qui ouvre la saisie d'une durée comme partout ailleurs (`getWorking()`, 21/10 :
-	 * le champ tapé ouvrait la liste d'autocomplétion du navigateur). Elle s'enregistre par `timeDay:doWorkingTime`,
-	 * dont la réponse redessine le jour entier.
+	 * Un jour de la semaine en champs, une colonne de sa grille (planche R-TempsTactile, R1, 25/10) : sa pastille,
+	 * la journée en rond, qui ouvre la saisie d'une durée comme partout ailleurs (`getWorking()`), puis, sous le
+	 * temps de travail, le temps de ses interventions (`getEntryTime()`). La journée s'enregistre par
+	 * `timeDay:doWorkingTime`, dont la réponse redessine le jour entier.
 	 *
 	 * Sous le temps de travail, la pastille choisit le jour, dont la fiche montre les interventions dessous ; le
-	 * suivi RH seul n'a pas d'autre page à ouvrir, ni de jour choisi. Un jour à saisir (`$warning`) dit « à saisir »
-	 * sur sa tuile, au ton courant (22/10). C'est le jour que compte la somme (`TimeDayLib::getEntry()`) :
-	 * une tuile vide qu'elle ne compte pas, aujourd'hui, un jour férié ou hors contrat, garde son crayon seul, pour
-	 * que l'écran et la somme disent le même nombre. Un jour d'absence se hachure et se lit « Absent » sans tuile,
-	 * sauf si une journée y est saisie, qui reste à corriger. Une journée qui ne s'écrit pas, un jour à venir ou la
-	 * journée d'une autre personne sans le planning complet, se lit sans tuile. Des interventions au-delà de la
-	 * journée la passent en alerte (`is-over`, R-Retours-1210, GJ).
+	 * suivi RH seul n'a pas d'autre page à ouvrir, ni de jour choisi. Une journée vide qui se saisit montre le crayon
+	 * dans son rond en pointillé, qu'elle soit due ou non : c'est la somme qui compte les jours à saisir
+	 * (`TimeDayLib::getEntry()`, retour du 25/10). Un jour sans journée s'ouvre sur le temps de ses interventions, à valider
+	 * (planche R-TempsTactile, décision du 25/10 : « pas de devinette "2h00 ?" par contre le sélecteur de temps peut
+	 * contenir la valeur suggérée à l'ouverture »). Un jour d'absence se hachure et se lit « Absent » sans rond, sauf
+	 * si une journée y est saisie, qui reste à corriger. Une journée qui ne s'écrit pas, un jour à venir ou la
+	 * journée d'une autre personne sans le planning complet, garde son rond sans geste, et rien quand elle est vide.
+	 *
+	 * Le dépassement de la journée par ses interventions se dit sur les interventions, en alerte, et non sur la
+	 * journée (R1) : le rond garde la couleur de sa valeur.
 	 */
-	protected function getEntryDay(\structure\Structure $eStructure, string $week, string $date, bool $selected, \user\User $eUser, array $day, bool $warning): string {
+	protected function getEntryDay(\structure\Structure $eStructure, string $week, string $date, bool $selected, \user\User $eUser, array $day): string {
 
 		$classes = ['util-day'];
 
@@ -943,10 +956,6 @@ class TimeDayUi {
 			$classes[] = 'is-absent';
 		}
 
-		if($day['overflow']) {
-			$classes[] = 'is-over';
-		}
-
 		$calendar = \util\DateUi::calendarWeekday($date, ($selected and $eStructure->hasTime()), large: TRUE, value: $day['holiday'] ? \hr\HolidayUi::getHoliday() : NULL);
 
 		if($eStructure->hasTime()) {
@@ -955,12 +964,14 @@ class TimeDayUi {
 
 		if($day['canWorking'] and ($day['absent'] === FALSE or $day['working'] !== NULL)) {
 
-			$value = $this->getWorking($eStructure, $week, $date, $eUser, origin: NULL, workingTime: $day['working'], canWorking: TRUE, overflow: $day['overflow'], missing: $warning);
+			$suggested = ($day['working'] === NULL and $day['time'] > 0.0) ? $day['time'] : NULL;
+
+			$value = $this->getWorking($eStructure, $week, $date, $eUser, origin: NULL, workingTime: $day['working'], canWorking: TRUE, overflow: FALSE, tile: self::getWorkingRound($day['working']), suggested: $suggested);
 
 		} else if($day['absent']) {
 			$value = '<span class="color-muted">'.\hr\AbsenceUi::getAbsent(NULL).'</span>';
 		} else if($day['working'] !== NULL) {
-			$value = DurationUi::formatDuration($day['working']);
+			$value = '<span class="planning-time-round">'.DurationUi::formatDuration($day['working']).'</span>';
 		} else {
 			$value = '&nbsp;';
 		}
@@ -968,6 +979,48 @@ class TimeDayUi {
 		$h = '<div id="planning-time-day-'.$date.'" class="'.implode(' ', $classes).'">';
 			$h .= $calendar;
 			$h .= '<div class="util-day-value">'.$value.'</div>';
+			if($eStructure->hasTime()) {
+				$h .= $this->getEntryTime($day);
+			}
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	/**
+	 * La journée en rond de la semaine en champs, qui ouvre sa saisie (`data-planning-duration-open`) : la durée
+	 * dans la valeur que la saisie réécrit pendant qu'on choisit (`PlanningDuration.write()`), ou le crayon quand
+	 * elle est vide. Le rond vide se dessine en pointillé par cette valeur, et non par une classe du rond, pour
+	 * qu'il se remplisse dès qu'une durée se choisit.
+	 */
+	public static function getWorkingRound(?float $workingTime): string {
+
+		$empty = ($workingTime === NULL or $workingTime <= 0.0);
+
+		$h = '<a class="planning-time-round" data-planning-duration-open>';
+			$h .= '<span class="planning-duration-tile-value'.($empty ? ' planning-duration-missing' : '').'" data-missing="">'.($empty ? '' : DurationUi::formatDuration($workingTime)).'</span>';
+			$h .= \Asset::icon('pencil-fill');
+		$h .= '</a>';
+
+		return $h;
+
+	}
+
+	/**
+	 * Le temps des interventions d'un jour, sous sa journée : un chiffre gris, en alerte quand il dépasse la journée
+	 * (`overflow`, `TimeWeekLib::getDay()`). Sur la ligne d'un jour au téléphone, il se dit en entier, la tête de
+	 * colonne qui le nomme au bureau (`getDays()`) n'y étant plus. Un jour sans intervention garde sa case vide, pour
+	 * que sa rangée reste à sa place dans la grille.
+	 */
+	protected function getEntryTime(array $day): string {
+
+		if($day['time'] <= 0.0) {
+			return '<div class="util-days-entry-time"></div>';
+		}
+
+		$h = '<div class="util-days-entry-time'.($day['overflow'] ? ' is-over' : '').'">';
+			$h .= DurationUi::formatDuration($day['time']).' <span class="util-days-entry-time-label">'.s("d'interventions").'</span>';
 		$h .= '</div>';
 
 		return $h;
@@ -1297,10 +1350,13 @@ class TimeDayUi {
 	 * passe en rouge, son crayon non. Elle dit la journée enregistrée, que la réponse redessine, et garde sa
 	 * couleur pendant qu'une autre durée se choisit dans la grille (`PlanningDuration.write()`).
 	 *
-	 * `$missing` dit qu'une journée vide est attendue : sa tuile dit alors « à saisir », sinon son crayon seul. La
-	 * semaine en champs n'attend que les jours que compte sa somme (`getEntryDay()`).
+	 * La semaine en champs passe son rond en `$tile`, qui dit à sa place si la journée est à saisir
+	 * (`getWorkingRound()`).
+	 *
+	 * `$suggested` est la durée sur laquelle s'ouvre une journée vide (`PlanningDuration.open()`), qui ne s'écrit
+	 * qu'à son « Enregistrer » : la semaine en champs y propose le temps des interventions du jour.
 	 */
-	public function getWorking(\structure\Structure $eStructure, string $week, string $date, \user\User $eUser, ?string $origin, ?float $workingTime, bool $canWorking, bool $overflow, \hr\WorkingTime $eWorkingTime = new \hr\WorkingTime(), string $tile = '', string $id = '', bool $missing = TRUE): string {
+	public function getWorking(\structure\Structure $eStructure, string $week, string $date, \user\User $eUser, ?string $origin, ?float $workingTime, bool $canWorking, bool $overflow, \hr\WorkingTime $eWorkingTime = new \hr\WorkingTime(), string $tile = '', string $id = '', ?float $suggested = NULL): string {
 
 		$class = 'planning-time-working'.($overflow ? ' planning-time-working-overflow' : '');
 
@@ -1320,6 +1376,10 @@ class TimeDayUi {
 			$attributes['id'] = $id;
 		}
 
+		if($suggested !== NULL) {
+			$attributes['data-suggested'] = $suggested;
+		}
+
 		// Sous horaires, la journée se saisit par ses horaires, dont la durée est le calcul : le panneau part de ceux
 		// de la journée saisie (`$eWorkingTime`), vide quand elle est à saisir.
 		if($eStructure->hasTimeRange()) {
@@ -1328,7 +1388,7 @@ class TimeDayUi {
 				self::getWorkingKey($date, $eUser),
 				$eWorkingTime,
 				self::getPanelDay($date),
-				$missing ? s("à saisir") : '',
+				s("à saisir"),
 				class: $class,
 				attributes: $attributes,
 				tile: $tile
@@ -1341,7 +1401,7 @@ class TimeDayUi {
 			$workingTime,
 			self::HOURS,
 			self::getPanelDay($date),
-			$missing ? s("à saisir") : '',
+			s("à saisir"),
 			class: $class,
 			attributes: $attributes,
 			tile: $tile

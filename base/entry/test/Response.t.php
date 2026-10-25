@@ -7,7 +7,7 @@ namespace entry;
  */
 class ResponseTest extends EntryFixtureTest {
 
-	const KEYS = ['intention', 'verb', 'object', 'named', 'plant', 'plantNamed', 'cultivation', 'task', 'date', 'mode', 'complements', 'complementsNamed', 'lines', 'couple', 'units', 'days', 'question', 'confirmation', 'outcome', 'pending', 'typing', 'typingPrefix', 'blank', 'recap', 'refusal', 'discarded'];
+	const KEYS = ['intention', 'verb', 'object', 'named', 'plant', 'plantNamed', 'cultivation', 'task', 'date', 'mode', 'complements', 'complementsNamed', 'lines', 'couple', 'units', 'days', 'question', 'confirmation', 'outcome', 'pending', 'typing', 'typingPrefix', 'blank', 'recap', 'refusal', 'handover', 'discarded'];
 
 	public function testKeys(): void {
 

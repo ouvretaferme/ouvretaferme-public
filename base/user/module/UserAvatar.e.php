@@ -25,6 +25,17 @@ class UserAvatar extends UserAvatarElement {
 	}
 
 	/**
+	 * Un avatar créé par l'import d'un modèle 3D, sans passer par l'éditeur, n'a pas de composition : il n'existe que tant
+	 * que le modèle est en place, et part avec lui (`UserAvatarUploadLib::clear()`).
+	 */
+	public function hasComposition(): bool {
+
+		$this->expects(['composition']);
+		return ($this['composition'] !== NULL);
+
+	}
+
+	/**
 	 * L'image de l'avatar se rend de nouveau quand elle est un JPEG : le JPEG n'a pas de transparence, et une image
 	 * enregistrée avant que la vignette d'utilisateur n'admette le PNG en production a perdu son fond, devenu noir ou
 	 * gris. Seul un avatar qui remplace la photo a son image sur `User.vignette`, et la photo mise de côté sur `photo`

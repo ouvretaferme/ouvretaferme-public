@@ -356,7 +356,7 @@ class StructureCommunityUi implements StructureCommonUi {
 		foreach($cStructureLocated as $eStructure) {
 
 			$popup = '<div><b>'.encode($eStructure['name']).'</b></div>';
-			$popup .= '<div class="color-muted font-sm">'.encode($eStructure['eSystem']['place']).'</div>';
+			$popup .= '<div class="util-annotation">'.encode($eStructure['eSystem']['place']).'</div>';
 
 			if($eStructure['url'] !== '') {
 				$popup .= '<div class="mt-1"><a href="'.$eStructure['url'].'" class="btn btn-sm btn-outline-primary">'.s("Ouvrir la ferme").'</a></div>';
@@ -1254,7 +1254,7 @@ class StructureCommunityUi implements StructureCommonUi {
 								$h .= '<b>'.encode($eStructure['name']).'</b>';
 
 								if($eStructure['legalCity'] !== NULL) {
-									$h .= '<div class="color-muted font-sm">'.encode($eStructure['legalCity']).'</div>';
+									$h .= '<div class="util-annotation">'.encode($eStructure['legalCity']).'</div>';
 								}
 
 							$h .= '</td>';
@@ -2407,7 +2407,7 @@ class StructureCommunityUi implements StructureCommonUi {
 								}
 
 								$h .= '<td>';
-									$h .= '<span class="color-muted font-sm">'.\util\DateUi::numeric($eMember['createdAt'], \util\DateUi::DATE).'</span>';
+									$h .= '<span class="util-annotation">'.\util\DateUi::numeric($eMember['createdAt'], \util\DateUi::DATE).'</span>';
 								$h .= '</td>';
 
 								$h .= '<td class="text-end">';

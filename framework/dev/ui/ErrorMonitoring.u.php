@@ -67,10 +67,10 @@ class ErrorMonitoringUi {
 		$h = '<div class="admin-dev-close">';
 
 			$h .= $form->openAjax('/dev/admin/:doStatusByMessage');
-				$h .= '<div class="input-group">';
-					$h .= $form->text('message', '', ['style' => 'width: 300px', 'placeholder' => s("Valider les erreurs contenant...")]);
-					$h .= $form->submit(\Asset::icon('check'), ['class' => 'btn btn-only-icon btn-primary', 'data-confirm' => s("Valider ces erreurs ?")]);
-				$h .= '</div>';
+				$h .= $form->inputGroup(
+					$form->text('message', '', ['style' => 'width: 300px', 'placeholder' => s("Valider les erreurs contenant...")]).
+					$form->submit(\Asset::icon('check'), ['class' => 'btn btn-only-icon btn-primary', 'data-confirm' => s("Valider ces erreurs ?")])
+				);
 			$h .= $form->close();
 
 		$h .= '</div>';

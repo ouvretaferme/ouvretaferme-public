@@ -154,7 +154,7 @@ class AccessEventUi {
 		$h = encode($eAccessEvent['host']);
 
 		if($eAccessEvent['hosts'] !== NULL and $eAccessEvent['hosts'] > 1) {
-			$h .= '<div class="font-sm color-muted">'.p("et {value} autre hôte", "et {value} autres hôtes", $eAccessEvent['hosts'] - 1).'</div>';
+			$h .= '<div class="util-annotation">'.p("et {value} autre hôte", "et {value} autres hôtes", $eAccessEvent['hosts'] - 1).'</div>';
 		}
 
 		return $h;
@@ -215,8 +215,8 @@ class AccessEventUi {
 		$h = encode($eAccessEvent['path']);
 
 		$h .= match($eAccessEvent['type']) {
-			AccessEvent::SCAN => '<div class="font-sm color-muted">'.p("{value} chemin distinct", "{value} chemins distincts", $eAccessEvent['paths']).'</div>',
-			AccessEvent::FLOOD => '<div class="font-sm color-muted">'.s("dernier chemin refusé").'</div>',
+			AccessEvent::SCAN => '<div class="util-annotation">'.p("{value} chemin distinct", "{value} chemins distincts", $eAccessEvent['paths']).'</div>',
+			AccessEvent::FLOOD => '<div class="util-annotation">'.s("dernier chemin refusé").'</div>',
 			AccessEvent::ERROR => '',
 		};
 

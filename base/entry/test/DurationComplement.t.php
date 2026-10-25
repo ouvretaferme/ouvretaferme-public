@@ -105,8 +105,8 @@ class DurationComplementTest extends \Test {
 		$this->assertEquals('1 h', DurationComplementUi::getDuration(60));
 		$this->assertEquals('1 h 05', DurationComplementUi::getDuration(65));
 
-		// Chaque durée proposée se relit en elle-même : son jeton est son libellé.
-		foreach(DurationComplementUi::getOptions() as $minutes) {
+		// Chaque durée qu'une puce donne se relit en elle-même : son jeton est son libellé.
+		foreach(DurationComplementLib::ADDITIONS as $minutes) {
 			$this->assertEquals([$minutes, ['courgette']], $this->read('courgette '.DurationComplementUi::getDuration($minutes).' '));
 		}
 

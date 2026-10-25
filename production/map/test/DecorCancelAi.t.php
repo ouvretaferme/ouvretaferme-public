@@ -192,6 +192,7 @@ class DecorCancelAiTest extends \Test {
 				active: false,
 				frozen: null,
 				terrain: {},
+				zoneTerrains: new Map(),
 				grid: { visible: false },
 				elements: [],
 				sheet: toggled("sheet"),
@@ -267,6 +268,7 @@ class DecorCancelAiTest extends \Test {
 						fallback: [],
 						sent: [],
 						terrainOpening: {},
+						zoneTerrainOpening: new Map(),
 						send: (route, body) => {
 							const values = body();
 							if(values === null) {

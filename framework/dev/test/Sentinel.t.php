@@ -48,7 +48,9 @@ abstract class SentinelTest extends \Test {
 
 		$result = SentinelLib::compare($this->found[$rule] ?? [], $declared);
 
-		$this->assertEquals([], $result['new'], $message.' ('.$this->getDeclarationName($declared).') : '.implode(' · ', SentinelLib::explainNew($result['new'], $this->getDeclarationFile())));
+		$counts = SentinelLib::getNewCounts($this->found[$rule] ?? [], $declared);
+
+		$this->assertEquals([], $result['new'], $message.' ('.$this->getDeclarationName($declared).') : '.implode(' · ', SentinelLib::explainNew($result['new'], $this->getDeclarationFile(), $counts, $declared, $this->getDeclarationConstant($declared))));
 		$this->assertEquals([], $result['stale'], 'dette résorbée, baisser la déclaration de la règle « '.$message.' » : '.implode(' · ', SentinelLib::explainStale($result['stale'])));
 
 	}
@@ -59,13 +61,16 @@ abstract class SentinelTest extends \Test {
 	 * non par une constante se nomme d'après le fichier seul.
 	 */
 	private function getDeclarationName(array $declared): string {
+		return ($this->getDeclarationConstant($declared) ?? 'déclaration').' de '.$this->getDeclarationFile();
+	}
+
+	private function getDeclarationConstant(array $declared): ?string {
 
 		$class = new \ReflectionClass(static::class);
 		// Deux constantes de même valeur, dont toutes les déclarations vides, ne se départagent pas.
 		$names = array_keys($class->getConstants(), $declared, TRUE);
-		$name = ($declared !== [] and count($names) === 1) ? $names[0] : 'déclaration';
 
-		return $name.' de '.$this->getDeclarationFile();
+		return ($declared !== [] and count($names) === 1) ? $names[0] : NULL;
 
 	}
 
@@ -93,11 +98,13 @@ abstract class SentinelTest extends \Test {
 		ksort($found);
 
 		$new = [];
+		$counts = [];
 
 		foreach($found as $key => $line) {
 
 			if(array_key_exists($key, $declared) === FALSE) {
 				$new[] = $key.' (ligne '.$line.')';
+				$counts[$key] = 1;
 			}
 
 		}
@@ -116,7 +123,7 @@ abstract class SentinelTest extends \Test {
 
 		}
 
-		$this->assertEquals([], $new, $message.' ('.$this->getDeclarationName($declared).') : '.implode(' · ', SentinelLib::explainNew($new, $this->getDeclarationFile())));
+		$this->assertEquals([], $new, $message.' ('.$this->getDeclarationName($declared).') : '.implode(' · ', SentinelLib::explainNew($new, $this->getDeclarationFile(), $counts, $declared, $this->getDeclarationConstant($declared))));
 		$this->assertEquals([], $stale, 'déclaré pour la règle « '.$message.' » sans plus rien désigner, retirer la déclaration : '.implode(' · ', $stale));
 		$this->assertEquals([], array_keys($declared, '', TRUE), 'déclaration sans raison pour la règle « '.$message.' », écrire ce qui justifie le cas : '.implode(' · ', array_keys($declared, '', TRUE)));
 

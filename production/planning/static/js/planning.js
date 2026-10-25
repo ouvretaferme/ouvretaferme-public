@@ -2414,6 +2414,10 @@ class PlanningDuration {
 
 	}
 
+	/*
+	 * Une journée vide s'ouvre sur la durée que son écran propose (`data-suggested`, `TimeDayUi::getWorking()`),
+	 * qui n'est qu'affichée : la fermer sans enregistrer la rend vide (`discard()`), et la rouvrir la repropose.
+	 */
 	static open(duration) {
 
 		const panel = this.getPanel(duration);
@@ -2422,6 +2426,10 @@ class PlanningDuration {
 
 		this.kept = duration.dataset.duration;
 		this.draft = null;
+
+		if(duration.dataset.time === '' && duration.dataset.suggested !== undefined) {
+			this.choose(duration, parseFloat(duration.dataset.suggested));
+		}
 
 		this.place(panel);
 
@@ -2766,8 +2774,9 @@ class PlanningDuration {
 	}
 
 	/*
-	 * Écrit la durée comme `DurationUi` la rend : la durée lue, la tuile, et le rond et les minutes
-	 * allumés, aucun à zéro.
+	 * Écrit la durée comme `DurationUi` la rend : la durée lue, la valeur de ce qui ouvre la saisie, la tuile
+	 * ou le rond de la semaine en champs (`TimeDayUi::getWorkingRound()`), et le rond et les minutes allumés,
+	 * aucun à zéro.
 	 * Seule la durée lue glisse d'un cran, vers le haut quand elle grandit (retour 133) ; la classe se repose
 	 * à l'image suivante pour relancer l'animation sur une durée qui la porte encore, sans relire la mise en
 	 * page pour la rejouer, et seulement sur une durée encore visible : posée sur une durée masquée, elle
@@ -2805,7 +2814,7 @@ class PlanningDuration {
 
 		});
 
-		duration.qs(':scope > .planning-duration-tile .planning-duration-tile-value', value => {
+		duration.qs(':scope > [data-planning-duration-open] .planning-duration-tile-value', value => {
 			value.classList.toggle('planning-duration-missing', empty);
 			value.textContent = empty ? value.dataset.missing : PlanningTask.format(time);
 		});

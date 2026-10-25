@@ -27,6 +27,18 @@ class TestLib {
 	public static bool $summary = FALSE;
 
 	/**
+	 * Les fichiers de test que la passe joue, depuis la racine du dépôt, quand `diff=` la borne
+	 * (TestDiffLib), ou NULL pour tous ceux que `file=` retient.
+	 */
+	public static ?array $paths = NULL;
+
+	/**
+	 * Les fichiers de test qui ont échoué, depuis la racine du dépôt, pour que la passe dise de chacun
+	 * s'il rougit aussi sur l'amont (TestUpstreamLib).
+	 */
+	public static array $failedFiles = [];
+
+	/**
 	 * Nombre total d'échecs et d'exceptions de la campagne, pour que le lanceur sorte en code non nul.
 	 */
 	public static int $failures = 0;
@@ -155,7 +167,7 @@ class TestLib {
 
 			$basename = substr($file->getBasename(), 0, -6);
 
-			if(self::isSelected($basename, $patterns) === FALSE) {
+			if(self::isSelected($basename, $patterns) === FALSE or self::isBounded($file->getPathname()) === FALSE) {
 				return;
 			}
 
@@ -189,20 +201,25 @@ class TestLib {
 
 	}
 
+	private static function isBounded(string $path): bool {
+		return self::$paths === NULL or in_array(substr($path, strlen(LIME_DIRECTORY) + 1), self::$paths, TRUE);
+	}
+
 	private static function browse(\ReflectionPackage $package, array $patterns): void {
 
 		$package->browse('test/', '.t.php', function($file) use($package, $patterns) {
 
 			$basename = substr($file->getBasename(), 0, -6);
 
-			if(self::isSelected($basename, $patterns) === FALSE) {
+			if(self::isSelected($basename, $patterns) === FALSE or self::isBounded($file->getPathname()) === FALSE) {
 				return;
 			}
 
 			self::$files++;
 
 			$class = $package->getPackageName().'\\'.$basename.'Test';
-			$running = substr($file->getPathname(), strlen(LIME_DIRECTORY) + 1).', '.$class;
+			$path = substr($file->getPathname(), strlen(LIME_DIRECTORY) + 1);
+			$running = $path.', '.$class;
 			$report = '';
 
 			self::$running = $running;
@@ -236,6 +253,7 @@ class TestLib {
 					echo "\033[31mMissing fixture: ".$reflection->getName().", ".$e->getMessage()."\033[00m".PHP_EOL;
 					self::$missingFixtures++;
 					self::$missingFixtureClasses[] = $reflection->getName();
+					self::$failedFiles[] = $path;
 					$report = 'Missing fixture: '.$reflection->getName().', '.$e->getMessage().PHP_EOL.PHP_EOL;
 					return;
 				}
@@ -310,12 +328,17 @@ class TestLib {
 				self::$assertions += $instance->getOk() + $instance->getKo();
 				self::$failures += $instance->getKo();
 
+				if($instance->getKo() > 0) {
+					self::$failedFiles[] = $path;
+				}
+
 			} catch(\Throwable $e) {
 
 				echo "\033[31mCRITICAL ERROR: ".$class.", ".$e->getMessage()."\033[00m".PHP_EOL;
 
 				$report = 'CRITICAL ERROR: '.$class.', '.$e->getMessage().PHP_EOL.PHP_EOL;
 				self::$failures++;
+				self::$failedFiles[] = $path;
 
 			} finally {
 
@@ -523,6 +546,7 @@ class TestLib {
 			'warningsWithoutSource' => self::$warningsWithoutSource,
 			'missingFixtureClasses' => self::$missingFixtureClasses,
 			'notApplicableClasses' => self::$notApplicableClasses,
+			'failedFiles' => self::$failedFiles,
 		];
 
 	}
@@ -556,6 +580,7 @@ class TestLib {
 
 		self::$missingFixtureClasses = array_merge(self::$missingFixtureClasses, $counters['missingFixtureClasses']);
 		self::$notApplicableClasses = array_merge(self::$notApplicableClasses, $counters['notApplicableClasses']);
+		self::$failedFiles = array_merge(self::$failedFiles, $counters['failedFiles']);
 
 	}
 

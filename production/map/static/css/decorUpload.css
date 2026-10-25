@@ -1,0 +1,36 @@
+/* La file du décor importé dans l'administration (`DecorUploadUi::getAdmin()`) : la feuille ne se charge que sur ses écrans,
+   et chaque sélecteur est borné par une classe ou un identifiant qui leur est propre */
+
+/* Un bâtiment est plus large que haut : la vignette en paysage, là où l'avatar prend util-preview-photo, en portrait */
+.map-admin-upload-preview {
+	aspect-ratio: 4 / 3;
+}
+
+.map-admin-uploads {
+	--map-admin-uploads-preview: 9rem;
+	grid-template-columns: var(--map-admin-uploads-preview) minmax(0, 1fr) minmax(0, 1fr);
+}
+
+/* Centré et non sur la ligne de base : l'aperçu n'a pas de texte, sa ligne de base est son bord bas et le nom tomberait
+   au pied de la vignette */
+.map-admin-uploads > .util-table-row > * {
+	align-self: center;
+}
+
+/* Le panneau de retrait montre le modèle plus grand que la ligne, sans prendre toute la largeur */
+#panel-map-decor-upload-withdraw {
+	--map-decor-upload-panel-preview: 14rem;
+}
+
+#panel-map-decor-upload-withdraw .util-preview {
+	max-width: var(--map-decor-upload-panel-preview);
+}
+
+@media (max-width: 575px) {
+
+	.map-admin-uploads {
+		--map-admin-uploads-preview: 6rem;
+		grid-template-columns: var(--map-admin-uploads-preview) minmax(0, 1fr);
+	}
+
+}

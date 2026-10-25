@@ -2,7 +2,7 @@
 namespace entry;
 
 /**
- * « intervention désherbage carotte hier 1 h » : une intervention de culture créée depuis le champ, faite ou à
+ * « intervention désherbage carotte hier 1 h » : une intervention créée depuis le champ, faite ou à
  * faire (HN-B16, piste « Récapitulatif en puces », tranchée). Le geste « Une intervention » du
  * champ vide en pose le verbe.
  *
@@ -13,8 +13,9 @@ namespace entry;
  * tape, comme le temps seul l'écrit. À faire, elle est prévue à la semaine dite, ou au jour dit quand la phrase
  * en tape un, et le temps devient le temps prévu (`timeExpected`).
  *
- * Seules les actions de la catégorie Culture se proposent, hors récolte, qui a son verbe : l'intervention se
- * construit dans cette catégorie (`TimeIntentionLib::buildTask()`). Ce que le formulaire complet règle de plus
+ * Toutes les actions se proposent, hors récolte, qui a son verbe. L'intervention se construit dans la catégorie
+ * que l'action lui donne (`TimeIntentionLib::getCategory()`) : en Culture, avec son espèce et sa série ; dans une
+ * autre (« RH » en Administration, HN-B14), sans l'une ni l'autre. Ce que le formulaire complet règle de plus
  * (variété, produits, outils, méthodes) se règle ensuite sur l'intervention.
  *
  * L'annulation reprend le ticket du temps seul (`TimeIntentionLib::setCancel()`) : l'intervention part avec son
@@ -46,25 +47,29 @@ class InterventionIntentionLib extends IntentionLib {
 	}
 
 	/**
-	 * Une intervention par action de culture, nommée par l'action, sans espèce : l'espèce se demande ensuite. Son
-	 * identifiant est celui de l'action.
+	 * Une intervention par action, hors récolte, nommée par l'action, sans espèce, dans la catégorie que l'action
+	 * lui donne (`TimeIntentionLib::getCategory()`) : en Culture, l'espèce se demande ensuite. Son identifiant est
+	 * celui de l'action.
 	 */
 	public static function getObjects(\structure\Structure $eStructure, array $reading, \Collection $cElementRead = new \Collection()): \Collection {
 
-		$eCategory = \work\CategoryLib::getByStructure($eStructure, fqn: CATEGORIE_CULTURE);
-
-		$cAction = \work\ActionLib::getByStructure($eStructure)->find(fn(\work\Action $eAction) => (
-			$eAction['fqn'] !== ACTION_RECOLTE and
-			TimeIntentionLib::isAddable($eCategory, $eAction)
-		));
+		$cCategory = \work\CategoryLib::getByStructure($eStructure, index: 'id');
 
 		$cTaskObject = new \Collection();
 
-		foreach($cAction as $eAction) {
+		foreach(\work\ActionLib::getByStructure($eStructure) as $eAction) {
+
+			$eCategory = TimeIntentionLib::getCategory($cCategory, $eAction);
+
+			if($eAction['fqn'] === ACTION_RECOLTE or $eCategory->empty()) {
+				continue;
+			}
 
 			$cTaskObject[$eAction['id']] = new \series\Task([
 				'id' => $eAction['id'],
 				'action' => $eAction,
+				'category' => $eCategory,
+				'cCategory' => TimeIntentionLib::getCategories($cCategory, $eAction),
 				'plant' => new \plant\Plant(),
 				'name' => $eAction['name'],
 			]);
@@ -106,7 +111,9 @@ class InterventionIntentionLib extends IntentionLib {
 	}
 
 	/**
-	 * L'espèce, puis la série, puis l'état, le jour ou la semaine, et le temps.
+	 * L'espèce, puis la série, puis l'état, le jour ou la semaine, et le temps. Une action d'une autre catégorie
+	 * que Culture n'a ni espèce ni série : elle commence à l'état, ou à sa catégorie quand elle en a plusieurs
+	 * (`TimeIntentionLib::resolveCategory()`).
 	 *
 	 * L'intervention se construit dès la lecture, comme celle qu'un temps ajoute au planning
 	 * (`TimeIntentionLib::resolveAdd()`) : un refus de `build()` vaut pour la lecture comme pour l'écriture. Elle
@@ -116,16 +123,29 @@ class InterventionIntentionLib extends IntentionLib {
 	 */
 	public static function resolve(\structure\Structure $eStructure, array &$reading, array $answers): void {
 
-		$ePlant = self::resolvePlant($eStructure, $reading);
-
-		if($ePlant->empty()) {
-			return;
-		}
-
-		$eCultivation = TimeIntentionLib::resolveSeries($eStructure, $reading, $answers, $ePlant);
+		$eCategory = TimeIntentionLib::resolveCategory($reading, $answers);
 
 		if($reading['question'] !== NULL) {
 			return;
+		}
+
+		if(TimeIntentionLib::isCulture($eCategory)) {
+
+			$ePlant = self::resolvePlant($eStructure, $reading);
+
+			if($ePlant->empty()) {
+				return;
+			}
+
+			$eCultivation = TimeIntentionLib::resolveSeries($eStructure, $reading, $answers, $ePlant);
+
+			if($reading['question'] !== NULL) {
+				return;
+			}
+
+		} else {
+			$ePlant = new \plant\Plant();
+			$eCultivation = new \series\Cultivation();
 		}
 
 		$week = $reading['complements']['week'];
@@ -152,7 +172,7 @@ class InterventionIntentionLib extends IntentionLib {
 
 		$fw = new \FailWatch();
 
-		$eTask = TimeIntentionLib::buildTask($eStructure, $reading['object']['action'], $ePlant, $eCultivation, $reading['date'], $status, $input);
+		$eTask = TimeIntentionLib::buildTask($eStructure, $eCategory, $reading['object']['action'], $ePlant, $eCultivation, $reading['date'], $status, $input);
 
 		$fw->validate();
 
@@ -190,6 +210,12 @@ class InterventionIntentionLib extends IntentionLib {
 			'minutes' => ($status === \series\Task::DONE) ? $minutes : 0,
 			'dates' => ($status === \series\Task::DONE and $minutes > 0) ? [$reading['date']] : [],
 			'expected' => ($status === \series\Task::TODO) ? $minutes : 0,
+			// Faite, son temps s'écrit au jour dit, sous la borne de la journée, là où le temps se suit ; à faire, il
+			// n'est que prévu.
+			'additions' => match($status) {
+				\series\Task::DONE => $eStructure->hasTime() ? DurationComplementLib::getAdditions($minutes, TimeIntentionLib::getWorked($eStructure, [$reading['date']])) : [],
+				\series\Task::TODO => DurationComplementLib::getAdditions($minutes),
+			},
 			'tracked' => $eStructure->hasTime(),
 			'yesterday' => date('Y-m-d', \Clock::shift('-1 DAY')),
 			'day' => self::getDay($reading['date']),

@@ -17,8 +17,8 @@ namespace map;
  * lecteurs sont ceux de `DECOR_UPLOAD_READERS`, dans les deux sens.
  *
  * Le décor ne passe jamais par l'API : aucun fichier `.a.php` ne nomme une classe `Decor*` du package.
- * La colonne `Plot.decorGreenhouse`, qui n'est pas une classe, est gardée hors de l'API par
- * `PlotDecorGreenhouseAi`.
+ * Les colonnes `Plot.decorGreenhouse` et `Zone.decorGrass`, `decorSoil`, `decorMeadow`, qui ne sont pas des
+ * classes, sont gardées hors de l'API par `PlotDecorGreenhouseAi` et `ZoneDecorTerrainAi`.
  *
  * Le réseau d'irrigation a son propre drapeau, `MapSetting::isIrrigationEnabled()` (en dev et aux structures
  * de `MapSetting::DECOR_IRRIGATION`), lu là où il se montre et là où il s'écrit. D'où trois inventaires :
@@ -100,6 +100,8 @@ class FlagSentinelTest extends \Test {
 	const DECOR_UPLOAD_READERS = [
 		'production/map/lib/DecorUpload.l.php' => 'l\'onglet du modèle et son dépôt dans l\'éditeur du bâtiment',
 		'production/map/page/decorUpload.p.php' => 'l\'aperçu et l\'envoi d\'un modèle, et le téléchargement du skill',
+		'production/map/page/decorObject.p.php' => 'le panneau d\'un élément neuf d\'une rangée Eau, Nature ou Matériel, son aperçu et son envoi',
+		'production/map/ui/Scene.u.php' => 'la tuile « Importer » au bout des rangées Eau, Nature et Matériel',
 	];
 
 	/**

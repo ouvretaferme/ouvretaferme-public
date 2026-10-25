@@ -372,17 +372,6 @@
 	margin: 0.25rem 0 0;
 }
 
-.onboarding-row-remove {
-	color: var(--muted);
-	padding: 0.25rem;
-	line-height: 1;
-	cursor: pointer;
-}
-
-.onboarding-row-remove:hover {
-	color: var(--danger);
-}
-
 .onboarding-field-label {
 	display: block;
 	font-size: 0.9rem;

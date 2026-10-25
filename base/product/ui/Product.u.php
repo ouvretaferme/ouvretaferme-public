@@ -2296,7 +2296,7 @@ class ProductUi {
 					s("Colis de base"),
 					$form->inputGroup(
 												$form->dynamicField($eProduct, 'proPackaging').
-						'<div class="input-group-addon" data-ref="product-unit">'.$unit.'</div>'
+						$form->addon($unit, ['data-ref' => 'product-unit'])
 					)
 				);
 			$h .= '</div>';
@@ -2309,7 +2309,7 @@ class ProductUi {
 												$form->dynamicField($eProduct, 'proStep', function($d) {
 							$d->placeholder = 1;
 						}).
-						'<div class="input-group-addon" data-ref="product-unit">'.$unit.'</div>'
+						$form->addon($unit, ['data-ref' => 'product-unit'])
 					).$form->info(s("Les quantités achetées par les clients dans les boutiques en ligne seront un multiple de cette valeur si vous n'avez pas défini de colis de base."))
 				);
 
@@ -2360,7 +2360,7 @@ class ProductUi {
 								$d->placeholder = self::getDefaultPrivateStep($eProduct);
 							}
 						}).
-						'<div class="input-group-addon" data-ref="product-unit">'.$unit.'</div>'
+						$form->addon($unit, ['data-ref' => 'product-unit'])
 					).$form->info(s("Les quantités achetées par les clients dans les boutiques en ligne seront un multiple de cette valeur."))
 				);
 

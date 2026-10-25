@@ -70,7 +70,7 @@ class ConfigurationAiTest extends \dev\ApiTest {
 
 	}
 
-	/** Sans ligne, la structure lit les défauts du schéma : l'herbe verte tendre et le limon. */
+	/** Sans ligne, la structure lit les défauts du schéma : l'herbe verte tendre, le limon et le pré mixte. */
 	public function testDefaults(): void {
 
 		$eConfiguration = ConfigurationLib::readByStructure($this->eStructure);
@@ -78,6 +78,7 @@ class ConfigurationAiTest extends \dev\ApiTest {
 		$this->assertEquals(0, $this->countRows());
 		$this->assertEquals(Configuration::TENDER, $eConfiguration['decorGrass']);
 		$this->assertEquals(Configuration::LOAM, $eConfiguration['decorSoil']);
+		$this->assertEquals(Configuration::MIXED, $eConfiguration['decorMeadow']);
 		$this->assertEquals($this->eStructure['id'], $eConfiguration['structure']['id']);
 
 	}
@@ -87,8 +88,8 @@ class ConfigurationAiTest extends \dev\ApiTest {
 
 		$fw = new \FailWatch();
 
-		$this->createConfiguration(['decorGrass' => Configuration::CLEAR, 'decorSoil' => Configuration::OCHRE], $fw);
-		$this->createConfiguration(['decorGrass' => Configuration::DRY, 'decorSoil' => Configuration::HUMUS], $fw);
+		$this->createConfiguration(['decorGrass' => Configuration::CLEAR, 'decorSoil' => Configuration::OCHRE, 'decorMeadow' => Configuration::MIXED], $fw);
+		$this->createConfiguration(['decorGrass' => Configuration::DRY, 'decorSoil' => Configuration::HUMUS, 'decorMeadow' => Configuration::TUFTED], $fw);
 
 		$this->assertTrue($fw->ok());
 		$this->assertEquals(1, $this->countRows());
@@ -97,6 +98,7 @@ class ConfigurationAiTest extends \dev\ApiTest {
 
 		$this->assertEquals(Configuration::DRY, $eConfiguration['decorGrass']);
 		$this->assertEquals(Configuration::HUMUS, $eConfiguration['decorSoil']);
+		$this->assertEquals(Configuration::TUFTED, $eConfiguration['decorMeadow']);
 
 	}
 
@@ -105,16 +107,24 @@ class ConfigurationAiTest extends \dev\ApiTest {
 
 		$fw = new \FailWatch();
 
-		$this->createConfiguration(['decorGrass' => 'moss', 'decorSoil' => Configuration::SAND], $fw);
+		$this->createConfiguration(['decorGrass' => 'moss', 'decorSoil' => Configuration::SAND, 'decorMeadow' => Configuration::MIXED], $fw);
 
 		$this->assertTrue($fw->has('Configuration::decorGrass.check'));
 		$this->assertEquals(0, $this->countRows());
 
 		$fw = new \FailWatch();
 
-		$this->createConfiguration(['decorGrass' => Configuration::LUSH, 'decorSoil' => 'clay<script>'], $fw);
+		$this->createConfiguration(['decorGrass' => Configuration::LUSH, 'decorSoil' => 'clay<script>', 'decorMeadow' => Configuration::MIXED], $fw);
 
 		$this->assertTrue($fw->has('Configuration::decorSoil.check'));
+		$this->assertEquals(0, $this->countRows());
+
+		// Une page ouverte avant le fond du pré ne le poste pas : son choix d'herbe ou de sol est refusé, sans rien écrire
+		$fw = new \FailWatch();
+
+		$this->createConfiguration(['decorGrass' => Configuration::LUSH, 'decorSoil' => Configuration::SAND], $fw);
+
+		$this->assertTrue($fw->has('Configuration::decorMeadow.check'));
 		$this->assertEquals(0, $this->countRows());
 
 	}
@@ -124,7 +134,7 @@ class ConfigurationAiTest extends \dev\ApiTest {
 
 		$fw = new \FailWatch();
 
-		$this->createConfiguration(['decorGrass' => 'snow', 'decorSoil' => Configuration::BROWN], $fw);
+		$this->createConfiguration(['decorGrass' => 'snow', 'decorSoil' => Configuration::BROWN, 'decorMeadow' => Configuration::MIXED], $fw);
 
 		$this->assertTrue($fw->has('Configuration::decorGrass.check'));
 		$this->assertEquals(0, $this->countRows());
@@ -149,13 +159,13 @@ class ConfigurationAiTest extends \dev\ApiTest {
 	/** La scène lit le terrain enregistré, ou les défauts tant que la structure n'a rien réglé. */
 	public function testScene(): void {
 
-		$this->assertEquals(['grass' => Configuration::TENDER, 'soil' => Configuration::LOAM], SceneLib::getByStructure($this->eStructure, \Clock::year())['terrain']);
+		$this->assertEquals(['grass' => Configuration::TENDER, 'soil' => Configuration::LOAM, 'meadow' => Configuration::MIXED], SceneLib::getByStructure($this->eStructure, \Clock::year())['terrain']);
 
 		$fw = new \FailWatch();
 
-		$this->createConfiguration(['decorGrass' => Configuration::GRAZED, 'decorSoil' => Configuration::CHALK], $fw);
+		$this->createConfiguration(['decorGrass' => Configuration::GRAZED, 'decorSoil' => Configuration::CHALK, 'decorMeadow' => Configuration::FLOWERY], $fw);
 
-		$this->assertEquals(['grass' => Configuration::GRAZED, 'soil' => Configuration::CHALK], SceneLib::getByStructure($this->eStructure, \Clock::year())['terrain']);
+		$this->assertEquals(['grass' => Configuration::GRAZED, 'soil' => Configuration::CHALK, 'meadow' => Configuration::FLOWERY], SceneLib::getByStructure($this->eStructure, \Clock::year())['terrain']);
 
 	}
 
@@ -233,7 +243,7 @@ class ConfigurationAiTest extends \dev\ApiTest {
 
 		$fw = new \FailWatch();
 
-		$this->createConfiguration(['decorGrass' => Configuration::PALE, 'decorSoil' => Configuration::SCHIST], $fw);
+		$this->createConfiguration(['decorGrass' => Configuration::PALE, 'decorSoil' => Configuration::SCHIST, 'decorMeadow' => Configuration::MIXED], $fw);
 
 		$this->assertTrue($fw->ok());
 		$this->assertEquals([2037, 2037], array_values(ConfigurationLib::readByStructure($this->eStructure)->extracts(['seasonFirst', 'seasonLast'])));

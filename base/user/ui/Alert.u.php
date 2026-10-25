@@ -102,6 +102,7 @@ class AlertUi {
 			'triangles' => s("Il compte {count} triangles, pour {max} au plus.", ['count' => \util\TextUi::number($values['count']), 'max' => \util\TextUi::number($values['max'])]),
 			'bounds' => s("Il est plus grand qu'une personne. Vérifiez son échelle : un mètre de votre logiciel vaut un mètre ici."),
 			'ground' => s("Ses pieds ne sont pas posés au sol. Placez le bas des pieds à la hauteur 0."),
+			'skull' => s("Le dessus de la tête est ouvert, on voit au travers vu d'en haut. Gardez la calotte du crâne sous les cheveux, ou fermez le dessus de la tête."),
 		};
 
 		return '<b>'.s("Ce fichier ne peut pas devenir votre avatar.").'</b><br/>'.$reason.'<br/>'.s("Donnez ce message à Claude, il corrigera le modèle.");

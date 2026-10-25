@@ -84,7 +84,9 @@ class PackageLib {
 
 		$file = \Lime::getPath().'/package.c.php';
 
-		$newContent = implode("\n", $content);
+		// Le saut de ligne final est celui que le fichier garde quand on y écrit à la main : sans lui, chaque
+		// régénération le retire et la suivante écrite à la main le remet, dans le diff de lots sans rapport.
+		$newContent = implode("\n", $content)."\n";
 		$currentContent = file_get_contents($file);
 
 		if($newContent !== $currentContent) {

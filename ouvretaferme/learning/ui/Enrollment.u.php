@@ -240,15 +240,11 @@ class EnrollmentUi {
 
 		$name = $eEnrollment['user']->getName();
 
-		$h = '<a class="btn btn-color-primary btn-sm dropdown-toggle" data-dropdown="bottom-end">'.\Asset::icon('gear-fill').'</a>';
-		$h .= '<div class="dropdown-list">';
-			$h .= '<div class="dropdown-title">'.$name.'</div>';
-			$h .= '<a data-ajax="/learning/enrollment:doConfirm" post-id="'.$eEnrollment['id'].'" class="dropdown-item" data-waiter>'.s("Confirmer l'inscription").'</a>';
-			$h .= '<div class="dropdown-divider"></div>';
-			$h .= '<a data-ajax="/learning/enrollment:doCancelByCommunity" post-id="'.$eEnrollment['id'].'" class="dropdown-item" data-confirm="'.s("Annuler la demande de {value} ? Un e-mail le lui dira.", $name).'" data-waiter>'.s("Annuler la demande").'</a>';
-		$h .= '</div>';
+		$items = '<a data-ajax="/learning/enrollment:doConfirm" post-id="'.$eEnrollment['id'].'" class="dropdown-item" data-waiter>'.s("Confirmer l'inscription").'</a>';
+		$items .= '<div class="dropdown-divider"></div>';
+		$items .= '<a data-ajax="/learning/enrollment:doCancelByCommunity" post-id="'.$eEnrollment['id'].'" class="dropdown-item" data-confirm="'.s("Annuler la demande de {value} ? Un e-mail le lui dira.", $name).'" data-waiter>'.s("Annuler la demande").'</a>';
 
-		return $h;
+		return \main\DesignUi::getGear($items, $name, 'btn-sm');
 
 	}
 

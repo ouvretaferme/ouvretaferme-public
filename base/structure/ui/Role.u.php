@@ -182,7 +182,7 @@ class RoleUi {
 			$h .= $form->hidden('id', $eRole['id']);
 			$h .= $this->getWrite($form, $eRole);
 
-			$submit = '<div class="flex-justify-space-between">';
+			$submit = '<div class="util-action">';
 				$submit .= $form->submit(s("Enregistrer"));
 				$submit .= '<a data-ajax="/structure/role:doDelete" class="btn btn-danger" post-id="'.$eRole['id'].'" data-confirm="'.s("Ce rôle sera supprimé et ne pourra plus être attribué à votre équipe, voulez-vous continuer ?").'">'.s("Supprimer ce rôle").'</a>';
 			$submit .= '</div>';

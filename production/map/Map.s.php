@@ -14,21 +14,27 @@ class MapSetting extends \Settings {
 	/* Version du format que rend SceneLib::getByStructure(), qui dit quand elle monte */
 	const int SCENE_VERSION = 2;
 
+	/* Les modèles importés que la file de l'administration montre par page (`DecorUploadLib::getWaiting()`, `getExamined()`), et
+	   au plus ce que « Tout valider » garde d'un geste (`keepAll()`) */
+	const int MAX_BY_PAGE = 50;
+
 	/**
 	 * Le décor d'une structure tient dans ce que la scène laisse sous une cible de 1,21 M triangles. La pire journée de la
 	 * structure 7, décor masqué et relief éteint, en prend 870 788 (mesurée le 2026-10-11), le relief allumé jusqu'à 60 000 (sol,
 	 * soubassements, tuyaux drapés), les tracés DECOR_TRACE_LENGTH mètres à 29 triangles, chaque tracé y comptant à son poids
 	 * (`DecorLib::TRACE_WEIGHT`, `DecorLib::TRACE_START`), et la haie 1 455 de plus au pire, le zigzag mesuré au-dessus de
-	 * `DecorLib::HEDGE_WEIGHT`. Restent DECOR_TRIANGLES = 1 210 000 - 870 788 - 60 000 - 2 700 × 29 - 1 455 aux objets posés,
-	 * chacun à son plus lourd tirage (`DecorLib::KIT_TRIANGLES`). DECOR_MAX borne la liste, pas le poids.
+	 * `DecorLib::HEDGE_WEIGHT`. Le pré autour des cultures en prend 10 000 (`MapSceneMeadow.TRIANGLES`, relief ou non) et les
+	 * insectes 1 538 de plus que dans cette pire journée, au plus 12 papillons de 190 triangles et 14 abeilles de 42 contre 7
+	 * papillons (mesurés le 2026-10-25). Restent DECOR_TRIANGLES = 1 210 000 - 870 788 - 60 000 - 2 700 × 29 - 1 455 - 11 538 aux
+	 * objets posés, chacun à son plus lourd tirage (`DecorLib::KIT_TRIANGLES`). DECOR_MAX borne la liste, pas le poids.
 	 */
 	const int DECOR_MAX = 120;
 	const int DECOR_TRACE_LENGTH = 2700;
-	const int DECOR_TRIANGLES = 199457;
+	const int DECOR_TRIANGLES = 187919;
 
-	/* Un tracé se pose point par point au mètre près (MapSceneDecor.snap()), donc MapSceneDecor.TRACE_LENGTH mètres en tiennent un point
-	   de plus que leur longueur : ce plafond, qui borne ce qu'un POST fait écrire, se lit aussi dans le navigateur pour refuser le point
-	   de trop avant l'enregistrement */
+	/* Un tracé au clic se pose au mètre près (MapSceneDecor.snap()). Un tracé dessiné relève au plus un point par mètre
+	   (MapSceneDecor.FREEHAND_STEP), puis le relâché le simplifie jusqu'à ce qu'il tienne sous ce plafond. Le plafond borne ce qu'un
+	   POST fait écrire, et le navigateur le lit pour refuser le point de trop avant l'enregistrement */
 	const int DECOR_TRACE_POINTS = 500;
 
 	/* Les calques se partagent DECOR_MAX, DECOR_TRACE_LENGTH et DECOR_TRIANGLES : ce plafond borne la carte des calques, pas
@@ -38,6 +44,10 @@ class MapSetting extends \Settings {
 	/* Chaque hangar personnalisé ajoute un bâtiment à la rangée sans qu'aucun ne s'en retire seul : ce plafond borne la rangée
 	   et ce que la structure garde en base, pas le poids de la scène, que DECOR_TRIANGLES tient déjà */
 	const int DECOR_BUILDING_MAX = 30;
+
+	/* Les éléments importés dans Eau, Nature et Matériel, toutes rangées confondues, suivent la même règle : ce plafond borne
+	   ce que la structure garde en base, et DECOR_TRIANGLES le poids de leurs poses */
+	const int DECOR_OBJECT_MAX = 30;
 
 	/**
 	 * Le décor par défaut que la scène tire pour une structure sans décor (`sceneDecorDefault.js`), et qu'elle enregistre en bloc au

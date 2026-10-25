@@ -87,7 +87,44 @@
 	padding: var(--space-xs);
 	border-radius: var(--radius);
 	background-color: var(--background-even);
+	color: inherit;
 	text-align: center;
+}
+
+/* Le jour dont le détail est ouvert dessous (planche L96, piste C3) se marque par le fond, aux
+   proportions d'un util-choice coché et survolé, mêlées au fond de la tuile et non au transparent. Une
+   tuile choisie ne réagit plus au survol. */
+.structure-weather .structure-weather-day.selected {
+	background-color: color-mix(in srgb, var(--primary) 12%, var(--background-even));
+}
+
+.structure-weather .structure-weather-day:hover {
+	text-decoration: none;
+}
+
+/* Au doigt, le survol reste posé sur la tuile qu'on vient de refermer, et la ferait lire choisie. */
+@media (hover: hover) {
+
+	.structure-weather .structure-weather-day:not(.selected):hover {
+		background-color: color-mix(in srgb, var(--primary) 8%, var(--background-even));
+	}
+
+}
+
+/* Au toucher, les chevrons prennent la taille de btn-sm, et leur cible s'étend jusqu'à `--touch-target`
+   sans que le cercle grossisse, comme le retour d'un util-page-header : sur la racine de 13 px du
+   téléphone, btn-sm n'y fait que 24 px. Le débord tient de côté dans l'écart avec le nom du moment, et en
+   haut, à un pixel près, dans l'écart avec les tuiles. */
+[data-touch="yes"] .structure-weather .util-carousel-nav .btn {
+	--btn-height: 2rem;
+	position: relative;
+	font-size: 0.9rem;
+}
+
+[data-touch="yes"] .structure-weather .util-carousel-nav .btn::before {
+	content: '';
+	position: absolute;
+	inset: calc((var(--touch-target) - var(--btn-height)) / -2);
 }
 
 .structure-weather .structure-weather-day-name {
@@ -112,19 +149,19 @@
 	color: color-mix(in srgb, var(--color-lavande) 60%, black);
 }
 
-/* Un cran sous les températures, que la pluie suit à la lecture. */
-.structure-weather .structure-weather-rain {
+/* Un cran sous les températures, que la pluie et la rafale suivent à la lecture. */
+.structure-weather :is(.structure-weather-rain, .structure-weather-gust) {
 	font-size: 0.9em;
 	color: var(--muted);
 	font-variant-numeric: tabular-nums;
 }
 
-.structure-weather .structure-weather-days .structure-weather-rain {
+.structure-weather .structure-weather-days :is(.structure-weather-rain, .structure-weather-gust) {
 	margin-top: var(--space-xxs);
 	line-height: 1.25;
 }
 
-.structure-weather .structure-weather-rain > .asset-icon {
+.structure-weather :is(.structure-weather-rain, .structure-weather-gust) > .asset-icon {
 	margin-right: var(--space-xxs);
 	vertical-align: -0.1em;
 }
@@ -135,4 +172,71 @@
 	margin-top: var(--space-xs);
 	font-size: 0.9rem; /* le plancher de lecture (skill ui) : la source se lit après la météo qu'elle cite */
 	color: var(--muted);
+}
+
+/* Le détail d'un jour, un moment par diapositive : six heures en colonnes, l'heure, le ciel, la
+   température et la rafale, que l'icône du vent nomme dans la première colonne. */
+.structure-weather .structure-weather-hours {
+	margin-top: var(--space-sm);
+}
+
+.structure-weather .structure-weather-moment {
+	display: grid;
+	grid-auto-flow: column;
+	grid-template-rows: repeat(4, auto);
+	grid-template-columns: 1rem repeat(6, minmax(0, 1fr)); /* l'icône du vent, puis les six heures du moment */
+	align-items: center;
+	justify-items: center;
+	row-gap: var(--space-xxs);
+	padding-inline-start: var(--space-xxs); /* la piste n'a pas une largeur entière, et le défilement s'arrête au pixel : l'icône du vent de la diapositive suivante dépasserait d'un demi-pixel au bord droit */
+	font-size: 0.9rem; /* le plancher de lecture (skill ui) : six colonnes tiennent dans 200 px */
+	font-variant-numeric: tabular-nums;
+}
+
+.structure-weather .structure-weather-moment-temperature {
+	font-weight: bold;
+}
+
+.structure-weather :is(.structure-weather-moment-wind, .structure-weather-moment-gust) {
+	color: var(--muted);
+}
+
+/* L'icône du vent nomme la ligne des rafales : la première colonne n'a qu'elle, et les heures repartent
+   de la première rangée de la colonne suivante. */
+.structure-weather .structure-weather-moment-wind {
+	grid-row: 4;
+}
+
+/* Dans le menu sombre, les tuiles prennent le voile clair des autres surfaces du menu
+   (`template-structure.css`), et non le fond pair du thème, sur lequel le texte blanc du menu
+   disparaît. Le menu ne s'assombrit qu'à partir de la tablette, mêmes conditions que le gabarit, et
+   la météo ne s'y trouve qu'en colonne : sous ce palier, ou sous la date, elle reste sur fond clair. */
+@media (min-width: 768px) and (min-height: 600px) {
+
+	body[data-nav="dark"] > header .structure-weather .structure-weather-day {
+		background-color: #ffffff20;
+	}
+
+	body[data-nav="dark"] > header .structure-weather .structure-weather-day.selected {
+		background-color: #ffffff40;
+	}
+
+	@media (hover: hover) {
+
+		body[data-nav="dark"] > header .structure-weather .structure-weather-day:not(.selected):hover {
+			background-color: #ffffff30;
+		}
+
+	}
+
+	/* La lavande pure : la foncée, réglée pour le fond clair, s'éteint sur le fond sombre. */
+	body[data-nav="dark"] > header .structure-weather .structure-weather-min {
+		color: var(--color-lavande);
+	}
+
+	body[data-nav="dark"] > header .structure-weather .util-carousel-nav .btn {
+		border-color: #ffffff60;
+		color: inherit;
+	}
+
 }

@@ -24,6 +24,10 @@ abstract class ConfigurationElement extends \Element {
 	const SCHIST = 'schist';
 	const BROWN = 'brown';
 
+	const MIXED = 'mixed';
+	const FLOWERY = 'flowery';
+	const TUFTED = 'tufted';
+
 	public static function getSelection(): array {
 		return Configuration::model()->getProperties();
 	}
@@ -78,11 +82,12 @@ class ConfigurationModel extends \ModuleModel {
 			'planningDelayedMax' => ['int8', 'min' => 1, 'max' => 6, 'null' => TRUE, 'cast' => 'int'],
 			'decorGrass' => ['enum', [\map\Configuration::TENDER, \map\Configuration::PALE, \map\Configuration::CLEAR, \map\Configuration::DRY, \map\Configuration::LUSH, \map\Configuration::GRAZED], 'cast' => 'enum'],
 			'decorSoil' => ['enum', [\map\Configuration::LOAM, \map\Configuration::CLAY, \map\Configuration::SAND, \map\Configuration::HUMUS, \map\Configuration::CHALK, \map\Configuration::OCHRE, \map\Configuration::SANDSTONE, \map\Configuration::SCHIST, \map\Configuration::BROWN], 'cast' => 'enum'],
+			'decorMeadow' => ['enum', [\map\Configuration::MIXED, \map\Configuration::FLOWERY, \map\Configuration::TUFTED], 'cast' => 'enum'],
 			'decorAdopted' => ['bool', 'cast' => 'bool'],
 		]);
 
 		$this->propertiesList = array_merge($this->propertiesList, [
-			'id', 'structure', 'seasonFirst', 'seasonLast', 'rotationYears', 'rotationExclude', 'defaultBedLength', 'defaultBedWidth', 'defaultAlleyWidth', 'calendarMonthStart', 'calendarMonthStop', 'planningDelayedMax', 'decorGrass', 'decorSoil', 'decorAdopted'
+			'id', 'structure', 'seasonFirst', 'seasonLast', 'rotationYears', 'rotationExclude', 'defaultBedLength', 'defaultBedWidth', 'defaultAlleyWidth', 'calendarMonthStart', 'calendarMonthStop', 'planningDelayedMax', 'decorGrass', 'decorSoil', 'decorMeadow', 'decorAdopted'
 		]);
 
 		$this->propertiesToModule += [
@@ -120,6 +125,9 @@ class ConfigurationModel extends \ModuleModel {
 			case 'decorSoil' :
 				return Configuration::LOAM;
 
+			case 'decorMeadow' :
+				return Configuration::MIXED;
+
 			case 'decorAdopted' :
 				return FALSE;
 
@@ -141,6 +149,9 @@ class ConfigurationModel extends \ModuleModel {
 				return ($value === NULL) ? NULL : (string)$value;
 
 			case 'decorSoil' :
+				return ($value === NULL) ? NULL : (string)$value;
+
+			case 'decorMeadow' :
 				return ($value === NULL) ? NULL : (string)$value;
 
 			default :
@@ -226,6 +237,10 @@ class ConfigurationModel extends \ModuleModel {
 
 	public function whereDecorSoil(...$data): ConfigurationModel {
 		return $this->where('decorSoil', ...$data);
+	}
+
+	public function whereDecorMeadow(...$data): ConfigurationModel {
+		return $this->where('decorMeadow', ...$data);
 	}
 
 	public function whereDecorAdopted(...$data): ConfigurationModel {

@@ -268,8 +268,9 @@ class DesignUi {
 					[s("Montrer qu'un bouton d'envoi attend la réponse du serveur"), 'util-pending', 'feedback'],
 					[s("Montrer qu'un bloc attend son recalcul par le serveur"), 'util-waiting', 'feedback'],
 					[s("Faire voir ce qu'une réponse retire"), 'util-vanish', 'vanish'],
+					[s("Faire patienter jusqu'à la première image d'une vue lourde"), 'util-logo-wait', 'logoWait'],
 				],
-				'sections' => ['feedback', 'vanish', 'motion'],
+				'sections' => ['feedback', 'vanish', 'logoWait', 'motion'],
 			],
 			'public' => [
 				'title' => s("Pages publiques"),
@@ -956,7 +957,7 @@ class DesignUi {
 				'not' => [
 					[s("un formulaire de critères qu'on envoie"), 'util-block-search'],
 				],
-				'variants' => s("util-omnibox-lg, un cran de hauteur pour un écran dont la recherche est l'objet ; util-omnibox-folded, util-omnibox-plain et util-omnibox-scroll, puis fullscreenBottom, name et chips, montrées plus bas ; singleByGroup, un critère par famille ; suggestionsIdle, une liste proposée au champ vide ; fullscreen: FALSE, la liste gardée sous le champ au doigt ; terms sur une suggestion, des mots cherchés sans être affichés ; util-brand-scope-light, posé avec util-brand-scope quand l'encre pleine de la marque tient moins de 4,5:1 sur le fond de la liste, passe ses textes atténués à l'encre pleine et assombrit sa ligne active : sous #4d7c0f, de 3,32 et 3,87 à 4,99 et 6,42"),
+				'variants' => s("util-omnibox-lg, un cran de hauteur pour un écran dont la recherche est l'objet ; util-omnibox-folded, util-omnibox-plain, util-omnibox-scroll et util-omnibox-restart, puis fullscreenBottom, name et chips, montrées plus bas ; singleByGroup, un critère par famille ; suggestionsIdle, une liste proposée au champ vide ; fullscreen: FALSE, la liste gardée sous le champ au doigt ; terms sur une suggestion, des mots cherchés sans être affichés ; util-brand-scope-light, posé avec util-brand-scope quand l'encre pleine de la marque tient moins de 4,5:1 sur le fond de la liste, passe ses textes atténués à l'encre pleine et assombrit sa ligne active : sous #4d7c0f, de 3,32 et 3,87 à 4,99 et 6,42"),
 				'markup' => s("rendu par \\main\\OmniboxUi::get() ; util-omnibox-field porte form-control ; les suggestions dans util-omnibox-list, un util-omnibox-family par famille avec son util-omnibox-group en tête, et sa réserve en util-omnibox-rest sur sa dernière ligne"),
 			],
 			'chips' => [
@@ -1433,6 +1434,17 @@ class DesignUi {
 				'variants' => s("aucune"),
 				'markup' => s("qs(…)->remove(vanish: TRUE), qui ne se combine ni avec mode ni avec delay"),
 			],
+			'logoWait' => [
+				'class' => 'util-logo-wait',
+				'role' => s("Le logo qui bat sur une vue lourde, jusqu'à sa première image."),
+				'when' => s("Une vue qui met plusieurs secondes à montrer quelque chose, comme une scène en 3D."),
+				'not' => [
+					[s("un bloc que le serveur recalcule"), 'util-waiting'],
+					[s("un bouton d'envoi qui attend la réponse"), 'util-pending'],
+				],
+				'variants' => s("aucune ; la vue en choisit le fond par --util-logo-wait-background et l'étage par --util-logo-wait-layer"),
+				'markup' => s("DesignUi::getLogoWait(), en enfant direct d'une vue positionnée, que son script retire à la première image"),
+			],
 			'publicHero' => [
 				'class' => 'util-page-hero',
 				'role' => s("La bande d'accueil d'une page publique."),
@@ -1800,6 +1812,7 @@ class DesignUi {
 			'motion' => new JuicinessAiUi()->motion(),
 			'feedback' => new JuicinessAiUi()->feedback(),
 			'vanish' => new JuicinessAiUi()->vanish(),
+			'logoWait' => new JuicinessAiUi()->logoWait(),
 			'publicHero' => $this->publicHero(),
 			'groupMasthead' => $this->groupMasthead(),
 			'publicBands' => $this->publicBands(),
@@ -2171,6 +2184,7 @@ class DesignUi {
 				[s("Une section qu'on replie par son titre"), 'util-fold · util-fold-head · util-fold-content', 'collapsible'],
 				[s("Plusieurs chiffres dans une place étroite, un à la fois, qu'on fait glisser"), 'util-carousel · util-carousel-track · util-carousel-slide · util-carousel-dots', 'carousel'],
 				[s("Des cartes en une seule rangée qu'on fait défiler, plusieurs à la fois au bureau"), 'util-carousel util-carousel-cards', 'carousel'],
+				[s("Passer d'une diapositive nommée à la suivante par deux chevrons"), 'util-carousel-nav · util-carousel-label', 'carousel'],
 			],
 			'objet' => [
 				[s("Des cartes en grille, une par élément"), 'util-cards + util-card', 'cards'],
@@ -2370,6 +2384,7 @@ class DesignUi {
 				[s("Poser en puces les choix courts d'une famille de suggestions"), '\\main\\OmniboxUi::get(chips: …) · util-omnibox-family-chips', 'omnibox-chips'],
 				[s("Garder un champ à jetons à sa largeur, les jetons entiers défilant sur une ligne"), '\\main\\OmniboxUi::get(scroll: TRUE) · util-omnibox-scroll', 'omnibox-scroll'],
 				[s("Garder la croix d'effacement en vue au bout d'un champ dont les jetons défilent"), 'util-omnibox-track', 'omnibox-scroll'],
+				[s("Recommencer d'un geste une saisie tapée, jetons et texte"), '\\main\\OmniboxUi::get(restart: TRUE) · util-omnibox-restart', 'omnibox-restart'],
 				[s("Régler l'affichage d'un écran par des réglages nommés, options et interrupteur"), 'util-filters + a.util-filter-label · TextUi::switch()', 'screenSettings'],
 				[s("Dire ce qu'on regarde, et offrir d'en changer, au-dessus d'un titre"), 'util-scope-line', 'scope'],
 				[s("Le même surtitre en petit, au-dessus d'un nom, à l'encre du fond où il se pose"), 'util-scope-line-title-sm + --scope-line-title-ink', 'scope'],
@@ -2489,6 +2504,7 @@ class DesignUi {
 				[s("Un bouton d'envoi qui attend la réponse du serveur"), 'util-pending', 'feedback'],
 				[s("Un champ ou un bloc que le serveur recalcule, le temps de sa réponse"), 'data-waiting-block + util-waiting', 'feedback'],
 				[s("Faire voir ce qu'une réponse retire"), 'util-vanish', 'vanish'],
+				[s("Faire patienter jusqu'à la première image d'une vue lourde, comme une scène en 3D"), 'DesignUi::getLogoWait() + util-logo-wait', 'logoWait'],
 			],
 			'public' => [
 				[s("Mettre des blocs les uns sous les autres, à un écart de l'échelle"), 'util-stack · util-stack-xs', 'publicAnswer'],
@@ -2634,7 +2650,7 @@ class DesignUi {
 			$h .= '</div>';
 		$h .= '</div>';
 
-		$h .= '<h3 class="design-heading">'.s("Une mise en route").'</h3>';
+		$h .= '<h3 id="convention-mise-en-route" class="design-heading">'.s("Une mise en route").'</h3>';
 		$h .= '<p>'.s("Le parcours qui configure une fonctionnalité se monte avec onboarding, présenté plus haut, et n'a pas de colonne à côté. Chez un producteur, il occupe l'écran à lui seul, sans tête d'écran ni onglets. Dans un réseau ou un groupe, il garde la bande et les onglets, et ce qu'il prépare se présente juste au-dessus avec util-start. Une étape pose une question, et son pied ne porte que le geste qui y répond, à droite, de taille normale. Passer l'étape va à gauche du pied, quitter le parcours entier dans son en-tête. Un parcours qui n'a rien à montrer à côté des questions prend onboarding-panel-plain. L'écran d'une fonctionnalité jamais nourrie qui n'appelle pas de parcours prend util-start avec ses gains, et non ce gabarit.").'</p>';
 
 		\Asset::css('main', 'onboarding.css');
@@ -2878,6 +2894,56 @@ class DesignUi {
 				$h .= '</tbody>';
 			$h .= '</table>';
 		$h .= '</div>';
+
+		$h .= '<h3 class="mt-2">'.s("Deux compteurs visibles en même temps s'additionnent").'</h3>';
+		$h .= '<p class="util-annotation">'.s("Quatre interventions pour la journée et vingt-trois pour le reste de la semaine font vingt-sept. Un total qui ne tombe pas juste fait douter de tous les chiffres de l'écran.").'</p>';
+		$h .= '<div id="convention-compteurs-additionnes">';
+			$counters = fn(int $total) => '<div class="tabs"><div class="tabs-item">'.
+					'<a class="tab-item selected">'.s("Semaine").' <span class="util-counter util-counter-solid">'.$total.'</span></a>'.
+					'<a class="tab-item">'.s("Jour").' <span class="util-counter">4</span></a>'.
+					'<a class="tab-item">'.s("Reste").' <span class="util-counter">23</span></a>'.
+				'</div></div>';
+			$h .= $pair($counters(25), $counters(27));
+		$h .= '</div>';
+
+		$h .= '<h3 class="mt-2">'.s("Un geste neuf porte un mot").'</h3>';
+		$h .= '<p class="util-annotation">'.s("Une icône seule ne vaut que pour un geste que l'utilisateur a déjà rencontré ailleurs dans le produit. Le soleil ne dit pas qu'on ramène l'intervention à aujourd'hui.").'</p>';
+		$h .= '<div id="convention-geste-neuf-mot">';
+			$h .= $pair(
+				'<div class="util-block"><a class="btn btn-outline-primary btn-only-icon">'.\Asset::icon('sun').'</a></div>',
+				'<div class="util-block"><a class="btn btn-outline-primary">'.s("Aujourd'hui").'</a></div>'
+			);
+		$h .= '</div>';
+
+		$h .= '<h3 class="mt-2">'.s("Un formulaire réduit à un champ long se monte sur une colonne").'</h3>';
+		$h .= '<p class="util-annotation">'.s("La colonne de libellé de FormUi laisse un tiers vide à gauche d'une zone de texte qui en a besoin. Avec columns 1, le libellé passe au-dessus et le champ prend toute la largeur.").'</p>';
+		$h .= '<div id="convention-champ-long-seul">';
+			$long = function(int $columns) {
+				$form = new \util\FormUi(['columns' => $columns]);
+				return '<div class="util-block">'.
+					$form->open('design-convention-long-'.$columns).
+						$form->group(s("Note"), $form->textarea('note', s("Virement reçu le 12, rapproché avec la facture de septembre."))).
+					$form->close().
+				'</div>';
+			};
+			$h .= $pair($long(2), $long(1));
+		$h .= '</div>';
+
+		$h .= '<h3 class="mt-2">'.s("L'unité d'une colonne de montants s'écrit une fois, dans son en-tête").'</h3>';
+		$h .= '<p class="util-annotation">'.s("L'en-tête porte l'unité et s'aligne à droite comme ses valeurs, et les cellules s'écrivent sans symbole.").'</p>';
+		$h .= '<div id="convention-unite-en-tete">';
+			$amounts = fn(string $head, string $unit) => '<table>'.
+					'<thead><tr><th>'.s("Client").'</th><th class="text-end">'.$head.'</th></tr></thead>'.
+					'<tbody>'.
+						'<tr><td>'.s("Claire Fontaine").'</td><td class="text-end">12,00'.$unit.'</td></tr>'.
+						'<tr><td>'.s("Hugo Bernard").'</td><td class="text-end">86,40'.$unit.'</td></tr>'.
+					'</tbody>'.
+				'</table>';
+			$h .= $pair($amounts(s("Ventes"), ' €'), $amounts(s("Ventes (€)"), ''));
+		$h .= '</div>';
+
+		$h .= '<h3 class="mt-2">'.s("Un PDF ne s'écrit pas de numéro de page dans son flux").'</h3>';
+		$h .= '<p id="convention-pdf-pied-de-page" class="util-annotation">'.s("Un numéro posé dans le contenu se répète à l'identique sur chaque page. La pagination vient du pied de page que Puppeteer imprime sur chaque page, passé à PdfLib::build() par son paramètre footer et écrit par PdfUi::getFooter().").'</p>';
 
 		return $h;
 
@@ -5926,6 +5992,17 @@ class DesignUi {
 			$h .= '</div>';
 		$h .= '</div>';
 
+		$h .= '<h4 id="design-omnibox-restart" class="mt-2">'.s("Un champ qui recommence sa saisie").'</h4>';
+		$h .= '<p class="util-annotation">'.s("Avec restart, OmniboxUi::get() pose util-omnibox-restart : la croix se montre dès qu'il y a du texte tapé, pas seulement des jetons, et efface les deux. Pour un champ où l'on écrit une phrase plutôt qu'on ne pose des critères, comme le champ Saisir du menu.").'</p>';
+
+		$h .= '<div class="util-omnibox util-omnibox-restart mb-2" style="max-width: 20rem;">';
+			$h .= '<div class="util-omnibox-field form-control">';
+				$h .= \Asset::icon('search');
+				$h .= '<a class="util-omnibox-token"><span class="util-omnibox-token-label">'.s("Désherbage").'</span>'.\Asset::icon('x-lg').'</a>';
+				$h .= '<span class="util-omnibox-tail"><input type="text" class="util-omnibox-input" value="'.s("carotte 1 h").'"/><a class="util-omnibox-clear">'.\Asset::icon('x-lg').'</a></span>';
+			$h .= '</div>';
+		$h .= '</div>';
+
 		return $h;
 
 	}
@@ -6816,6 +6893,35 @@ class DesignUi {
 
 		$h .= '</div>';
 
+		$h .= '<h4 class="mt-2">'.s("Des chevrons et un nom").'</h4>';
+		$h .= '<p class="util-annotation">'.s("Quand chaque diapositive a un nom qui dit où l'on est, util-carousel-nav remplace les points par deux chevrons (btn btn-xs btn-outline-secondary) de part et d'autre de ce nom, en util-carousel-label. Chaque diapositive porte son nom en data-carousel-label, que MainCarousel recopie au défilement, et les chevrons se désactivent aux deux bouts. La diapositive qui porte data-carousel-current se montre d'abord. Le doigt fait toujours glisser la piste. C'est le détail d'un jour de la météo du menu, un moment de la journée par diapositive.").'</p>';
+
+		$h .= '<div class="util-carousel" style="max-width: 16rem" onrender="MainCarousel.start(this)">';
+
+			$h .= '<div class="util-carousel-nav">';
+				$h .= '<button type="button" class="btn btn-only-icon btn-xs btn-outline-secondary" data-carousel-step="-1">'.\Asset::icon('chevron-left').'</button>';
+				$h .= '<span class="util-carousel-label">'.s("Matin").'</span>';
+				$h .= '<button type="button" class="btn btn-only-icon btn-xs btn-outline-secondary" data-carousel-step="1">'.\Asset::icon('chevron-right').'</button>';
+			$h .= '</div>';
+
+			$h .= '<div class="util-carousel-track">';
+
+				foreach([
+					[s("Nuit"), '4°', s("ciel dégagé"), FALSE],
+					[s("Matin"), '9°', s("nuageux"), TRUE],
+					[s("Après-midi"), '15°', s("averses"), FALSE],
+					[s("Soir"), '11°', s("couvert"), FALSE],
+				] as [$label, $value, $sky, $current]) {
+					$h .= '<div class="util-carousel-slide" data-carousel-label="'.encode($label).'"'.($current ? ' data-carousel-current' : '').'>';
+						$h .= '<div class="util-figure-value">'.$value.'</div>';
+						$h .= '<div class="util-figure-label">'.$sky.'</div>';
+					$h .= '</div>';
+				}
+
+			$h .= '</div>';
+
+		$h .= '</div>';
+
 		return $h;
 
 	}
@@ -7156,15 +7262,17 @@ class DesignUi {
 		$h .= '</div>';
 
 		$h .= '<h4 class="mt-2">'.s("La saisie de la semaine").'</h4>';
-		$h .= '<p class="util-annotation">'.s("util-days-entry fait de la rangée la saisie de la semaine : la valeur de chaque jour prend la largeur du jour et porte la tuile du sélecteur de durée habituel (DurationUi::getTiled()), qui s'ouvre au clic et s'enregistre au choix de la durée. La pastille, en grand, reste au-dessus, et mène au jour quand il a une page. Un jour à saisir dit « à saisir » sur sa tuile, au ton courant : c'est un jour que compte util-days-entry-total, et une tuile vide qu'il ne compte pas, aujourd'hui, un jour férié ou hors contrat, garde son crayon seul. Un jour d'absence se hachure et se lit sans tuile, un jour à venir s'efface à demi, sans hachures, et se lit sans tuile. Un jour férié garde sa tuile et dit « Férié » dans sa pastille, que les autres pastilles suivent en hauteur.").'</p>';
-		$h .= '<p class="util-annotation">'.s("util-days-entry-total se pose dans le util-title, après le titre, et le suit : la durée saisie, puis util-days-entry-detail, qui réunit la jauge sur l'horaire visé, dont util-progress-part-todo hachure la part qui reste à saisir, et ce qui manque. Quand la ligne ne les tient plus, le détail passe à la ligne, et la valeur reste à côté du titre. Sous 768 px la pastille prend la taille d'une cible tactile, et sous 576 px les sept jours restent sur une ligne, la valeur plus petite, et « à saisir » laisse son crayon seul. Le composant ne se borne pas en largeur, l'écran qui l'emploie le fait : le planning le rend par TimeDayUi::getWeek(), sur le Temps de travail d'une personne, borné à 46rem.").'</p>';
+		$h .= '<p class="util-annotation">'.s("util-days-entry fait de la semaine une grille de saisie, une colonne par jour : la pastille, en grand, mène au jour quand il a une page ; dessous, la valeur porte le sélecteur de durée habituel (DurationUi::getTiled()), que le planning ouvre par la journée en rond (TimeDayUi::getWorkingRound()) et qui s'enregistre à son « Enregistrer » ; enfin util-days-entry-time dit en gris ce qui accompagne la valeur, en alerte au-delà (is-over). util-days-entry-head nomme les rangées en tête de la grille, qui n'en a que deux sans elle. Une journée vide qui se saisit montre un crayon dans son rond en pointillé, qu'elle soit due ou non : util-days-entry-total compte les jours à saisir. Un jour d'absence se hachure et se lit sans rond, un jour à venir s'efface à demi, sans hachures. Un jour férié dit « Férié » dans sa pastille, que les autres pastilles suivent en hauteur sans décaler les valeurs.").'</p>';
+		$h .= '<p class="util-annotation">'.s("util-days-entry-total se pose dans le util-title, après le titre, et le suit : la durée saisie, puis util-days-entry-detail, qui réunit la jauge sur l'horaire visé, dont util-progress-part-todo hachure la part qui reste à saisir, et ce qui manque. Quand la ligne ne les tient plus, le détail passe à la ligne, et la valeur reste à côté du titre. Sous 768 px la pastille prend la taille d'une cible tactile, et sous 576 px chaque jour devient une ligne, la pastille, ce qui accompagne la valeur avec son libellé, puis la valeur au bord droit, un filet entre les jours et sans tête. Le composant ne se borne pas en largeur, l'écran qui l'emploie le fait : le planning le rend par TimeDayUi::getWeek(), sur le Temps de travail d'une personne, borné à 46rem.").'</p>';
 
 		\Asset::css('planning', 'planning.css');
 		\Asset::js('planning', 'planning.js');
 
-		$field = fn(string $date, ?float $time, bool $missing = FALSE) => new \planning\DurationUi()->getTiled('design-entry-'.$date, $time, \planning\TimeDayUi::HOURS, \planning\TimeDayUi::getPanelDay($date), $missing ? s("à saisir") : '');
+		$field = fn(string $date, ?float $time) => new \planning\DurationUi()->getTiled('design-entry-'.$date, $time, \planning\TimeDayUi::HOURS, \planning\TimeDayUi::getPanelDay($date), '', tile: \planning\TimeDayUi::getWorkingRound($time));
 
-		$dayEntry = fn(string $date, string $value, array $states = [], ?string $calendarValue = NULL) => '<div class="util-day '.implode(' ', $states).'"><a href="#design-cards" class="util-days-entry-date">'.\util\DateUi::calendarWeekday($date, large: TRUE, value: $calendarValue).'</a><div class="util-day-value">'.$value.'</div></div>';
+		$entryTime = fn(string $time = '', bool $over = FALSE) => '<div class="util-days-entry-time'.($over ? ' is-over' : '').'">'.($time === '' ? '' : $time.' <span class="util-days-entry-time-label">'.s("d'interventions").'</span>').'</div>';
+
+		$dayEntry = fn(string $date, string $value, string $time, array $states = [], ?string $calendarValue = NULL) => '<div class="util-day '.implode(' ', $states).'"><a href="#design-cards" class="util-days-entry-date">'.\util\DateUi::calendarWeekday($date, large: TRUE, value: $calendarValue).'</a><div class="util-day-value">'.$value.'</div>'.$time.'</div>';
 
 		$h .= '<div class="util-title">';
 			$h .= '<h3>'.s("Temps de travail de la semaine").'</h3>';
@@ -7180,13 +7288,14 @@ class DesignUi {
 			$h .= '</div>';
 		$h .= '</div>';
 		$h .= '<div class="util-days util-days-entry">';
-			$h .= $dayEntry('2026-11-09', $field('2026-11-09', 7.5));
-			$h .= $dayEntry('2026-11-10', $field('2026-11-10', NULL, TRUE));
-			$h .= $dayEntry('2026-11-11', $field('2026-11-11', NULL), calendarValue: s("Férié"));
-			$h .= $dayEntry('2026-11-12', '<span class="color-muted">'.$absent.'</span>', ['is-absent']);
-			$h .= $dayEntry('2026-11-13', $field('2026-11-13', 6.0), ['is-today']);
-			$h .= $dayEntry('2026-11-14', '&nbsp;', ['is-future']);
-			$h .= $dayEntry('2026-11-15', '&nbsp;', ['is-future']);
+			$h .= '<div class="util-days-entry-head"><span></span><span>'.s("Journée").'</span><span>'.s("Interventions").'</span></div>';
+			$h .= $dayEntry('2026-11-09', $field('2026-11-09', 7.5), $entryTime('5h15'));
+			$h .= $dayEntry('2026-11-10', $field('2026-11-10', NULL), $entryTime('2h00'));
+			$h .= $dayEntry('2026-11-11', $field('2026-11-11', NULL), $entryTime(), calendarValue: s("Férié"));
+			$h .= $dayEntry('2026-11-12', '<span class="color-muted">'.$absent.'</span>', $entryTime(), ['is-absent']);
+			$h .= $dayEntry('2026-11-13', $field('2026-11-13', 6.0), $entryTime('7h00', TRUE), ['is-today']);
+			$h .= $dayEntry('2026-11-14', '&nbsp;', $entryTime(), ['is-future']);
+			$h .= $dayEntry('2026-11-15', '&nbsp;', $entryTime(), ['is-future']);
 		$h .= '</div>';
 
 		$h .= '<h4 class="mt-2">'.s("Les absents d'une équipe").'</h4>';
@@ -9649,6 +9758,29 @@ class DesignUi {
 			$h .= '</div>';
 		$h .= '</div>';
 
+		$h .= '<p class="util-annotation mt-2">'.s("Des util-rows en tête de util-sheet-body perdent leur filet et leur marge du haut : le filet de util-sheet-head sépare déjà les rangs du titre. Employé par la feuille d'une case, dans le jeu.").'</p>';
+
+		$h .= '<div class="design-sheet-frame">';
+			$h .= '<div class="design-sheet-page">'.s("La page derrière la feuille.").'</div>';
+			$h .= '<div class="util-sheet">';
+				$h .= '<div class="util-sheet-scrim"></div>';
+				$h .= '<div class="util-sheet-panel">';
+					$h .= '<div class="util-sheet-grab"></div>';
+					$h .= '<div class="util-sheet-head">';
+						$h .= '<h4>'.s("Chou").'</h4>';
+						$h .= '<a class="util-sheet-close">'.\Asset::icon('x-lg').'</a>';
+					$h .= '</div>';
+					$h .= '<div class="util-sheet-body">';
+						$h .= '<div class="util-rows">';
+							$h .= '<div class="util-row"><span>'.s("Récolte dans 21 j").'</span><span>'.s("Rapportera 58 choux").'</span></div>';
+							$h .= '<div class="util-row"><span>'.s("Arroser").'</span><span>'.s("1 h").'</span></div>';
+							$h .= '<div class="util-row"><span>'.s("Désherber").'</span><span>'.s("6 h").'</span></div>';
+						$h .= '</div>';
+					$h .= '</div>';
+				$h .= '</div>';
+			$h .= '</div>';
+		$h .= '</div>';
+
 		$h .= '<p class="util-annotation mt-2">'.s("util-sheet-inline rend la feuille dans la page, sous ce qui l'ouvre, quand la page n'a pas d'écran à elle : une boutique intégrée dans une iframe qui prend la hauteur de son contenu. Ni voile, ni poignée, ni blocage du défilement ; le panneau prend un filet et se referme à la croix.").'</p>';
 
 		$h .= '<div class="util-sheet util-sheet-inline">';
@@ -10913,7 +11045,7 @@ class DesignUi {
 									$h .= '<div class="util-card onboarding-row">';
 										$h .= '<div class="onboarding-row-main">';
 											$h .= '<div class="onboarding-field onboarding-field-name">'.$form->text('design-onboarding-name['.$position.']', '', ['placeholder' => s("Ex. : {value}", $placeholder)]).'</div>';
-											$h .= '<a class="onboarding-row-remove" title="'.s("Retirer").'">'.\Asset::icon('x-lg').'</a>';
+											$h .= '<a class="btn btn-only-icon btn-sm btn-outline-danger" title="'.s("Retirer").'">'.\Asset::icon('x-lg').'</a>';
 										$h .= '</div>';
 									$h .= '</div>';
 								}

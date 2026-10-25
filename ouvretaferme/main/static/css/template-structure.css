@@ -613,6 +613,14 @@ body[data-template~="structure"] .container {
 	margin-top: var(--space-sm);
 }
 
+/* Le filet d'une section est un trait droit : l'arrondi que `.structure-tab-wrapper` donne aux
+   entrées, à toutes les largeurs, en recourberait les deux bouts. Seuls les coins du haut le portent,
+   ceux du bas gardent l'arrondi d'un fond de sélection. */
+.structure-tab-wrapper:is(.structure-nav-accounting, .structure-nav-ouvretaferme) {
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+}
+
 .structure-nav-join-block {
 	margin: 0.5rem 0.25rem;
 	padding: 0.5rem;

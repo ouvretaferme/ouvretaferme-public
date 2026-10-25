@@ -120,7 +120,7 @@ class WebpageUi {
 			self::p('url')->label,
 			'<div class="webpage-write-url">'.
 				$form->inputGroup(
-					'<div class="input-group-addon">'.WebsiteUi::url($eWebpage['website']).'</div>'.
+					$form->addon(WebsiteUi::url($eWebpage['website'])).
 					$form->dynamicField($eWebpage, 'url', function($d) use($auto) {
 						if($auto) {
 							$d->attributes['class'] = 'disabled';

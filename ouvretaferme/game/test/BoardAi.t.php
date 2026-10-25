@@ -113,6 +113,9 @@ class BoardAiTest extends GameFixtureAiTest {
 		$this->assertFalse($scene['readonly'], 'sa propre cour se joue');
 		$this->assertEquals(GameSetting::BOARDS * 16, $this->countActionable($scene), 'chaque case vide d\'un plateau ouvert se sème');
 
+		$ids = array_merge(...array_map(fn($board) => array_column($board['tiles'], 'id'), $scene['boards']));
+		$this->assertEquals(min($ids), $scene['seed'], 'la cour se tire du plus petit id de ses cases');
+
 		\user\ConnectionLib::setOnline($ePlayerFriend['user']);
 		$this->forgetOnline();
 
@@ -120,6 +123,7 @@ class BoardAiTest extends GameFixtureAiTest {
 
 		$this->assertTrue($scene['readonly'], 'la cour d\'un autre se regarde');
 		$this->assertEquals(0, $this->countActionable($scene), 'aucune case ne s\'y touche');
+		$this->assertEquals(min($ids), $scene['seed'], 'l\'ami voit la même cour que son joueur');
 		$this->assertEquals(2, $scene['board']);
 
 		$this->assertEquals(['corps', 'elements'], array_keys($scene['avatar']), 'l\'avatar part en fiche, rien d\'autre');
@@ -138,6 +142,7 @@ class BoardAiTest extends GameFixtureAiTest {
 
 		$this->assertTrue($scene['readonly'], 'la cour sans personne ne se joue pas');
 		$this->assertEquals(NULL, $scene['avatar'], 'personne ne s\'y tient');
+		$this->assertEquals(NULL, $scene['seed'], 'sans case, la cour est celle de l\'accueil');
 		$this->assertEquals(GameSetting::BOARDS, count(array_filter($scene['boards'], fn($board) => $board['open'])), 'tous les plateaux y sont ouverts');
 		$this->assertEquals(0, array_sum(array_map(fn($board) => count($board['tiles']), $scene['boards'])), 'aucune case n\'y est posée');
 

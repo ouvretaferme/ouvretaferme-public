@@ -3,10 +3,10 @@
 		"static/js/building.js": "39802f354ed3fa3b1f9664391cfd7fd2c7f46efd",
 		"static/js/geometry.js": "810244cd577115326b1d91611104da8482845b0c",
 		"static/building/choices.json": "7d4a56b6c76cee10dc6d02d2ea3909c307d28047",
-		"upload/decor.json": "cede95919c1154c187dbcc29cd0b31baebbd2b4f",
-		"upload/upload.mjs": "39ea48082ce274e6cee22f0828d4c87d3c1d4b66",
+		"upload/decor.json": "14f1317da52f1d0c21e544860ffe1b4484250e5a",
+		"upload/upload.mjs": "2565c2e4b32dd7a90ec317a829be8294ef926a5f",
 		"upload/glb.mjs": "491089e8cfd682aa6df5be5f6a965a903390b3f5",
-		"upload/samples.mjs": "7051716699ee755ef4352f5537d2950bf212ae93",
+		"upload/samples.mjs": "e9932c57d783d6a443c943151646322b8edc5dca",
 		"upload/decor/composer.mjs": "eeac6e3afe8f7a0705f60ec88814d49e0445ef76"
 	}
 }
