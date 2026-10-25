@@ -1,0 +1,1572 @@
+.toolbox-composition-questions {
+	margin-bottom: 2rem;
+}
+
+.toolbox-composition-heading {
+	margin-bottom: 1rem;
+}
+
+/* Le prix se lit à côté du nom, plus discret : deux formules se distinguent sans qu'on ouvre leur
+   onglet. */
+.toolbox-composition-tab-price {
+	margin-left: .5rem;
+	font-weight: 400;
+	color: var(--muted);
+	font-variant-numeric: tabular-nums;
+}
+
+.toolbox-composition-tabs > .tab-panel {
+	padding-top: 1rem;
+}
+
+/* Le lien des espèces non couvertes mène à la Synthèse par l'ancre de ses onglets (lot L5) : ils
+   s'arrêtent sous la barre collée de la page, pas dessous. */
+#toolbox-composition-formulas {
+	scroll-margin-top: calc(var(--mainSticky) + 1rem);
+}
+
+/* Une colonne par taille dans « Modifier les paniers » (r32) : une colonne ne s'élargit pas au-delà de
+   ce qu'un champ demande, et plusieurs tailles se partagent la largeur à 360 px. */
+.toolbox-composition-settings-row {
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: minmax(0, 14rem);
+	column-gap: .75rem;
+}
+
+/* Chaque taille sur un fond d'un seul tenant, du rang « Nom » à « S'appuie sur » (r34b, #111,
+   variante A) : l'écart entre deux colonnes laisse le blanc qui les sépare. Pour que le fond ne se
+   coupe pas d'un rang à l'autre, l'espace vertical passe du groupe à la case, et le libellé garde le
+   retrait de la case pour rester sur la ligne du champ. L'identifiant du panneau n'est pas là pour
+   borner seulement : `div.form-group` pose le padding du groupe, et les libellés de `form-columns-xs`
+   pèsent cinq classes (form.css). */
+.toolbox-composition-settings-row > * {
+	padding: .5rem .75rem;
+	background-color: var(--background-even);
+}
+
+.toolbox-composition-settings-row-first > * {
+	padding-top: .75rem;
+	border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.toolbox-composition-settings-row-last > * {
+	padding-bottom: .75rem;
+	border-radius: 0 0 var(--radius) var(--radius);
+}
+
+#toolbox-composition-settings-panel .toolbox-composition-settings-group {
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+#toolbox-composition-settings-panel .toolbox-composition-settings-group > .form-control-label {
+	padding-top: .5rem;
+}
+
+/* Le libellé passe au-dessus du rang et coupe le fond : les tailles se lisent alors en tuiles par
+   rang, accepté à l'arbitrage. */
+@media (max-width: 575px) {
+
+	#toolbox-composition-settings-panel .toolbox-composition-settings-group > .form-control-label {
+		margin: 0;
+		padding: .75rem 0 .25rem;
+	}
+
+}
+
+/* Les cinq tuiles de la tête d'une taille (r31, #97, r32 sans l'écart) en colonnes fixes : laissées
+   au partage de `util-figures`, la dernière d'une rangée incomplète s'étirait sur toute la largeur
+   et ne se lisait plus comme une tuile parmi les autres. Une rangée incomplète garde donc des tuiles
+   de la même largeur que celles du dessus. `util-figures-3` ne va pas au-delà de trois colonnes. */
+#toolbox-composition-settings {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 576px) {
+
+	#toolbox-composition-settings {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+}
+
+@media (min-width: 992px) {
+
+	#toolbox-composition-settings {
+		grid-template-columns: repeat(5, 1fr);
+	}
+
+}
+
+.toolbox-composition-rail {
+	color: var(--production);
+}
+
+/* Quand « Rejouer les paniers » passe sous les décomptes, à 575 px et moins, les deux rangées
+   gardent entre elles un demi-rem, et non le quart de rem de `util-action`, fait pour deux gestes
+   côte à côte. L'interrupteur « Régler la saisonnalité » suit les décomptes, et le rejeu reste au
+   bout de la ligne. */
+.toolbox-composition-counts {
+	margin: 0 0 1rem 0;
+	justify-content: flex-start;
+	gap: 0.5rem 1.5rem;
+}
+
+.toolbox-composition-season-control {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	cursor: pointer;
+	user-select: none;
+}
+
+.toolbox-composition-replay {
+	margin-left: auto;
+}
+
+/* La légende de la grille (lot r20, `CompositionUi::getLegend()`), posée sur `util-legend` depuis
+   le lot r19 : le package ne garde que sa place et la teinte de chaque marque. Chaque teinte reprend
+   la règle de sa case, plus bas : une teinte changée dans la grille se change ici aussi. */
+.toolbox-composition-legend {
+	margin: -0.5rem 0 0.75rem;
+}
+
+/* Le rond d'une case servie (lot r22) sur le vert de saison. La marque est une boîte
+   sans contenu : le rond y est une image de fond, où la case le dessine par un `::after`. */
+.toolbox-composition-legend-served {
+	background-color: color-mix(in srgb, var(--production-light) 20%, transparent);
+	background-image: radial-gradient(circle, var(--commercialisation) 0 0.3125rem, transparent calc(0.3125rem + 0.5px));
+}
+
+/* Le vert d'une case de saison, d'un seul ton (r29, #87) : celui que porte la case sous le rond d'une
+   case servie, pour que la légende et la grille disent la même teinte. */
+.toolbox-composition-legend-season,
+.toolbox-composition-grid td.toolbox-composition-grid-season {
+	background-color: color-mix(in srgb, var(--production-light) 20%, transparent);
+}
+
+.toolbox-composition-legend-empty {
+	background-color: var(--background);
+}
+
+/* Une semaine sans panier n'a pas de case : sa colonne reste au blanc de `util-heat-table`, que seul
+   un liseré sépare ici du fond de la page. */
+.toolbox-composition-legend-off {
+	background-color: white;
+	box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.toolbox-composition-legend-gap {
+	background-color: color-mix(in srgb, var(--warning) 35%, var(--background-surface));
+}
+
+/* La grille défile seule dans son `util-overflow` : une colonne par semaine de la saison ne
+   rentre pas sous 991 px, et c'est elle qui doit défiler, pas la page. */
+/* Le retrait de la colonne des noms (r34e), commun à tout ce qui s'y écrit : « Au panier (€) », les
+   vignettes des espèces et les noms de groupe, qui se collent au bord. */
+.toolbox-composition-grid {
+	--composition-grid-inset: 1rem;
+	margin-bottom: 1.5rem;
+}
+
+/* `table-layout: fixed` : en disposition automatique, la colonne des noms est la seule extensible
+   et ramasse toute la largeur restante, ce qui creuse un couloir blanc entre les noms et la première
+   semaine. En disposition fixe, les colonnes de semaine se partagent ce qui reste et la case grandit
+   au lieu du vide. Le `min-width` garde le défilement là où les colonnes ne rentrent pas ; il
+   s'écrit en pixels parce que la racine du produit est responsive (13 à 18 px) et qu'un plancher en
+   rem rétrécirait justement là où l'écran est le plus étroit. */
+.toolbox-composition-grid > table {
+	width: 100%;
+	min-width: 860px;
+	table-layout: fixed;
+	border-collapse: separate;
+	border-spacing: 1px;
+}
+
+/* La bulle d'une semaine (r32, option A de la planche) : le numéro et, en face, les jours, puis
+   deux chiffres côte à côte sous un filet. Le blanc atténué est lu sur le fond `--primary` que
+   `util-tip` pose : `--muted` y serait illisible. */
+.toolbox-composition-tip-head {
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.toolbox-composition-tip-head span,
+.toolbox-composition-tip-label {
+	color: rgb(255 255 255 / 75%);
+}
+
+.toolbox-composition-tip-figures {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	column-gap: 1rem;
+	margin-top: .625rem;
+	padding-top: .625rem;
+	border-top: 1px solid rgb(255 255 255 / 20%);
+}
+
+.toolbox-composition-tip-value {
+	font-size: 1.5rem;
+	font-weight: bold;
+	line-height: 1.1;
+	font-variant-numeric: tabular-nums;
+}
+
+/* La colonne des noms porte le nom, le prix et le picto de la fréquence de l'espèce, élargie de
+   1,5rem pour le picto (planche r6), puis d'1rem à chaque largeur pour que les noms en deux mots
+   (« Chou de Milan », « Chou pé-tsaï ») se coupent plus tard (r34i). Sous 767 px, le prix quitte la colonne (`hide-sm-down` sur le
+   prix, dans `getGridRowContent()`) : ses 5,5rem ne laissaient plus que quelques pixels au nom, et
+   le prix reste lisible dans le panneau de l'espèce. */
+.toolbox-composition-grid-corner {
+	width: 18.5rem;
+}
+
+@media (max-width: 575px) {
+
+	.toolbox-composition-grid-corner {
+		width: 13rem;
+	}
+
+}
+
+/* Le coin reste collé avec la colonne des noms : son fond cache l'axe qui défile dessous. */
+.toolbox-composition-grid thead th.toolbox-composition-grid-corner {
+	position: sticky;
+	left: 0;
+	z-index: 1;
+	background-color: var(--background-surface);
+}
+
+/* L'en-tête de la grille reste en haut pendant qu'on la parcourt (lot r21, retour du
+   27/09 « tout ceci en sticky ») : les mois, les semaines et la ligne de prix, qui forment le
+   `thead`. Un `position: sticky` ne colle
+   qu'à son plus proche ancêtre qui défile, et `util-overflow` en fait un de la grille dès qu'il
+   pose `overflow-x: auto` : l'en-tête s'y collerait, pas à la page. Au-dessus de 991 px, la grille
+   rentre toujours dans sa largeur (le `min-width` de 860 px est sous la largeur disponible, mesuré
+   de 992 à 1 599 px), son débordement peut donc rester visible et la page redevient l'ancêtre qui
+   défile. En dessous, la grille défile en largeur, et l'en-tête ne se colle pas.
+   Chrome ne peint pas le fond d'un `thead` : ce sont ses
+   cases qui prennent le fond blanc, et une ombre de même couleur bouche l'espacement de
+   `border-spacing` à leur droite et sous elles, sans quoi les rangs qui défilent dessous se liraient
+   entre les cases de l'en-tête. */
+@media (min-width: 992px) {
+
+	#toolbox-composition-grid {
+		overflow: visible;
+	}
+
+	#toolbox-composition-grid > table > thead {
+		position: sticky;
+		top: var(--mainSticky);
+		z-index: 2;
+	}
+
+	#toolbox-composition-grid > table > thead > tr > * {
+		background-color: var(--background-surface);
+		box-shadow: 1px 0 0 var(--background-surface), 0 1px 0 var(--background-surface), 1px 1px 0 var(--background-surface);
+	}
+
+}
+
+/* Le rang du prix de chaque semaine, sous l'axe (lot r21, `CompositionUi::getGridPricesContent()`) :
+   en petits chiffres alignés, comme les numéros de l'axe au-dessus. Le panier hors de son écart
+   prend le fond d'alerte, qui se voit encore là où la case est trop étroite pour un chiffre. */
+#toolbox-composition-grid thead .toolbox-composition-grid-prices td {
+	padding: .125rem 0;
+	font-size: .6875rem;
+	line-height: 1.2;
+	color: var(--muted);
+	text-align: center;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+
+#toolbox-composition-grid thead .toolbox-composition-grid-prices td.toolbox-composition-grid-name {
+	padding-left: var(--composition-grid-inset);
+	text-align: left;
+}
+
+#toolbox-composition-grid thead .toolbox-composition-grid-prices td.toolbox-composition-grid-price-gap {
+	color: var(--text);
+	font-weight: bold;
+	background-color: color-mix(in srgb, var(--warning) 35%, var(--background-surface));
+	border-radius: 2px;
+}
+
+/* Le premier jour d'un mois ouvre sa colonne d'un trait (lot r21, retour du 27/09,
+   « lignes verticales pour séparer les mois »), dans le prolongement de celui de l'axe. Une case n'a
+   pas de bordure à elle dans `border-collapse: separate` sans décaler toute la grille d'un pixel, et
+   une ombre suivrait l'arrondi des cases en crochets : le trait est un pseudo-élément posé dans
+   l'espacement de `border-spacing` à gauche de la case, qu'il déborde d'un pixel en haut et en bas
+   pour se joindre au trait des rangs voisins. */
+#toolbox-composition-grid td.toolbox-composition-grid-month {
+	position: relative;
+}
+
+#toolbox-composition-grid td.toolbox-composition-grid-month::before {
+	content: '';
+	position: absolute;
+	top: -1px;
+	bottom: -1px;
+	left: -1px;
+	width: 1px;
+	background-color: color-mix(in srgb, var(--muted) 45%, transparent);
+	pointer-events: none;
+}
+
+/* Le prix au bout du nom tient une place fixe, alignée à droite : les prix se lisent en colonne
+   d'une espèce à l'autre. */
+.toolbox-composition-grid-price {
+	flex: none;
+	min-width: 5.5rem;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+.toolbox-composition-grid th,
+.toolbox-composition-grid td {
+	padding: 0;
+}
+
+.toolbox-composition-grid thead th {
+	font-size: .6875rem;
+	font-weight: 400;
+	color: var(--muted);
+	text-align: left;
+	padding-bottom: .25rem;
+}
+
+/* L'axe est celui du plan de culture et en garde le dessin : `series.css` l'écrit pour ses `div`, et
+   la grille le pose dans une cellule d'en-tête, que `reboot.css` passe en petites capitales. */
+.toolbox-composition-grid-axis .series-season {
+	text-transform: none;
+	letter-spacing: 0;
+}
+
+/* Les semaines livrées portent une pastille sur l'axe (planche r8, `ToolboxCompositionGrid.decorate()`).
+   Une semaine non livrée n'en a pas. */
+#toolbox-composition-grid .toolbox-composition-grid-axis .util-graduation-mark.toolbox-composition-grid-mark-week {
+	color: var(--secondary);
+	background-color: color-mix(in srgb, var(--secondary) 12%, transparent);
+	background-clip: padding-box;
+	border: 1px solid transparent;
+	border-radius: .25rem;
+}
+
+/* La ligne du jour de l'axe (`series\CultivationUi`) est une boîte qui part du bord gauche et dessine
+   sa bordure droite sur la semaine en cours : posée par-dessus les graduations, elle prendrait le
+   survol de toutes les semaines passées, dont le numéro ne se montrerait plus sous 1199 px. */
+#toolbox-composition-grid .series-grid-now {
+	pointer-events: none;
+}
+
+/* Sous 1199 px, `util-graduation` efface en `visibility` les numéros qui ne sont ni une dizaine, ni
+   un multiple de cinq, ni une borne, et un nœud invisible ne dessine pas son fond : la semaine livrée
+   perdrait sa pastille. La graduation redevient visible, sans son numéro, que la couleur transparente
+   garde effacé hors du survol. L'identifiant bat les trois `:not()` du composant. */
+@media (max-width: 1199px) {
+
+	#toolbox-composition-grid .util-graduation > .util-graduation-mark:not(.util-graduation-mark-five):not(.util-graduation-mark-decade):not(.util-graduation-mark-bound) {
+		visibility: visible;
+	}
+
+	#toolbox-composition-grid .util-graduation > .util-graduation-mark:not(.util-graduation-mark-five):not(.util-graduation-mark-decade):not(.util-graduation-mark-bound):not(:hover) {
+		color: transparent;
+	}
+
+}
+
+/* Les cartes des semaines vont par deux, et par trois au très grand écran seulement. Une carte ne
+   descend pas sous son contenu, qui ne se coupe pas : le nom de l'espèce au mot près, le moins, la
+   quantité et le plus sur une ligne, et le prix, soit jusqu'à 22,5 rem sur le plan 10053 et 24,4 rem
+   sur le plan 13231 (mesurés le 28/09). Trois par rang lui en laissaient 21,9 à 1199 px et 21,7 à
+   1366 px : la grille élargissait alors ses trois colonnes au-delà de l'écran (`1fr` ne descend pas
+   sous le contenu). À 1600 px, une colonne en a 25,9. */
+@media (min-width: 1600px) {
+
+	.toolbox-composition-weeks {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+}
+
+/* Le menu d'une case (`CompositionUi::getCellMenu()`, lot r24) : ses gestes au milieu, sous le nom
+   de la case. */
+.toolbox-composition-cell-menu {
+	display: flex;
+	justify-content: center;
+}
+
+/* Le champ d'une case de saison (lot r24b) a sa largeur dès l'ouverture : le refus s'écrit dessous,
+   et, sans largeur, sa phrase élargissait le menu et le champ avec lui, sous un menu placé pour la
+   largeur d'avant. */
+.toolbox-composition-cell-menu > form {
+	width: 13rem;
+}
+
+.toolbox-composition-week-lines td {
+	font-variant-numeric: tabular-nums;
+}
+
+.toolbox-composition-week-lines .util-vignette {
+	gap: .5rem;
+}
+
+/* Le moins et le plus autour de la quantité d'une ligne (`CompositionUi::getWeekQuantity()`,
+   planche r5), au balisage de `shop-product-number` et codé ici tant qu'il n'a pas rejoint le design
+   system. La valeur au repos a une largeur fixe, pour que les boutons s'alignent d'une ligne à
+   l'autre ; ouverte, elle prend celle de son champ. */
+.toolbox-composition-number {
+	display: inline-flex;
+	align-items: center;
+	gap: .25rem;
+	white-space: nowrap;
+}
+
+/* Le survol et l'appui teintent le bouton sans le remplir : la réponse remplace le bouton sous une
+   souris qui n'a pas bougé, et le nouveau bouton prend `:hover` aussitôt. Rempli, il restait foncé
+   après le geste, comme s'il était encore enfoncé (lot r8b). La poubelle garde sa couleur de danger
+   (lot r21), teintée de même. */
+.toolbox-composition-number > .btn:hover,
+.toolbox-composition-number > .btn:active {
+	color: var(--secondary);
+	background-color: color-mix(in srgb, var(--secondary) 12%, transparent);
+	border-color: var(--secondary);
+}
+
+.toolbox-composition-number > .btn:active {
+	background-color: color-mix(in srgb, var(--secondary) 24%, transparent);
+}
+
+.toolbox-composition-number > .btn.toolbox-composition-number-remove:hover,
+.toolbox-composition-number > .btn.toolbox-composition-number-remove:active {
+	color: var(--danger);
+	background-color: color-mix(in srgb, var(--danger) 12%, transparent);
+	border-color: var(--danger);
+}
+
+.toolbox-composition-number > .btn.toolbox-composition-number-remove:active {
+	background-color: color-mix(in srgb, var(--danger) 24%, transparent);
+}
+
+.toolbox-composition-number-value > .util-quick-inline:not(.util-quick-inline-open) {
+	min-width: 3.25rem;
+	text-align: center;
+}
+
+/* Pendant la saisie, le champ prend la place des boutons : avec eux, il élargissait la carte au-delà
+   de l'écran à 360 px (393 px mesurés). Le sujet du `:has()` est la quantité d'une ligne, et non un
+   ancêtre de l'écran, que Firefox réévaluerait à chaque nœud inséré. */
+.toolbox-composition-number:has(> .toolbox-composition-number-value > .util-quick-inline-open) > .btn {
+	display: none;
+}
+
+/* Dans une carte de trois par rang (388 px à 1600), le champ et son bouton ne tiennent pas sur la
+   ligne du nom et de la valeur : le bouton passe sous le champ plutôt que d'élargir la carte. Le
+   champ garde sa largeur propre, sans quoi le `width: 100%` de `form.css` sur l'input-group
+   occuperait la ligne et renverrait le bouton dessous même quand il y a la place. */
+.toolbox-composition-number-value .util-quick-inline-field {
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+.toolbox-composition-number-value .util-quick-inline-field div.input-group {
+	width: auto;
+}
+
+/* Sous 768 px, au doigt, les boutons et le champ du menu d'une case prennent la cible tactile du
+   dépôt. */
+@media (max-width: 767px) {
+
+	.toolbox-composition-number-remove,
+	.toolbox-composition-number-decrease,
+	.toolbox-composition-number-increase {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: var(--touch-target);
+		min-height: var(--touch-target);
+		font-size: 1.125rem;
+	}
+
+	.toolbox-composition-cell-menu > form .input-group > * {
+		min-height: var(--touch-target);
+	}
+
+}
+
+.toolbox-composition-grid tbody td {
+	height: 1rem;
+	/* Plus petit que `--radius` : à 1rem de haut, le rayon du dépôt ferait des cases rondes, et la
+	   grille se lirait comme une suite de pastilles au lieu d'une trame. */
+	border-radius: 2px;
+}
+
+/* La case hors de la saison de l'espèce porte la trame, et seulement elle : la case de saison pose
+   son vert par sa propre règle, qu'un fond posé ici écraserait à spécificité plus haute, et la
+   grille sortirait à l'envers, les semaines de saison en gris. Une semaine non livrée n'a pas de
+   case du tout : sa colonne reste au fond du tableau. */
+.toolbox-composition-grid tbody td:not(.toolbox-composition-grid-season):not(.toolbox-composition-grid-name):not(.toolbox-composition-grid-off) {
+	background-color: var(--background);
+}
+
+/* La colonne des noms reste collée pendant que les semaines défilent ; son fond cache les cases qui
+   passent dessous. `util-heat-table` pose le retrait du premier enfant, gardé ici. */
+.toolbox-composition-grid td.toolbox-composition-grid-name {
+	position: sticky;
+	left: 0;
+	z-index: 1;
+	background-color: var(--background-surface);
+	padding: .125rem .75rem .125rem var(--composition-grid-inset);
+	font-size: 0.9rem;
+	/* La ligne du nom donne sa hauteur au rang, et les cases la suivent : resserrée d'un pas sous
+	   celle du texte courant (retour du 27/09, « resserre les lignes »), jusqu'à la roue,
+	   qui devient ce qui la tient. Le retrait vertical rend un peu d'air aux rangs (r34i) : il se
+	   pose sur le nom, seule case du rang qui a un contenu, et les semaines, sans retrait, prennent
+	   la hauteur qu'il donne au rang. */
+	line-height: 1.25;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.toolbox-composition-grid-name .util-vignette {
+	display: flex;
+	align-items: center;
+	gap: .375rem;
+	min-width: 0;
+}
+
+/* Le picto de la fréquence (planche r6) garde sa largeur quand le nom se coupe : les pictos se lisent
+   en colonne, comme les prix. */
+.toolbox-composition-grid-frequency {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	color: var(--production);
+}
+
+/* Le picto qui ouvre le formulaire de la fréquence (lot r7) garde son vert : il ne prend la couleur du
+   lien qu'au survol et tant que son formulaire est ouvert, comme le nom. */
+a.toolbox-composition-grid-frequency {
+	cursor: pointer;
+}
+
+a.toolbox-composition-grid-frequency:hover,
+a.toolbox-composition-grid-frequency[data-dropdown-display] {
+	color: var(--primary);
+}
+
+/* Au doigt (sous 768 px), les deux gestes du bout du nom prennent la largeur de la cible tactile du
+   dépôt autant que la cellule le permet, et la hauteur du rang, que la cellule coupe
+   (`overflow: hidden`) : une zone de 44 px de haut couvrirait les rangs voisins, et des rangs de
+   44 px tripleraient la hauteur de la grille resserrée.
+
+   Le picto passe par sa marge négative sur la fin du nom, que sa largeur lui rend en zone à toucher :
+   44 px. Son `align-self` doit battre la ligne de base que `component.css` pose sur un enfant pair de
+   vignette dans une cellule.
+
+   La roue garde son dessin et s'étend par une zone posée sur l'espace qui la précède et sur le retrait
+   de la cellule : tout ce qui reste à droite du picto, sans en prendre à celui-ci. */
+@media (max-width: 767px) {
+
+	td.toolbox-composition-grid-name a.toolbox-composition-grid-frequency {
+		align-self: stretch;
+		justify-content: flex-end;
+		min-width: var(--touch-target);
+		margin-left: calc(1em - var(--touch-target));
+	}
+
+	.toolbox-composition-grid-species {
+		position: relative;
+	}
+
+	.toolbox-composition-grid-species::before {
+		content: '';
+		position: absolute;
+		top: -1rem;
+		bottom: -1rem;
+		left: -.375rem;
+		right: -.75rem;
+	}
+
+}
+
+/* En disposition fixe, un nom plus long que sa colonne déborderait sur la première semaine. */
+.toolbox-composition-grid-plant {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Le nom qui ouvre le panneau de l'espèce (lot M, r22e) garde le dessin d'un nom : toute la colonne
+   en serait sinon teinte comme une liste de liens. Il ne prend la couleur du lien qu'au survol. */
+a.toolbox-composition-grid-plant {
+	color: inherit;
+}
+
+a.toolbox-composition-grid-plant:hover {
+	color: var(--primary);
+	text-decoration: none;
+}
+
+.toolbox-composition-grid .toolbox-composition-grid-group > td {
+	padding: .75rem 0 .125rem var(--composition-grid-inset);
+	height: auto;
+}
+
+.toolbox-composition-grid-group .util-label {
+	display: inline;
+	margin-right: .5rem;
+}
+
+/* La cellule du groupe traverse toutes les semaines : son nom défile avec elles et sortirait de
+   l'écran. Il se colle au bord, au retrait des noms d'espèce. */
+.toolbox-composition-grid-group-name {
+	position: sticky;
+	left: var(--composition-grid-inset);
+	display: inline-block;
+}
+
+/* Les jours de la semaine, sous son numéro : le jeton `util-date` n'a qu'une ligne, sa date. */
+.toolbox-composition-week-days {
+	font-size: .9rem;
+	line-height: 1.2;
+}
+
+/* Le rang du départ (`CompositionStartUi`, r48b) : l'espèce, sa saison en douze barres et la
+   corbeille. Le rang est haut comme la cible de sa corbeille, pour que deux cibles voisines ne se
+   recouvrent pas. */
+.toolbox-composition-species {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto auto;
+	align-items: center;
+	gap: 0 .75rem;
+	min-height: var(--touch-target);
+}
+
+.toolbox-composition-species-list > .toolbox-composition-species {
+	border-top: 1px solid var(--border-light);
+}
+
+/* La liste ne montre que ce qui est livré : une espèce retirée reste écrite, pour poster son
+   statut et pour que le menu des saisons la remette. */
+.toolbox-composition-species.is-off {
+	display: none;
+}
+
+/* Le rang de l'axe, au-dessus des barres. Sa corbeille n'est là que pour garder la largeur de la
+   colonne : elle ne se voit pas et ne prend aucune hauteur. */
+.toolbox-composition-species-list > .toolbox-composition-calendar-head {
+	min-height: 0;
+	border-top: 0;
+	padding-bottom: .25rem;
+}
+
+.toolbox-composition-calendar-head > .btn {
+	visibility: hidden;
+	height: 0;
+	min-height: 0;
+	padding-top: 0;
+	padding-bottom: 0;
+	border-top-width: 0;
+	border-bottom-width: 0;
+	overflow: hidden;
+}
+
+/* Sous le calendrier type, sans climat choisi, aucune saison n'est à montrer : ni titre, ni note,
+   ni liste, ni envoi. */
+.toolbox-composition-start-cultures.is-pending > :is(.util-title, .util-info, .toolbox-composition-species-list, .onboarding-footer) {
+	display: none;
+}
+
+.toolbox-composition-start .util-title,
+.toolbox-composition-start .util-title h3 {
+	margin: 0;
+}
+
+/* L'onglet « Espèces » (r48a) : l'espèce, sa quantité au panier, son prix, sa saison, sa roue et sa
+   corbeille.
+   Sous 575 px, le prix passe sous la quantité et sa piste part avec lui : `hide-xs-down` cache la
+   colonne et `hide-sm-up` le prix empilé, qui basculent au même seuil. `hide-xs-up` s'arrête à
+   450 px et laissait la ligne sans prix de 450 à 575 px. */
+.toolbox-composition-calendar-table {
+	grid-template-columns: 1fr 6rem 8rem auto auto;
+	column-gap: 1rem;
+}
+
+.toolbox-composition-calendar-table .util-table-head {
+	align-items: end;
+}
+
+.toolbox-composition-calendar-table .util-table-head > * {
+	white-space: nowrap;
+}
+
+/* La roue crantée, le « + » d'une espèce nue (r76 lot 2) et la corbeille d'un rang (r59), assez
+   écartés pour que leurs cibles au doigt (`.toolbox-composition-species-update::after`) ne se
+   recouvrent pas : un appui au bord de la roue ne doit pas retirer l'espèce. L'écart est en px,
+   comme les cibles, qui ne suivent pas la racine.
+   Une grille et non une ligne : une variante n'a pas de « + », et sa corbeille reste dans la
+   colonne de celles des espèces nues. Les pistes sont égales et non `auto`, où la piste vide d'une
+   variante tomberait à zéro : la cellule a la largeur de sa colonne du tableau, la même à chaque
+   rang, et ses trois pistes aussi. */
+.toolbox-composition-calendar-table .toolbox-composition-species-actions {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 16px;
+}
+
+.toolbox-composition-calendar-table .toolbox-composition-species-actions > .toolbox-composition-calendar-remove {
+	grid-column: 3;
+}
+
+/* Un rang n'est jamais plus bas que la cible de sa corbeille : à 40 px de haut, deux cibles voisines
+   se recouvraient de 4 px, et le bord d'une corbeille retirait l'espèce du rang d'à côté. */
+.toolbox-composition-calendar-table .util-table-row {
+	align-items: center;
+	min-height: var(--touch-target);
+}
+
+/* La colonne du prix seulement : empilé sous la quantité, le prix passe son unité à la ligne
+   (`CompositionSpeciesUi::getGridPrice()`, r71). */
+.toolbox-composition-calendar-table .util-table-row > .toolbox-composition-calendar-price {
+	white-space: nowrap;
+}
+
+.toolbox-composition-species-quantity {
+	font-variant-numeric: tabular-nums;
+}
+
+/* Le nom ouvre « Régler une espèce » et garde le dessin d'un nom, comme dans la grille
+   (`a.toolbox-composition-grid-plant`) : il ne prend la couleur du lien qu'au survol. */
+a.toolbox-composition-species-link {
+	color: inherit;
+}
+
+/* Le nom ne se coupe pas au milieu du mot (r71) : sa colonne ne descend pas sous le mot le plus long
+   (`1fr` sur la table comme dans `util-vignette`), et ce sont les colonnes `auto` qui cèdent, le prix
+   empilé passant son unité à la ligne. Avec un plancher à zéro, ces colonnes prenaient d'abord toute
+   leur largeur et le nom se coupait à 360 px (« Carot te »). Seul un mot plus long que la ligne
+   entière se coupe encore, plutôt que de déborder. */
+#toolbox-composition-species .util-vignette {
+	overflow-wrap: break-word;
+}
+
+@media (max-width: 575px) {
+
+	#toolbox-composition-species .util-vignette {
+		gap: 0.5rem;
+	}
+
+}
+
+a.toolbox-composition-species-link:hover {
+	color: var(--primary);
+	text-decoration: none;
+}
+
+/* La saison d'une espèce, à lire : douze barres aussi larges que l'axe de la tête, dans l'onglet
+   « Espèces » et au départ. */
+.toolbox-composition-calendar {
+	display: inline-flex;
+	align-items: center;
+}
+
+.toolbox-composition-calendar .util-bars {
+	width: 8rem;
+	height: 1.25rem;
+	color: var(--production);
+}
+
+/* ⚠️ La tête de `util-table` espace ses lettres, et l'espacement s'ajoute après chaque initiale :
+   elle ne serait plus au milieu de sa barre. */
+.toolbox-composition-calendar-axis {
+	width: 8rem;
+	margin-top: 0;
+	/* `util-bars-axis` écrit en 0,625 rem, soit 7,5 px sur la racine de 12 px d'un téléphone : même
+	   plancher que les numéros de semaine de la grille. */
+	font-size: max(0.625rem, 10px);
+	letter-spacing: 0;
+}
+
+/* ⚠️ Une initiale plus large que sa piste (M, O, N) déborde : `text-align: center` ne centre pas un
+   texte qui déborde, il le cale à gauche et la lettre glisse vers la barre suivante. Un conteneur
+   flex centre aussi ce qui dépasse, à parts égales des deux côtés. */
+.toolbox-composition-calendar-axis > span {
+	display: flex;
+	justify-content: center;
+}
+
+/* La corbeille et la roue crantée de l'onglet « Espèces » gardent leur dessin et prennent la cible
+   d'un doigt, en px : la racine est responsive, et une cible en rem rétrécirait avec elle. */
+.toolbox-composition-calendar-remove,
+.toolbox-composition-species-update,
+.toolbox-composition-species-variant {
+	position: relative;
+}
+
+.toolbox-composition-calendar-remove::after,
+.toolbox-composition-species-update::after,
+.toolbox-composition-species-variant::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: var(--touch-target);
+	height: var(--touch-target);
+	transform: translate(-50%, -50%);
+}
+
+/* La saison d'une espèce dans le panneau d'ajout du départ : les barres, et l'axe dessous, là où
+   `.toolbox-composition-calendar` les poserait côte à côte. Les barres viennent d'abord pour que le
+   libellé du groupe tombe en face d'elles, et non des initiales des mois. Le champ est haut comme
+   ses voisins du formulaire, qui sont à la hauteur d'une cible au doigt. */
+.toolbox-composition-calendar-field {
+	display: grid;
+	justify-content: start;
+	align-content: center;
+	gap: 0.25rem;
+	min-height: var(--touch-target);
+}
+
+/* La saison de « Ajouter une espèce » (r59) et de « Régler une espèce » (r61) : un seul rang de la
+   grille, réglé aux poignées, dans la largeur du panneau. Il perd le plancher de 860 px de la
+   grille, comme l'illustration de la présentation, pour tenir à 360 px sans défiler. Les poignées
+   débordent de 6 px de la case, et le retrait les garde dans le champ aux deux bouts de la saison.
+   La case est plus haute que sur la grille, où la ligne du nom donne la hauteur du rang : seule
+   ici, elle doit tenir sous un doigt. */
+.toolbox-composition-season-field {
+	margin-bottom: 0;
+	padding: 0 6px;
+}
+
+.toolbox-composition-season-field > table {
+	min-width: 0;
+}
+
+.toolbox-composition-season-field tbody td {
+	height: 2rem;
+}
+
+/* La quantité d'une espèce dont l'unité n'est pas encore cochée n'a pas de mot à porter : son
+   suffixe se montre avec le mot que le choix d'une unité lui écrit. */
+#toolbox-composition-add-panel .input-group-addon:empty {
+	display: none;
+}
+
+/* « Ajouter » garde le dessin du bouton du dépôt, que la racine responsive ramène à 26 px de haut à
+   360 px, et prend la cible d'un doigt, en px, comme la corbeille. */
+#toolbox-composition-add-panel button[type="submit"] {
+	position: relative;
+}
+
+#toolbox-composition-add-panel button[type="submit"]::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 0;
+	width: 100%;
+	min-width: var(--touch-target);
+	height: var(--touch-target);
+	transform: translateY(-50%);
+}
+
+/* À 360 px, douze initiales ne tiennent plus sous des barres de 5,5 rem : l'axe ne garde que le
+   premier mois de chaque trimestre, écrit sans être rogné par sa colonne. */
+@media (max-width: 575px) {
+
+	.toolbox-composition-calendar-table {
+		grid-template-columns: 1fr auto auto auto;
+		column-gap: .5rem;
+	}
+
+	/* « Par panier » passe à la ligne comme le prix empilé dessous : d'un seul tenant, sa tête tenait
+	   la colonne plus large que ce qu'elle porte, aux dépens du nom (r71). */
+	.toolbox-composition-calendar-table .util-table-head > .toolbox-composition-calendar-basket {
+		white-space: normal;
+	}
+
+	.toolbox-composition-calendar .util-bars,
+	.toolbox-composition-calendar-axis {
+		width: 5.5rem;
+	}
+
+	/* Quatre pistes, une par trimestre, et l'initiale au bord gauche de la sienne, au-dessus de la
+	   première barre du trimestre : centrée sur une piste de douzième, large de 4 px, la lettre
+	   débordait sur ses voisines et l'axe sortait de sa colonne. */
+	.toolbox-composition-calendar-axis {
+		--bars: 4;
+	}
+
+	.toolbox-composition-calendar-axis > span {
+		justify-content: flex-start;
+	}
+
+	.toolbox-composition-calendar-axis > span:not(:nth-child(3n+1)) {
+		display: none;
+	}
+
+}
+
+/* À 360 px, le nom le plus long d'un mot (« Concombre ») et sa vignette demandent 12 px de plus que ce
+   que laissent les autres colonnes : la saison les rend, ses trimestres restant lisibles (r71). */
+@media (max-width: 399px) {
+
+	.toolbox-composition-calendar-table .toolbox-composition-calendar .util-bars,
+	.toolbox-composition-calendar-table .toolbox-composition-calendar-axis {
+		width: 4.5rem;
+	}
+
+}
+
+/* Sous 450 px, trois cibles de 44 px côte à côte prennent la place du nom : les boutons et leur écart
+   se serrent, et la cible de chacun s'arrête à mi-écart de ses voisins pour qu'aucune ne recouvre
+   l'autre. Elle garde la hauteur d'un doigt. */
+@media (max-width: 449px) {
+
+	.toolbox-composition-calendar-table .toolbox-composition-species-actions {
+		gap: 4px;
+	}
+
+	.toolbox-composition-calendar-table .toolbox-composition-species-actions > .btn {
+		padding-left: 3px;
+		padding-right: 3px;
+	}
+
+	.toolbox-composition-calendar-table .toolbox-composition-species-actions > .btn::after {
+		width: calc(100% + 4px);
+	}
+
+}
+
+/* Le deck « Plan de culture » de l'onglet « Espèces » : la case, l'espèce, ses mois dans les paniers
+   et ses mois dans le plan de culture. Les deux dessins gardent leur largeur, l'espèce prend le reste. */
+.toolbox-composition-synchronize-deck {
+	margin-bottom: var(--space-md);
+}
+
+.toolbox-composition-synchronize-table {
+	grid-template-columns: var(--touch-target) minmax(0, 1fr) auto auto;
+	column-gap: var(--space-md);
+}
+
+/* Le tableau est déjà dans le cadre du deck : il n'en ouvre pas un second. */
+.util-deck-content > .toolbox-composition-synchronize-table {
+	margin-bottom: 0;
+	box-shadow: none;
+}
+
+.util-deck-content > .toolbox-composition-synchronize-submit {
+	margin-top: var(--space-md);
+}
+
+/* Le libellé porte le compte des cases : à 360 px il dépasse la largeur du deck, `.btn` étant en
+   `nowrap`. */
+.toolbox-composition-synchronize-submit .btn {
+	white-space: normal;
+}
+
+.toolbox-composition-synchronize-table .util-table-head {
+	align-items: end;
+}
+
+.toolbox-composition-synchronize-table .util-table-row {
+	align-items: center;
+	min-height: var(--touch-target);
+}
+
+.toolbox-composition-synchronize-table .toolbox-composition-calendar-axis {
+	margin-top: var(--space-xxs);
+}
+
+.toolbox-composition-synchronize-table .util-vignette {
+	grid-template-columns: auto minmax(0, 1fr);
+}
+
+.toolbox-composition-synchronize-table .util-annotation {
+	display: block;
+}
+
+/* Sous 450 px les deux dessins ne tiennent plus à côté du nom : le rang passe sur deux lignes, le nom
+   puis les dessins, la case centrée sur les deux. */
+@media (max-width: 449px) {
+
+	.toolbox-composition-synchronize-table {
+		grid-template-columns: var(--touch-target) auto minmax(0, 1fr);
+	}
+
+	.toolbox-composition-synchronize-table > * > :first-child {
+		grid-row: 1 / span 2;
+		align-self: center;
+	}
+
+	.toolbox-composition-synchronize-table > * > :nth-child(2) {
+		grid-column: 2 / -1;
+		padding-bottom: 0;
+	}
+
+	.toolbox-composition-synchronize-table > .util-table-row > :nth-child(n+3) {
+		padding-top: var(--space-xxs);
+	}
+
+}
+
+/* Une case d'une semaine livrée ouvre son menu, de saison ou non (r29, #83), pour qui peut écrire le
+   plan (`ToolboxCompositionGrid.menu()`, lot r24). */
+.toolbox-composition-grid[data-editable] tbody td.toolbox-composition-grid-cell {
+	cursor: pointer;
+}
+
+/* Une semaine servie (lot r22, retour du 27/09, « des ronds quand c'est violet plutôt que
+   remplir la case ») : un rond à l'indigo de la commercialisation, posé sur la teinte de saison que
+   la case garde, comme la marque d'un critère sur sa case (`plant-criterion-mark`). Le rond est un
+   `::after` : la grille compte des centaines de cases, et aucune n'en porte le markup. Une case
+   corrigée à la main ne se distingue pas d'une case proposée (lot r21) : la correction se lit sur
+   la carte de sa semaine. */
+.toolbox-composition-grid td[data-served]::after {
+	content: "";
+	display: block;
+	width: 0.625rem;
+	height: 0.625rem;
+	margin: 0 auto;
+	border-radius: 50%;
+	background-color: var(--commercialisation);
+}
+
+/* La ligne et la colonne survolées écrivent leurs quantités (lot r22) : le rond s'allonge en pastille
+   autour de `data-quantity`. La taille de police a un plancher en pixels : la racine descend à 12 px
+   aux petites largeurs, où 0,6875rem ferait des chiffres de 8 px. Les trois caractères de « 0,8 »
+   tiennent dans une case jusqu'à 360 px (planche r22, largeurs mesurées). */
+.toolbox-composition-grid tr.toolbox-composition-grid-row-hover > td[data-served]::after,
+.toolbox-composition-grid td.util-column-hover[data-served]::after {
+	content: attr(data-quantity);
+	width: fit-content;
+	min-width: 0.625rem;
+	height: auto;
+	padding: 0 2px;
+	border-radius: 1rem;
+	font-size: max(0.6875rem, 10px);
+	font-weight: bold;
+	line-height: 1rem;
+	color: white;
+	white-space: nowrap;
+	text-align: center;
+}
+
+/* La ligne survolée (`ToolboxCompositionGrid.showRow()`) prend la teinte de la colonne survolée,
+   `util-column-hover`, posée comme elle en image par-dessus le fond de chaque case. La classe est
+   sur le rang et non sur les cases, qui portent déjà celle de la colonne. */
+.toolbox-composition-grid tr.toolbox-composition-grid-row-hover > td {
+	background-image: linear-gradient(var(--background-column-hover), var(--background-column-hover));
+}
+
+/* La saison de vente d'une espèce (lot r27, planche r27, question 1, option B), dessinée seulement
+   avec « Régler la saisonnalité » allumé : chaque case de la saison porte son morceau de barre
+   (`ToolboxCompositionSeason.draw()`), que la case contient. Un morceau déborde d'un pixel à droite
+   pour couvrir l'espacement de `border-spacing` jusqu'à la case suivante, et d'un pixel en haut et
+   en bas comme la barre de la planche ; seuls le premier et le dernier ont leur bord arrondi.
+   Les ronds servis se masquent et la teinte s'estompe de moitié pour que la barre se lise. La
+   teinte s'estompe par sa couleur et non par `opacity`, qui estomperait la barre posée dans la
+   case avec elle. */
+.toolbox-composition-season {
+	display: none;
+}
+
+.toolbox-composition-season-mode tbody td[data-week] {
+	position: relative;
+	user-select: none;
+}
+
+.toolbox-composition-season-mode tbody tr[data-season] > td[data-week] {
+	cursor: crosshair;
+}
+
+.toolbox-composition-season-mode tbody td[data-served]::after {
+	display: none;
+}
+
+.toolbox-composition-season-mode tbody td.toolbox-composition-grid-season {
+	background-color: color-mix(in srgb, var(--production-light) 10%, transparent);
+}
+
+.toolbox-composition-season-mode .toolbox-composition-season {
+	display: block;
+	position: absolute;
+	top: -1px;
+	bottom: -1px;
+	left: 0;
+	right: -1px;
+	border: 2px solid var(--production);
+	border-left-width: 0;
+	border-right-width: 0;
+	cursor: grab;
+}
+
+.toolbox-composition-season-mode .toolbox-composition-season-start {
+	left: -1px;
+	border-left-width: 2px;
+	border-top-left-radius: 6px;
+	border-bottom-left-radius: 6px;
+}
+
+.toolbox-composition-season-mode .toolbox-composition-season-end {
+	border-right-width: 2px;
+	border-top-right-radius: 6px;
+	border-bottom-right-radius: 6px;
+}
+
+.toolbox-composition-season-solid {
+	border-color: transparent;
+	background-color: color-mix(in srgb, var(--production) 55%, transparent);
+}
+
+/* Le tracé en cours (`ToolboxCompositionSeason.preview()`) : pointillé sur un fond à peine teinté,
+   posé à la place des morceaux enregistrés du rang, que le rang cache le temps du geste. */
+.toolbox-composition-season-preview {
+	border-style: dashed;
+	background-color: color-mix(in srgb, var(--production) 12%, transparent);
+}
+
+.toolbox-composition-season-dragging .toolbox-composition-season-solid {
+	display: none;
+}
+
+.toolbox-composition-season-dragging,
+.toolbox-composition-season-dragging .toolbox-composition-season {
+	cursor: grabbing;
+}
+
+/* Les poignées dépassent de la case en haut et en bas, sur les rangs voisins : les cases sont
+   positionnées sans ordre d'empilement, et celles du rang suivant, peintes après, couvriraient le
+   dépassement du bas. L'ordre `z-index: 1` les passe au-dessus, et laisse l'en-tête collé
+   (`z-index: 2`) les couvrir. Leur zone d'appui s'élargit d'un demi-rem autour d'elles, à la taille
+   d'un doigt. */
+.toolbox-composition-season-handle {
+	position: absolute;
+	z-index: 1;
+	top: -5px;
+	right: -6px;
+	width: 10px;
+	height: calc(100% + 10px);
+	background-color: var(--dark);
+	border: 2px solid white;
+	border-radius: 5px;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+	cursor: ew-resize;
+}
+
+.toolbox-composition-season-handle-start {
+	right: auto;
+	left: -6px;
+}
+
+.toolbox-composition-season-handle::before {
+	content: "";
+	position: absolute;
+	inset: -0.5rem;
+}
+
+/* Sous 992 px, la grille défile en largeur et ses noms et sommes restent collés par-dessus les
+   semaines : les poignées, au même ordre qu'eux et peintes après, y passeraient devant. L'en-tête
+   n'y est pas collé, rien ne peut donc passer sous les noms relevés d'un cran. */
+@media (max-width: 991px) {
+
+	.toolbox-composition-season-mode tbody td.toolbox-composition-grid-name,
+	#toolbox-composition-grid.toolbox-composition-season-mode tbody .toolbox-composition-grid-sum {
+		z-index: 2;
+	}
+
+}
+
+/* La somme de l'année en fin de ligne (lot r13, planche r9, piste A des questions 6 et 7) : kilos
+   et euros côte à côte, collés au bord droit de la grille pendant que les semaines défilent, comme
+   les noms le sont au bord gauche. Son fond cache les cases qui passent dessous, et le liseré
+   gauche la détache de la dernière semaine ; les deux ombres verticales bouchent l'espacement de
+   `border-spacing`, sans quoi les cases défilantes s'y verraient entre deux rangs.
+   Sa largeur tient dans le `table-layout: fixed` de la grille, qui ne la mesure pas sur son
+   contenu : elle se prend aux semaines, et se compte en chiffres (r34f), ceux de la paire
+   (`--composition-grid-sum-figure`), leur écart et le retrait de la case. */
+#toolbox-composition-grid .toolbox-composition-grid-sum {
+	--composition-grid-sum-figure: 7ch;
+	position: sticky;
+	right: 0;
+	z-index: 1;
+	width: calc(2 * var(--composition-grid-sum-figure) + 1.75rem);
+	padding: 0 .5rem 0 .75rem;
+	background-color: var(--background-surface);
+	box-shadow: -1px 0 0 var(--border), 0 -1px 0 var(--background-surface), 0 1px 0 var(--background-surface);
+	text-align: right;
+	font-size: .8125rem;
+	line-height: 1.2;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+/* Chaque moitié de la paire a la largeur de sept chiffres de `tabular-nums`, où un chiffre vaut
+   `1ch` : les euros jusqu'à « 99 999 € », la quantité jusqu'à « 9 999 kg », les plus larges des
+   sommes relevées sur la 7 et la 999970 (r34f). Deux pistes de même largeur alignent les quantités d'un rang à
+   l'autre comme les euros. */
+.toolbox-composition-grid-sum-pair {
+	display: grid;
+	grid-template-columns: repeat(2, var(--composition-grid-sum-figure));
+	column-gap: .5rem;
+}
+
+.toolbox-composition-grid-sum-pair b {
+	font-weight: normal;
+}
+
+.toolbox-composition-grid-group .toolbox-composition-grid-sum-pair b,
+.toolbox-composition-grid-sum-total .toolbox-composition-grid-sum-pair b {
+	font-weight: bold;
+}
+
+/* Le pied n'a pas de cases : seuls son libellé et sa somme gardent le fond, collés comme ceux des
+   rangs. */
+#toolbox-composition-grid .toolbox-composition-grid-sum-total td {
+	padding-top: .25rem;
+}
+
+#toolbox-composition-grid .toolbox-composition-grid-sum-total td.toolbox-composition-grid-name,
+#toolbox-composition-grid .toolbox-composition-grid-sum-total td.toolbox-composition-grid-sum {
+	background-color: var(--background-surface);
+}
+
+/* « Toute l'année » tient le rang entier au-dessus des mois, quel que soit leur nombre de colonnes :
+   posée dans une colonne, elle décalerait janvier d'une case. */
+.toolbox-composition-weeks > .toolbox-composition-weeks-all {
+	grid-column: 1 / -1;
+}
+
+/* Glisser sur les semaines coche toute la période parcourue (`ToolboxCompositionWeeks`) : sans ce
+   réglage, le même geste à la souris sélectionnerait le texte des jetons. */
+.toolbox-composition-weeks .util-date {
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+.toolbox-composition-start-formulas {
+	display: flex;
+	flex-direction: column;
+	gap: .75rem;
+}
+
+/* La seule taille restante ne se retire pas : un départ sans taille ne composerait rien. La croix
+   garde sa place pour que le champ du nom ne change pas de largeur quand une taille s'ajoute. */
+.toolbox-composition-start-formula:only-child .onboarding-row-remove {
+	visibility: hidden;
+}
+
+.toolbox-composition-start-add {
+	align-self: flex-start;
+}
+
+.toolbox-composition-start .util-dates,
+.toolbox-composition-start .toolbox-composition-species-list {
+	margin: 0;
+}
+
+/* Le menu ne porte que « Saison 2027 » : à la largeur de l'étape, sa flèche partirait à l'autre
+   bout de l'écran. Celui du climat prend la largeur de sa tuile (planche r48). */
+.toolbox-composition-start-cultivation .form-control {
+	width: auto;
+}
+
+.toolbox-composition-start .onboarding-preview-body > .util-card {
+	margin-bottom: 0;
+}
+
+.toolbox-composition-start-size {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 0 .75rem;
+	padding: .375rem 0;
+}
+
+.toolbox-composition-start-size + .toolbox-composition-start-size {
+	border-top: 1px solid var(--border);
+}
+
+.toolbox-composition-start-size .util-annotation {
+	grid-column: 1 / -1;
+}
+
+/* `--sizes` est posé par le rendu, qui connaît le nombre de tailles : une colonne par taille, puis
+   l'année, puis les douze mois (lot r19, `util-bars`). Une variable et non un
+   `grid-template-columns` en ligne, que la media query ne pourrait pas redistribuer.
+   Les colonnes se partagent la largeur (planche r26, question 3, option A,
+   retour du 28/09 « tout est bloqué à droite ») : le nom deux parts, chaque chiffre une,
+   les mois une et demie. Avec un nom en `1fr` seul, il prenait toute la largeur libre et poussait
+   les chiffres contre le bord droit, loin du nom qu'ils chiffrent. */
+.toolbox-composition-quantities {
+	grid-template-columns: minmax(10rem, 2fr) repeat(var(--sizes), minmax(max-content, 1fr)) minmax(max-content, 1fr) minmax(10rem, 1.5fr);
+	font-variant-numeric: tabular-nums;
+}
+
+/* Une seule taille : sa colonne, sans celle de l'année, qui la répéterait. */
+.toolbox-composition-quantities.toolbox-composition-quantities-single {
+	grid-template-columns: minmax(10rem, 2fr) minmax(max-content, 1fr) minmax(10rem, 1.5fr);
+}
+
+/* Les tailles et le total de l'année forment un groupe (r33, #110, variante A), sous un en-tête commun
+   qui n'est pas un `util-table-row` : l'alternance compte ses rangs, et il en décalerait la parité.
+   Les cellules du groupe portent `util-table-veil`, le voile partagé avec le référentiel des
+   besoins en fertilisation ; le nom du groupe le reprend par sa variable. */
+
+/* La première cellule, vide, tient la place de la colonne des espèces ; le nom couvre les tailles et
+   l'année, et laisse la colonne des mois hors du groupe. */
+.toolbox-composition-quantities-group {
+	display: grid;
+	grid-column: 1 / -1;
+	grid-template-columns: subgrid;
+}
+
+.toolbox-composition-quantities-group > .toolbox-composition-quantities-group-name {
+	grid-column: 2 / -2;
+	padding: 0.75rem 0.5rem 0.25rem;
+	text-align: center;
+	font-size: 0.9rem;
+	font-weight: 550;
+	background-image: linear-gradient(var(--util-table-veil), var(--util-table-veil));
+	border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.toolbox-composition-quantities-group + .util-table-head > * {
+	padding-top: 0.25rem;
+}
+
+/* Les barres prennent la teinte des cases servies de la grille : c'est la même quantité, vue par
+   mois au lieu de par semaine. */
+.toolbox-composition-quantities .util-bars {
+	color: var(--commercialisation);
+}
+
+/* À 767 px et moins, la colonne des mois disparaît (`hide-sm-down`) et les barres passent sous le
+   nom de l'espèce, avec leurs initiales : une largeur fixe, pour que les mois de deux espèces
+   restent l'un sous l'autre. */
+.toolbox-composition-quantities-months-under {
+	width: 10rem;
+	max-width: 100%;
+	margin: 0.25rem 0;
+}
+
+/* Les mêmes tableaux sans la colonne des mois, qui passe sous le nom (`hide-sm-down`). */
+@media (max-width: 767px) {
+
+	.toolbox-composition-quantities {
+		grid-template-columns: minmax(8rem, 2fr) repeat(var(--sizes), minmax(max-content, 1fr)) minmax(max-content, 1fr);
+	}
+
+	.toolbox-composition-quantities.toolbox-composition-quantities-single {
+		grid-template-columns: minmax(8rem, 2fr) minmax(max-content, 1fr);
+	}
+
+	/* La colonne des mois n'existe plus : le groupe va jusqu'au bord. */
+	.toolbox-composition-quantities-group > .toolbox-composition-quantities-group-name {
+		grid-column: 2 / -1;
+	}
+
+}
+
+/* À 575 px et moins, restent le nom et l'année. */
+@media (max-width: 575px) {
+
+	.toolbox-composition-quantities,
+	.toolbox-composition-quantities.toolbox-composition-quantities-single {
+		grid-template-columns: minmax(0, 1fr) max-content;
+	}
+
+	.toolbox-composition-quantities-size {
+		display: none;
+	}
+
+	/* L'année reste seule : plus rien à grouper, ni en-tête commun ni fond. */
+	.toolbox-composition-quantities-group {
+		display: none;
+	}
+
+	.toolbox-composition-quantities > * > .toolbox-composition-quantities-year {
+		background-image: none;
+	}
+
+	/* Sous le nom, les mois n'ont que la colonne du nom moins la vignette : à 10rem, ils y comptaient
+	   comme largeur minimum et la débordaient (lot r21). Ils prennent la largeur de la colonne, la
+	   même d'un rang à l'autre, et restent l'un sous l'autre. */
+	.toolbox-composition-quantities-months-under {
+		width: 100%;
+	}
+
+}
+
+/* `.dropdown-subtitle` ne passe pas à la ligne (lime.css), et le rythme suivi de « comme vous
+   l'avez choisi » élargit le menu au-delà d'un écran de 360 px. */
+.dropdown-subtitle.toolbox-composition-frequency {
+	white-space: normal;
+}
+
+/* Le repère « En plus de <base> » d'une semaine qui suit sa base (lot r17) : un peu d'air au-dessus
+   le détache des espèces reprises. */
+.toolbox-composition-week-inherited td {
+	padding-top: 0.5rem;
+}
+
+/* La bande de soudure d'une carte vit dans une enveloppe que les réponses ciblées remplacent
+   (`CompositionUi::getWeekCardLean()`). `.util-deck > :last-child` donne les coins du bas à
+   l'enveloppe, transparente : quand elle ferme la carte, une semaine sans panier, c'est son
+   dernier étage qui doit les prendre, sans quoi le fond de la bande déborde des arrondis. */
+.toolbox-composition-card-lean:last-child > :last-child {
+	border-radius: 0 0 var(--radius) var(--radius);
+}
+
+/* Vide, l'enveloppe prend encore les coins du bas quand elle ferme la carte, une semaine sans panier
+   ni soudure : c'est alors la tête, peinte en blanc, qui ferme la carte et doit les reprendre (r34j).
+   Le sujet du `:has()` est un enfant de la carte, et son argument son frère. */
+.util-deck > :has(+ .toolbox-composition-card-lean:empty:last-child) {
+	border-bottom-left-radius: var(--radius);
+	border-bottom-right-radius: var(--radius);
+}
+
+/* Sous 450 px, les deux portes d'une carte de semaine s'empilent (r46). Une piste `1fr` vaut
+   `minmax(auto, 1fr)` et un bouton ne passe pas à la ligne : côte à côte, les deux libellés
+   demandent 385 px de carte et l'élargissent au-delà de l'écran jusqu'à 412 px de fenêtre. Une
+   porte seule suivie de son menu garde sa moitié. */
+@media (max-width: 449px) {
+
+	.toolbox-composition-weeks > .util-deck > .util-deck-band-doors-2:has(> .btn + .btn) {
+		grid-template-columns: 1fr;
+	}
+
+}
+
+/* Une carte de semaine hors de l'écran n'est ni mise en page ni peinte (chantier Performances, P3) :
+   la composition en porte jusqu'à 53, et la mise en page de l'écran entier se payait à chaque
+   réponse ciblée. Le menu d'une case n'est pas rogné par le confinement, `Lime.Dropdown` le pose
+   dans `body`. La hauteur réservée est la médiane mesurée sur le plan 13231 le 30/09 (38,7 rem sur
+   une colonne, 25,3 rem sur deux) ; `auto` retient ensuite la hauteur réelle d'une carte déjà vue,
+   ce qui garde la barre de défilement stable au retour. La réserve ne porte que sur la hauteur
+   (`contain-intrinsic-block-size`) : `contain-intrinsic-size` à une seule longueur fixe aussi la
+   largeur, et une carte sautée imposait alors ses 38 rem à la colonne de la grille, ce qui faisait
+   défiler la page à l'horizontale sur un téléphone (r32e).
+
+   Le confinement de peinture rogne ce qui déborde de la carte, et le tableau de ses espèces porte
+   sa propre ombre (`--shadow-v2`, 4 px de décalage et 20 px de flou), qui s'ajoute sous la carte à
+   la sienne : rognée, l'ombre de la carte pâlissait. `overflow-clip-margin` laisse à ce débord ses
+   24 px. */
+.util-cards.toolbox-composition-weeks > .util-deck {
+	content-visibility: auto;
+	contain-intrinsic-block-size: auto 38rem;
+	overflow-clip-margin: 24px;
+}
+
+@media (min-width: 768px) {
+
+	.util-cards.toolbox-composition-weeks > .util-deck {
+		contain-intrinsic-block-size: auto 25rem;
+	}
+
+}
+
+/* La présentation de l'outil (r36, planche r36, variante A) montre des morceaux de l'écran sous
+   chaque étape. Une illustration se borne à 28 rem, et la grille y perd son plancher de 860 px et
+   la largeur de ses cases : elle ne porte que quelques semaines, qui doivent tenir à 360 px sans
+   faire défiler le panneau. */
+.toolbox-composition-notice-figure {
+	margin: .5rem 0 1.5rem;
+	max-width: 28rem;
+}
+
+.toolbox-composition-notice-figure .toolbox-composition-grid {
+	--composition-grid-inset: .5rem;
+	margin-bottom: 0;
+}
+
+.toolbox-composition-notice-figure .toolbox-composition-grid > table {
+	min-width: 0;
+}
+
+.toolbox-composition-notice-figure .util-heat-table td:not(.toolbox-composition-grid-name) {
+	min-width: 0;
+	width: auto;
+}
+
+/* Assez large pour « Chou brocoli » ou « Radis botte » : une illustration montre peu de rangs, et un
+   nom coupé ne se lit pas au survol, la bulle n'y étant pas. */
+.toolbox-composition-notice-figure .toolbox-composition-grid-name {
+	width: 9rem;
+}
+
+/* Le menu de la fréquence se montre ouvert sous son rang, dans le flux : sans bouton qui l'ouvre,
+   `Lime.Dropdown` ne le place pas. */
+.toolbox-composition-notice-rhythm .dropdown-list {
+	position: static;
+	display: block;
+	margin-top: .5rem;
+	max-width: 16rem;
+}
+
+/* Sous 576 px, l'illustration prend aussi la colonne de la pastille : décalée d'elle, la carte d'une
+   semaine perdait la largeur de ses quantités et débordait du panneau. Le trait de `util-procedure`
+   est posé en absolu après l'illustration : sans `z-index`, il se peindrait par-dessus. */
+@media (max-width: 575px) {
+
+	.util-procedure-step > .toolbox-composition-notice-figure {
+		grid-column: 1 / -1;
+		position: relative;
+		z-index: 1;
+	}
+
+}
+
+/* La page « Composition de <produit> » (planche r39c, piste C) : légume, quantité au panier, produit
+   vendu. Le légume se borne pour que le produit, qui porte son prix, prenne ce qui reste. */
+.toolbox-composition-pick {
+	grid-template-columns: minmax(0, 14rem) auto minmax(0, 1fr);
+}
+
+.toolbox-composition-pick .util-table-row {
+	align-items: center;
+}
+
+.toolbox-composition-pick-quantity {
+	text-align: right;
+	white-space: nowrap;
+}
+
+.toolbox-composition-pick-create {
+	margin-bottom: 1.5rem;
+}
+
+/* La phrase des écarts de prix, sous le contexte du titre. Le nom de la taille ne se coupe pas, et ses
+   guillemets non plus : ils sont dans la même boîte, sinon la ligne casse juste après le guillemet
+   ouvrant (vu à 575 px). */
+.toolbox-composition-pick-prices {
+	margin-top: 0.25rem;
+}
+
+.toolbox-composition-pick-formula {
+	white-space: nowrap;
+}
+
+/* Sous 576 px, deux colonnes : le légume et sa quantité, puis le produit sur toute la largeur,
+   rapproché de son légume. Les intitulés, qui ne répondent plus à des colonnes, disparaissent. */
+@media (max-width: 575px) {
+
+	.toolbox-composition-pick {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+
+	.toolbox-composition-pick .util-table-head {
+		display: none;
+	}
+
+	.toolbox-composition-pick .util-table-row > .toolbox-composition-pick-product {
+		grid-column: 1 / -1;
+		padding-left: 1rem;
+		padding-top: 0;
+	}
+
+}

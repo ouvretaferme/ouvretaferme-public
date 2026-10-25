@@ -1,0 +1,364 @@
+/*
+ * Quand les trois chiffres ne tiennent plus sur une ligne, le dernier relevé prend la sienne et les
+ * deux cumuls, qui se lisent ensemble, partagent la suivante (retour du 24/09) : sans cela
+ * le retour à la ligne isole le cumul de l'an passé. La largeur est celle du bloc et non de l'écran,
+ * que le menu latéral de la ferme rétrécit sans que l'écran change.
+ * 32rem : trois tuiles de 10rem et leurs deux écarts de 1rem (`.util-figure`, `component.css`).
+ */
+.rain-figures {
+	container: rain-figures / inline-size;
+}
+
+@container rain-figures (max-width: 32rem) {
+
+	.rain-figures > .util-figure:first-child {
+		flex-basis: 100%;
+	}
+
+}
+
+.rain-quick {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 0.75rem;
+	padding: 0.75rem 1rem;
+	margin-bottom: 1.5rem;
+	border-radius: var(--radius);
+	background: var(--background-light);
+}
+
+/* Dans le pli d'un pluviomètre, le pli porte déjà le fond et l'espace : la ligne ne garde que sa
+   mise en rangée. */
+.util-deck-content > .rain-quick {
+	padding: 0;
+	margin-bottom: 0;
+	background: none;
+}
+
+.rain-quick-label {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-weight: 600;
+	margin-right: 0.5rem;
+}
+
+.rain-quick > input[type="date"] {
+	width: auto;
+}
+
+.rain-quick > .input-group {
+	width: 8rem;
+}
+
+.rain-quick-submit {
+	display: flex;
+	flex: 1 1 auto;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.rain-quick-actions {
+	margin-left: auto;
+}
+
+@media (max-width: 449px) {
+
+	/* Le bouton prend la ligne qui reste, et la roue crantée d'un pluviomètre le suit sur la même. */
+	.rain-quick > .btn,
+	.rain-quick-submit > .btn {
+		flex: 1 1 auto;
+	}
+
+}
+
+/* Chaque rangée reprend les colonnes de la liste par subgrid : la date, les gouttes et les mm
+   prennent chacun la largeur de leur contenu le plus large, d'une rangée à l'autre. Le `gap` de
+   util-deck-row remplacerait celui de la liste, et `normal` le lui rend. */
+.rain-rows {
+	display: grid;
+	grid-template-columns: max-content max-content max-content 1fr auto;
+	column-gap: 1rem;
+}
+
+.rain-rows > .rain-row {
+	display: grid;
+	grid-template-columns: subgrid;
+	grid-column: 1 / -1;
+	column-gap: normal;
+}
+
+/* La liste enveloppe les rangées : le filet que util-deck-fold pose entre ses enfants ne les voit plus. */
+.rain-rows > .rain-row + .rain-row {
+	border-top: 1px solid var(--border);
+}
+
+.rain-row-day {
+	font-weight: 500;
+}
+
+.rain-row-drops {
+	display: inline-flex;
+	gap: 0.1rem;
+	color: var(--production);
+}
+
+.rain-row-drops-1 {
+	opacity: 0.55;
+}
+
+.rain-row-drops-2 {
+	opacity: 0.8;
+}
+
+.rain-row-action {
+	grid-column: -2;
+}
+
+@media (max-width: 449px) {
+
+	.rain-rows {
+		column-gap: 0.75rem;
+	}
+
+}
+
+/* La carte Pluviométrie d'une ferme à plusieurs pluviomètres (planche pf-l8-v7, Q19 A) : une rangée par
+   pluviomètre, qui reprend les colonnes du tableau par subgrid comme les relevés de la page. Les colonnes
+   de chiffres sont en `auto` : sous la pression d'une carte étroite, c'est leur intitulé qui passe à la
+   ligne. Le nom garde sa largeur, `max-content` et non `0` en plancher, parce que la grille étire les
+   pistes `auto` jusqu'à leur contenu avant de donner le reste à la fraction, qui tombait à rien. */
+.toolbox-gauges {
+	display: grid;
+	grid-template-columns: minmax(max-content, 1fr) auto auto auto auto;
+	column-gap: 1rem;
+}
+
+.toolbox-gauges > .toolbox-gauges-head,
+.toolbox-gauges > .util-deck-row {
+	display: grid;
+	grid-template-columns: subgrid;
+	grid-column: 1 / -1;
+	column-gap: normal;
+}
+
+.toolbox-gauges > .toolbox-gauges-head {
+	padding-inline: 1.25rem;
+}
+
+.toolbox-gauges > .util-deck-row {
+	font-variant-numeric: tabular-nums;
+}
+
+/* La liste enveloppe les rangées : le filet que util-deck-fold pose entre ses enfants ne les voit plus. */
+.toolbox-gauges > .util-deck-row + .util-deck-row {
+	border-top: 1px solid var(--border);
+}
+
+/* Un pluviomètre sans relevé le dit sur toutes les colonnes de chiffres, quel qu'en soit le nombre. */
+.toolbox-gauges-empty {
+	grid-column: 2 / -2;
+}
+
+@media (max-width: 575px) {
+
+	.toolbox-gauges {
+		grid-template-columns: minmax(max-content, 1fr) auto auto auto;
+	}
+
+	.toolbox-gauges-recent {
+		display: none;
+	}
+
+}
+
+/* La ligne de saisie d'un compteur d'eau reprend celle de « Il a plu ? ». Seul son champ s'élargit : un
+   compteur affiche jusqu'à neuf chiffres et un dixième, là où la pluie tient en trois. */
+/* Un relevé d'eau : le jour, ce qui a été consommé, ce que le compteur affichait, la roue. Le compteur
+   garde sa colonne même sur le premier relevé, qui n'a pas de consommation devant lui. */
+.water-rows .water-row-value {
+	grid-column: 3;
+}
+
+/* L'écart entre la consommation et « Tour du compteur » est celui de `ml-1`, que le dépôt met entre un
+   texte et son badge. Il est porté par la gouttière et non par une marge : sur un téléphone le badge
+   passe sous la consommation, et une marge l'y décalerait. Les deux compteurs d'un jour de changement
+   (`water-row-change`) se suivent et se replient de la même façon. */
+.water-rows .water-row-consumption,
+.water-rows .water-row-change {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	column-gap: 1rem;
+}
+
+/* Les corrections d'un écart signalé passent sous la ligne, alignées sur la consommation, la roue
+   gardant sa colonne : le placement automatique leur donne le premier rang libre sur ces colonnes. */
+.water-rows .water-row-alert {
+	grid-column: 2 / -1;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+/* Sur un téléphone la ligne ne tient pas, surtout avec « Tour du compteur » : le compteur passe sous
+   la consommation. Seule sa colonne est fixée, le placement automatique lui donne le rang libre, le
+   second quand la consommation occupe le premier. La grille perd les deux colonnes devenues vides,
+   dont les gouttières suffisaient à faire déborder la ligne à 360 px. */
+@media (max-width: 575px) {
+
+	.water-rows {
+		grid-template-columns: max-content 1fr auto;
+	}
+
+	.water-rows .water-row-value {
+		grid-column: 2;
+	}
+
+	.water-rows .rain-row-day,
+	.water-rows .rain-row-action {
+		grid-row: 1 / span 2;
+	}
+
+	/* Sans gouttière entre les deux rangs : le premier relevé n'en remplit qu'un, et la gouttière du
+	   rang vide le décalerait du jour et de la roue. */
+	.water-rows > .rain-row {
+		row-gap: 0;
+	}
+
+	.water-rows .water-row-alert {
+		margin-top: 0.5rem;
+	}
+
+}
+
+.water-quick > .input-group {
+	width: 11rem;
+}
+
+/* Le tableau « Par compteur » de l'onglet Total de la consommation d'eau : le nom prend la place qui
+   reste, les autres colonnes la largeur de leur contenu. `water-meters-read` est le tableau de celui
+   qui ne relève pas, sans la colonne de saisie. */
+.water-meters {
+	grid-template-columns: minmax(max-content, 1fr) auto auto auto auto;
+	font-variant-numeric: tabular-nums;
+}
+
+.water-meters.water-meters-read {
+	grid-template-columns: minmax(max-content, 1fr) auto auto auto;
+}
+
+/* Le rang s'aligne sur la ligne de base de son texte (`util-table-row`), que le champ partage. */
+.water-meters-form {
+	display: flex;
+	align-items: baseline;
+	gap: 0.5rem;
+}
+
+.water-meters-form > .input-group {
+	width: 10rem;
+}
+
+/* Sous 575 px, la colonne de saisie ne tient plus à côté des chiffres : elle se replie comme la colonne
+   « 30 jours » de la carte de la pluie, et le relevé se fait dans l'onglet du compteur. */
+@media (max-width: 575px) {
+
+	.water-meters,
+	.water-meters.water-meters-read {
+		grid-template-columns: minmax(max-content, 1fr) auto auto auto;
+	}
+
+	.water-meters-today {
+		display: none;
+	}
+
+}
+
+@media (max-width: 449px) {
+
+	.water-meters,
+	.water-meters.water-meters-read {
+		grid-template-columns: minmax(max-content, 1fr) auto auto;
+	}
+
+	.water-meters-share {
+		display: none;
+	}
+
+}
+
+/* La carte visée depuis la Boîte à outils (`RainUi::urlGauge()`) : la navigation fait défiler jusqu'à
+   elle, qui passerait sinon sous la barre du haut. */
+[id^="rain-gauge-"] {
+	scroll-margin-top: calc(var(--mainSticky) + 1rem);
+}
+
+/* Un outil prévu (planche pf-l8-v7, Q20 A) : grisé parce qu'il n'est pas encore là, et rien ne s'y
+   clique. */
+.toolbox-planned {
+	opacity: 0.6;
+}
+
+/* « Ce que vous y trouverez » sur l'accueil d'un outil jamais utilisé (planche pf-l8-v6, Q18 A) :
+   toutes les tuiles sur une rangée, qui se partage en autant de colonnes égales qu'il y a de tuiles
+   (deux sur la pluviométrie depuis le 23/09, un repeat(3) y laissait un tiers vide). Une colonne sous
+   767 px, où la bande util-start n'a plus la place d'une rangée. */
+.toolbox-promises {
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: minmax(0, 1fr);
+	gap: 1rem;
+}
+
+.toolbox-promise {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 1rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background: var(--background-light);
+}
+
+.toolbox-promise-title {
+	font-weight: 600;
+}
+
+.toolbox-promise-text {
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+@media (max-width: 767px) {
+
+	.toolbox-promises {
+		grid-auto-flow: row;
+	}
+
+}
+
+/* Une grille ne s'écoule pas autour d'un flottant, elle se rétrécit à côté de lui sur toute sa hauteur :
+   à côté de l'illustration de util-start, les tuiles passaient à un mot par ligne, ou laissaient une
+   colonne vide sous l'image dès qu'elle dépassait le texte de quelques pixels. Elles passent donc sous
+   l'image avec leur titre, qui ne s'en détache pas, et l'image ne dépasse pas la hauteur du titre de
+   la bande et de sa phrase. */
+.util-start-content:has(> .toolbox-promises) > .util-block-title {
+	clear: both;
+}
+
+/* Les amis laissent un cinquième de vide au-dessus de leur dessin et un peu moins en dessous (12 à 32 %
+   et 16 à 28 % de leur viewBox, mesuré le 01/10) : des marges négatives d'autant font commencer le
+   dessin au niveau du titre et rendent aux tuiles la place que l'image ne dessine pas. */
+.util-start:has(> .util-start-content > .toolbox-promises) > .util-start-image {
+	--start-friend-size: min(25cqi, 11rem);
+	width: var(--start-friend-size);
+	margin-top: calc((var(--start-friend-size) - 1rem) * -0.2);
+	margin-bottom: calc((var(--start-friend-size) - 1rem) * -0.15 - 0.5rem);
+}
+
+/* L'image de util-start flotte sur le quart de la bande, et la bande ne contient pas son flottant : sous deux lignes de
+   présentation, l'abeille déborderait de la bande de près de moitié. Elle prend la hauteur du texte. */
+#toolbox-list > .util-start .util-start-image {
+	width: 8rem;
+}

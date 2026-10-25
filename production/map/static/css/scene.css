@@ -1,0 +1,1582 @@
+/* Le cadre est celui de la vue Carte, .plan-mapview : passer de l'une à l'autre ne déplace rien */
+#map-scene-canvas,
+#map-scene-canvas canvas {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+#map-scene-canvas {
+	position: relative;
+}
+
+/* MapControls prend la main sur tous les gestes du doigt : sans cela, le navigateur ferait défiler la page. L'appui long
+   (MapSceneHold) ne sélectionne rien et n'ouvre pas le menu du navigateur au doigt */
+#map-scene-canvas canvas {
+	touch-action: none;
+	-webkit-touch-callout: none;
+	user-select: none;
+}
+
+/* Les noms des jardins passent au-dessus du canevas sans lui prendre les gestes. CSS2DRenderer numérote ses étiquettes en z-index : elles restent dans le calque du canevas, sous la frise et le sélecteur */
+#map-scene .map-scene-labels {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+}
+
+/* Les jetons propres au plan. Les contrôles posés sur la scène lisent les jetons communs aux scènes (--scene-*,
+   base/scene/static/css/scene.css), que .scene-frame pose sur #map-scene : la scène a son propre design system, qui s'écarte
+   de celui du produit (décidé par Vincent le 2026-10-11, .claude/skills/3d/ds-scene.md). Le geste, outils, poignées et cotes,
+   lit les jetons --maptool-* de reboot.css : il a la forme et la couleur de celui de la Carte. Restent ici le bois clair de
+   la scène, que MapScene lit aussi pour ce qu'elle peint elle-même (le crème, son cerne et l'encre), et le tuyau */
+#map-scene {
+	--map-scene-cream: #fff6e2;
+	--map-scene-ring: #c9a46a;
+	--map-scene-ink: #5a3d22;
+	--map-scene-pipe: #1c64b8;
+}
+
+/* Le DS de la scène. Tout bouton posé sur elle prend la forme du bouton du POC, quelle que soit sa variante du produit
+   (btn-form, btn-outline-primary, btn-sm) : seuls btn-selected, l'état allumé, et btn-primary, l'action qui termine, s'en
+   distinguent. Aucun survol, comme au POC. Le sélecteur porte l'identifiant de la scène, qui passe devant les variantes de
+   component.css et leurs survols */
+#map-scene .btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-height: var(--scene-control);
+	padding: 0 12px;
+	border: 1px solid var(--scene-border);
+	border-radius: var(--scene-control-radius);
+	background-color: var(--scene-surface);
+	box-shadow: none;
+	color: var(--scene-text);
+	font: 400 15px/1.4 var(--scene-font);
+}
+
+#map-scene .btn .asset-icon {
+	width: 16px;
+	min-width: 16px;
+	height: 16px;
+	margin-top: 0;
+}
+
+#map-scene .btn.btn-selected {
+	border-color: var(--scene-accent);
+	background-color: var(--scene-accent-soft);
+}
+
+#map-scene .btn.btn-primary {
+	border-color: var(--scene-accent);
+	background-color: var(--scene-accent);
+	color: #fff;
+	font-weight: 600;
+}
+
+#map-scene .btn.disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+
+/* L'anneau du navigateur se perd sur le vert de la scène. Celui des cases de util-dates-grid, à l'encre de la scène : un vert
+   se confondrait avec Terminer, l'encre se lit autour d'un bouton blanc comme d'un bouton vert, et sur l'herbe */
+#map-scene :is(button, a[href]):focus-visible {
+	outline: 2px solid var(--scene-text);
+	outline-offset: 2px;
+}
+
+/* Lecture et Pause prennent la place l'une de l'autre : à la même largeur, la frise ne bouge pas à chaque bascule, et un second
+   clic au même endroit trouve le bouton */
+#map-scene [data-scene-play],
+#map-scene [data-scene-pause] {
+	min-width: 6.75em;
+}
+
+/* Un bouton d'icône seule est carré, l'icône plus grande. Photo, Calques, Avatar, Décor, plein écran, lecture et vitesse le deviennent sous 768 px, où leur libellé se cache */
+#map-scene [data-scene-sheet-close],
+#map-scene [data-scene-decor-area-close] {
+	flex: none;
+	width: var(--scene-control);
+	padding: 0;
+}
+
+#map-scene [data-scene-sheet-close] .asset-icon,
+#map-scene [data-scene-decor-area-close] .asset-icon {
+	width: 20px;
+	min-width: 20px;
+	height: 20px;
+}
+
+/* Le sélecteur de lieu a la boite des boutons qu'il borde, comme au POC */
+#map-scene .map-scene-zone select {
+	min-height: var(--scene-control);
+	padding-block: 0;
+	border: 1px solid var(--scene-border);
+	border-radius: var(--scene-control-radius);
+	background-color: var(--scene-surface);
+	color: var(--scene-text);
+	font: 400 15px/1.4 var(--scene-font);
+}
+
+/* Les jours de la frise sont des boutons du POC et non les pastilles de util-calendar : le jour de la semaine au-dessus, sa
+   date en petit dessous, et le point d'un jour travaillé sous la date */
+#map-scene .map-scene-days {
+	gap: 4px;
+}
+
+#map-scene .map-scene-days .util-day {
+	justify-content: center;
+	gap: 0;
+	min-width: var(--scene-control);
+	min-height: var(--scene-control);
+	padding: 0 4px;
+	border: 1px solid var(--scene-border);
+	border-radius: var(--scene-control-radius);
+	background-color: var(--scene-surface);
+	color: var(--scene-text);
+	font: 400 12px/1.1 var(--scene-font);
+}
+
+#map-scene .map-scene-days .util-day:has(.util-calendar-selected) {
+	border-color: var(--scene-accent);
+	background-color: var(--scene-accent-soft);
+}
+
+#map-scene .map-scene-days .util-calendar {
+	flex-direction: column-reverse;
+	width: auto;
+	height: auto;
+	border: 0;
+	background: none;
+	box-shadow: none;
+	color: inherit;
+}
+
+#map-scene .map-scene-days .util-calendar-month {
+	font-size: 12px;
+	letter-spacing: 0;
+}
+
+#map-scene .map-scene-days .util-calendar-day {
+	color: var(--scene-muted);
+	font-size: 10px;
+	font-weight: 400;
+}
+
+/* Le nom d'un abri, en écriteau de bois clair comme les pancartes des parcelles que la scène plante au sol. Le double sélecteur
+   passe devant le style commun des noms, écrit plus bas */
+#map-scene .map-scene-label.map-scene-label-plot {
+	border: 1px solid var(--map-scene-ring);
+	background-color: var(--map-scene-cream);
+	box-shadow: 0 2px 0 color-mix(in srgb, var(--map-scene-ink) 30%, transparent);
+	color: var(--map-scene-ink);
+}
+
+#map-scene .map-scene-label {
+	padding: var(--space-xxs) var(--space-xs);
+	border-radius: var(--radius);
+	background-color: var(--background-surface);
+	box-shadow: var(--shadow-v2);
+	font-size: 0.9rem;
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+/* Le nom d'une planche, en bout de planche, sans ombre : une rangée de planches en aligne des dizaines */
+#map-scene .map-scene-label-bed {
+	padding: 0 var(--space-xxs);
+	border: 1px solid var(--border);
+	box-shadow: none;
+	font-size: 1rem;
+}
+
+/* De 26 à 45 pixels par mètre (MapScene.BED_LABELS_FROM et BED_LABELS_FULL), deux planches voisines ne sont qu'à trente à
+   cinquante pixels l'une de l'autre, où le corps de la vue de près chevaucherait le nom d'à côté. Sur la racine de 13 pixels du
+   produit, les deux tailles rendent 13 et 10 pixels comme au POC, et grandissent avec elle sur les grands écrans comme tout le
+   texte du produit. La petite ne descend jamais sous 10 pixels, où un nom ne se lit plus */
+#map-scene.map-scene-beds-small .map-scene-label-bed {
+	padding: var(--space-xxs);
+	font-size: max(10px, 0.75rem);
+}
+
+/* Le sélecteur de lieu à gauche, le bouton du plein écran en pendant à droite, à la même hauteur. La rangée laisse passer les
+   gestes entre les deux : seuls ses réglages les prennent */
+#map-scene .map-scene-bar {
+	position: absolute;
+	top: var(--space-md);
+	right: var(--space-md);
+	left: var(--space-md);
+	display: flex;
+	justify-content: space-between;
+	gap: var(--space-sm);
+	pointer-events: none;
+}
+
+#map-scene .map-scene-bar > * {
+	pointer-events: auto;
+}
+
+/* La liste du lieu garde sa largeur : c'est la rangée des boutons qui cède, par son menu ⋮ */
+#map-scene .map-scene-zone {
+	flex: none;
+	width: 15rem;
+}
+
+/* Sans sélecteur, le bouton reste à droite */
+#map-scene .map-scene-screen {
+	display: flex;
+	gap: var(--space-xs);
+	margin-left: auto;
+}
+
+/* Un bouton que la rangée ne loge plus passe dans le menu ⋮. Il sort du flux sans perdre sa boite, que MapSceneMore mesure pour
+   savoir quand il y tient de nouveau, et ⋮ attend de même tant que rien n'est rangé */
+#map-scene .map-scene-folded {
+	position: absolute;
+	top: 0;
+	left: 0;
+	visibility: hidden;
+	pointer-events: none;
+}
+
+/* ⋮ est un bouton d'icône seule à toutes les largeurs */
+#map-scene [data-scene-more] {
+	flex: none;
+	width: var(--scene-control);
+	padding: 0;
+}
+
+#map-scene [data-scene-more] .asset-icon {
+	width: 20px;
+	min-width: 20px;
+	height: 20px;
+}
+
+/* Les entrées des menus de la scène, le ⋮ comme la roue d'un bâtiment, gardent une icône devant leur libellé, toutes à la même taille pour que les libellés
+   s'alignent. La liste ouverte quitte la scène pour le <body> : c'est sa classe qui la borne */
+.map-scene-more-list .dropdown-item {
+	display: flex;
+	align-items: center;
+	gap: var(--space-xs);
+}
+
+.map-scene-more-list .dropdown-item > :first-child {
+	flex: none;
+	width: 16px;
+	min-width: 16px;
+	height: 16px;
+}
+
+/* Une entrée qui dit sous son libellé pourquoi elle est désactivée, comme Supprimer d'un bâtiment posé : l'icône s'aligne sur la
+   première ligne, et s'éteint avec le libellé, que component.css est seul à éteindre */
+.map-scene-more-list .dropdown-item:has(.util-item-more) {
+	align-items: flex-start;
+}
+
+.map-scene-more-list .dropdown-item.disabled:has(.util-item-more) > :first-child {
+	opacity: 0.5;
+}
+
+/* Sous 768 px, une entrée du menu ⋮ a la hauteur d'une cible tactile, celle du bouton qu'elle remplace */
+@media (max-width: 767px) {
+
+	.map-scene-more-list .dropdown-item {
+		min-height: var(--touch-target);
+	}
+
+}
+
+/* La frise, sa bulle, son curseur et sa partie remplie prennent le vert du jour choisi (--day-accent, reboot.css). --above est la
+   place de la bulle au-dessus du curseur, sur laquelle la lecture et les jours se calent */
+#map-scene .map-scene-timeline {
+	--timeline: var(--production);
+	--thumb: 1.75rem;
+	--above: calc(var(--space-xl) + var(--space-xs));
+	position: absolute;
+	right: var(--space-md);
+	bottom: var(--space-md);
+	left: var(--space-md);
+	display: grid;
+	gap: var(--space-xs);
+	padding: var(--space-sm) var(--space-md);
+}
+
+/* La source du relief, posée au-dessus de la frise contre son bord gauche, comme le crédit du fond de carte du plan */
+#map-scene .map-scene-attribution {
+	position: absolute;
+	left: 0;
+	bottom: calc(100% + var(--space-xs));
+	padding: 0 4px;
+	border-radius: 2px;
+	background-color: rgba(255, 255, 255, .75);
+	pointer-events: none;
+}
+
+#map-scene .map-scene-timeline-week {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--space-sm);
+}
+
+/* Centrés sur le curseur, et non sur la frise que la bulle et les mois agrandissent de hauteurs différentes */
+#map-scene .map-scene-timeline-week > .btn,
+#map-scene .map-scene-days {
+	margin-top: calc(var(--above) + (var(--thumb) - var(--scene-control)) / 2);
+}
+
+/* La frise porte sa bulle au-dessus et ses mois dessous. --p est la position du curseur, de 0 à 1, que MapScene pose ; le centre
+   du curseur de 1.75rem court d'un demi-curseur à la largeur moins un demi-curseur. La marge du haut tient la bulle, sa flèche et
+   leur écart au curseur sous le bord de la carte */
+#map-scene .map-scene-timeline-track {
+	--p: 0;
+	position: relative;
+	flex: 1;
+	min-width: 0;
+	margin-top: var(--above);
+	padding-bottom: var(--space-md);
+	container-type: inline-size;
+}
+
+/* Le champ a la hauteur du curseur, qui déborderait sinon de la frise vers la bulle. Sans son apparence, il garderait le cadre
+   d'un champ de saisie autour de la frise */
+#map-scene .map-scene-timeline-track input[type="range"] {
+	display: block;
+	width: 100%;
+	height: var(--thumb);
+	margin: 0;
+	border: 0;
+	appearance: none;
+	background: transparent;
+}
+
+#map-scene .map-scene-timeline-track input[type="range"]::-webkit-slider-runnable-track {
+	height: var(--space-xs);
+	border-radius: var(--radius);
+	background: linear-gradient(to right, var(--timeline) calc(var(--p) * 100%), var(--border) calc(var(--p) * 100%));
+}
+
+#map-scene .map-scene-timeline-track input[type="range"]::-moz-range-track {
+	height: var(--space-xs);
+	border-radius: var(--radius);
+	background: var(--border);
+}
+
+#map-scene .map-scene-timeline-track input[type="range"]::-moz-range-progress {
+	height: var(--space-xs);
+	border-radius: var(--radius);
+	background: var(--timeline);
+}
+
+#map-scene .map-scene-timeline-track input[type="range"]::-webkit-slider-thumb {
+	appearance: none;
+	width: var(--thumb);
+	height: var(--thumb);
+	margin-top: calc((var(--space-xs) - var(--thumb)) / 2);
+	border: 3px solid var(--background-surface);
+	border-radius: 50%;
+	background: var(--timeline);
+	box-shadow: var(--shadow-v2);
+	cursor: grab;
+}
+
+#map-scene .map-scene-timeline-track input[type="range"]::-moz-range-thumb {
+	width: var(--thumb);
+	height: var(--thumb);
+	border: 3px solid var(--background-surface);
+	border-radius: 50%;
+	background: var(--timeline);
+	box-shadow: var(--shadow-v2);
+	cursor: grab;
+}
+
+/* La bulle s'écarte du curseur de sa flèche et d'un écart */
+#map-scene .map-scene-timeline-date {
+	--arrow: 6px;
+	position: absolute;
+	bottom: calc(100% + var(--arrow) + var(--space-xxs));
+	left: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--p));
+	padding: var(--space-xxs) var(--space-xs);
+	border-radius: var(--radius);
+	background-color: var(--timeline);
+	box-shadow: var(--shadow-v2);
+	color: white;
+	font-weight: bold;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	transform: translateX(-50%);
+	pointer-events: none;
+}
+
+#map-scene .map-scene-timeline-date::after {
+	content: "";
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	margin-left: calc(-1 * var(--arrow));
+	border: var(--arrow) solid transparent;
+	border-top-color: var(--timeline);
+}
+
+#map-scene .map-scene-timeline-months {
+	position: absolute;
+	right: calc(var(--thumb) / 2);
+	bottom: 0;
+	left: calc(var(--thumb) / 2);
+	height: var(--space-md);
+	font-size: 0.9rem;
+}
+
+/* Chaque mois se pose à la semaine de son premier jour, d'où le centrage sur sa marque */
+#map-scene .map-scene-timeline-months a {
+	position: absolute;
+	padding: 0 var(--space-xxs);
+	color: inherit;
+	line-height: var(--space-md);
+	transform: translateX(-50%);
+}
+
+/* Les mois se comptent à la place que la frise a vraiment, que la lecture, les jours et le menu se partagent selon l'écran :
+   un mois sur deux quand les douze ne tiennent plus côte à côte, avec de l'air, un sur trois quand six ne tiennent plus */
+@container (19rem < width <= 37rem) {
+
+	#map-scene .map-scene-timeline-months a:nth-child(even) {
+		display: none;
+	}
+
+}
+
+@container (width <= 19rem) {
+
+	#map-scene .map-scene-timeline-months a:not(:nth-child(3n+1)) {
+		display: none;
+	}
+
+}
+
+#map-scene .map-scene-timeline-months a::before {
+	content: "";
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	width: 1px;
+	height: 5px;
+	background-color: currentColor;
+}
+
+/* Un jour où l'équipe a travaillé porte un point sous sa date, comme au POC. Un jour sans travail en garde la place vide, et la
+   rangée ne bouge pas d'une semaine à l'autre */
+#map-scene .map-scene-days .util-day::after {
+	content: "";
+	width: 4px;
+	height: 4px;
+	margin-top: 2px;
+	border-radius: 50%;
+}
+
+#map-scene .map-scene-days .map-scene-day-busy::after {
+	background-color: var(--scene-accent);
+}
+
+/* La fiche de la planche ou de la série choisie, posée à droite sous la rangée des réglages, et qui défile seule quand elle
+   est plus haute que la place laissée par la frise */
+#map-scene .map-scene-sheet {
+	position: absolute;
+	top: calc(var(--space-md) * 2 + var(--touch-target));
+	right: var(--space-md);
+	width: 22.5rem;
+	max-height: calc(100% - var(--space-md) * 3 - var(--touch-target) - var(--sheet-bottom, 10rem));
+	overflow-y: auto;
+}
+
+/* Le mode photo retire tout ce qui n'est pas la scène, et ne laisse que ses deux boutons */
+#map-scene.map-scene-photo .map-scene-bar,
+#map-scene.map-scene-photo .map-scene-timeline,
+#map-scene.map-scene-photo .map-scene-sheet,
+#map-scene.map-scene-photo .map-scene-labels {
+	display: none;
+}
+
+#map-scene .map-scene-photo-bar {
+	position: absolute;
+	bottom: var(--space-md);
+	left: 50%;
+	display: flex;
+	gap: var(--space-xs);
+	transform: translateX(-50%);
+}
+
+/* Pendant le film de la saison, la barre dit où il en est, dans la forme des boutons de la scène qu'elle remplace */
+#map-scene .map-scene-record-progress {
+	display: flex;
+	align-items: center;
+	gap: var(--space-xs);
+	min-height: var(--scene-control);
+	padding: 0 12px;
+	border: 1px solid var(--scene-border);
+	border-radius: var(--scene-control-radius);
+	background-color: var(--scene-surface);
+	color: var(--scene-text);
+	font: 400 15px/1.4 var(--scene-font);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+#map-scene .map-scene-record-progress .asset-icon {
+	color: var(--production);
+}
+
+#map-scene .map-scene-record-progress .util-progress {
+	width: 140px;
+}
+
+/* Pendant le décompte et le film, la barre monte en haut de la scène : en bas, elle couvrirait la frise du film */
+#map-scene.map-scene-record-on .map-scene-photo-bar {
+	top: var(--space-md);
+	bottom: auto;
+}
+
+/* La frise du film, dessinée par MapSceneRecord sur ce canevas, que le film recopie sur son image : l'écran montre celle du fichier */
+#map-scene .map-scene-record-months {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+
+#map-scene .map-scene-record-countdown {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--space-xs);
+	width: min(22.5rem, calc(100% - 2 * var(--space-md)));
+	padding: var(--space-md);
+	border: 1px solid var(--scene-border);
+	border-radius: var(--scene-control-radius);
+	background-color: var(--scene-surface);
+	box-shadow: var(--shadow-v2);
+	color: var(--scene-text);
+	text-align: center;
+	transform: translate(-50%, -50%);
+}
+
+#map-scene .map-scene-record-countdown strong {
+	color: var(--production);
+	font-size: 3rem;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+}
+
+#map-scene .map-scene-record-countdown p {
+	margin: 0;
+}
+
+/* La bulle d'une récolte de la semaine monte au-dessus de sa planche, puis y reste tant que la scène montre sa semaine : la montée
+   tient dans la première moitié d'une semaine de lecture, la seconde se lit à l'arrêt. CSS2DRenderer réécrit le transform de
+   l'élément qu'il place à chaque image : la montée s'anime sur un enfant, l'écriteau de bois des abris. MapSceneBubbles.frame() lit
+   la montée pour placer la bulle là où elle l'amène */
+#map-scene .map-scene-label.map-scene-gain {
+	--map-scene-gain-rise: -60px;
+	display: block;
+	color: var(--success-on-light);
+	font-size: 0.95rem;
+	animation: map-scene-gain calc(var(--duration-lg) / var(--scene-speed, 1)) var(--ease-out) forwards;
+}
+
+@keyframes map-scene-gain {
+	from { transform: translateY(0); }
+	to { transform: translateY(var(--map-scene-gain-rise)); }
+}
+
+/* La bulle paraît déjà montée */
+@media (prefers-reduced-motion: reduce) {
+
+	#map-scene .map-scene-label.map-scene-gain {
+		animation-duration: 0.01ms;
+	}
+
+}
+
+/* Deux rangées de la clé au plus, la suite défile : une structure diversifiée montre des dizaines d'espèces à la fois. La hauteur
+   est celle de toutes les espèces de la saison (MapScene.fitLegend()), pour que la lecture et le curseur ne bougent pas sous le
+   doigt quand la clé gagne ou perd une rangée. Avant sa mesure, la clé réserve ses deux rangées. Elle déborde à gauche du
+   retrait de ses entrées : leur premier point s'aligne sur la lecture et la frise */
+#map-scene .map-scene-legend {
+	--rows: calc(2 * var(--scene-control-small) + 4px);
+	height: min(var(--map-scene-legend-height, var(--rows)), var(--rows));
+	margin-left: calc(-1 * var(--space-xs));
+	align-content: flex-start;
+	gap: 4px;
+	overflow-y: auto;
+	scrollbar-width: thin;
+}
+
+/* Une entrée de la clé est un bouton du POC, en petit et sans cadre tant qu'elle n'est pas choisie : un clic sur l'espèce la
+   cadre et cerne ses planches. Elle s'écrit à l'encre du texte, le gris atténué disant d'un élément qu'il est inactif */
+#map-scene .map-scene-legend-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	min-height: var(--scene-control-small);
+	padding: 0 var(--space-xs);
+	border: 1px solid transparent;
+	border-radius: var(--scene-control-radius);
+	background-color: var(--scene-surface);
+	color: var(--scene-text);
+	font: 400 0.9rem/1.4 var(--scene-font);
+	cursor: pointer;
+}
+
+/* La pastille ronde est celle des plants qu'elle nomme, vus d'en haut */
+#map-scene .map-scene-legend-item .util-legend-mark {
+	border-radius: 50%;
+}
+
+/* L'espèce choisie prend le bois clair des écriteaux, sans gras : le libellé garde sa largeur, et la clé ne se recompose pas
+   sous le doigt */
+#map-scene .map-scene-legend-item.selected {
+	border-color: var(--map-scene-ring);
+	background-color: var(--map-scene-cream);
+	color: var(--scene-text);
+}
+
+/* La vitesse de lecture tient au bout de la clé, sur sa première rangée et à la hauteur d'une de ses entrées : la frise garde
+   toute sa largeur, et ses douze mois */
+#map-scene .map-scene-legend-row {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--space-sm);
+	min-width: 0;
+}
+
+#map-scene .map-scene-legend-row .map-scene-legend {
+	flex: 1;
+	min-width: 0;
+}
+
+#map-scene [data-scene-speed] {
+	flex: none;
+	min-height: var(--scene-control-small);
+}
+
+/* Le catalogue du décor prend la place de la frise pendant la pose : les familles, puis les vignettes de la famille choisie en
+   une rangée qui défile de côté. Sa hauteur ne change pas d'une famille à l'autre, ni quand une emprise est choisie : la scène
+   qu'elle borde ne bouge pas à chaque choix */
+#map-scene .map-scene-decor {
+	position: absolute;
+	right: var(--space-md);
+	bottom: var(--space-md);
+	left: var(--space-md);
+	display: grid;
+	/* La colonne implicite prendrait la largeur de la rangée des vignettes, qui défile, et pousserait la feuille hors du cadre */
+	grid-template-columns: minmax(0, 1fr);
+	gap: var(--space-sm);
+	padding: var(--space-sm) var(--space-md);
+}
+
+/* Le nom de l'emprise choisie prend la place des familles dans la même case, et celle des deux qui ne se montre pas y garde la
+   sienne : la case a la hauteur de la plus haute, quoi que la feuille propose */
+#map-scene .map-scene-decor-families,
+#map-scene .map-scene-decor-area {
+	grid-area: 1 / 1;
+	display: flex;
+	align-items: center;
+	gap: var(--space-xs);
+}
+
+/* Les familles tiennent sur une ligne qui défile sans barre, comme au POC : sur trois lignes à 360 px, elles poussaient les
+   vignettes sous le bas de la scène. MapSceneScroll l'estompe du côté où il en reste */
+#map-scene .map-scene-decor-families {
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+#map-scene .map-scene-decor-families .btn {
+	flex: none;
+	white-space: nowrap;
+}
+
+#map-scene .map-scene-decor-behind {
+	visibility: hidden;
+}
+
+#map-scene .map-scene-decor-area {
+	flex-wrap: wrap;
+	column-gap: var(--space-md);
+}
+
+/* Dans le décor masqué, son nom prend la case des familles, qui y gardent leur hauteur ; un calque ajouté retire les siennes */
+#map-scene .map-scene-decor-away {
+	visibility: hidden;
+}
+
+#map-scene .map-scene-decor-layer {
+	grid-area: 1 / 1;
+	align-self: center;
+}
+
+#map-scene .map-scene-decor-area h4 {
+	margin: 0;
+}
+
+/* La croix ferme la tête de la feuille, au bout de la ligne, comme celle de la fiche d'une planche */
+#map-scene [data-scene-decor-area-close] {
+	margin-left: auto;
+}
+
+/* La rangée défile sans barre, qui la grandirait quand elle déborde : MapSceneScroll l'estompe du côté où il reste des vignettes,
+   ou des familles. Les vignettes s'y écartent de 8 px, comme au POC, aussi dans un groupe du terrain */
+#map-scene .map-scene-decor-tiles {
+	display: flex;
+	gap: 8px;
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+/* Une rangée qui défile sans barre, du catalogue du décor ou de la clé d'un téléphone, s'estompe du côté où il en reste
+   (MapSceneScroll) */
+#map-scene .map-scene-more-right {
+	mask-image: linear-gradient(to right, #000 calc(100% - var(--space-xl)), transparent);
+}
+
+#map-scene .map-scene-more-left {
+	mask-image: linear-gradient(to left, #000 calc(100% - var(--space-xl)), transparent);
+}
+
+#map-scene .map-scene-more-left.map-scene-more-right {
+	mask-image: linear-gradient(to right, transparent, #000 var(--space-xl), #000 calc(100% - var(--space-xl)), transparent);
+}
+
+/* Une souris ne glisse pas une rangée : MapSceneScroll pose une flèche au milieu de son bord, dans l'estompe, du côté où il en
+   reste, sous un pointeur fin seulement (plus bas) */
+#map-scene .map-scene-scroll {
+	position: absolute;
+	z-index: 1;
+	display: none;
+	place-items: center;
+	width: var(--scene-control-small);
+	height: var(--scene-control-small);
+	border: 1px solid var(--scene-border);
+	border-radius: 50%;
+	background-color: var(--scene-surface);
+	box-shadow: var(--scene-tool-shadow);
+	color: var(--scene-text);
+	translate: 0 -50%;
+	cursor: pointer;
+}
+
+#map-scene .map-scene-scroll[data-direction="1"] {
+	translate: -100% -50%;
+}
+
+#map-scene .map-scene-scroll .asset-icon {
+	width: 16px;
+	height: 16px;
+	margin-top: 0;
+}
+
+/* pointer: fine écarte en plus de hover: hover les écrans tactiles qui se déclarent capables de survol, certains Android : ils
+   auraient une flèche sous le doigt, qui glisse déjà la rangée */
+@media (hover: hover) and (pointer: fine) {
+
+	#map-scene .map-scene-scroll {
+		display: grid;
+	}
+
+}
+
+/* La vignette du POC, qui garde son contenu en haut et la place de deux lignes de libellé : une rangée a la même hauteur quels
+   que soient ses noms */
+#map-scene .map-scene-decor-tile {
+	display: grid;
+	align-content: start;
+	justify-items: center;
+	gap: 2px;
+	flex: none;
+	width: 92px;
+	min-height: 96px;
+	padding: 4px;
+	border: 1px solid var(--scene-border);
+	border-radius: var(--scene-control-radius);
+	background-color: var(--scene-surface);
+	color: var(--scene-text);
+	font: 400 13px/1.4 var(--scene-font);
+	text-align: center;
+	cursor: grab;
+	touch-action: pan-x;
+}
+
+#map-scene .map-scene-decor-tile span {
+	min-height: 2lh;
+}
+
+#map-scene .map-scene-decor-tile img {
+	width: 64px;
+	height: 64px;
+	pointer-events: none;
+}
+
+#map-scene .map-scene-decor-tile.selected {
+	border-color: var(--scene-accent);
+	background-color: var(--scene-accent-soft);
+	box-shadow: 0 0 0 1px var(--scene-accent);
+}
+
+/* Le terrain, l'herbe puis le sol, sur la même rangée que les kits et séparés d'un filet. Ses vignettes sont plus étroites
+   que celles des kits, pour que l'herbe et le sol tiennent ensemble sur une rangée dès 1200 px */
+#map-scene .map-scene-decor-group {
+	display: flex;
+	flex: none;
+	gap: 8px;
+}
+
+#map-scene .map-scene-decor-group + .map-scene-decor-group {
+	margin-left: var(--space-sm);
+	padding-left: var(--space-sm);
+	border-left: 1px solid var(--border-light);
+}
+
+/* Le nom d'un groupe, au corps et dans le gris des noms du POC */
+#map-scene .map-scene-decor-group h5 {
+	align-self: center;
+	margin: 0;
+	color: var(--scene-muted);
+	font: 400 13px/1.4 var(--scene-font);
+}
+
+/* Une vignette du terrain, d'une clôture ou de la haie d'un enclos se choisit d'un clic, elle ne se saisit pas */
+#map-scene .map-scene-decor-group .map-scene-decor-tile,
+#map-scene .map-scene-decor-fences .map-scene-decor-tile {
+	cursor: pointer;
+}
+
+/* La vignette compacte du POC, celle de ses vignettes sous 768 px, réduite à son image : à 80, l'herbe et le sol débordent de
+   99 px la feuille à 1199 px. L'image prend en marge les huit pixels qu'elle cède à celle d'un kit, pour que la feuille garde
+   sa hauteur d'une famille à l'autre */
+#map-scene .map-scene-decor-group .map-scene-decor-tile {
+	width: 66px;
+	min-height: 88px;
+}
+
+#map-scene .map-scene-decor-group .map-scene-decor-tile img {
+	width: 56px;
+	height: 56px;
+	margin-block: 4px;
+}
+
+/* L'herbe de la scène sous chaque clôture, que MapSceneDecor peint à l'ouverture de la pose */
+#map-scene .map-scene-decor-fences img {
+	border-radius: var(--radius);
+	background-color: var(--map-scene-decor-ground);
+}
+
+/* La vignette qui compose un bâtiment de la structure, en bout de rangée Bâtiments : elle ouvre l'éditeur au lieu de se saisir,
+   et son icône prend la place de l'image des autres vignettes */
+#map-scene .map-scene-decor-tile.map-scene-decor-tile-create {
+	border-style: dashed;
+	border-color: var(--scene-accent);
+	color: var(--scene-accent);
+	text-decoration: none;
+	cursor: pointer;
+}
+
+#map-scene .map-scene-decor-tile-create .map-scene-decor-tile-icon {
+	display: grid;
+	place-items: center;
+	width: 64px;
+	height: 64px;
+	min-height: 0;
+	font-size: 28px;
+}
+
+/* Un bâtiment de la structure : sa vignette et, frère, la poubelle qui le supprime (SceneUi::getDecorBuilding()). Le conteneur
+   suit la vignette que MapSceneDecor cache, sans laisser d'écart dans la rangée */
+#map-scene .map-scene-decor-tile-own {
+	position: relative;
+	display: flex;
+	flex: none;
+}
+
+#map-scene .map-scene-decor-tile-own:has(> .map-scene-decor-tile.hide) {
+	display: none;
+}
+
+/* La géométrie de la pastille d'un kit tracé : 22 px à 3 px du coin, cernée de la surface. La cible s'agrandit sans se voir
+   jusqu'à --touch-target */
+#map-scene .map-scene-decor-tile-delete {
+	position: absolute;
+	top: 3px;
+	right: 3px;
+	display: grid;
+	place-items: center;
+	width: 22px;
+	height: 22px;
+	border: 1px solid var(--scene-border);
+	border-radius: 50%;
+	background-color: var(--scene-surface);
+	box-shadow: 0 0 0 2px var(--scene-surface);
+	color: var(--scene-text);
+	font-size: 13px;
+	cursor: pointer;
+}
+
+#map-scene .map-scene-decor-tile-delete::before {
+	content: "";
+	position: absolute;
+	inset: calc((22px - var(--touch-target)) / 2);
+}
+
+#map-scene .map-scene-decor-tile-delete:hover {
+	border-color: var(--scene-text);
+}
+
+/* Un kit qui se dessine au pointeur porte un trait de crayon en pastille sur le coin de sa vignette (MapSceneDecor) */
+#map-scene .map-scene-decor-tile-traced {
+	position: relative;
+}
+
+#map-scene .map-scene-decor-tile-traced::after {
+	content: "";
+	position: absolute;
+	top: 3px;
+	right: 3px;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: var(--scene-accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 16c2-4 4 1 6-2s3-6 5-4'/%3E%3Cpath d='M14.5 5.5l2 2-4.5 4.5-2.4.4.4-2.4z'/%3E%3C/svg%3E") center / 18px no-repeat;
+	box-shadow: 0 0 0 2px var(--scene-surface);
+}
+
+/* La pose garde de la rangée du haut ce qui la termine : le lieu se rapporte à la saison, que la pose remplace par la
+   scène nue */
+#map-scene.map-scene-posing .map-scene-zone {
+	display: none;
+}
+
+/* Les outils de l'élément choisi, que MapSceneDecor pose sous lui à chaque mouvement de la vue */
+#map-scene .map-scene-decor-tools {
+	position: absolute;
+	top: var(--space-md);
+	left: var(--space-md);
+	display: flex;
+	gap: var(--space-xs);
+	max-width: calc(100% - 2 * var(--space-md));
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+/* Le retrait se tient à l'écart des réglages, pour ne pas se prendre pour l'un d'eux */
+#map-scene .map-scene-decor-tools [data-tool="remove"] {
+	margin-left: var(--space-sm);
+}
+
+/* Un outil est la pastille du POC : une cible de la taille d'un doigt autour d'un rond blanc cerné de la couleur du geste,
+   celle de la Carte, qui se lit sur l'herbe comme sur un toit. Son nom se lit dessous, sur une ligne et sur le fond d'une vignette, que les cultures ne
+   brouillent pas : quand la rangée manque de place, elle défile plutôt que de couper un nom */
+#map-scene .map-scene-decor-tool {
+	display: grid;
+	grid-template-rows: var(--scene-control) auto;
+	justify-items: center;
+	align-items: center;
+	flex: none;
+	min-width: var(--scene-control);
+	cursor: pointer;
+	text-decoration: none;
+	touch-action: pan-x;
+}
+
+#map-scene .map-scene-decor-tool small {
+	padding: 0 4px;
+	border-radius: var(--scene-control-radius);
+	background-color: var(--scene-surface);
+	color: var(--scene-text);
+	font: 400 13px/1.4 var(--scene-font);
+	white-space: nowrap;
+}
+
+/* Tourner et Taille se tirent : le doigt qui les tient ne fait pas défiler la rangée */
+#map-scene .map-scene-decor-tool[data-tool="rotate"],
+#map-scene .map-scene-decor-tool[data-tool="size"] {
+	cursor: grab;
+	touch-action: none;
+}
+
+#map-scene .map-scene-decor-tool span {
+	display: grid;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	border: 2px solid var(--maptool-ring);
+	border-radius: 50%;
+	background-color: var(--maptool-surface);
+	box-shadow: var(--maptool-shadow);
+	color: var(--maptool-ink);
+}
+
+#map-scene .map-scene-decor-tool .asset-icon {
+	width: 20px;
+	height: 20px;
+	margin-top: 0;
+}
+
+#map-scene .map-scene-decor-tool[data-tool="remove"] span {
+	border-color: var(--maptool-danger);
+	color: var(--maptool-danger);
+}
+
+/* Le seul survol de la scène, celui du POC : la pastille grossit sous le pointeur, qui ne la cache pas */
+@media (hover: hover) {
+
+	#map-scene .map-scene-decor-tool:hover span {
+		transform: scale(1.1);
+	}
+
+}
+
+/* Les trois effets s'ouvrent au point d'appui et non en haut de la scène comme les outils du décor */
+#map-scene .map-scene-ruins-tools {
+	z-index: 6;
+}
+
+/* Les poignées d'un tracé, posées par MapSceneDecor sur ses points et au milieu de ses segments : le rond du POC (.decor-pin)
+   dans une cible de la taille d'un doigt, que le calque des étiquettes laisse passer. Celles d'un tracé qu'on pose ne se
+   prennent pas, le clic sur l'une d'elles y pose le point suivant */
+#map-scene .map-scene-decor-handle {
+	display: grid;
+	place-items: center;
+	width: var(--scene-control);
+	height: var(--scene-control);
+	cursor: grab;
+	touch-action: none;
+	pointer-events: auto;
+}
+
+#map-scene .map-scene-decor-handle.map-scene-decor-handle-still {
+	pointer-events: none;
+}
+
+#map-scene .map-scene-decor-handle span {
+	width: var(--maptool-pin);
+	height: var(--maptool-pin);
+	border: 3px solid var(--maptool-surface);
+	border-radius: 50%;
+	background-color: var(--maptool-ink);
+	box-shadow: var(--maptool-shadow);
+}
+
+#map-scene .map-scene-decor-handle[data-handle="middle"] span {
+	width: var(--maptool-pin-small);
+	height: var(--maptool-pin-small);
+	border: 2px solid var(--maptool-ink);
+	background-color: var(--maptool-surface);
+}
+
+#map-scene .map-scene-decor-handle.selected span {
+	background-color: var(--maptool-ring);
+	border-color: var(--maptool-ink);
+}
+
+/* La pastille qui retire le point choisi, que MapSceneDecor pose en diagonale de lui, hors des autres poignées */
+#map-scene .map-scene-decor-unpoint {
+	pointer-events: auto;
+}
+
+#map-scene .map-scene-decor-unpoint span {
+	border-color: var(--maptool-danger);
+	color: var(--maptool-danger);
+}
+
+/* Les cotes de la scène, la .decor-cote du POC : le refus d'un geste ou la longueur qu'il change, au-dessus de l'élément, et le
+   diamètre d'un tuyau, posé sur son tracé */
+#map-scene .map-scene-decor-say,
+#map-scene .map-scene-decor-diameter {
+	padding: 2px 8px;
+	border-radius: var(--maptool-radius);
+	background-color: var(--maptool-ring);
+	color: var(--maptool-ink);
+	font: 700 13px/1.4 var(--scene-font);
+	white-space: nowrap;
+	pointer-events: none;
+}
+
+/* Un tracé est à plat : la cote monte d'une cible au-dessus de lui, pour ne pas couvrir une poignée */
+#map-scene .map-scene-decor-say.map-scene-decor-say-trace,
+#map-scene .map-scene-decor-diameter.map-scene-decor-diameter-aside {
+	margin-top: calc(-1 * var(--scene-control));
+}
+
+/* Un refus prend la couleur des outils qui retirent, pour qu'on le distingue d'une cote sans avoir à le lire */
+#map-scene .map-scene-decor-say.map-scene-decor-say-refused {
+	background-color: var(--maptool-danger);
+	color: white;
+}
+
+/* La boite sous les vignettes, que le bâtiment armé reprend pour son nom et sa roue. Pour le tuyau : le diamètre, puis la pose, sur une seule ligne où les diamètres cèdent leur place en
+   défilant. Sous 576 px, ils n'en garderaient qu'une centaine de pixels à côté de la pose, qui repart à la ligne */
+#map-scene .map-scene-decor-pipe {
+	display: flex;
+	gap: var(--space-xs) var(--space-lg);
+}
+
+/* Sans tuyau ni bâtiment en main, la bande garde sa place sous la rangée, pour que la feuille ne grandisse pas quand on le prend :
+   sous 768 px, la scène s'allonge de la hauteur de la feuille, et le canevas bougerait sous le doigt qui pose */
+#map-scene .map-scene-decor-pipe.map-scene-decor-pipe-idle {
+	visibility: hidden;
+}
+
+/* Dès 768 px, la feuille est posée sur la scène sans en régler la hauteur : elle peut grandir quand on prend un tuyau ou un
+   bâtiment, et une bande au repos n'y laisse pas sous la rangée un vide que les autres familles n'ont pas */
+@media (min-width: 768px) {
+
+	#map-scene .map-scene-decor-pipe.map-scene-decor-pipe-idle {
+		display: none;
+	}
+
+}
+
+/* Le libellé à gauche, ses valeurs à sa droite. Les diamètres défilent sur une seule ligne, sans barre, estompés du côté où il
+   en reste comme les vignettes : en rangées, ils prendraient à la scène la hauteur que la boite garde pendant toute la pose,
+   et jusque sous les vignettes quand aucun tuyau n'est en main */
+#map-scene .map-scene-decor-pipe-group {
+	display: flex;
+	align-items: baseline;
+	gap: var(--space-xs);
+	min-width: 0;
+	max-width: 100%;
+}
+
+/* La pose, deux boutons, ne défile jamais : seuls les diamètres cèdent leur place */
+#map-scene .map-scene-decor-pipe-group:last-child {
+	flex: none;
+}
+
+/* L'intitulé, au corps et dans le gris du nom d'un groupe du terrain */
+#map-scene .map-scene-decor-pipe-group h5 {
+	flex: none;
+	margin: 0;
+	color: var(--scene-muted);
+	font: 400 13px/1.4 var(--scene-font);
+}
+
+#map-scene .map-scene-decor-pipe-values {
+	display: flex;
+	align-items: center;
+	gap: var(--space-xxs);
+	min-width: 0;
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+#map-scene .map-scene-decor-pipe-other {
+	flex: none;
+	width: 7rem;
+}
+
+/* Sous 576 px, les deux intitulés en colonne prennent la largeur du plus long, et les valeurs partent du même bord */
+@media (max-width: 575px) {
+
+	#map-scene .map-scene-decor-pipe {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: baseline;
+		gap: var(--space-xs);
+	}
+
+	#map-scene .map-scene-decor-pipe-group {
+		display: contents;
+	}
+
+}
+
+#map-scene .map-scene-decor-masked {
+	align-self: center;
+	margin: 0;
+	color: var(--muted);
+}
+
+/* La carte des calques, la liste des jardins de la vue Carte posée sous la rangée des réglages à la place de la fiche, qu'elle
+   ferme en s'ouvrant */
+#map-scene .map-scene-layers {
+	top: calc(var(--space-md) * 2 + var(--touch-target));
+	right: var(--space-md);
+	left: auto;
+	width: 21rem;
+	max-height: calc(100% - var(--space-md) * 3 - var(--touch-target));
+}
+
+/* Une ligne a la marge d'un bouton du produit, sans en être un */
+#map-scene .map-scene-layers .plan-item {
+	padding: var(--space-xs) var(--space-sm);
+}
+
+/* Le calque actif prend la teinte et le liseré d'un choix de la scène, à toutes les largeurs : en pose, c'est là que l'on pose */
+#map-scene .map-scene-layers .plan-item.selected {
+	background-color: var(--scene-accent-soft);
+	box-shadow: inset 3px 0 0 var(--scene-accent);
+}
+
+#map-scene .map-scene-layers-gear-away {
+	visibility: hidden;
+}
+
+#map-scene .map-scene-layers-form {
+	display: grid;
+	gap: var(--space-sm);
+	padding: var(--space-sm) var(--space-md) var(--space-md);
+}
+
+#map-scene .map-scene-layers-form .form-group {
+	margin-bottom: 0;
+}
+
+/* La carte est étroite à toutes les largeurs : le panneau de suppression y prend sa forme de téléphone (component.css) */
+#map-scene .map-scene-layers .util-weigh {
+	grid-template-areas: "disc mark" "head head" "lines lines";
+	grid-template-columns: minmax(0, 1fr) auto;
+	margin-bottom: 0;
+}
+
+#map-scene .map-scene-layers .util-weigh-disc,
+#map-scene .map-scene-layers .util-weigh-mark {
+	margin-bottom: var(--space-sm);
+}
+
+#map-scene .map-scene-layers .util-weigh-mark {
+	align-self: center;
+}
+
+#map-scene .map-scene-layers-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: var(--space-xs);
+}
+
+/* Les boutons de la carte sont ceux de la scène, que #map-scene .btn pose : la roue est carrée comme les autres boutons d'icône,
+   la suppression prend la forme de l'action qui termine dans le rouge du produit, et les interrupteurs le vert de la scène */
+#map-scene .map-scene-layers [data-scene-layers-gear],
+#map-scene .map-scene-layers .map-scene-layers-gear-away {
+	flex: none;
+	width: var(--scene-control);
+	padding: 0;
+}
+
+#map-scene .map-scene-layers .btn.btn-danger {
+	border-color: var(--danger);
+	background-color: var(--danger);
+	color: white;
+	font-weight: 600;
+}
+
+/* L'interrupteur du POC : une piste de 34 × 20 sans libellé, et un bouton de 16 px qui glisse de 14 px */
+#map-scene .map-scene-layers .field-switch {
+	flex: none;
+	width: 34px;
+	min-width: 0;
+	height: 20px;
+	border: 0;
+	border-radius: 10px;
+	box-shadow: none;
+}
+
+#map-scene .map-scene-layers .field-switch-text {
+	display: none;
+}
+
+#map-scene .map-scene-layers .field-switch-circle {
+	top: 2px;
+	left: 2px;
+	width: 16px;
+	height: 16px;
+	margin: 0;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+	transition: transform var(--duration-xs);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	#map-scene .map-scene-layers .field-switch-circle {
+		transition-duration: 0.01ms;
+	}
+
+}
+
+#map-scene .map-scene-layers .field-switch-on {
+	background-color: var(--scene-accent);
+}
+
+#map-scene .map-scene-layers .field-switch-on .field-switch-circle {
+	transform: translateX(14px);
+}
+
+#map-scene .map-scene-layers .field-switch-off {
+	background-color: var(--scene-border);
+}
+
+/* Comme la vue Carte sous 768 px : la scène prend la moitié de l'écran, et ses réglages quittent le canevas pour ne pas en couvrir le tiers */
+@media (max-width: 767px) {
+
+	#map-scene-canvas {
+		height: 50vh;
+	}
+
+	#map-scene [data-scene-photo],
+	#map-scene [data-scene-layers],
+	#map-scene .map-scene-screen > a.btn,
+	#map-scene [data-scene-decor],
+	#map-scene [data-scene-fullscreen],
+	#map-scene [data-scene-fullscreen-exit],
+	#map-scene [data-scene-play],
+	#map-scene [data-scene-pause],
+	#map-scene [data-scene-speed],
+	#map-scene [data-scene-record],
+	#map-scene [data-scene-record-stop] {
+		flex: none;
+		width: var(--scene-control);
+		min-width: 0;
+		padding: 0;
+	}
+
+	#map-scene [data-scene-photo] .asset-icon,
+	#map-scene [data-scene-layers] .asset-icon,
+	#map-scene [data-scene-decor] .asset-icon,
+	#map-scene [data-scene-fullscreen] .asset-icon,
+	#map-scene [data-scene-fullscreen-exit] .asset-icon,
+	#map-scene [data-scene-play] .asset-icon,
+	#map-scene [data-scene-pause] .asset-icon,
+	#map-scene [data-scene-speed] .asset-icon,
+	#map-scene [data-scene-record] .asset-icon,
+	#map-scene [data-scene-record-stop] .asset-icon {
+		width: 20px;
+		min-width: 20px;
+		height: 20px;
+	}
+
+	/* Le sélecteur prend toute la première rangée, pour qu'un nom de lieu se lise en entier ; les réglages passent dessous */
+	#map-scene .map-scene-bar {
+		order: -1;
+		position: static;
+		flex-wrap: wrap;
+		padding: var(--space-xs) var(--space-sm);
+		background-color: var(--background-surface);
+	}
+
+	#map-scene .map-scene-zone {
+		flex: 1 0 100%;
+		width: auto;
+	}
+
+	/* En pose, la rangée tient sur une ligne et ne garde que les calques, l'annulation et la fin de la pose, comme au POC
+	   (body.decor-mode #top) : à 360 px, le plein écran n'y entre plus et tombait seul sur une seconde ligne */
+	#map-scene.map-scene-posing .map-scene-bar {
+		flex-wrap: nowrap;
+	}
+
+	#map-scene.map-scene-posing [data-scene-fullscreen] {
+		display: none;
+	}
+
+	/* En plein écran, la scène prend toute la hauteur que lui laissent ses réglages, et non plus la moitié de l'écran */
+	#map-scene:fullscreen #map-scene-canvas {
+		flex: 1;
+		min-height: 0;
+		height: auto;
+	}
+
+	/* La lecture, la frise, les jours, la clé et la vitesse se rangent ensemble : leurs deux conteneurs s'effacent, pour que la
+	   lecture passe à gauche de la frise et la vitesse au bout de la clé, qui défile de côté */
+	#map-scene .map-scene-timeline {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-sm);
+		/* La mention du relief se pose encore au-dessus de la frise, sur le bas de la scène */
+		position: relative;
+		border-width: 1px 0 0;
+		border-color: var(--border-light);
+		border-radius: 0;
+		box-shadow: none;
+	}
+
+	/* Sur un téléphone, deux rangées de clé ne laissent que des cibles de quinze pixels : une rangée qui défile de côté,
+	   aux entrées de la taille d'un doigt. Elle garde sous les jours l'écart serré qu'elle a sous la frise d'un grand écran */
+	#map-scene .map-scene-legend-row .map-scene-legend {
+		order: 3;
+		flex: 1;
+		min-width: 0;
+		margin-top: calc(var(--space-xs) - var(--space-sm));
+		height: auto;
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scrollbar-width: none;
+	}
+
+	#map-scene .map-scene-legend-item {
+		min-height: var(--touch-target);
+	}
+
+	#map-scene .map-scene-timeline-week,
+	#map-scene .map-scene-legend-row {
+		display: contents;
+	}
+
+	/* La vitesse choisie se lit dans sa liste : le bouton n'en garde que l'icône, sans flèche. Au bout de la clé, il en suit la
+	   remontée pour partager son milieu */
+	#map-scene [data-scene-speed] {
+		order: 3;
+		min-height: var(--scene-control);
+		margin-top: calc(var(--space-xs) - var(--space-sm));
+	}
+
+	#map-scene [data-scene-speed]::after,
+	#map-scene .scene-speed-label {
+		display: none;
+	}
+
+	/* La lecture et la frise partagent la première rangée, la lecture calée sur le curseur sous la place de la bulle */
+	#map-scene [data-scene-play],
+	#map-scene [data-scene-pause] {
+		order: -1;
+		align-self: flex-start;
+	}
+
+	#map-scene .map-scene-timeline-track {
+		order: -1;
+		flex: 1;
+	}
+
+	/* La carte prend la place de la frise sous la scène, à plat comme elle, et la frise revient à la fermeture. Elle garde son
+	   titre, qui porte l'ajout, et ses lignes en colonne */
+	#map-scene .map-scene-layers {
+		position: static;
+		width: auto;
+		max-height: none;
+		display: block;
+		padding: 0;
+		overflow: visible;
+		border-width: 1px 0 0;
+		border-color: var(--border-light);
+		border-radius: 0;
+		box-shadow: none;
+	}
+
+	#map-scene:has(.map-scene-layers:not(.hide)) .map-scene-timeline {
+		display: none;
+	}
+
+	/* En pose, la feuille se pose sur le bas de la scène et non sur la carte, dont MapSceneLayer mesure la hauteur */
+	#map-scene:has(.map-scene-layers:not(.hide)) .map-scene-decor {
+		bottom: calc(var(--space-xs) + var(--map-scene-layers-height));
+	}
+
+	#map-scene .map-scene-layers .plan-column-title {
+		display: flex;
+	}
+
+	#map-scene .map-scene-layers .plan-item {
+		border-width: 0;
+		border-radius: 0;
+	}
+
+	/* Les jours prennent toute une rangée sous la lecture, comme au POC, et s'en partagent la largeur : un jour y descend un
+	   peu sous la cible */
+	#map-scene .map-scene-days {
+		flex: 1 0 100%;
+		order: 2;
+		margin-top: 6px;
+	}
+
+	#map-scene .map-scene-days .util-day {
+		flex: 1;
+		min-width: 0;
+	}
+
+	/* La fiche se pose sur la frise plutôt qu'au-dessus : entre les réglages et la frise, elle cacherait la planche choisie */
+	#map-scene .map-scene-sheet {
+		top: auto;
+		right: var(--space-sm);
+		bottom: var(--space-sm);
+		left: var(--space-sm);
+		width: auto;
+		max-height: 52vh;
+	}
+
+	/* Les boutons prennent toute la seconde ligne, poussés à droite, et ceux qui n'y tiennent plus passent dans le
+	   menu ⋮ */
+	#map-scene .map-scene-screen {
+		flex: 1 0 100%;
+		justify-content: flex-end;
+		min-width: 0;
+	}
+
+	/* Pendant la pose, la feuille reste posée sur le bas de la scène, comme sur un grand écran : on voit où l'on pose ce qu'on
+	   tient. La scène s'allonge d'autant, de la hauteur que MapSceneDecor mesure à l'ouverture, sans dépasser ce que laissent
+	   voir les barres fixes du haut et du bas : plus haute, elle ne tient plus à l'écran avec sa feuille, et le point qu'on
+	   pose passe sous la barre du haut */
+	#map-scene.map-scene-posing:not(:fullscreen) #map-scene-canvas {
+		height: min(calc(50vh + var(--map-scene-decor-height)), calc(100svh - var(--mainSticky) - var(--nav-structure)));
+	}
+
+	#map-scene .map-scene-decor {
+		right: var(--space-xs);
+		bottom: var(--space-xs);
+		left: var(--space-xs);
+		padding: var(--space-xs) var(--space-sm);
+	}
+
+	/* Les noms des clôtures, plus longs, garderaient une troisième ligne à cette largeur, et la haie de leur rangée garde la leur */
+	#map-scene .map-scene-decor-tile:not([data-fence], [data-hedge]) {
+		width: 80px;
+	}
+
+	/* Le nom d'un kit tient sur sa vignette : « Électrovanne », 77 px à 13 px, n'y trouverait que 70 px à 80 */
+	#map-scene .map-scene-decor-tile[data-kit],
+	#map-scene .map-scene-decor-tile.map-scene-decor-tile-create {
+		width: 88px;
+	}
+
+	#map-scene .map-scene-decor-tile-create .map-scene-decor-tile-icon {
+		width: 56px;
+		height: 56px;
+	}
+
+	#map-scene .map-scene-decor-tile {
+		min-height: 88px;
+	}
+
+	#map-scene .map-scene-decor-tile img,
+	#map-scene .map-scene-decor-group .map-scene-decor-tile img {
+		width: 56px;
+		height: 56px;
+		margin-block: 0;
+	}
+
+}
+
+#map-scene .map-scene-decor-finish {
+	display: none;
+}
+
+/* Sur un téléphone, pendant un tracé, la feuille ne garde que la boite du kit qu'on trace et « Terminer » : ses vignettes
+   prendraient à la scène la place où l'on pose les points. Ce « Terminer » remplace celui de la rangée du haut, que l'écran
+   perd quand on descend jusqu'à la feuille ; « Annuler » y reste. Tout revient à la fin du tracé (MapSceneDecor) */
+@media (max-width: 575px) {
+
+	#map-scene.map-scene-tracing .map-scene-decor-families,
+	#map-scene.map-scene-tracing .map-scene-decor-layer,
+	#map-scene.map-scene-tracing .map-scene-decor-area,
+	#map-scene.map-scene-tracing .map-scene-decor-tiles,
+	#map-scene.map-scene-tracing .map-scene-decor-pipe-idle,
+	#map-scene.map-scene-tracing [data-scene-decor-done] {
+		display: none;
+	}
+
+	#map-scene.map-scene-tracing .map-scene-decor-finish {
+		display: inline-flex;
+	}
+
+}

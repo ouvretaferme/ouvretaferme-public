@@ -1,0 +1,101 @@
+/*
+ * Ce que les calculateurs de la Boite à outils partagent, les densités et les besoins en
+ * fertilisation : la carte du formulaire en deux colonnes sous ses onglets, la largeur d'une planche
+ * avec son passe-pied, et la zone teintée du résultat. Tout est borné par `calculator-`, la feuille
+ * restant chargée après qu'on a quitté l'outil en navigation ajax.
+ */
+
+.calculator-form-groups {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 1.5rem;
+}
+
+@media (min-width: 992px) {
+
+	.calculator-form-groups {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: 2rem;
+	}
+
+}
+
+/* Les deux colonnes sont les étapes du calcul (`util-procedure`, planche T2-npk/colonnes, C validée
+   par le 03/10). `.util-procedure` remet à 0 le padding de la carte qu'elle porte aussi : on
+   rend celui de `util-block`, sa marge basse restant la même chez les deux. */
+.calculator-form-groups.util-procedure {
+	padding: 1rem;
+}
+
+.calculator-form-groups > .util-procedure-step {
+	align-content: start;
+}
+
+.calculator-form-groups > .util-procedure-step > .util-procedure-title {
+	margin-bottom: 1rem;
+}
+
+/* Côte à côte, le trait qui relie une étape à la suivante ne mène nulle part, et le retrait bas qui
+   lui fait place n'a plus d'objet. Au téléphone, les étapes s'empilent et le trait reste. */
+@media (min-width: 992px) {
+
+	.calculator-form-groups > .util-procedure-step {
+		padding-bottom: 0;
+	}
+
+	.calculator-form-groups > .util-procedure-step::after {
+		display: none;
+	}
+
+}
+
+.calculator-form-width {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) min-content minmax(0, 1fr);
+	align-items: center;
+}
+
+/* Sur un téléphone, « cm de passe-pied » ne laisse plus la place de lire la valeur saisie. */
+@media (max-width: 449px) {
+
+	.calculator-form-width {
+		grid-template-columns: minmax(0, 1fr);
+		justify-items: center;
+	}
+
+	.calculator-form-width > .input-group {
+		justify-self: stretch;
+	}
+
+}
+
+/*
+ * La zone du résultat. Ses tuiles sont blanches : `util-figure` porte déjà la teinte de la zone, et
+ * s'y confondrait.
+ */
+.calculator-result {
+	margin-top: 2rem;
+	padding: 1.5rem;
+	border-radius: var(--radius);
+	background-color: var(--color-bg-vert-bleu);
+}
+
+.calculator-result .util-title h2 {
+	margin: 0;
+}
+
+.calculator-result .util-figure {
+	background-color: white;
+}
+
+.calculator-result .util-figures {
+	margin-bottom: 1.5rem;
+}
+
+@media (max-width: 575px) {
+
+	.calculator-result {
+		padding: 1rem;
+	}
+
+}

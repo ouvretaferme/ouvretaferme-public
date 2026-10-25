@@ -1,0 +1,194 @@
+Calendar:
+  id: serial32
+  # Le calendrier type des paniers (r48b) : une ligne par climat et par espèce de référence. Calculé
+  # une fois en dev par CalendarProjectionAiLib depuis les plans de culture, figé dans
+  # lib/calendarDataAi.php et semé en production par CalendarAiLib::seed(), jamais recalculé là-bas.
+  climate: enum(OCEANIC, CONTINENTAL, MEDITERRANEAN, MOUNTAIN)
+  plant: plant\Plant
+  # Les semaines de récolte, de 1 à 52, la 53 rangée en 52 comme partout dans l'agrégé.
+  harvestWeeks: json
+  # La disponibilité : la récolte et les semaines que la conservation de l'espèce (`plant.storage`)
+  # ouvre après la dernière saison de l'année. C'est la saison qu'une espèce prend au départ.
+  weeks: json
+  # Les structures derrière la ligne, celles du climat ou de tous les climats quand `fallback`.
+  structures: int16(1, null)
+  # TRUE quand le climat compte trop peu de structures pour l'espèce : la ligne porte alors le
+  # calendrier de tous les climats confondus.
+  fallback: bool
+  online: bool = FALSE
+  LIB: CalendarAiLib
+  INDEX: [
+    ["online"]
+  ]
+  UNIQUE: [
+    ["climate", "plant"]
+  ]
+
+Composition:
+  id: serial32
+  contributor: int32(1, null)
+  composedProduct: int32(1, null)
+  year: int16(0, null)
+  week: int8(1, 52)
+  altitude: ?int16(0, null)
+  value: ?decimal(8, 2)
+  lines: int8(1, null)
+  online: bool = FALSE
+  LIB: CompositionAiLib
+  INDEX: [
+    ["online"]
+  ]
+
+CompositionItem:
+  id: serial32
+  composition: aggregate\Composition
+  plant: plant\Plant
+  quantity: ?decimal(8, 2)
+  unit: ?product\Unit
+  online: bool = FALSE
+  LIB: CompositionItemAiLib
+  INDEX: [
+    ["composition"],
+    ["plant", "online"],
+    ["online"]
+  ]
+
+Cultivation:
+  id: serial32
+  plant: plant\Plant
+  seriesCultivation: int32(1, null)
+  structure: structure\Structure
+  season: int16(0, null)
+  startAction: enum(SOWING, PLANTING)
+  seedling: ?enum(SOWING, YOUNG_PLANT, YOUNG_PLANT_BOUGHT)
+  mode: enum(GREENHOUSE, OPEN_FIELD, MIX)
+  use: enum(BED, BLOCK)
+  bedWidth: ?int16(1, null)
+  alleyWidth: ?int16(1, null)
+  rows: ?int8(1, null)
+  rowSpacing: ?decimal(8, 2, 0.01, null)
+  plantSpacing: ?decimal(8, 2, 0.01, null)
+  density: ?decimal(10, 2, 0.01, null)
+  startWeek: int8(1, 52)
+  month: int8(1, 12)
+  seedlingIndex: ?int16(-104, 104)
+  harvestPeriod: enum(WEEK, MONTH)
+  harvestFrom: ?int16(-104, 208)
+  harvestTo: ?int16(-104, 208)
+  harvestCount: ?int16(0, null)
+  harvestWeeks: json = PHP([])
+  yieldExpected: ?decimal(8, 2, 0.0, null)
+  mainUnit: enum(KG, UNIT, BUNCH) = KG
+  altitude: ?int16(0, null)
+  structureSeries: int32(0, null)
+  online: bool = FALSE
+  createdAt: date = SPECIAL(now)
+  LIB: CultivationAiLib
+  INDEX: [
+    ["plant", "online", "startAction", "seedling"],
+    ["online"]
+  ]
+
+CultivationVariety:
+  id: serial32
+  cultivation: aggregate\Cultivation
+  plant: plant\Plant
+  structure: structure\Structure
+  variety: plant\Variety
+  name: text8(1, 50) @collate(general)
+  searchKey: text8(1, 50)
+  online: bool = FALSE
+  LIB: CultivationVarietyAiLib
+  INDEX: [
+    ["plant", "online"],
+    ["cultivation"],
+    ["online"]
+  ]
+
+Price:
+  id: serial32
+  # Semaine ISO, la 53 rangée en 52 comme partout dans l'agrégé (les six min(52, …) du dépôt,
+  # dont deux en production) : la borne 52 est la convention, pas un oubli.
+  week: int8(1, 52)
+  plant: plant\Plant
+  unit: product\Unit
+  contributors: int16(1, null)
+  median: decimal(10, 4)
+  # low et high sont les 10e et 90e centiles du relevé, pas des bornes observées.
+  low: decimal(10, 4)
+  high: decimal(10, 4)
+  quantityMedian: ?decimal(8, 2)
+  online: bool = FALSE
+  LIB: PriceAiLib
+  INDEX: [
+    ["week", "online"],
+    ["plant", "online"],
+    ["online"]
+  ]
+  UNIQUE: [
+    ["week", "plant", "unit"]
+  ]
+
+Sale:
+  id: serial32
+  plant: plant\Plant
+  month: int8(1, 12)
+  contributors: int16(1, null)
+  amount: decimal(12, 2)
+  LIB: SaleAiLib
+  UNIQUE: [
+    ["plant", "month"]
+  ]
+
+SaleTotal:
+  id: serial32
+  plant: ?plant\Plant
+  month: ?int8(1, 12)
+  contributors: int16(1, null)
+  amount: decimal(12, 2)
+  LIB: SaleTotalAiLib
+
+VegetableHours:
+  id: serial32
+  structure: structure\Structure
+  year: int16(0, null)
+  fqn: ?text8 @charset(ascii)
+  hours: float32(0.0, null)
+  online: bool = FALSE
+  LIB: VegetableHoursAiLib
+  INDEX: [
+    ["structure", "year"],
+    ["online"]
+  ]
+
+VegetablePlan:
+  id: serial32
+  structure: structure\Structure
+  season: int16(0, null)
+  series: int32(0, null)
+  cultivations: int32(0, null)
+  harvested: int32(0, null)
+  species: int32(0, null)
+  area: float32(0.0, null)
+  greenhouse: float32(0.0, null)
+  online: bool = FALSE
+  createdAt: datetime = SPECIAL(now)
+  LIB: VegetablePlanAiLib
+  INDEX: [
+    ["structure", "season"],
+    ["online"]
+  ]
+
+VegetableSpecies:
+  id: serial32
+  structure: structure\Structure
+  season: int16(0, null)
+  plant: plant\Plant
+  cultivations: int32(0, null)
+  months: json = PHP([])
+  online: bool = FALSE
+  LIB: VegetableSpeciesAiLib
+  INDEX: [
+    ["structure", "season"],
+    ["online"]
+  ]

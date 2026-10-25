@@ -1,0 +1,318 @@
+:root {
+	--nav-base-height: 3.75rem;
+}
+
+body[data-template~="base"] {
+	--secondary: var(--color-brand);
+}
+
+body[data-template~="base"] {
+	--background-body: var(--background-light);
+	background-color: var(--background-light);
+	font-family: var(--font-text);
+	line-height: 1.4;
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+}
+
+body[data-template~="base"] > main {
+	flex: 1;
+}
+
+body[data-template~="base"] .container {
+	max-width: 84rem;
+	margin-left: auto;
+	margin-right: auto;
+	padding-left: var(--container-padding);
+	padding-right: var(--container-padding);
+	position: relative;
+}
+
+/* La taille du titre de page se déclare une fois : `util-action-fold-aside` la lit pour caler ses
+   gestes sur la première ligne du h1, et une seconde valeur écrite ailleurs les désalignerait. */
+body[data-template~="base"] {
+	--h1-size: 3rem;
+}
+
+body[data-template~="base"] h1 {
+	font-weight: 700;
+	letter-spacing: 2%;
+	font-size: var(--h1-size);
+}
+
+@media (max-width: 767px) {
+
+	body[data-template~="base"] {
+		--h1-size: 2rem;
+	}
+
+}
+
+.root-nav-actions a.nav-user {
+	color: var(--text);
+	text-decoration: none;
+}
+
+.base-nav-deleted {
+	background-color: var(--danger);
+	line-height: 1.2;
+	z-index: 1;
+	margin-right: 1rem;
+	border-radius: var(--radius);
+	font-weight: normal;
+	font-size: 0.8rem;
+}
+
+.root-nav-actions:has(.nav-account) {
+	justify-content: end;
+}
+
+
+.root-nav-wrapper .nav-item:has(.base-nav-link-margin-sign-up) {
+	margin-left: auto;
+}
+
+/* La marge sépare « S'inscrire » du bouton qui le suit : seul en bout de barre, il finit sur le bord */
+.root-nav-wrapper .nav-item:has(.base-nav-link-margin-sign-up):not(:last-child) {
+	margin-right: var(--space-xs);
+}
+
+
+.base-nav-link {
+
+	display: block;
+	cursor: pointer;
+	padding: 0.5rem .75rem;
+	transition: color 0.25s;
+	border-radius: var(--radius);
+
+	@media (max-width: 575px) {
+		padding: 0.5rem;
+	}
+
+}
+
+/* Un lien de la barre qui est un bouton, « Se connecter », garde les couleurs de son bouton (btn-primary),
+   au repos comme au survol : ces règles viennent après component.css et l'emporteraient à égalité. */
+.base-nav-link:not(.btn) {
+	color: var(--color-brand);
+}
+
+.base-nav-link.active:not(.btn),
+.base-nav-link:hover:not(.btn) {
+	color: var(--color-brand);
+	background-color: var(--color-bg-blanc-gris);
+	text-decoration: none;
+}
+
+.base-nav-link-legend {
+
+	font-size: 0.8rem;
+
+	@media (max-width: 575px) {
+		font-size: 0.7rem;
+	}
+
+}
+
+.root-nav-wrapper .nav-item span:not(.hide-sm-up) svg {
+	margin-left: 0.5rem;
+	transition: transform 0.2s ease;
+}
+
+/* SubMenu */
+
+.base-menu-submenu-link-title br {
+	display: none;
+}
+
+.base-menu {
+
+	display:none;
+	border-bottom: 1px solid #BCBCBC;
+	padding: 2rem 0;
+	position: absolute;
+	width: 100%;
+	z-index: 450;
+
+	@media (max-width: 575px) {
+		padding: 1rem;
+	}
+
+}
+.base-menu .container {
+	width: 100%;
+}
+
+/* « Voir les offres » garde l'encre de son bouton (btn-terracota), que cette règle emporterait par sa
+   spécificité. */
+.base-menu h3,
+.base-menu a:not(.btn) {
+	color: var(--color-brand);
+}
+
+.base-menu-submenu {
+
+	display:grid;
+
+	gap: 2rem;
+	grid-template-columns: 1fr 1fr 1fr;
+
+	@media (max-width: 767px) {
+		gap: 1rem;
+		grid-template-columns: 1fr;
+	}
+
+}
+
+.base-menu-submenu-link {
+	display: grid;
+	grid-template-columns: 3rem 1fr;
+	border-radius: var(--radius);
+	gap: 0.5rem;
+	padding: 0.75rem;
+}
+
+.base-menu-submenu-link:hover {
+	background-color: var(--color-bg-vert-menthe);
+}
+
+.base-menu-submenu-link-title {
+	font-size: 1.2rem;
+	font-weight: 500;
+}
+
+.base-menu-submenu-link p {
+	font-size: 0.9rem;
+	margin-bottom: 0;
+}
+
+.base-menu-submenu-link svg {
+	width: 2.25rem;
+}
+
+
+@media (max-width: 767px) {
+
+
+	body[data-template~="base"] a.base-menu-submenu-link > div {
+		display: flex;
+		flex-direction: column;
+	}
+}
+
+
+/* Nav : ouverture du dropdown au hover sur desktop */
+body[data-template~="base"] #menu-toggler-checkbox {
+	display:none;
+}
+
+
+label.base-nav-link {
+	position: relative;
+}
+
+label.base-nav-link::after {
+	/* Pour la transition entre le menu et le lien */
+	content: '';
+	position: absolute;
+	bottom: -1.5rem;
+	left: 0;
+	right: 0;
+	height: 1.5rem;
+}
+
+body[data-touch="yes"][data-template~="base"] #menu-toggler-checkbox:checked ~ .base-menu,
+body[data-touch="no"][data-template~="base"] #root-nav:has(label[for="menu-toggler-checkbox"]:hover) .base-menu,
+body[data-touch="no"][data-template~="base"] #root-nav:has(.base-menu:hover) .base-menu {
+	display: block;
+	background-color: var(--background-light);
+	border-top: 1px solid #BCBCBC;
+}
+
+
+body[data-template~="base"] > main {
+	--main-margin-bottom: 5rem;
+	margin-bottom: var(--main-margin-bottom);
+	flex: 1;
+}
+
+body[data-template~="base"] header:not(:empty) {
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+	min-height: 6rem;
+	display: grid;
+	grid-template-columns: 1fr;
+	align-items: center;
+}
+
+
+body[data-template~="base"] #root-nav {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	background-color: var(--background-light);
+}
+
+body[data-template~="base"] #root-nav a:not(.btn):hover {
+	text-decoration: none;
+}
+
+.root-nav-wrapper .nav-item {
+	padding:0;
+	display: block;
+}
+
+.root-nav-title {
+
+	@media (max-width: 767px) {
+		margin-left: .5rem;
+	}
+
+	@media (min-width: 576px) {
+		margin-right: 1rem;
+	}
+
+	@media (min-width: 768px) {
+		margin-right: 2rem;
+	}
+
+}
+
+
+.base-menu-quotation {
+
+	display: grid;
+	grid-template-columns: 10rem 1fr;
+	gap: 1.5rem;
+	align-items: center;
+	width: calc(50% - 1rem);
+	margin-top: 2rem;
+	padding: 0.75rem;
+	border-radius: var(--radius);
+
+	@media (max-width: 767px) {
+		grid-template-columns: 6rem 1fr;
+		gap: 1rem;
+		width: 100%;
+		margin-top: 1rem;
+	}
+
+}
+
+.base-menu-quotation:hover {
+	background-color: var(--color-bg-vert-menthe);
+	text-decoration: none;
+}
+
+.base-menu-quotation-image img {
+	width: 100%;
+	height: auto;
+	border-radius: 0.5rem;
+}
+
+.base-menu-quotation p {
+	font-size: 0.9rem;
+	margin-bottom: 0;
+}

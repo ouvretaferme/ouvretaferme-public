@@ -1,0 +1,203 @@
+/*
+ * Le mouvement du socle : ses durées et ses courbes, les transitions du panneau et du fond de menu
+ * que le cadriciel portait dans lime.css, et ce que devient chaque mouvement quand le système demande
+ * moins d'animations.
+ *
+ * Chargée partout par Root.php, juste après component.css. Un mouvement prend l'un de ces tokens,
+ * jamais une valeur écrite en clair ; la table qui dit quel geste prend quelle durée est sur la page
+ * du design system, famille « Animer un geste » (#design-motion).
+ */
+
+:root {
+	--duration-xs: 0.15s;
+	--duration-sm: 0.2s;
+	--duration-md: 0.25s;
+	--duration-lg: 0.5s;
+	--duration-xl: 0.7s;
+	/* Hors de l'échelle : un tour de boucle et le pas d'une cascade, qui ne sont pas la durée d'un geste. */
+	--duration-loop: 1s;
+	--duration-step: 0.1s;
+	--ease-out: cubic-bezier(0.2, 0.8, 0.3, 1);
+	--ease-in-out: ease-in-out;
+	--ease-spring: cubic-bezier(0.2, 0.8, 0.3, 1.15);
+	--ease-linear: linear;
+}
+
+/*
+ * Les transitions du panneau et du fond de menu, sorties de lime.css sans changer le geste : même
+ * sélecteur, donc même spécificité, et même valeur. La courbe reste celle par défaut (ease), que
+ * lime.css employait sans l'écrire. Les états d'arrivée (.closing, .fullscreen-closing) restent dans
+ * lime.css : lime.js retire le panneau à 500 ms et la liste plein écran à 250 ms en comptant sur eux,
+ * et Pdf.php charge lime.css sans cette feuille.
+ */
+body[data-touch="no"] .panel {
+	transition: opacity var(--duration-md);
+}
+
+/* 0.33s ne tombe sur aucun palier : la valeur reste écrite telle quelle, le geste du panneau en tactile
+   n'ayant pas changé (L3, Q1 C). L'arrondir changerait ce que l'on sent sous le doigt. */
+body[data-touch="yes"] .panel {
+	transition: left 0.33s;
+}
+
+.dropdown-backdrop {
+	transition: opacity var(--duration-md);
+}
+
+/*
+ * Le voile posé sur le nœud que le PHP nomme après une écriture (juicinessAi.js, MainJuiciness.flash()).
+ * La teinte est la teinte pâle de la section (--info), en multiply : opaque, --info masquerait le texte du
+ * nœud. Le nœud devient le bloc contenant du voile ; la classe se retire à animationend.
+ * Sous mouvement réduit, le voile garde son fondu : ce n'est qu'une opacité.
+ */
+.util-flash {
+	position: relative;
+}
+
+.util-flash::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	border-radius: inherit;
+	background-color: var(--info);
+	mix-blend-mode: multiply;
+	opacity: 0;
+	animation: util-flash var(--duration-lg) var(--ease-out);
+}
+
+@keyframes util-flash {
+	0%, 40% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
+/*
+ * Le voile du nœud qu'une écriture vient de régler (MainJuiciness.flash(node, 'success')) : une ligne
+ * associée à son produit. Le vert est celui de badge-success, et le voile dure deux paliers de
+ * --duration-lg : l'état gagné se lit sur la ligne avant que le voile ne s'éteigne.
+ */
+.util-flash-success::after {
+	background-color: color-mix(in srgb, var(--success) 14%, white);
+	animation-duration: calc(2 * var(--duration-lg));
+}
+
+/*
+ * La copie du nœud qu'une réponse retire (`remove(vanish: TRUE)`, MainJuiciness.vanish()). Le nœud a déjà
+ * quitté le flux : la copie est posée par-dessus sa place, aux mesures lues avant le retrait, et s'efface
+ * en --duration-xs, un palier sous l'apparition. Elle se retire à animationend.
+ * La copie garde les classes du nœud, dont les règles de package arrivent après cette feuille et peuvent
+ * peser plus : sa géométrie (position, box-sizing, marge, place) est donc écrite en ligne par le script, et
+ * son animation porte `!important`, faute de quoi une animation du nœud la remplacerait.
+ * Sous mouvement réduit, rien ne change : ce n'est qu'une opacité.
+ */
+.util-vanish {
+	pointer-events: none;
+	animation: util-vanish var(--duration-xs) var(--ease-out) forwards !important;
+}
+
+@keyframes util-vanish {
+	to {
+		opacity: 0;
+	}
+}
+
+/*
+ * Le bouton d'envoi d'une écriture pendant sa requête (MainJuiciness.pending()). Il ne grise pas : il garde
+ * sa couleur et son opacité, et le disabled que pose ajax.js n'y change rien. Le libellé reste dans le
+ * bouton pour en garder la largeur ; au-delà de --duration-sm, il s'efface et le sablier paraît par-dessus.
+ * Les deux bascules sont des animations de 0.01ms retardées, pour que la classe retirée avant leur départ
+ * ne montre rien : une réponse rapide ne fait pas clignoter le bouton.
+ */
+/* .btn:not(.btn-readonly) de component.css pèse deux classes et pose cursor: pointer : la règle du bouton
+   en attente doit peser au moins autant, sans quoi le curseur ne dit jamais que l'envoi est parti. */
+.util-pending,
+.btn.util-pending:not(.btn-readonly) {
+	position: relative;
+	cursor: progress;
+}
+
+.util-pending:disabled {
+	opacity: 1;
+}
+
+.util-pending > .util-pending-label {
+	animation: util-pending-hide 0.01ms var(--duration-sm) forwards;
+}
+
+.util-pending > .util-pending-icon {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	animation: util-pending-show 0.01ms var(--duration-sm) forwards;
+}
+
+.util-pending > .util-pending-icon > .util-animate-turn {
+	display: inline-flex;
+}
+
+@keyframes util-pending-hide {
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes util-pending-show {
+	to {
+		opacity: 1;
+	}
+}
+
+/*
+ * Le bloc qu'une requête recalcule, le temps de cette requête (MainJuiciness.wait(), sur un bloc
+ * [data-waiting-block] nommé par .trigger() sur son Ajax.Query). Il pâlit puis pulse entre son opacité et
+ * la moitié, sans rien déplacer, et revient à la normale quand la classe se retire. Le départ attend
+ * --duration-sm, comme le sablier de util-pending : une réponse plus rapide ne fait rien clignoter. Le bloc
+ * reste saisissable, la réponse le remplace de toute façon.
+ */
+.util-waiting {
+	animation: util-waiting var(--duration-loop) var(--ease-in-out) var(--duration-sm) infinite alternate;
+}
+
+@keyframes util-waiting {
+	to {
+		opacity: 0.5;
+	}
+}
+
+/*
+ * Mouvement réduit. Ce qui change de taille, de forme ou de position prend une durée infime ; les
+ * fondus d'opacité et de couleur restent ; l'attente (.waiter, util-animate-turn) continue de tourner.
+ * Seul le bloc en attente (util-waiting) arrête son fondu : un fondu qui se répète sans fin est une
+ * boucle, et il reste pâle à la place.
+ *
+ * Deux règles tiennent tout le bloc :
+ * - jamais `animation: none` ni de durée nulle : animationend ne partirait plus, et ce qui attend la
+ *   fin d'une animation pour retirer une classe ou un nœud resterait posé. 0.01ms la fait partir ;
+ * - aucun sélecteur sur `*` : chaque mouvement de cette feuille déclare ici sa variante, et un
+ *   composant de component.css la déclare à côté de lui (util-celebrate), pour que les animations
+ *   d'un package (le cachet de pesée du planning, par exemple) gardent la leur.
+ *
+ * `!important` parce que les feuilles de package arrivent après celle-ci en navigation ajax et
+ * reprendraient la main à spécificité égale.
+ */
+@media (prefers-reduced-motion: reduce) {
+
+	body[data-touch="yes"] .panel {
+		transition-duration: 0.01ms !important;
+	}
+
+	/* Le bloc en attente reste pâle sans pulser : un seul tour infime, arrêté sur sa dernière image. */
+	.util-waiting {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		animation-fill-mode: forwards !important;
+	}
+
+}

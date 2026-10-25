@@ -1,0 +1,1051 @@
+.design-navigation {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	color: inherit;
+}
+
+.design-navigation h1 {
+	margin: 0;
+}
+
+.design-navigation:hover {
+	color: var(--color-brand);
+}
+
+.design-pdf-brick {
+	margin-bottom: 3rem;
+}
+
+.design-pdf-frame {
+	width: 100%;
+	max-width: 40rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background-color: white;
+	box-shadow: var(--shadow-v2);
+}
+
+.design-pdf-rules {
+	max-width: 55rem;
+}
+
+.design-pdf-rules li {
+	margin-bottom: 0.75rem;
+}
+
+.design-pdf-tag {
+	display: inline-block;
+	padding: 0.1rem 0.5rem;
+	border-radius: var(--radius);
+	background-color: var(--background);
+	font-size: 0.8rem;
+	white-space: nowrap;
+}
+
+.design-pdf-tag-none {
+	background-color: var(--background-light);
+	color: var(--muted);
+}
+
+.design-pdf code,
+.design-decor code {
+	display: inline;
+	padding: 0.1rem 0.35rem;
+	font-size: 0.9em;
+}
+
+.design-pdf p {
+	max-width: 55rem;
+}
+
+.design-pdf-frame {
+	overflow: hidden;
+}
+
+/* L'index se lit en fin de page, en survol : trois colonnes de lignes courtes plutôt qu'un tableau,
+   pour qu'il tienne en un écran et laisse la place aux composants eux-mêmes. */
+.design-finder {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+	gap: 1rem 2.5rem;
+	font-size: 0.85rem;
+	line-height: 1.35;
+}
+
+.design-finder ul {
+	margin: 0.25rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.design-finder li {
+	display: flex;
+	justify-content: space-between;
+	gap: 0.75rem;
+	padding: 0.15rem 0;
+	border-bottom: 1px dotted var(--border);
+}
+
+.design-finder code {
+	display: inline;
+	padding: 0;
+	background: none;
+	color: var(--text-intermediate);
+	font-size: 0.95em;
+	text-align: right;
+	/* Un nom de classe ne se coupe pas au milieu : `code` casse n'importe où depuis reboot.css, ce qui
+	   rendait « util-welcome » en deux morceaux. Le retour reste possible entre deux noms. */
+	overflow-wrap: normal;
+}
+
+.design-finder li > a {
+	overflow-wrap: break-word;
+}
+
+.design-grids {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 2rem;
+}
+
+.design-grid-header {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 0 1rem;
+}
+
+@media (max-width: 767px) {
+
+	.design-grids {
+		grid-template-columns: 1fr;
+	}
+
+}
+
+/* La feuille se pose en position fixe sur la fenêtre : le cadre la contient pour la montrer ici. */
+.design-sheet-frame {
+	position: relative;
+	height: 26rem;
+	max-width: 26rem;
+	overflow: hidden;
+	border: 1px solid var(--border);
+	border-radius: 1.5rem;
+	background-color: white;
+	transform: translateZ(0);
+}
+
+.design-sheet-frame .util-sheet:not([hidden]) {
+	position: absolute;
+	justify-content: flex-end;
+	align-items: stretch;
+}
+
+.design-sheet-frame .util-sheet-panel {
+	width: auto;
+	max-width: none;
+	border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.design-sheet-frame .util-sheet-grab {
+	display: block;
+}
+
+/* Un panneau posé en place dans la page : le cadriciel en étire l'intérieur sur toute la hauteur de la
+   fenêtre (lime.css). */
+.design-panel-frame {
+	overflow: hidden;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+}
+
+.design-panel-frame .panel-dialog {
+	min-height: 0;
+}
+
+.design-sheet-page {
+	padding: 1rem;
+	color: var(--text-intermediate);
+}
+
+/* L'en-tête collant se cale sous la barre du haut : le cadre lui donne ici un conteneur défilant. */
+.design-sticky-frame {
+	max-height: 14rem;
+	overflow: auto;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+}
+
+.design-sticky-frame thead.thead-sticky,
+.design-sticky-frame .util-table-sticky > .util-table-head {
+	top: 0;
+}
+
+/* La démonstration de util-table-sticky-column : bornée en largeur, la table défile dès le grand
+   écran, là où on lit la page. */
+.design-sticky-frame-column {
+	max-width: 30rem;
+}
+
+/* La table qui est son propre cadre, ses lignes rangées par groupes sans boîte comme celles de la grille du
+   planning. L'intertitre prend les colonnes de la table pour poser sa case dans la première, et le titre part
+   de la même colonne, décalé de la case : `--table-title-sticky-left` le garde à cet écart une fois collé. */
+.design-sticky-grouped {
+	--design-sticky-box: 2rem;
+	--table-title-sticky-left: var(--design-sticky-box);
+	overflow-x: auto;
+}
+
+.design-sticky-grouped > .design-sticky-group {
+	display: contents;
+}
+
+.design-sticky-grouped .util-table-title {
+	display: grid;
+	grid-template-columns: subgrid;
+	align-items: center;
+}
+
+.design-sticky-grouped .util-table-title > * {
+	grid-row: 1;
+}
+
+.design-sticky-grouped .util-table-title > :first-child {
+	grid-column: 1;
+}
+
+.design-sticky-grouped .util-table-title > h4 {
+	grid-column: 1 / -1;
+	margin: 0 0 0 var(--design-sticky-box);
+}
+
+/* Les démonstrations vont deux par deux au large et une par une dès que la place manque : posées à
+   deux colonnes fixes, leurs tableaux poussaient la page de 149px à 360px de large. */
+.design-pair {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+	gap: 1rem;
+}
+
+.design-pair-lg {
+	gap: 2rem;
+}
+
+.design-columns {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+	gap: 1.5rem;
+}
+
+/* L'échelle d'espacements : un pas par rangée, son nom, sa valeur, puis une barre qui a ce pas pour
+   largeur. La colonne du nom est en `max-content` : un nom de token ne se replie pas. */
+.design-spaces {
+	display: grid;
+	grid-template-columns: max-content max-content 1fr;
+	align-items: center;
+	gap: var(--space-xs) var(--space-md);
+}
+
+.design-space-bar {
+	height: var(--space-md);
+	border-radius: 2px;
+	background-color: var(--secondary);
+}
+
+/* Les tableaux de l'onglet Dev. `util-table` déclare ses colonnes en CSS et non par le balisage :
+   c'est ici, et nulle part ailleurs, qu'elles se redistribuent quand la place manque.
+
+   Les deux premières colonnes sont en `max-content` bornée : une commande (`/chef-de-produit`) et
+   un moment (« Avant le code, puis sur le diff ») ne se replient pas bien, et une piste fixe les
+   couperait sur la plus longue ou gâcherait la place sur les autres. */
+.design-dev-2 {
+	grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+}
+
+.design-dev-3 {
+	grid-template-columns: minmax(0, max-content) minmax(0, max-content) minmax(0, 1fr);
+}
+
+/* Sous 768px, la troisième colonne n'a plus de place : chaque rang passe sur une seule colonne et
+   l'en-tête disparaît, ses intitulés ne surmontant plus rien. Ce que la première cellule perd en
+   étiquette, elle le regagne en graisse : le balisage la rend déjà en `<b>`. */
+@media (max-width: 767px) {
+
+	.design-dev-2,
+	.design-dev-3 {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.design-dev-2 > .util-table-head,
+	.design-dev-3 > .util-table-head {
+		display: none;
+	}
+
+	/* Le rang devient un bloc : ses cellules s'empilent au lieu de suivre les pistes de la grille,
+	   qui n'en a plus qu'une. Le retrait du padding haut sur la suite resserre ce qui est devenu un
+	   paragraphe sous son titre. */
+	.design-dev-2 > .util-table-row,
+	.design-dev-3 > .util-table-row {
+		display: block;
+	}
+
+	.design-dev-2 > .util-table-row > * + *,
+	.design-dev-3 > .util-table-row > * + * {
+		padding-top: 0;
+	}
+
+	/* Empilées, les cellules partagent un bord gauche : le reboot donne 1rem à la première cellule
+	   d'un rang et 0,5rem aux suivantes, un écart pensé pour des colonnes côte à côte et non pour un
+	   paragraphe sous son titre. Même spécificité que `.util-table-row > *:first-child`, gagnée par
+	   l'ordre de chargement. */
+	.design-dev-2 > .util-table-row > *,
+	.design-dev-3 > .util-table-row > * {
+		padding-left: 1rem;
+	}
+
+}
+
+.design-heading {
+	margin-top: 1.5rem;
+}
+
+.design-omnibox-frame {
+	display: flex;
+	flex-direction: column;
+	max-width: 22rem;
+	height: 42rem;
+	padding: 0.75rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background-color: var(--background-body);
+}
+
+.design-sample-plant {
+	background-color: #099A89;
+	color: white;
+}
+
+/* Le socle sombre d'une démonstration. Deux composants ne se jugent que sur un fond qui n'est pas
+   blanc : un aplat de compteur y perd sa forme si rien ne le détache, et la page ne le montrait
+   nulle part, toutes ses démonstrations étant sur fond clair. La teinte est celle de la bande de
+   l'accueil, `--primary`, parce que c'est le fond réel où le défaut a été vu. Comme tout util-block
+   sur fond plein, il perd le contour gris et garde l'ombre. */
+.design-dark-stage {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-md);
+	margin-top: var(--space-xs);
+	border-color: transparent;
+	background-color: var(--primary);
+	color: white;
+}
+
+/* Le fond des outils de carte : ils se posent sur une photo satellite, et se jugent donc sur une
+   teinte sombre et saturée, celle d'un champ, où un blanc et un jaune doivent rester lisibles. */
+.design-maptool-stage {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-lg);
+	margin-top: var(--space-xs);
+	padding: var(--space-md);
+	border-radius: var(--radius);
+	/* Le fond sombre de la photo satellite, que la scène imite : pas la couleur du plein champ */
+	background-color: var(--production);
+}
+
+/* Le fond « Dessin » de la carte, clair : le cas le plus dur, où le blanc des noms et du bord des
+   poignées n'a plus de fond et où le jaune se lit le moins. */
+.design-maptool-stage-light {
+	background-color: var(--background-surface);
+	border: 1px solid var(--border);
+}
+
+/* La rangée posée sur la carte ne passe jamais à la ligne : sur un téléphone, la scène la fait défiler à
+   sa vraie largeur plutôt que de pousser la page. */
+@media (max-width: 575px) {
+
+	.design-maptool-stage {
+		overflow-x: auto;
+	}
+
+}
+
+/* La forme désignée d'une carte à côté d'un contour voisin, aux épaisseurs de MapCartography.SELECTED :
+   un trait de 6px au milieu d'un cerne de 11px, qui dépasse donc de 2,5px de chaque côté. */
+.design-map-shape {
+	width: 9rem;
+	height: 5rem;
+	border: 2px solid var(--map-selected);
+}
+
+.design-map-shape.selected {
+	border-width: 6px;
+	outline: 2.5px solid var(--map-selected-casing);
+	box-shadow: inset 0 0 0 2.5px var(--map-selected-casing);
+}
+
+.design-maptool-stage-light .design-map-shape {
+	border: 1.5px solid var(--text-intermediate);
+}
+
+.design-maptool-stage-light .design-map-shape.selected {
+	border: 6px solid var(--map-selected-ink);
+	outline-color: var(--background-surface);
+	box-shadow: inset 0 0 0 2.5px var(--background-surface);
+}
+
+/* Le contour d'un jardin, de plein champ puis sous abri, aux épaisseurs de MapCartography.PLOT :
+   un trait de 4px au milieu d'un cerne de 7px sur la photo, le trait seul sur le dessin. */
+.design-map-plot {
+	width: 9rem;
+	height: 5rem;
+	border: 4px solid var(--map-plot-line-open-field);
+	border-radius: 2px;
+	outline: 1.5px solid var(--map-plot-casing);
+	box-shadow: inset 0 0 0 1.5px var(--map-plot-casing);
+}
+
+.design-map-plot.greenhouse {
+	border-color: var(--map-plot-line-greenhouse);
+}
+
+.design-maptool-stage-light .design-map-plot {
+	border-color: var(--open-field);
+	outline: none;
+	box-shadow: none;
+}
+
+.design-maptool-stage-light .design-map-plot.greenhouse {
+	border-color: var(--greenhouse);
+}
+
+/* Des planches voisines sur une carte, aux valeurs de bed-fill, bed-line et bed-label de MapCartography */
+.design-map-beds {
+	display: flex;
+}
+
+.design-map-bed {
+	width: 2rem;
+	height: 5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 1.25px solid var(--map-bed-line);
+	background-color: color-mix(in srgb, var(--open-field-background) 70%, transparent);
+	color: var(--background-surface);
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-shadow: 0 0 2px var(--text), 0 0 2px var(--text);
+}
+
+.design-map-bed + .design-map-bed {
+	margin-left: -1px;
+}
+
+.design-maptool-stage-light .design-map-bed {
+	border: 0.75px solid var(--map-bed-line-ink);
+	background-color: color-mix(in srgb, var(--soil) 72%, transparent);
+	text-shadow: 0 0 2px var(--soil), 0 0 2px var(--soil);
+}
+
+/* L'échelle de taille de texte, pour montrer où est le plancher. Les deux dernières lignes sont
+   sous le seuil : elles existent pour qu'on voie ce que la règle écarte, et c'est le seul endroit
+   de la page où une taille descend là. */
+.design-type-line {
+	display: flex;
+	align-items: baseline;
+	gap: var(--space-md);
+	padding: var(--space-xxs) var(--space-xs);
+}
+
+.design-type-line-under {
+	background-color: var(--background);
+	color: var(--muted);
+}
+
+.design-type-base {
+	font-size: 1rem;
+}
+
+.design-type-floor {
+	font-size: 0.9rem;
+}
+
+.design-type-under {
+	font-size: 0.8rem;
+}
+
+.design-type-under-min {
+	font-size: 0.7rem;
+}
+
+/* Le fond d'une carte d'intervention faite (`planning.css`, `.planning-task-done`). Le temps passé est
+   posé au contour parce qu'un fond dilué de la même teinte s'y confondrait : la démonstration le montre
+   sur ce fond, le seul où le choix se juge. */
+.design-done-stage {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-md);
+	margin-top: var(--space-xs);
+	background-color: var(--color-bg-vert-bleu);
+}
+
+/* La section Mouvement (JuicinessAiUi). Les tokens s'alignent en une rangée qui se replie. */
+.design-motion-tokens {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-xs) var(--space-md);
+	margin-bottom: var(--space-md);
+}
+
+.design-motion-tools {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-xs);
+}
+
+/* La hauteur réservée garde le bouton « Rejouer » à sa place pendant que la démonstration bouge. */
+.design-motion-demo {
+	min-height: 7rem;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	margin-block: var(--space-sm);
+}
+
+.design-motion-move .util-block {
+	margin: 0 0 var(--space-xs);
+	padding: var(--space-xs) var(--space-sm);
+}
+
+/*
+ * Rejouer sans script : chaque animation a deux @keyframes identiques, et la case cochée par le
+ * bouton « Rejouer » fait passer de l'un à l'autre. Un changement de animation-name relance
+ * l'animation depuis le début.
+ * Seule la colonne design-motion-after s'anime : la colonne « Sans mouvement » n'a aucune règle.
+ */
+.design-motion-after .design-motion-up {
+	animation: design-motion-up var(--duration-md) var(--ease-in-out) both;
+}
+
+.design-motion-after .design-motion-down {
+	animation: design-motion-down var(--duration-md) var(--ease-in-out) both;
+}
+
+.design-motion-replay:checked ~ .design-motion-after .design-motion-up,
+.design-motion-replay:checked ~ * .design-motion-after .design-motion-up {
+	animation-name: design-motion-up-again;
+}
+
+.design-motion-replay:checked ~ .design-motion-after .design-motion-down,
+.design-motion-replay:checked ~ * .design-motion-after .design-motion-down {
+	animation-name: design-motion-down-again;
+}
+
+/* « Simuler le mouvement réduit » applique la règle de juicinessAi.css à la démonstration : une
+   durée infime, jamais animation: none, pour que la fin d'animation parte quand même. */
+.design-motion-reduce:checked ~ .design-motion-after :is(.design-motion-up, .design-motion-down) {
+	animation-duration: 0.01ms;
+}
+
+/* La simulation enclenchée prend le rendu plein de btn-secondary (component.css), mêmes variables et
+   même survol : le libellé est celui d'une case cachée, il ne peut pas changer de classe sans script. */
+.design-motion-reduce:checked ~ .design-motion-tools label[for="design-motion-reduce"] {
+	background-color: var(--secondary);
+	border-color: var(--secondary);
+	color: white;
+}
+
+.design-motion-reduce:checked ~ .design-motion-tools label[for="design-motion-reduce"]:hover {
+	box-shadow: inset 0px 0px 0 100px rgba(0, 0, 0, .1);
+}
+
+@keyframes design-motion-up {
+	from {
+		transform: translateY(calc(100% + var(--space-xs)));
+	}
+}
+
+@keyframes design-motion-up-again {
+	from {
+		transform: translateY(calc(100% + var(--space-xs)));
+	}
+}
+
+@keyframes design-motion-down {
+	from {
+		transform: translateY(calc(-100% - var(--space-xs)));
+	}
+}
+
+@keyframes design-motion-down-again {
+	from {
+		transform: translateY(calc(-100% - var(--space-xs)));
+	}
+}
+
+/* Le retour sur geste : le voile est le vrai util-flash de juicinessAi.css, rejoué sous un second nom
+   de keyframes identique au sien. Les deux boutons se lisent côte à côte, au repos puis en attente. */
+.design-motion-demo > .util-flash {
+	margin: 0;
+	padding: var(--space-xs) var(--space-sm);
+}
+
+.design-motion-replay:checked ~ * .util-flash::after {
+	animation-name: design-motion-flash-again;
+}
+
+.design-motion-buttons {
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-start;
+	gap: var(--space-xs);
+}
+
+@keyframes design-motion-flash-again {
+	0%, 40% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
+/* Le retrait : la copie est la vraie util-vanish de juicinessAi.css, posée sur la place du premier
+   nœud, que la liste a refermée. Son animation porte !important dans juicinessAi.css : le second nom
+   de keyframes doit en porter un aussi pour la rejouer. */
+.design-motion-list {
+	position: relative;
+}
+
+.design-motion-list > .util-block {
+	margin: 0 0 var(--space-xs);
+	padding: var(--space-xs) var(--space-sm);
+}
+
+.design-motion-list > .util-vanish {
+	position: absolute;
+	inset: 0 0 auto;
+}
+
+.design-motion-replay:checked ~ * .util-vanish {
+	animation-name: design-motion-vanish-again !important;
+}
+
+@keyframes design-motion-vanish-again {
+	to {
+		opacity: 0;
+	}
+}
+
+/* Un thème de démonstration pour la section des jetons de thème (#design-themeTokens) : il ne pose que des jetons, comme
+   la feuille d'un vrai thème, et les composants de la colonne se redessinent d'eux-mêmes. */
+.design-theme-demo {
+	--background-surface: #fffaf0;
+	--border-width: 2px;
+	--callout-accent-width: 2px;
+	--marker-radius: var(--radius);
+	--tab-active-background: color-mix(in srgb, var(--primary) 10%, white);
+	--calendar-radius: 50%;
+}
+
+/* Les démonstrations suivent la règle qu'elles montrent : sous mouvement réduit, les lignes
+   rejoignent leur place en 0.01ms. */
+@media (prefers-reduced-motion: reduce) {
+
+	.design-motion-after :is(.design-motion-up, .design-motion-down) {
+		animation-duration: 0.01ms;
+	}
+
+}
+
+/* La démonstration de util-brushed, qui ne pose ni padding, ni marge, ni couleur : la page les pose comme le
+   ferait un appelant, ici le vert menthe des bandes du tableau de bord. La marge couvre le pinceau, qui
+   dépasse de la bande jusqu'à 1rem, et laisse encore au moins 1rem de vide entre lui et l'élément
+   voisin. */
+.design-brushed-demo {
+	--util-brushed-color: var(--color-bg-vert-menthe);
+	padding: var(--space-xxl) var(--space-lg);
+	margin-block: var(--space-xl);
+}
+
+/* Une feuille de démonstration à droite d'un pan de colonne, à la teinte que le gabarit structure
+   donne à la sienne et séparée d'elle par le même filet, dans l'univers de la production : `--primary`,
+   sur lequel `--domain` retombe hors du gabarit, est un gris qui ne montre pas ce que l'univers change. */
+.design-paper-frame {
+	--domain: var(--production);
+	--domain-light: var(--production-light);
+	padding-left: var(--space-xxl);
+	--structure-cadre-filet: color-mix(in srgb, color-mix(in srgb, var(--domain-light) var(--frame-line-tint), var(--background-surface)), #000 var(--frame-shade));
+	background-color: color-mix(in srgb, color-mix(in srgb, var(--domain-light) var(--frame-tint), var(--background-surface)), #000 var(--frame-shade));
+}
+
+.design-paper-frame > .util-paper {
+	padding: var(--space-lg);
+	border-left: 1px solid var(--structure-cadre-filet);
+}
+
+/* Les onglets de tête ne se posent dans la tête d'un écran que sur le gabarit structure, au bureau. Ce
+   cadre en pose les réglages (`template-structure.css`) sur sa propre feuille, au premier palier du
+   dépôt au-dessus du seuil du gabarit, dont la
+   tête et le contenu portent pour cela les classes du gabarit et en reprennent les retraits : l'étage
+   que la tête garde aux onglets, l'écart du contenu sous elle. La feuille rend son remplissage à ses
+   deux parts, pour que le filet la traverse d'un bord à l'autre.
+   Le cadre isole son empilement : les onglets passent devant la tête d'un écran par leur `z-index`, et
+   passeraient ici devant la barre fixe de la page au défilement.
+   Chaque cadre dit lui-même l'étage que sa tête garde aux onglets, sans quoi il lirait celui que la
+   page entière se donne, et que le second libellé d'un seul cadre agrandit pour tous. */
+.design-tabs-page-frame {
+	--structure-onglets-hauteur: var(--tab-item-height);
+	isolation: isolate;
+}
+
+@media (min-width: 1200px) {
+
+	.design-tabs-page-frame {
+		--structure-feuille-retrait: var(--space-md);
+		--structure-onglets-montes: 1;
+		--structure-onglets-alignement: flex-start;
+		--structure-onglets-filet: 1px;
+	}
+
+	.design-tabs-page-frame:has(.tabs-page-head:not(.tabs-h-folded) > .tabs-item > .tab-item .tab-item-detail) {
+		--structure-onglets-hauteur: calc(var(--tab-item-height) + var(--tab-item-detail-height));
+	}
+
+}
+
+.design-tabs-page-frame > .util-paper {
+	padding: 0;
+}
+
+/* Le bandeau d'un collectif montré sans son titre : son rembourrage haut et l'écart des onglets, qui
+   les séparent du nom du collectif, n'y laisseraient qu'une bande vide. */
+.design-community-header.community-header {
+	padding-top: 0;
+}
+
+.design-community-header .community-header-tabs {
+	margin-top: 0;
+}
+
+/* Un écran trop étroit pour ses onglets, qui montre leur repli à toutes les largeurs de la page. */
+.design-tabs-page-frame-narrow {
+	max-width: 25rem;
+}
+
+.design-tabs-page-frame .structure-template-main-title {
+	padding: var(--space-lg) var(--space-lg) var(--structure-onglets-hauteur, 0px);
+}
+
+.design-tabs-page-frame .structure-template-main-container {
+	padding: var(--structure-feuille-retrait, var(--space-md)) var(--space-lg) var(--space-lg);
+}
+
+/* Un type de bouton, une ligne par classe : le nom, le bouton au repos, le même désactivé. Sous
+   576 px le nom prend sa ligne, les deux boutons se partagent la suivante. */
+.design-buttons {
+	display: grid;
+	grid-template-columns: repeat(3, max-content);
+	align-items: center;
+	gap: var(--space-sm) var(--space-lg);
+	margin-bottom: var(--space-md);
+}
+
+/* Le nom de la classe se lit comme une étiquette de colonne : sans le fond de `code`, qui ferait de
+   chaque ligne un bloc plus haut que son bouton. */
+.design-buttons > code {
+	padding: 0;
+	background: none;
+}
+
+@media (max-width: 575px) {
+
+	.design-buttons {
+		grid-template-columns: repeat(2, max-content);
+	}
+
+	.design-buttons > :nth-child(3n + 4) {
+		grid-column: 1 / -1;
+	}
+
+	.design-buttons > .util-annotation:first-child {
+		display: none;
+	}
+
+}
+
+.design-button-named {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--space-xxs);
+}
+
+.design-button-named > code {
+	padding: 0;
+	background: none;
+	font-size: 0.75rem;
+}
+
+/* L'anneau de `:focus-visible`, posé sans clavier. */
+.design-button-focus {
+	outline: var(--btn-focus-ring);
+	outline-offset: 3px;
+}
+
+.design-button-palette {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-sm);
+	margin-bottom: var(--space-md);
+}
+
+/* Une règle d'emploi et les boutons qu'elle demande, les règles alignées sur deux colonnes communes.
+   Un libellé de bouton ne passe pas à la ligne (`.btn`, `component.css`) : la colonne des boutons ne
+   descend donc pas sous le plus large d'entre eux, et c'est la règle qui cède la place. */
+.design-button-rules {
+	display: grid;
+	grid-template-columns: minmax(0, 3fr) minmax(min-content, 2fr);
+	margin-bottom: var(--space-md);
+}
+
+.design-button-rule {
+	display: grid;
+	grid-column: 1 / -1;
+	grid-template-columns: subgrid;
+	align-items: center;
+	gap: var(--space-xs) var(--space-lg);
+	padding-block: var(--space-sm);
+	border-top: 1px solid var(--border);
+}
+
+.design-button-rule > p {
+	margin: 0;
+}
+
+/* Une démonstration montre le bouton comme l'espace connecté le rend, en Open Sans hérité de la
+   feuille (`reboot.css`, `body`), et non dans le DM Sans que le gabarit base donne au texte de la
+   page. La règle pèse un élément, autant que `button { font-family: inherit }` (`reboot.css`), et
+   passe après lui par l'ordre de chargement : toute classe qui pose sa police la garde, la tête de
+   page, un badge ou un chiffre, et une boutique ou un site celle de son thème. */
+:where(section[id^="design-"] .btn:not(.website-wrapper .btn)):is(a, button, input, label, span) {
+	font-family: "Open Sans", sans-serif;
+}
+
+/* Une police de structure posée comme `Shop.php` la pose, pour que le thème se voie au repos. */
+.design-button-custom-font {
+	--customFont: 'PT Serif', serif;
+	font-family: var(--customFont);
+}
+
+@media (max-width: 575px) {
+
+	.design-button-rules {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+}
+
+/* La page du design system n'est pas celle d'une structure : chaque ligne pose l'univers qu'elle
+   montre, comme `template-structure.css` le pose sur la page. */
+.design-button-universes {
+	display: grid;
+	grid-template-columns: repeat(4, max-content);
+	align-items: center;
+	gap: var(--space-sm) var(--space-md);
+	margin-bottom: var(--space-md);
+}
+
+.design-button-universe {
+	display: contents;
+}
+
+@media (max-width: 767px) {
+
+	.design-button-universes {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.design-button-universe {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm);
+	}
+
+	.design-button-universe > .util-annotation {
+		flex-basis: 100%;
+	}
+
+}
+
+.design-button-universe-production {
+	--domain: var(--production);
+	--secondary: var(--production);
+}
+
+.design-button-universe-commercialisation {
+	--domain: var(--commercialisation);
+	--secondary: var(--commercialisation);
+}
+
+.design-button-universe-accounting {
+	--domain: var(--accounting);
+	--secondary: var(--accounting);
+}
+
+.design-button-universe-settings {
+	--domain: var(--settings);
+	--secondary: var(--settings);
+}
+
+.design-button-universe-amap {
+	--domain: var(--amap);
+	--secondary: var(--amap);
+}
+
+/* --util-piles-max est une propriété CSS et non un attribut, contrairement à data-pile-width, pour qu'une media query la règle. */
+@media (min-width: 992px) {
+
+	.design-piles-max {
+		--util-piles-max: 2;
+	}
+
+}
+
+/* Les conventions de l'interface : ce qu'elles écartent est écrit ici, pour qu'aucune classe du
+   socle ne le porte. */
+.design-convention-row {
+	display: flex;
+	align-items: center;
+	gap: var(--space-sm);
+}
+
+.design-convention-row + .design-convention-row {
+	margin-top: var(--space-xs);
+}
+
+.design-convention-row-spread {
+	justify-content: space-between;
+}
+
+.design-convention-row-top {
+	align-items: flex-start;
+}
+
+.design-convention-border {
+	border: 3px solid var(--primary);
+}
+
+.design-convention-reveal {
+	opacity: 0;
+}
+
+.util-block:hover .design-convention-reveal {
+	opacity: 1;
+}
+
+.design-convention-swatch {
+	height: 3rem;
+	margin-bottom: var(--space-xs);
+	border-radius: var(--radius);
+}
+
+.design-convention-mix-100 {
+	background-color: var(--primary);
+}
+
+.design-convention-mix-30 {
+	background-color: color-mix(in srgb, var(--primary) 30%, white);
+}
+
+.design-convention-mix-10 {
+	background-color: color-mix(in srgb, var(--primary) 10%, white);
+}
+
+/* La frise du rail gradué, montée comme la liste des emprunts : une colonne de noms, puis l'axe, dont
+   la grille trace une case par année derrière les rails à plat, filet de fin compris. La grille se
+   peint dans la boîte de contenu, celle où le rail pose ses pourcentages. */
+.design-frieze {
+	grid-template-columns: var(--timeline-name-column) minmax(0, 1fr);
+}
+
+.design-frieze > .util-table-row > :nth-child(2) {
+	align-self: stretch;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	background-origin: content-box;
+	background-clip: content-box;
+	background-image:
+		linear-gradient(to left, var(--border) 0 1px, transparent 1px),
+		repeating-linear-gradient(to right, var(--border) 0 1px, transparent 1px calc(100% / var(--design-frieze-years)));
+}
+
+/* La page tourne sous le gabarit « base », où la barre collée en haut est `#root-nav`, haute de
+   `--nav-base-height` (`template-base.css`) : `--mainSticky`, que lisent les tabs-v collés, y décrit
+   la barre d'une structure, et `--nav-main` une hauteur qui n'est pas celle de cette barre. Une
+   section se vise aussi, depuis le « Lequel ? » de sa famille, et un exemple depuis l'index. */
+#design-summary .design-family,
+#design-summary .design-family [id^="design-"] {
+	scroll-margin-top: calc(var(--nav-base-height) + var(--space-md));
+}
+
+/* La démonstration d'une section rangée en fiche se sépare de la fiche suivante. Une bande brossée
+   en dernier laisse dépasser son pinceau du bas de `--util-separator-shift` hors de sa boîte. La marge
+   basse de util-start, qui compense ce débord, se fond dans celle de la démonstration, plus grande :
+   la seconde règle ajoute donc le débord elle-même. */
+#design-summary .design-demo {
+	--design-demo-gap: 3rem;
+	margin-bottom: var(--design-demo-gap);
+}
+
+#design-summary .design-demo:has(> .util-brushed:last-child) {
+	margin-bottom: calc(var(--design-demo-gap) + var(--util-separator-shift));
+}
+
+/* Une famille coiffe des sections titrées en h2 de même taille : elle s'en distingue par la graisse
+   du titre de page (`template-base.css`), sans en prendre la taille. */
+#design-summary .design-family-title {
+	font-weight: 700;
+}
+
+/* Le « Lequel ? » d'une famille nomme parfois un helper et sa classe (« DesignUi::getGear() +
+   btn-color-primary »), plus long que les 15rem d'util-literal, qui revient alors à la ligne. La colonne
+   des classes prend la largeur de sa plus longue pastille, et sous 576px la moitié du tableau, faute de
+   quoi les pastilles sortiraient de la page. */
+#design-summary .design-which {
+	grid-template-columns: minmax(0, 1fr) auto;
+}
+
+@media (max-width: 575px) {
+
+	#design-summary .design-which {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	}
+
+}
+
+@media (min-width: 992px) {
+
+	/* La colonne du contenu de div.tabs-v, en 1fr, prendrait la largeur d'une démonstration qui ne se
+	   replie pas, un graphique tracé ou une rangée d'onglets, et la page déborderait de la fenêtre. */
+	#design-summary {
+		grid-template-columns: max-content minmax(0, 1fr);
+	}
+
+	/* Dix-sept familles dépassent la hauteur d'un écran portable : collé, le sommaire défile seul. */
+	#design-summary > .tabs-item {
+		top: var(--nav-base-height);
+		max-height: calc(100vh - var(--nav-base-height));
+		overflow-y: auto;
+	}
+
+}

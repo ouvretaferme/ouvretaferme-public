@@ -1,0 +1,187 @@
+/* Le choix du profil, en tête de l'inscription. Chaque sélecteur est borné par le gabarit
+   `presentation`, la feuille restant chargée en navigation ajax sur les écrans suivants, qui le
+   perdent. `:where()` garde au sélecteur le poids de ses seules classes, pour que la borne ne fasse
+   gagner aucune règle de la page sur le design system. */
+
+:where(body[data-template~="presentation"]) div.home-user-types-container {
+	position: relative;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45rem;
+  max-width: calc(100vw - 3rem);
+  padding: 5rem 0;
+	margin: 2rem auto;
+}
+:where(body[data-template~="presentation"]) div.home-user-types-container::before {
+	content: "";
+  position: absolute;
+  inset: 0;
+  background: url(/static/ouvretaferme/main/image/svg/background-landing-header.svg) center/cover no-repeat;
+  opacity: 50%;
+  transform: scaleY(-1);
+}
+
+:where(body[data-template~="presentation"]) div.home-user-types {
+	display: flex;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 2rem;
+	margin-top: 2rem;
+	z-index: 1;
+}
+
+:where(body[data-template~="presentation"]) .home-user-type {
+	width: 15rem;
+	height: 15rem;
+	background-color: white;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	padding: 2rem;
+	border: 2px solid var(--color-neutral-variant);
+	box-shadow: var(--shadow-vert);
+	text-align:center;
+}
+
+:where(body[data-template~="presentation"]) a.home-user-type:hover,
+:where(body[data-template~="presentation"]) .home-user-type-selected {
+	border-color: var(--color-brand);
+	background-color: var(--color-bg-vert-menthe);
+	text-decoration: none;
+}
+
+:where(body[data-template~="presentation"]) .home-user-type .home-user-type-icon {
+	font-size: 5rem;
+	margin-bottom: 0.5rem;
+}
+
+:where(body[data-template~="presentation"]) .home-user-type .home-user-type-label {
+	color: var(--text);
+	font-size: 1.2rem;
+	text-align: center;
+}
+
+:where(body[data-template~="presentation"]) div.home-user-already {
+	text-align: center;
+	font-weight: bold;
+	margin-top: 2rem;
+	margin-bottom: 2rem;
+	padding: 1rem 0.5rem;
+	border-radius: var(--radius);
+	color: var(--text);
+}
+
+/* L'encart des formations de l'accueil connecté, servi sans le gabarit `presentation` : la borne de
+   l'inscription l'éteindrait. */
+div.home-training {
+	position: relative;
+	overflow: hidden;
+	margin-bottom: var(--space-xl);
+	padding: var(--space-xl) var(--space-xl) var(--space-lg);
+	border-radius: var(--radius);
+	background-color: var(--color-brand);
+	color: white;
+}
+
+div.home-training-friend {
+	position: absolute;
+}
+
+div.home-training-abeille {
+	top: 1rem;
+	right: 1.5rem;
+	width: 4.5rem;
+}
+
+div.home-training-papillon {
+	top: 2.6rem;
+	right: 7rem;
+	width: 2.2rem;
+	transform: rotate(-12deg);
+}
+
+div.home-training-header {
+	display: flex;
+	align-items: center;
+	gap: var(--space-md);
+	margin-bottom: var(--space-md);
+}
+
+div.home-training-header h2 {
+	margin-bottom: var(--space-xxs);
+	color: white;
+}
+
+div.home-training-header p {
+	margin-bottom: 0;
+	opacity: .9;
+}
+
+div.home-training-logo {
+	flex: none;
+	width: 3.4rem;
+}
+
+div.home-training-logo svg {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+div.home-training-course {
+	position: relative;
+	color: var(--text);
+}
+
+div.home-training-course h4 {
+	min-height: 2.5em;
+	margin-bottom: var(--space-xxs);
+}
+
+div.home-training-date {
+	display: flex;
+	align-items: center;
+	gap: var(--space-sm);
+	padding: var(--space-xs) 0;
+}
+
+div.home-training-date + div.home-training-date {
+	border-top: 1px solid var(--border);
+}
+
+div.home-training-date > span {
+	flex: 1;
+}
+
+a.home-training-all {
+	display: inline-block;
+	margin-top: var(--space-md);
+	color: white;
+	font-weight: 500;
+}
+
+@media (max-width: 767px) {
+
+	div.home-training {
+		padding: var(--space-md);
+	}
+
+	div.home-training-friend {
+		display: none;
+	}
+
+	div.home-training-header {
+		align-items: flex-start;
+		gap: var(--space-md);
+	}
+
+	div.home-training-course h4 {
+		min-height: 0;
+	}
+
+}

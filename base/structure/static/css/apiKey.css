@@ -1,0 +1,293 @@
+/* Bandeau de la clé qui vient d'être créée */
+
+
+.apiKey-created-warning {
+	color: var(--text-intermediate);
+	margin-bottom: 1rem;
+}
+
+.apiKey-created-value {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.75rem;
+}
+
+.apiKey-created-token {
+	flex-grow: 1;
+	min-width: 0;
+	padding: 0.75rem 1rem;
+	background-color: var(--background-light);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	font-family: monospace;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	overflow-wrap: anywhere;
+}
+
+.apiKey-created-copy {
+	flex-shrink: 0;
+}
+
+@media (max-width: 575px) {
+
+	.apiKey-created-value {
+		flex-direction: column;
+	}
+
+	.apiKey-created-token {
+		width: 100%;
+	}
+
+}
+
+/* Quotas d'utilisation */
+
+.apiKey-quota-updated {
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+.apiKey-quota-list {
+	gap: 1rem;
+	margin-bottom: 1.5rem;
+}
+
+.apiKey-quota {
+	padding: 1.25rem;
+}
+
+.apiKey-quota-title {
+	color: var(--text-intermediate);
+}
+
+.apiKey-quota-value {
+	display: flex;
+	align-items: baseline;
+	gap: 0.35rem;
+	margin-bottom: 0.75rem;
+}
+
+.apiKey-quota-count {
+	font-size: 2rem;
+	font-weight: bold;
+	line-height: 1;
+	color: var(--rate);
+}
+
+.apiKey-quota-max {
+	color: var(--muted);
+}
+
+.apiKey-quota-bar {
+	height: 0.5rem;
+	border-radius: 0.25rem;
+	background-color: var(--background);
+	overflow: hidden;
+}
+
+.apiKey-quota-bar-value {
+	height: 100%;
+	border-radius: 0.25rem;
+	background-color: var(--rate);
+	transition: width 0.3s;
+}
+
+.apiKey-quota-legend {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.35rem;
+	margin-top: 0.5rem;
+	font-size: 0.9rem;
+	color: var(--muted);
+}
+
+.apiKey-quota-primary {
+	--rate: var(--production-light);
+}
+
+.apiKey-quota-warning {
+	--rate: var(--warning);
+}
+
+.apiKey-quota-danger {
+	--rate: var(--danger);
+}
+
+.apiKey-quota-warning .apiKey-quota-legend,
+.apiKey-quota-danger .apiKey-quota-legend {
+	color: var(--rate);
+	font-weight: 500;
+}
+
+/* Choix des accès à la création d'une clé */
+
+.apiKey-domain-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.apiKey-domain {
+	display: grid;
+	grid-template-columns: 1fr max-content;
+	align-items: center;
+	gap: 1rem;
+	padding: 0.75rem 1rem;
+	background-color: var(--background-light);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+}
+
+.apiKey-domain-name {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.35rem;
+}
+
+.apiKey-domain-description {
+	font-size: 0.9rem;
+	color: var(--muted);
+}
+
+.apiKey-domain .field-radio-group {
+	grid-template-columns: repeat(3, max-content);
+	margin-bottom: 0;
+	white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+
+	.apiKey-domain {
+		grid-template-columns: 1fr;
+	}
+
+	.apiKey-domain .field-radio-group {
+		grid-template-columns: repeat(3, 1fr);
+		white-space: normal;
+	}
+
+}
+
+@media (max-width: 575px) {
+
+	.apiKey-domain .field-radio-group {
+		grid-template-columns: 1fr;
+	}
+
+}
+
+@media (max-width: 399px) {
+
+	.apiKey-quota {
+		padding: 1rem;
+	}
+
+	.apiKey-domain {
+		padding: 0.75rem;
+	}
+
+}
+
+/* Journal des appels */
+
+.apiKey-log-header {
+	margin-top: 3rem;
+}
+
+.apiKey-log-retention {
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+.apiKey-log {
+	width: 100%;
+}
+
+.apiKey-log-date,
+.apiKey-log-time {
+	white-space: nowrap;
+	color: var(--text-intermediate);
+}
+
+.apiKey-log-line {
+	display: flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: 0.35rem;
+	min-width: 0;
+}
+
+a.apiKey-log-line {
+	color: var(--text);
+	cursor: pointer;
+}
+
+a.apiKey-log-line:hover .apiKey-log-url {
+	text-decoration: underline;
+}
+
+.apiKey-log-chevron {
+	display: inline-block;
+	font-size: 0.8rem;
+	color: var(--muted);
+	transition: transform 0.2s;
+}
+
+.apiKey-log-expanded .apiKey-log-chevron {
+	transform: rotate(180deg);
+}
+
+.apiKey-log-method {
+	font-weight: bold;
+	font-size: 0.85rem;
+	color: var(--muted);
+}
+
+.apiKey-log-url {
+	font-family: monospace;
+	overflow-wrap: anywhere;
+}
+
+.apiKey-log-response {
+	margin-top: 0.5rem;
+}
+
+.apiKey-log-response-body {
+	margin: 0;
+	max-height: 20rem;
+	padding: 0.75rem 1rem;
+	overflow: auto;
+	background-color: var(--background-light);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	font-family: monospace;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+.apiKey-log-response-empty {
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+.apiKey-log-key {
+	white-space: nowrap;
+}
+
+.apiKey-log-meta {
+	margin-top: 0.25rem;
+	font-size: 0.9rem;
+	color: var(--muted);
+}
+
+@media (max-width: 767px) {
+
+	.apiKey-log-date {
+		white-space: normal;
+	}
+
+}

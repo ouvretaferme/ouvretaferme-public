@@ -1,0 +1,378 @@
+Affiliation:
+  id: serial32
+  user: user\User # Une ferme rejoint un groupe au nom d'un utilisateur, d'où le triplet ; la ferme d'étude que le groupe possède passe par structure\Structure.parent
+  structureProducer: structure\Structure
+  structureCommunity: structure\Structure
+  contributesQuotation: bool = TRUE # Sans public, contrairement aux deux suivantes : contribuer aux relevés n'ouvre aucune lecture, les prix n'y entrent qu'agrégés
+  shareProduction: set(STAFF, MEMBER) = 0 # Les publics à qui cette ferme accorde la lecture de sa production. Le périmètre se gèle au rattachement : la charte acceptée dit ce que le groupe lira, et l'élargir ensuite côté groupe la ferait mentir sur des données déjà confiées. Les mêmes colonnes sur Community disent ce que le groupe demande
+  shareProductionExport: set(STAFF, MEMBER) = 0 # Les publics à qui elle accorde la copie du plan de culture vers une autre ferme. Gelée au rattachement comme shareProduction et pour la même raison : un droit accordé ne s'élargit pas dans le dos de celui qui l'a donné
+  shareProductionDuplicate: set(STAFF, MEMBER) = 0 # Les publics à qui elle accorde la duplication de sa production vers une nouvelle ferme. Gelée au rattachement comme shareProduction ; seule l'équipe du groupe peut la recevoir
+  shareSellingDuplicate: set(STAFF, MEMBER) = 0 # Les publics à qui elle accorde la duplication de ses produits, rapports et ventes regroupées. Gelée au rattachement ; seule l'équipe du groupe peut la recevoir
+  INDEX: [
+    ["user", "structureProducer"],
+    ["structureProducer"],
+    ["structureCommunity"]
+  ]
+  UNIQUE: [
+    ["structureCommunity", "user", "structureProducer"]
+  ]
+
+Community:
+  id: serial32
+  structure: structure\Structure
+  fqn: fqn # L'adresse de la page publique du groupe, reseau.<domaine>/{fqn}. Unique parmi les adresses actuelles et redirigées (CommunityRedirect)
+  visibility: enum(PRIVATE, PUBLIC) = PRIVATE
+  color: ?color # La couleur du groupe, posée sur le jeton --community que le bandeau lit déjà ; elle peint aussi la page de saisie publique de son réseau. NULL rend la couleur de Ouvretaferme
+  customBackground: ?color # Le fond de toutes les pages publiques du réseau (accueil, formations, relevés de prix), pris dans \main\CustomizeUi::CUSTOM_BACKGROUNDS et réglé dans la barre qu'ouvre la carte « Personnaliser l'apparence » du paramétrage ; NULL garde celui de Ouvretaferme
+  customTitleFont: ?text8 # La police des titres de ces mêmes pages, prise dans \main\CustomizeUi::CUSTOM_TITLE_FONTS ; NULL garde celle du gabarit, sinon celle de Ouvretaferme
+  customFont: ?text8 # La police du texte de ces mêmes pages, prise dans \main\CustomizeUi::CUSTOM_FONTS ; NULL garde celle du gabarit, sinon celle de Ouvretaferme
+  customDesign: ?text8 @charset(ascii) # Le gabarit de toutes les pages publiques du réseau, pris dans \learning\LearningSetting::DESIGNS et réglé dans la même barre ; NULL garde le gabarit classique
+  shareProduction: set(STAFF, MEMBER) = 0 # Les publics pour lesquels le groupe demande la lecture de la production. Le type dit si le droit existe et s'il se demande ou s'impose, l'affiliation dit ce que cette ferme-là a accordé
+  shareProductionExport: set(STAFF, MEMBER) = 0 # Les publics pour lesquels il demande la copie du plan de culture
+  shareProductionDuplicate: set(STAFF, MEMBER) = 0 # Les publics pour lesquels le groupe demande la duplication de la production
+  shareSellingDuplicate: set(STAFF, MEMBER) = 0 # Les publics pour lesquels il demande la duplication de la commercialisation
+  contributesQuotation: bool = FALSE # Le groupe demande-t-il que les prix de ses fermes alimentent ses relevés ; sans public, ce droit n'ouvrant aucune lecture
+  hasSellingDuplicate: bool = FALSE # La duplication de la commercialisation est-elle ouverte à ce groupe ; posé à la main en base, faux elle n'existe nulle part
+  rules: ?editor16(1, 2048) # Les règles que le groupe écrit et dont il répond, présentées à toute ferme et à toute personne qui le rejoint, sous l'encadré factuel que le produit engendre. Jamais versionnées : un texte n'ouvre aucun accès, c'est le périmètre qui le fait et lui est gelé au rattachement
+  quotationHelp: ?editor16(1, 2048) # Le mode d'emploi que le réseau écrit en tête de sa page de saisie publique ; l'encart ne se rend que rempli
+  quotationResponseMinimum: int8(1, 50) = 1 # Prix qu'une réponse renseigne au minimum sur la page de saisie publique du réseau ; 1 garde le comportement d'avant le réglage
+  quotationMinimum: int8(5, 50) = 5 # Structures requises pour publier un prix du groupe ; jamais moins de 5, en dessous un contributeur retrouve le prix du voisin à partir du sien et de la médiane
+  quotationTrimLow: int8(0, 49) = 10 # Part des prix les plus bas écartée de chaque cotation du groupe, avant la moyenne et la fourchette. Bornée sous 50 pour que les deux côtés ne puissent pas se croiser
+  quotationTrimHigh: int8(0, 49) = 10 # Part des prix les plus hauts écartée, même borne et même raison
+  quotationRatioHigh: ?decimal(4, 2, 2.0, null) # Facteur au-delà duquel un prix est écarté avant l'écrêtage, rapporté à la moyenne de la série brute. NULL éteint le filtre, et les deux facteurs s'éteignent ensemble
+  quotationRatioLow: ?decimal(4, 2, 2.0, null) # Facteur sous lequel un prix est écarté, la moyenne étant divisée par lui
+  quotationRegion: ?text8 @charset(ascii) # La région dont le téléchargement propose aussi le relevé, le réseau avec les autres fermes ; un code de QuotationSetting::getRegions(), NULL n'en propose aucun. Elle ouvre aussi la comparaison du réseau aux régions.
+  quotationOutside: bool = FALSE # Inclure au relevé d'une collecte terminée les fermes hors réseau qui partagent leurs prix avec la mercuriale générale, dans les départements de la collecte ; le dernier choix fait sur une collecte devient celui des suivantes
+  learningConfirm: bool = TRUE # Une inscription à une date de formation du réseau attend-elle que le réseau la confirme ; faux, elle est acquise dès l'envoi dans la limite des places. Ne vaut que pour les demandes suivantes, celles en cours restant à confirmer
+  learningOnlineConfirm: enum(IMMEDIATE, FUNDING, ALWAYS) = FUNDING # Une inscription à une formation en ligne du réseau attend-elle que le réseau la confirme : jamais, seulement quand la personne dit demander une prise en charge, ou toujours. Ne vaut que pour les inscriptions suivantes, les demandes en cours restant à confirmer
+  learningConditions: ?editor16(1, 2048) # Les conditions de participation que le réseau écrit pour ses formations datées, lues et acceptées à chaque inscription à une date. Jamais versionnées, comme les règles du groupe : l'inscription garde seulement quand elle les a acceptées
+  sections: int16(0, null) = 0 # Le nombre de sous-groupes du groupe, tenu par SectionLib à la création et à la suppression. Un compteur et non un COUNT() : il se lit sur chaque rendu de la rangée d'onglets, qui décide avec lui si l'écran des fermes existe, et une requête de plus par écran pour un chiffre qui bouge deux fois par an ne se justifie pas
+  UNIQUE: [
+    ["structure"],
+    ["fqn"]
+  ]
+
+CommunityRedirect:
+  id: serial32
+  fqn: fqn # Une ancienne adresse du groupe, redirigée vers son adresse actuelle ; jamais deux groupes pour la même
+  structure: structure\Structure # Le groupe, et non son Community : la copie de la démonstration borne chaque table par sa colonne structure
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["structure"]
+  ]
+
+Configuration:
+  id: serial32
+  structure: structure\Structure
+  hasVat: ?bool
+  vatChargeability: enum(CASH, DEBIT) = CASH # Exigibilité de la TVA
+  vatDebitsOption: bool = FALSE
+  vatNumber: ?text8
+  organicCertifier: ?text8
+  emailBanner: ?textFixed(30, 30) @charset(ascii)
+  emailFooter: ?editor16(1, 2048)
+  time: bool = TRUE
+  timeRange: bool = FALSE # Journée saisie en horaires (arrivée, départ, pause) ; sans effet sans temps de travail ni suivi RH
+  timeReferenceMonth: int8(1, 12) = 1 # Premier mois de la période de référence d'un contrat annualisé
+  timePeriodDay: int8(1, 28) = 1 # Premier jour de la période du récapitulatif mensuel, qui porte le nom du mois où elle finit ; 28 au plus pour exister chaque mois
+  UNIQUE: [
+    ["structure"]
+  ]
+
+ConfigurationHistory:
+  structure: structure\Structure
+  field: text8
+  value: json = PHP([])
+  effectiveAt: date
+  overwrittenBy: ?date
+  createdAt: datetime = SPECIAL(now)
+  createdBy: ?user\User = SPECIAL(user)
+  INDEX: [
+    ["structure", "field"]
+  ]
+
+Feature:
+  id: serial32
+  structure: structure\Structure
+  production: bool = TRUE
+  hasHr: bool = FALSE # Contrats, absences, heures supplémentaires et récapitulatif ; sans effet si la production est éteinte
+  hasShops: bool = FALSE
+  hasSales: bool = FALSE
+  hasMarket: bool = FALSE
+  hasInvoices: bool = FALSE
+  hasPurchases: bool = FALSE
+  hasCultivations: bool = FALSE
+  hasAccounting: bool = FALSE
+  hasFinancialYears: bool = FALSE
+  hasPdp: bool = FALSE
+  hasEnableBanking: bool = FALSE
+  hasWallet: bool = FALSE
+  hasStock: bool = FALSE
+  hasQuotation: bool = FALSE
+  # Les fonctionnalités d'un groupe, sur la même table que celles d'une ferme : un groupe est une
+  # structure, et le produit n'a aucune raison de tenir deux mécanismes pour la même question.
+  # ⚠️ La sémantique diffère de celle des fermes et ne s'aligne pas. Sur une ferme une
+  # fonctionnalité s'allume au premier geste (`Contribute.l.php:121`, « marque le geste, pas la
+  # donnée ») ; sur un groupe elle porte la décision d'un administrateur, prise pour tout le monde.
+  # `hasQuotation` porte les deux, chacune sur son type de structure.
+  hasCommunityVegetable: bool = FALSE
+  hasCommunitySections: bool = FALSE
+  hasCommunitySchools: bool = FALSE
+  hasCommunityLearning: bool = FALSE
+  hasStart: bool = FALSE
+  # S'éteint au dernier retrait, une structure pouvant livrer plusieurs AMAP.
+  hasAmap: bool = FALSE
+  # Les outils de la Boîte à outils utilisés au moins une fois (valeurs de `toolbox\Favorite.tool`),
+  # chacun posé au premier geste par son Lib, comme `hasCultivations` : la Boîte les range sous
+  # « Vos outils » sans relire leurs données.
+  hasToolbox: json = PHP([])
+  UNIQUE: [
+    ["structure"]
+  ]
+
+Invite:
+  id: serial32
+  structure: structure\Structure
+  email: ?email
+  type: enum(MEMBER, CUSTOMER, PRODUCER)
+  memberRole: ?structure\Role
+  memberSection: ?structure\Section
+  member: ?structure\Member # L'adhésion sans compte que l'invitation rattache au compte qui l'accepte ; elle est supprimée à l'acceptation, et l'invitation, passée INVALID, garde son id
+  used: int(0, null) = 0
+  lastUsedAt: ?date
+  limit: ?int(0, null)
+  expiresAt: ?date
+  key: ?text8 = PHP(base_convert(bin2hex(random_bytes(6)), 16, 36)) @collate(general)
+  notifyEmail: bool = TRUE
+  status: enum(PENDING, INVALID) = PENDING
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["email"],
+    ["key"],
+    ["structure"],
+    ["member"]
+  ]
+  UNIQUE: [
+    ["key"],
+  ]
+
+Member:
+  id: serial32
+  user: user\User
+  structure: structure\Structure
+  structureStatus: enum(ACTIVE, CLOSED) = ACTIVE
+  status: enum(IN, OUT) = IN
+  inviteKey: ?text8
+  role: ?structure\Role # Vide quand le rôle a été retiré à une personne de l'équipe, qui garde son adhésion en OUT
+  visitedAt: ?datetime # Écrite une fois par jour, et non à chaque visite
+  viewPlanning: enum(DAILY, WEEKLY, YEARLY) = WEEKLY
+  viewPlanningWeek: enum(CARDS, GRID, COLUMNS) = COLUMNS
+  viewPlanningAction: ?work\Action
+  viewPlanningPlant: ?plant\Plant
+  viewPlanningUser: ?user\User
+  viewPlanningCategory: enum(TIME, TEAM, PACE, PERIOD) = TIME
+  viewPlanningYear: ?int16(0, null)
+  viewPlanningHarvestExpected: enum(TOTAL, WEEKLY) = TOTAL
+  viewPlanningHarvestQuick: bool = FALSE
+  viewPlanningField: enum(VARIETY, SOIL, SERIES) = VARIETY
+  viewPlanningArea: enum(AREA, LENGTH, TOTAL, WEEKLY) = LENGTH
+  viewPlanningUserDaily: ?user\User
+  viewPlanningHideDone: bool = FALSE
+  viewPlanningMine: bool = FALSE
+  viewPlanningOrder: ?json
+  viewPlanningDensity: enum(DENSE, NORMAL, SPACIOUS) = NORMAL
+  viewPlanningColor: bool = FALSE
+  viewPlanningSales: bool = FALSE
+  viewPlanningSalesDays: int8(0, 14) = 7 # 0 pour aujourd'hui seul ; Member::properties() la borne à PlanningSetting::SALES_DAYS
+  viewPlanningReminders: bool = FALSE
+  viewCultivationCategory: enum(AREA, PLANT, FAMILY) = AREA
+  viewSeries: enum(AREA, HARVESTING, WORKING_TIME) = AREA
+  viewMap: enum(PLAN, MAP) = PLAN
+  viewMapBasemap: enum(SATELLITE, DRAWING) = SATELLITE
+  viewSoil: enum(PLAN, ROTATION, GARDEN) = GARDEN
+  viewSoilColor: enum(WHITE, PLANT, FAMILY) = WHITE
+  viewSoilOverlay: bool = TRUE
+  viewSoilTasks: bool = FALSE
+  viewSellingSales: enum(SALE, SALE_PRIVATE, SALE_PRO, LABEL, PURCHASE, ARCHIVES) = SALE
+  viewSellingProducts: enum(PRODUCT, CATEGORY) = PRODUCT
+  viewSellingProductsColumn: enum(TURNOVER, ACCOUNT) = TURNOVER
+  viewSellingCustomers: enum(CUSTOMER, CUSTOMER_PRIVATE, CUSTOMER_PRO, WALLET, GROUP) = CUSTOMER
+  viewSellingType: ?enum(PRIVATE, PRO)
+  viewSellingTransaction: ?enum(SALE, PURCHASE)
+  viewSellingCategory: enum(ITEM, CUSTOMER, SHOP, PERIOD) = ITEM
+  viewSellingPreparing: ?json
+  viewMailingCategory: enum(CAMPAIGN, CONTACT) = CAMPAIGN
+  viewShopSort: enum(CUSTOMER, POINT) = CUSTOMER
+  viewQuotation: enum(ME, ALL) = ME
+  viewQuotationLevel: enum(COUNTRY, REGION) = COUNTRY
+  viewQuotationRegion: ?text8 # Région de référence des relevés de prix ; NULL = déduite du code postal
+  viewAnalyzeChart: enum(TURNOVER, QUANTITY) = TURNOVER
+  viewAnalyzeComposition: enum(COMPOSITION, INGREDIENT) = COMPOSITION
+  viewAnalyzeYear: ?int16(0, null)
+  viewTeamCategory: enum(TEAM, ROLE) = TEAM
+  viewSeason: ?int16(0, null)
+  viewWeatherModel: enum(ICON, METEOFRANCE, UKMO, ECMWF) = ICON
+  viewDashboardActions: ?json # Ids ordonnés des actions suivies dans le bloc de la semaine de l'accueil ; NULL = les favoris de la structure
+  viewNoteLinked: bool = TRUE # Le bloc Notes des écrans de production, déplié ; le replier sur un écran le replie sur tous
+  helpers: json = PHP([])
+  notificationsUnseen: int32(0, null) = 0
+  notifications: json = PHP([])
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["structure"]
+  ]
+  UNIQUE: [
+    ["user", "structure"]
+  ]
+
+Production:
+  id: serial32
+  structure: structure\Structure
+  fqn: text8
+  area: ?float(0, 500)
+  areaGreenhouse: ?int(50, null)
+  mechanisation: ?enum(MANUAL, WALKING_TRACTOR, TRACTOR)
+  organic: enum(NO, YES, CONVERSION)
+  startedAt: ?int16(PHP(\Clock::year() - 100), PHP(\Clock::year() + 10))
+  description: ?text8(1, null)
+  status: enum(ACTIVE, INACTIVE) = ACTIVE
+  UNIQUE: [
+    ["structure", "fqn"]
+  ]
+
+Role:
+  id: serial32
+  name: text8(1, 20)
+  fqn: ?fqn
+  structure: structure\Structure
+  visibility: enum(PUBLIC, PRIVATE) = PUBLIC
+  admin: bool = FALSE
+  planning: enum(LIMITED, FULL, DENIED) = DENIED
+  selling: bool = FALSE
+  productionAnalyze: bool = FALSE
+  productionObserve: bool = FALSE
+  productionExport: bool = FALSE # Le droit de copier un plan de culture vers une autre ferme. Se cumule avec l'autorisation portée par l'affiliation : le droit ne suffit pas si la ferme n'a rien accordé. Fixé à la création du groupe comme sections, donc absent du describer et des propriétés
+  commercialisationAnalyze: bool = FALSE
+  accounting: enum(LIMITED, FULL, DENIED) = DENIED
+  accountingAnalyze: bool = FALSE
+  sections: enum(ALL, OWN) = ALL # Ce que ce rôle voit du groupe : tout, ou les seuls sous-groupes où il est rangé. Une portée comme planning et accounting juste au-dessus, et pour la même raison — c'est un rôle qui la porte, jamais un type de groupe. ALL est le défaut, donc aucun rôle existant ne change
+  locked: bool = FALSE
+  createdAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["structure", "name"],
+  ]
+
+Section:
+  id: serial32
+  structure: structure\Structure # Le groupe qui porte ce sous-groupe. Sans index propre : le UNIQUE ci-dessous le couvre, structure en étant la colonne de tête
+  name: text8(1, null)
+  users: json = PHP([]) # Les ids des user\User rangés dans ce sous-groupe. La liste vit ici et non sur l'adhésion : on entre dans une promotion avant d'avoir une ferme à partager, et une colonne posée sur Member serait morte sur les 7 585 adhésions à des fermes, qui n'ont pas de sous-groupe. Des utilisateurs et non des adhésions : c'est la personne que le sous-groupe range, et son id survit à un départ suivi d'un retour. ⚠️ Aucun outil dérivé du modèle ne voit ces ids : c'est MemberLib::delete() qui les retire, rien d'autre ne le fera
+  status: enum(OPEN, CLOSED) = OPEN # Clore range, ne ferme rien : aucun accès n'est retiré, les membres restent membres. Le geste qui coupe existe déjà et s'appelle retirer un membre
+  UNIQUE: [
+    ["structure", "name"]
+  ]
+
+Structure:
+  id: serial32
+  name: text8(1, null) @collate(general)
+  type: enum(PRODUCER, SHOP, AMAP, COMMUNITY) = PRODUCER
+  communityType: ?enum(PRODUCER, EDUCATION, NETWORK, ACCOUNTING)
+  producerType: ?enum(REAL, PROJECT, TEST, SCHOOL, LEARNER, INSTALLATION, TRAINING) # REAL est la ferme installée, TEST la ferme de test, LEARNER la ferme d'apprenant, INSTALLATION le projet d'installation : les seules que l'on choisit. PROJECT est la ferme projet d'un groupe, qui agrège ce que ses fermes partagent et s'écrit ; SCHOOL est la ferme école, copie anonymisée d'une ferme réelle, en lecture seule et commune à tout le site. Deux objets distincts, longtemps confondus. TRAINING est la ferme de formation, créée pour s'exercer et jamais choisie.
+  parent: ?structure\Structure # Le groupe propriétaire d'une ferme projet : renseigné seulement sur un PRODUCER de producerType PROJECT, et pointe un COMMUNITY. Une ferme école n'en a pas, elle n'appartient à aucun groupe. Le rattachement d'une ferme ordinaire à un groupe passe par structure\Affiliation
+  source: ?structure\Structure # La ferme réelle dont cette ferme école est la copie anonymisée. Sans index : rien ne filtre dessus, on part toujours de l'école vers sa source. Ne s'affiche nulle part — un lien affiché défait l'anonymisation, et il est plus dangereux qu'un nom en clair parce qu'il a l'air inoffensif
+  creation: ?enum(DUPLICATION) # NULL pour une création ordinaire. Figée : aucune écriture ne la change, et elle survit à une requalification par l'équipe. La source de la copie n'est pas gardée
+  producerTypeUpdatedAt: ?datetime # Quand la catégorie a été choisie, établie par un fait ou corrigée par l'équipe. NULL = jamais qualifiée : ferme antérieure, ou catégorie présumée par le produit. Le script de reprise ne l'écrit pas
+  isLegal: bool = FALSE
+  legalName: ?text8
+  legalEmail: email
+  siret: ?text8(1, null)
+  verifiedCountry: bool = FALSE
+  legalStreet1: ?text8
+  legalStreet2: ?text8
+  legalPostcode: ?text8
+  legalCity: ?text8
+  legalCountry: ?user\Country
+  legalCategory: ?int16(1000, 9999) # Catégorie juridique (au sens INSEE) sur 4 chiffres
+  url: ?url
+  description: ?editor24
+  logo: ?textFixed(30, 30) @charset(ascii)
+  banner: ?textFixed(30, 30) @charset(ascii)
+  profileVisibility: enum(PUBLIC, MEMBERS, NONE) = NONE # Qui peut lire la fiche publique. Chaque valeur nomme son lecteur, et aucune ne se lit par défaut : PRIVATE, à côté d'une valeur plus fermée, ne disait pas laquelle des deux il désignait. Le défaut est le plus fermé : ce qui s'ouvre le fait par un geste, jamais par omission
+  organic: ?enum(NO, YES, CONVERSION)
+  qualities: ?set(DEMETER, NATURE_PROGRES, BIO_COHERENCE)
+  membership: ?bool = FALSE
+  version: int16 = PHP(\data\MigrateLib::VERSION * 10)
+  interstitials: json = PHP([])
+  consentData: ?bool
+  startedAt: ?int16(PHP(\Clock::year() - 100), PHP(\Clock::year() + 10))
+  createdAt: datetime = SPECIAL(now)
+  status: enum(ACTIVE, CLOSED) = ACTIVE
+  INDEX: [
+    ["type", "status", "producerType"]
+  ]
+
+Survey:
+  id: serial32
+  structure: structure\Structure
+  production: enum(DAILY, WEEKLY, OCCASIONAL, STOPPED, NEVER)
+  productionMissing: ?text16(0, 5000)
+  commercialisation: enum(DAILY, WEEKLY, OCCASIONAL, STOPPED, NEVER)
+  commercialisationMissing: ?text16(0, 5000)
+  accounting: enum(DAILY, WEEKLY, OCCASIONAL, STOPPED, NEVER)
+  accountingMissing: ?text16(0, 5000)
+  useful: ?text16(0, 5000)
+  missing: json
+  otherSoftware: ?text16(0, 5000)
+  comment: ?text16(0, 5000)
+  createdAt: date = SPECIAL(now)
+  UNIQUE: [
+    ["structure"]
+  ]
+
+System:
+  id: serial32
+  structure: structure\Structure
+  place: ?text8(1, null)
+  placeLngLat: ?point
+  placeCity: ?textFixed(5, 5) @charset(ascii) # Code INSEE de la commune du point, déduit de placeLngLat par geo.api.gouv.fr quand le point change. NULL : point absent, hors de France, ou déduction pas encore faite (l'appel a échoué, le rattrapage de la nuit placeCodesAi la refait)
+  placeDepartment: ?text8(2, 3) @charset(ascii) # Code du département de la même commune (01, 2A, 974). C'est lui qui fonde le territoire de la structure, avant le code postal du siège
+  placeEpci: ?textFixed(9, 9) @charset(ascii) # SIREN de l'intercommunalité de la même commune
+  totalArea: ?float(0.0, 500.0)
+  altitude: ?int(0, null)
+  climate: ?enum(OCEANIC, CONTINENTAL, MEDITERRANEAN, MOUNTAIN)
+  soil: ?enum(SABLEUX, LIMONEUX, ARGILEUX, SABLO_LIMONEUX, LIMONO_SABLEUX, SABLO_ARGILEUX, SABLO_ARGILO_LIMONEUX, ARGILO_SABLEUX, LIMONO_ARGILEUX, LIMONO_ARGILO_SABLEUX, ARGILO_LIMONEUX)
+  ph: ?decimal(3, 1, 1.0, 14.0)
+  hrFarmer: ?decimal(3, 1, 0.0, null)
+  hrEmployee: ?decimal(3, 1, 0.0, null)
+  hrOther: ?decimal(3, 1, 0.0, null)
+  sellingDirect: ?int(0, 100)
+  sellingSemi: ?int(0, 100)
+  sellingLong: ?int(0, 100)
+  UNIQUE: [
+    ["structure"]
+  ]
+
+Terms:
+  id: serial32
+  structure: structure\Structure
+  user: user\User = SPECIAL(user) # Qui a coché la case, l'acceptation engage la structure
+  version: int16(1, null)
+  ip: ?ipv4 = SPECIAL(ip)
+  acceptedAt: datetime = SPECIAL(now)
+  LIB: TermsAiLib
+  UNIQUE: [
+    ["structure", "version"]
+  ]
+
+Tip:
+  id: serial32
+  user: user\User
+  list: json = PHP([])
+  shown: int16(0, null) = 0
+  clicked: int16(0, null) = 0
+  closed: int16(0, null) = 0
+  lastSeniority: int16(0, null) = 0
+  UNIQUE: [
+    ["user"]
+  ]
+

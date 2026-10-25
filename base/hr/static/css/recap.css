@@ -1,0 +1,28 @@
+/* Un nom long revient à la ligne à côté de sa vignette. Là où le tableau défile, il ne laisserait sinon voir
+   qu'une colonne à la fois. Entre 768 et 991 px, le tableau ne défile plus, et un nom sur une ligne le pousserait hors de
+   l'écran. À partir de 992 px, la place permet de garder le nom sur une ligne. */
+#hr-recap .hr-recap-person {
+	display: flex;
+	align-items: center;
+	gap: var(--space-xs);
+}
+
+@media (min-width: 992px) {
+	#hr-recap .hr-recap-person {
+		white-space: nowrap;
+	}
+}
+
+#hr-recap .hr-recap-detail {
+	white-space: nowrap;
+}
+
+/* Le titre d'une semaine reste près de ses jours, et l'écart qui précède chaque semaine, chiffres du mois compris,
+   les sépare. */
+#panel-hr-recap-user .hr-recap-week {
+	margin-top: var(--space-xl);
+}
+
+#panel-hr-recap-user .hr-recap-week h4 {
+	margin-bottom: var(--space-xs);
+}

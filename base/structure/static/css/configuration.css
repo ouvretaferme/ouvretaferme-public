@@ -1,0 +1,22 @@
+#configuration-update-vat:has(input[name="hasVat"][value="0"]:checked) {
+
+	[data-wrapper="vatNumber"],
+	[data-wrapper="vatChargeability"],
+	[data-wrapper="vatDebitsOption"],
+	[data-wrapper="vatFrequency"] {
+		display: none;
+	}
+
+}
+
+#configuration-update-vat:has(input[name="vatChargeabilityCash"][value="vatChargeability"]:not(:checked)) {
+
+	[data-wrapper="vatDebitsOption"] {
+		display: none;
+	}
+
+}
+
+#selfConsumption {
+	scroll-margin-top: calc(var(--mainSticky) + 1rem);
+}

@@ -1,0 +1,426 @@
+Announcement:
+  id: serial32
+  course: learning\Course
+  user: user\User # Le compte prévenu de l'ouverture de la formation, une fois par formation quel que soit le partage qui l'a ouvert
+  createdAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["course", "user"]
+  ]
+
+Attachment:
+  id: serial32
+  lesson: learning\Lesson
+  course: learning\Course
+  name: text8(1, 100)
+  hash: textFixed(20, 20) @charset(ascii)
+  position: int8(0, null)
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  INDEX: [
+    ["lesson"],
+    ["course"]
+  ]
+
+Chapter:
+  id: serial32
+  course: learning\Course
+  phase: ?learning\Phase # Facultative, toujours une phase de la même formation (Chapter::phase.consistent)
+  name: text8(1, 100)
+  summary: ?text8(1, 250)
+  position: int8(0, null)
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["course"],
+    ["phase"]
+  ]
+
+Choice:
+  id: serial32
+  question: learning\Question
+  label: ?text8(1, 250)
+  image: ?textFixed(20, 20) @charset(ascii)
+  correct: bool = FALSE
+  position: int8(0, null)
+  INDEX: [
+    ["question"]
+  ]
+
+Comment:
+  id: serial32
+  lesson: learning\Lesson
+  course: learning\Course
+  parent: ?learning\Comment # Le commentaire auquel celui-ci répond ; vide au premier niveau, jamais une réponse
+  text: text16(1, 2000)
+  readAt: ?datetime
+  readBy: ?user\User
+  answeredAt: ?datetime # La première réponse de l'équipe, celle qui a prévenu l'auteur ; ne se réécrit pas
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  updatedAt: ?datetime
+  INDEX: [
+    ["lesson"],
+    ["course", "readAt"],
+    ["parent"]
+  ]
+
+Course:
+  id: serial32
+  community: ?structure\Structure
+  type: enum(ONSITE, REMOTE, ONLINE, MIXED) = ONLINE # MIXED se calcule sur les séances des dates (`CourseLib::synchronizeType()`), il ne se choisit pas
+  name: text8(1, 100) @collate(general)
+  summary: ?text8(1, 250)
+  description: ?editor24
+  audience: ?text8(1, 250)
+  prerequisites: ?text8(1, 250)
+  objectives: ?editor16
+  access: ?text8(1, 250)
+  accessibility: ?text16(1, 2000)
+  recognition: ?text8(1, 250)
+  theme: ?learning\Theme
+  subtheme: ?learning\Subtheme # Facultative, toujours une sous-thématique de `theme` (`Course::subtheme.consistency`)
+  level: ?learning\Level
+  vignette: ?textFixed(30, 30) @charset(ascii)
+  status: enum(DRAFT, PUBLISHED) = DRAFT
+  catalog: enum(PRIVATE, PROPOSED, ACCEPTED, REFUSED) = PRIVATE
+  catalogReason: ?text16 # Le motif que l'équipe donne en refusant une demande ou en retirant une formation du catalogue, lu par le réseau
+  catalogAt: ?datetime # La date du dernier passage de `catalog`, demande ou décision
+  featured: bool = FALSE # Choisie par l'équipe pour « Premiers pas », en tête du catalogue public
+  featuredAt: ?datetime # L'entrée dans « Premiers pas », qui en fait l'ordre
+  open: bool = FALSE
+  offer: enum(NETWORK, TRAINEE, NONE) = NONE # L'offre d'une formation en ligne ; une formation datée porte la sienne sur chaque date
+  priceFunded: ?decimal(8, 2, 0.0, 10000.0) # Le montant affiché pour le public dont la formation est prise en charge, réglé hors ligne avec l'organisme
+  price: ?decimal(8, 2, 0.0, 10000.0) # Le montant affiché pour les autres publics, le seul que le paiement en ligne encaisse
+  funding: ?set(VIVEA, OCAPIAT, FRANCE_TRAVAIL, CPF, REGION, OTHER) # Les financeurs affichés au stagiaire
+  fundingNote: ?text8(1, 250) # Les conditions de financement, affichées sur la fiche seulement
+  externalOnly: bool = FALSE # Formation en présentiel ou en visio : les nouvelles inscriptions se font sur le site de l'organisme, celles en cours restent gérées ici
+  externalUrl: ?url # La page de la formation sur le site de l'organisme, exigée pour fermer l'inscription
+  enrollmentPaused: bool = FALSE # Les nouvelles inscriptions de la formation et de toutes ses dates sont en pause ; celles déjà reçues continuent
+  copiedFrom: ?learning\Course
+  publishedAt: ?datetime
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  updatedAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["community"],
+    ["catalog", "status"],
+    ["theme"],
+    ["level"],
+    ["copiedFrom"],
+    ["subtheme"],
+    ["featured"]
+  ]
+
+Date:
+  id: serial32
+  course: learning\Course
+  startAt: datetime # Le début de la première séance, écrit avec les séances (`DateSequence`)
+  endAt: datetime # La fin de la dernière séance
+  place: ?text8(1, 250) # Repris par les séances, plus lu ; retiré au lot suivant
+  link: ?url # Un seul lien pour toutes les séances en visio de la date
+  linkMailedAt: ?datetime # Quand l'équipe a envoyé le lien de la visio aux personnes confirmées ; remis à vide quand le lien change ou s'efface
+  seats: ?int16(1, null)
+  externalUrl: ?url # La page de la date sur le site de l'organisme, qui prime sur celle de la formation
+  enrollmentPaused: bool = FALSE # Les nouvelles inscriptions de cette date seule sont en pause, que la formation soit ouverte ou non
+  status: enum(PLANNED, CANCELED) = PLANNED
+  offer: enum(NETWORK, TRAINEE, NONE) = NONE
+  priceFunded: ?decimal(8, 2, 0.0, 10000.0) # NULL, la date reprend celui de la formation ; de même pour les trois suivants, valeur par valeur
+  price: ?decimal(8, 2, 0.0, 10000.0)
+  funding: ?set(VIVEA, OCAPIAT, FRANCE_TRAVAIL, CPF, REGION, OTHER)
+  fundingNote: ?text8(1, 250)
+  quizOpenedAt: ?datetime # Posé une fois, quand l'équipe ouvre le quiz de la formation aux personnes confirmées de cette date, jamais remis à vide
+  minutes: ?int16(30, null) # La durée de formation, pauses exclues, saisie par l'équipe ; NULL, celle des horaires (Date::getMinutes())
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["course", "startAt"],
+    ["startAt"]
+  ]
+
+DateEnrollment:
+  id: serial32
+  date: learning\Date
+  user: ?user\User # NULL pour une inscription par la page publique, jusqu'à la première connexion d'un compte à la même adresse
+  structure: ?structure\Structure # « Au nom de », NULL à titre personnel
+  structureName: ?text8(1, 100) # Page publique : la ferme saisie en texte libre, NULL à titre personnel
+  firstName: ?text8(1, PHP(\user\UserSetting::NAME_SIZE_MAX)) # Page publique : l'identité saisie, NULL sur une ligne de membre
+  lastName: ?text8(1, PHP(\user\UserSetting::NAME_SIZE_MAX))
+  email: ?email
+  token: ?textFixed(30, 30) @charset(ascii) # Page publique : l'adresse de la ligne, pour la relire et l'annuler depuis l'e-mail
+  trainee: enum(FARMER, SOLIDARITY, EMPLOYEE, PROJECT)
+  status: enum(REQUESTED, CONFIRMED, WAITING, CANCELED)
+  canceledBy: ?enum(USER, COMMUNITY, DATE) # DATE : annulée avec sa date, sur les seules lignes encore ouvertes
+  requestedAt: datetime = SPECIAL(now) # Reposé à la réouverture d'une ligne annulée : l'ordre de la liste d'attente se lit par cette date
+  committedAt: datetime # Quand la personne a coché ses engagements et accepté les conditions du réseau, reposé à la réouverture. Le texte accepté n'est pas copié : les conditions ne sont pas versionnées, comme les règles d'un groupe
+  confirmedAt: ?datetime
+  canceledAt: ?datetime
+  mailedAt: ?datetime # Page publique : le dernier accusé de réception parti à l'adresse, qui n'en reçoit qu'un par heure pour cette date quel que soit le nombre d'envois
+  remindedAt: ?datetime # Le rappel parti avant la date, remis à vide quand le jour de début change
+  reviewMailedAt: ?datetime # L'invitation à donner son avis, partie le lendemain de la date
+  attendedAt: ?datetime # La présence pointée par l'équipe après la date ; NULL, pas pointée
+  attendedBy: ?user\User # Qui a pointé, écrit par le Lib seul
+  attendedMinutes: ?int16(30, null) # Les heures de la personne quand elles diffèrent de la date ; NULL, la durée de la date
+  attestationMailedAt: ?datetime # Quand l'équipe a envoyé l'attestation de présence, posé une fois et jamais remis à vide, même si la présence est retirée
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["date", "status", "requestedAt"]
+  ]
+  UNIQUE: [
+    ["user", "date"],
+    ["email", "date"],
+    ["token"]
+  ]
+
+DateSequence:
+  id: serial32
+  date: learning\Date
+  startAt: datetime
+  endAt: datetime # Le même jour que `startAt`
+  mode: enum(ONSITE, REMOTE)
+  place: ?text8(1, 250) # Le lieu d'une séance en présentiel, NULL en visio
+  INDEX: [
+    ["date", "startAt"]
+  ]
+
+DateSheet:
+  id: serial32
+  date: learning\Date
+  course: learning\Course # Lu par le compte des feuilles d'une formation, qui en garde la suppression
+  name: text8(1, 100)
+  hash: textFixed(20, 20) @charset(ascii)
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  INDEX: [
+    ["date"],
+    ["course"]
+  ]
+
+Enrollment:
+  id: serial32
+  user: user\User
+  course: learning\Course
+  structure: ?structure\Structure
+  status: enum(REQUESTED, CONFIRMED, CANCELED) = CONFIRMED # Une demande ne donne ni la lecture, ni un compte dans les chiffres : seules les confirmées se lisent par les accesseurs. CANCELED n'est atteint que depuis une demande, et la ligne se rouvre à la demande suivante
+  fundingRequested: ?bool # La réponse de la personne à la question de la prise en charge ; NULL quand la question n'a pas été posée
+  confirmedAt: ?datetime # Le mois du compte des inscriptions ; NULL tant que la demande n'est pas confirmée
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["course", "confirmedAt"],
+    ["course", "status"]
+  ]
+  UNIQUE: [
+    ["user", "course"]
+  ]
+
+Faq:
+  id: serial32
+  community: structure\Structure
+  question: text8(1, 250) @collate(general)
+  answer: editor24
+  symptoms: ?editor16 # Ce que l'utilisateur voit à l'écran, avec ses mots ; lu par la recherche
+  steps: ?editor16 # « Comment faire », une liste numérotée
+  notes: ?editor16 # « À savoir », une liste
+  demoPage: ?text8(1, 250) # Le chemin de la page dans la ferme démo (/ferme/1/especes), sans hôte : OTF_DEMO_URL se compose au rendu (Faq::demoPage.relative)
+  demoPath: ?text8(1, 100) # Le chemin de cette page dans le menu, montré sous le lien ; jamais sans demoPage (Faq::demoPath.withPage)
+  keywords: ?text8(1, 250) # Les mots de la recherche absents du texte
+  screen: ?enum(SERIES, SOIL, SEQUENCE, PLANNING, EXPORT, SEEDLING, FORECAST) # Un écran de plus s'ajoute par migration
+  verdict: enum(POSSIBLE, PARTIAL, INTENDED, IMPOSSIBLE)
+  status: enum(DRAFT, PUBLISHED) = DRAFT
+  chapter: ?learning\Chapter # Facultatif, toujours un module d'une formation de la même structure (Faq::chapter.owned)
+  discordUrl: ?url # La discussion d'origine sur le Discord
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["community"],
+    ["chapter"]
+  ]
+
+Lesson:
+  id: serial32
+  course: learning\Course
+  chapter: learning\Chapter
+  name: text8(1, 100)
+  objective: ?text8(1, 250)
+  format: enum(TEXT, VIDEO, DIAGRAM, LIVE) = TEXT
+  minutes: ?int16(1, null)
+  activityMinutes: ?int16(1, null)
+  validation: enum(DECLARED, QUIZ, DELIVERABLE, PRESENCE) = DECLARED
+  quizThreshold: ?int8(0, 100)
+  deliverable: ?text8(1, 250)
+  mandatory: bool = TRUE
+  written: bool = FALSE # Écrite ou vide (Lesson::isWritten()), tenue par LessonLib::synchronizeWritten() à chaque écriture de bloc ou de validation
+  position: int8(0, null)
+  createdAt: datetime = SPECIAL(now)
+  updatedAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["course"],
+    ["chapter"]
+  ]
+
+Level:
+  id: serial32
+  name: text8(1, 50)
+  position: int8(0, null)
+
+Phase:
+  id: serial32
+  course: learning\Course
+  name: text8(1, 100)
+  summary: ?text8(1, 250)
+  position: int8(0, null)
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["course"]
+  ]
+
+Progress:
+  id: serial32
+  user: user\User
+  course: learning\Course
+  lesson: learning\Lesson
+  status: enum(PENDING, DONE) = PENDING
+  source: ?enum(DECLARED, QUIZ, DELIVERABLE, PRESENCE)
+  score: ?int8(0, 100)
+  attempts: int16(0, null) = 0
+  doneAt: ?datetime
+  checkedBy: ?user\User
+  checkedAt: ?datetime
+  createdAt: datetime = SPECIAL(now)
+  updatedAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["user", "course"],
+    ["course"]
+  ]
+  UNIQUE: [
+    ["user", "lesson"]
+  ]
+
+Question:
+  id: serial32
+  lesson: ?learning\Lesson
+  statement: text8(1, 250)
+  image: ?textFixed(20, 20) @charset(ascii)
+  type: enum(SINGLE, MULTIPLE) = SINGLE
+  explanation: ?text16(1, 2000)
+  position: int8(0, null)
+  INDEX: [
+    ["lesson"]
+  ]
+
+Reading:
+  id: serial32
+  user: user\User
+  course: learning\Course
+  lesson: learning\Lesson
+  startedAt: datetime = SPECIAL(now)
+  seenAt: datetime = SPECIAL(now)
+  seconds: int32(0, null) = 0
+  INDEX: [
+    ["course", "user", "startedAt"],
+    ["lesson"]
+  ]
+
+Response:
+  id: serial32
+  question: learning\Question
+  user: user\User
+  attempt: int16(1, null)
+  choice: ?learning\Choice
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["user", "question"],
+    ["question"]
+  ]
+
+Review:
+  id: serial32
+  course: learning\Course
+  user: ?user\User # L'auteur quand il a un compte ; vide pour un avis donné par le lien d'une inscription sans compte, jusqu'à la connexion d'un compte à la même adresse
+  dateEnrollment: ?learning\DateEnrollment # La place qui a ouvert l'avis sur une formation datée ; vide en ligne
+  rating: int8(1, 5)
+  text: ?text16(1, 2000)
+  experiencedAt: date # Le jour où la formation a été suivie, figé à la publication : la date pour une formation datée, la dernière leçon faite en ligne
+  status: enum(PUBLISHED, REPORTED, KEPT, HIDDEN) = PUBLISHED
+  reportReason: ?text16(1, 1000)
+  reportedAt: ?datetime
+  reportedBy: ?user\User
+  hideReason: ?text16(1, 1000)
+  moderatedAt: ?datetime
+  moderatedBy: ?user\User
+  answer: ?text16(1, 2000)
+  answeredAt: ?datetime
+  answeredBy: ?user\User
+  readAt: ?datetime # Posé par le premier membre de l'équipe du réseau qui le lit dans la boite des avis
+  readBy: ?user\User
+  createdAt: datetime = SPECIAL(now)
+  updatedAt: ?datetime # Posé à chaque modification par l'auteur, affiché à côté de la date de publication (L111-7-2)
+  INDEX: [
+    ["course", "createdAt"],
+    ["status"],
+    ["course", "readAt"]
+  ]
+  UNIQUE: [
+    ["course", "user"],
+    ["dateEnrollment"]
+  ]
+
+Share:
+  id: serial32
+  course: learning\Course
+  audience: enum(SECTION, MEMBERS) = SECTION # MEMBERS : les membres d'un réseau, une ligne au plus par formation, sans période lue
+  section: ?structure\Section
+  opensAt: date
+  dueAt: ?date
+  announcedAt: ?datetime # Posé une fois, quand l'annonce de la ligne est partie ou n'avait plus lieu de partir (échéance passée)
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  INDEX: [
+    ["section"],
+    ["announcedAt", "opensAt"]
+  ]
+  UNIQUE: [
+    ["course", "section"]
+  ]
+
+Staff:
+  id: serial32
+  course: learning\Course
+  supervisor: learning\Supervisor # L'encadrant du réseau que la ligne rattache à la formation, une fois par formation
+  role: text8(1, 100) # Le rôle dans cette formation, prérempli par le rôle habituel de la personne
+  contact: bool = FALSE # Le contact de la formation, un seul par formation ; il prime sur celui du réseau
+  position: int8(0, null)
+  INDEX: [
+    ["supervisor"]
+  ]
+  UNIQUE: [
+    ["course", "supervisor"]
+  ]
+
+Subtheme:
+  id: serial32
+  theme: learning\Theme
+  name: text8(1, 50)
+  position: int8(0, null) # La place dans sa thématique, de zéro
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["theme"]
+  ]
+
+Supervisor:
+  id: serial32
+  community: ?structure\Structure # Le réseau ou le groupe de formation qui saisit la personne ; vide pour l'équipe Ouvretaferme
+  name: text8(1, 100)
+  role: ?text8(1, 100) # Le rôle habituel, qui préremplit celui de la formation
+  description: ?text8(1, 250)
+  email: ?email
+  handicap: bool = FALSE # Référent handicap, dans toutes ses formations
+  contact: bool = FALSE # Le contact du réseau, un seul par community
+  status: enum(ACTIVE, INACTIVE) = ACTIVE # Désactivée, la personne n'est plus proposée à une formation et reste sur celles qu'elle encadre
+  INDEX: [
+    ["community", "status"]
+  ]
+
+Theme:
+  id: serial32
+  name: text8(1, 50)
+  icon: text8(1, 50) @charset(ascii)
+  color: color
+  position: int8(0, null)
+  createdAt: datetime = SPECIAL(now)

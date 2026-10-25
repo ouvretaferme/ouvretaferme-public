@@ -1,0 +1,14 @@
+/*
+ * Le plan du calculateur des densités, dans la zone du résultat (`calculator.css`). Tout est borné par
+ * `density-`, la feuille restant chargée après qu'on a quitté l'outil en navigation ajax.
+ */
+
+.density-result-plan {
+	padding: 1rem;
+	border-radius: var(--radius);
+	background-color: white;
+}
+
+.density-result-plan .density-view-svg + .density-view-svg {
+	margin-top: 1.5rem;
+}

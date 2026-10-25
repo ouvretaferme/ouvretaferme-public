@@ -1,0 +1,58 @@
+/* Gabarit « Parcours » des pages de formations d'un réseau : un chemin. Le bandeau de la liste est
+   traversé d'une ligne de la couleur, les dates sont des pastilles rondes cerclées, les étapes se
+   suivent sur un trait plein de 4 px, les titres de section sont des gélules teintées.
+
+   Le texte posé sur une teinte de la couleur prend `--text` et non `--primary-on-light` : l'encre de
+   la couleur est jugée sur le fond et le blanc, et une couleur qui y tient de peu (#3a7d5c, 4,92 sur
+   blanc) tombe sous 4,5 sur sa propre teinte à 10 ou 12 %.
+   La fiche est blanche, la liste et la leçon gardent le fond choisi : seule la portée `doc` est dans
+   `LearningSetting::DESIGN_MATTERS`. Les polices viennent de `LearningSetting::DESIGN_FONTS`. */
+
+.learning-public[data-learning-design="parcours"],
+.learning-doc[data-learning-design="parcours"] {
+	--radius: 1rem;
+	--radius-lg: 1.5rem;
+	--border: transparent;
+	--border-width: 0;
+	--shadow-v2: 0 2px 10px rgb(0 0 0 / 7%);
+	--heading-weight: 700;
+	--heading-justify: flex-start;
+	--heading-border: none;
+	--heading-background: color-mix(in srgb, var(--primary) 12%, white);
+	--heading-color: var(--text);
+	--heading-padding: .25rem 1rem;
+	--heading-clip: inset(0 round 2rem);
+	--button-weight: 700;
+	--figure-background: color-mix(in srgb, var(--primary) 10%, white);
+	--callout-background: color-mix(in srgb, var(--primary) 7%, white);
+	--callout-border: transparent;
+	--callout-radius: 1.25rem;
+	--marker-radius: 50%;
+	--marker-ring: 0 0 0 3px white, 0 0 0 5px var(--primary);
+	--step-line: linear-gradient(var(--primary), var(--primary)) no-repeat center / 4px 100%;
+	--table-head-background: color-mix(in srgb, var(--primary) 10%, white);
+	--table-head-case: none;
+	--table-head-border: none;
+	--tab-active-background: var(--learning-tint);
+	--tab-active-color: var(--text);
+	--tab-radius: 2rem;
+	--tab-bar-height: 0;
+	--quote-background: color-mix(in srgb, var(--primary) 7%, white);
+	--quote-radius: 1.25rem;
+	--quote-padding: 1rem 1.5rem;
+	--quote-icon-color: var(--primary);
+	--calendar-size: 3.25rem;
+	--calendar-radius: 50%;
+	--calendar-background: var(--primary);
+	--calendar-color: var(--primary-ink);
+	--calendar-ring: 0 0 0 3px white, 0 0 0 5px var(--primary);
+}
+
+.learning-doc[data-learning-design="parcours"] {
+	--learning-background: #ffffff;
+}
+
+.learning-public[data-learning-design="parcours"] .community-header {
+	padding-bottom: var(--space-xxl);
+	background: linear-gradient(var(--primary), var(--primary)) 0 calc(100% - 1.4rem) / 100% 4px no-repeat, transparent;
+}

@@ -1,0 +1,101 @@
+Action:
+  id: serial32
+  name: text8(1, null) @collate(general)
+  favorite: bool = FALSE
+  fqn: ?text8 @charset(ascii)
+  short: ?text8(1, 1)
+  structure: ?structure\Structure
+  color: color = PHP('#AAAAAA')
+  pace: ?enum(BY_HARVEST, BY_AREA, BY_PLANT)
+  soil: bool = FALSE
+  categories: json = PHP([])
+  series: bool = TRUE
+  status: enum(ACTIVE, INACTIVE) = ACTIVE
+  INDEX: [
+    ["structure"]
+  ]
+  
+Category:
+  id: serial32
+  name: text8(1, null) @collate(general)
+  fqn: ?text8 @charset(ascii)
+  structure: ?structure\Structure
+  position: int8(0, null)
+  INDEX: [
+    ["structure"]
+  ]
+
+Method:
+  id: serial32
+  name: text8(1, null) @collate(general)
+  action: work\Action
+  structure: structure\Structure
+  INDEX: [
+    ["structure", "action"],
+    ["action"]
+  ]
+
+PhytoProduct:
+  # Le catalogue E-Phy de l'ANSES (data.gouv.fr), rechargé chaque semaine par work/cron/phyto :
+  # les produits phytopharmaceutiques autorisés, et les produits retirés tant qu'un de leurs usages
+  # reste utilisable (usableUntil), pour écouler un stock. Le produit d'une structure (work\Tool à
+  # routine phyto) recopie ce qu'il en prend et ne pointe que l'AMM : un produit qui sort du
+  # catalogue ne casse rien chez ceux qui l'ont noté.
+  id: serial32
+  amm: text8(1, 50) @charset(ascii)
+  name: text8(1, null) @collate(general)
+  otherNames: json = PHP([])
+  functions: ?text8
+  formulation: ?text8
+  organic: bool = FALSE
+  # La gamme « Amateur / emploi autorisé dans les jardins » : ces produits restent au catalogue, un
+  # produit noté par une structure devant garder son AMM, mais la recherche des produits autorisés
+  # de la Boîte à outils les écarte.
+  amateur: bool = FALSE
+  # Les substances actives, chacune sous son nom international et le nom français le plus court
+  # que le catalogue lui donne (« soufre » pour « soufre micronisé » et « soufre triture »).
+  substances: json = PHP([])
+  status: enum(AUTHORIZED, WITHDRAWN) = AUTHORIZED
+  usableUntil: ?date
+  UNIQUE: [
+    ["amm"]
+  ]
+
+PhytoUsage:
+  id: serial32
+  product: work\PhytoProduct
+  crop: text8(1, null) @collate(general)
+  treatment: ?text8
+  target: ?text8 @collate(general)
+  dose: ?float32(0.0, null)
+  doseUnit: ?text8
+  harvestDelay: ?int16(0, null)
+  plants: json = PHP([])
+  INDEX: [
+    ["product"]
+  ]
+
+Supplier:
+  id: serial32
+  name: text8(1, 50) @collate(general)
+  structure: structure\Structure
+  createdAt: date = SPECIAL(now)
+
+Tool:
+  id: serial32
+  name: text8(1, 40) @collate(general)
+  structure: structure\Structure
+  action: ?work\Action
+  vignette: ?textFixed(30, 30) @charset(ascii)
+  stock: ?int16(0, null)
+  routineName: ?text8
+  routineValue: ?json
+  # « Non » répondu sur le carnet de traitement, qui demande si ce matériel noté sur des
+  # traitements est un produit de traitement : la question ne se repose plus.
+  phytoRefused: bool = FALSE
+  comment: ?text16
+  status: enum(ACTIVE, INACTIVE, DELETED) = ACTIVE
+  createdAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["structure", "name", "status"]
+  ]

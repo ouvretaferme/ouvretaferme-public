@@ -1,0 +1,154 @@
+/* Items */
+div.plot-title {
+	padding: 1rem 0.75rem;
+	background-color: #8883;
+}
+
+.plot-wrapper-folded.plot-card > div.plot-title {
+	display: none;
+}
+
+@media print {
+
+	div.plot-title {
+		padding: .5rem 0.75rem;
+	}
+
+}
+
+body.bed-updating div.plot-title,
+body.panel-open div.plot-title {
+	padding-left: 0;
+}
+
+div.plot-title h4 {
+	font-weight: bold;
+}
+
+.plot-title-area {
+	opacity: 0.8;
+	font-size: 1rem;
+	margin-left: 1rem;
+	font-weight: normal;
+}
+
+/* Maps */
+
+p.plot-map-help {
+	font-size: 0.9rem;
+	color: var(--secondary);
+}
+
+div.plot-map {
+	width: 100%;
+	height: 300px;
+}
+
+#plot-map-polygon {
+	background-color: var(--background-light);
+	padding: 1rem;
+	text-align: center;
+	display: none;
+	justify-content: space-between;
+	align-items: center;
+}
+
+/* Use */
+form.plot-use {
+	padding: 1rem;
+	background-color: #eee;
+}
+
+div.plot-use-options {
+	margin: 1rem 0 0.5rem;
+}
+
+.plot-card {
+	position: relative;
+	padding: 0.75rem;
+	margin-bottom: 0.75rem;
+}
+
+.plot-card div.plot-title {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0 0 0.5rem 0;
+	background: none;
+	font-weight: 700;
+}
+
+.plot-title-info {
+	color: var(--muted);
+	font-size: 0.8125rem;
+	font-weight: 400;
+}
+
+.plot-card .plot-card-axis {
+	border: 0;
+}
+
+.plot-card .plot-card-axis > div:first-child {
+	position: sticky;
+	left: 0;
+	z-index: 10;
+	align-self: stretch;
+	background-color: white;
+}
+
+.plot-card .plot-card-months .series-timeline-season {
+	margin: 0;
+}
+
+.plot-card div.bed-item-grid-plan:not(.bed-item-grid-header):nth-child(even),
+.plot-card div.bed-item-grid-plan:not(.bed-item-grid-header):nth-child(odd) {
+	background-color: transparent;
+}
+
+/* Le nom reste colle a gauche quand la carte defile : transparent, il laissait voir les series passer dessous. */
+.plot-card div.bed-item-grid-plan:not(.bed-item-grid-header):nth-child(even) .bed-item-bed,
+.plot-card div.bed-item-grid-plan:not(.bed-item-grid-header):nth-child(odd) .bed-item-bed {
+	background-color: white;
+}
+
+.plot-card div.bed-item-grid-plan.bed-item-fill,
+.plot-card div.bed-item-grid-plan.bed-item-fill .bed-item-bed {
+	background-color: var(--background-odd);
+}
+
+.plot-card div.bed-item-grid-plan:not(.bed-item-grid-header) {
+	min-height: 2.625rem;
+}
+
+.plot-card-body {
+	position: relative;
+}
+
+
+.plot-card-scroll {
+	position: relative;
+	overflow-x: auto;
+	overflow-y: hidden;
+	contain: inline-size;
+}
+
+.plot-card-axis,
+.plot-card-body > .bed-item-grid,
+.plot-card-body > [class*="bed-item-grid-rotation"] {
+	min-width: calc(var(--zone-content-months) * 2.5rem + 12rem);
+}
+
+.plot-card-scroll > .series-grid {
+	min-width: calc(var(--zone-content-months) * 2.5rem);
+}
+
+.plot-card-rotation {
+	flex: 1 1 100%;
+	min-width: 0;
+}
+
+.plot-card-rotation .plot-card-axis,
+.plot-card-rotation .plot-card-body > .bed-item-grid,
+.plot-card-rotation .plot-card-body > [class*="bed-item-grid-rotation"] {
+	min-width: 30rem;
+}

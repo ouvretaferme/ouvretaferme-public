@@ -1,0 +1,76 @@
+/* Le titre d'un univers de l'enquête, en bande pleine de la couleur de l'univers : c'est lui qui
+   découpe le formulaire, il doit se lire de loin. */
+.structure-survey-universe-production {
+	--structure-survey-universe: var(--production);
+}
+
+.structure-survey-universe-commercialisation {
+	--structure-survey-universe: var(--commercialisation);
+}
+
+.structure-survey-universe-accounting {
+	--structure-survey-universe: var(--accounting);
+}
+
+.structure-survey-universe > legend {
+	display: flex;
+	align-items: center;
+	gap: var(--space-sm);
+	margin-block: var(--space-md);
+	padding: var(--space-sm) var(--space-md);
+	border-radius: var(--radius);
+	background-color: var(--structure-survey-universe);
+	color: white;
+	font-size: 1.5rem;
+	font-weight: bold;
+	text-transform: none;
+	letter-spacing: normal;
+}
+
+/* La liste de ce qui manque au logiciel, dans l'enquête des adhérents. Le rang de chaque ligne suit
+   sa place, qui change quand une ligne monte : un compteur le recalcule sans script, et la première
+   ligne montre « Priorité » à la place de son numéro, sans flèche pour monter plus haut. */
+#structure-survey-missing {
+	grid-template-columns: 6rem minmax(0, 1fr) auto;
+	counter-reset: structure-survey-missing;
+}
+
+#structure-survey-missing > .util-table-row {
+	counter-increment: structure-survey-missing;
+}
+
+#structure-survey-missing > .util-table-row > * {
+	align-self: center;
+}
+
+#structure-survey-missing .structure-survey-missing-rank::before {
+	content: counter(structure-survey-missing);
+	color: var(--muted);
+	font-weight: bold;
+}
+
+#structure-survey-missing > .util-table-row:first-child .structure-survey-missing-rank::before {
+	content: none;
+}
+
+#structure-survey-missing > .util-table-row:not(:first-child) .structure-survey-missing-rank > .badge {
+	display: none;
+}
+
+#structure-survey-missing .structure-survey-missing-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: var(--space-xs);
+}
+
+#structure-survey-missing > .util-table-row:first-child .structure-survey-missing-up {
+	visibility: hidden;
+}
+
+@media (max-width: 575px) {
+
+	#structure-survey-missing {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+	}
+
+}

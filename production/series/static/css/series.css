@@ -1,0 +1,3652 @@
+div.series-header-perennial-seasons {
+	background: white;
+	padding: 1rem;
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	line-height: 1;
+	overflow-x: auto;
+}
+
+div.series-header-perennial-seasons-label {
+	margin-right: 1rem;
+}
+
+.series-header-perennial-seasons-one {
+	min-width: 1.75rem;
+	width: 1.75rem;
+	height: 1.75rem;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: var(--radius);
+	background-color: var(--text);
+	color: white;
+	font-weight: bold;
+	transition: background-color 0.5s;
+}
+
+a.series-header-perennial-seasons-one-selected {
+	background-color: var(--secondary);
+}
+
+a.series-header-perennial-seasons-one:hover {
+	text-decoration: none;
+	background-color: var(--secondary);
+	color: white;
+}
+
+div.series-header-perennial-seasons-one-future {
+	color: #ccc;
+	background-color: transparent;
+	border: 1px dashed #ccc;
+}
+
+/* Liste de séries */
+div.series-item-wrapper {
+	--series-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	margin-bottom: 2rem;
+	position: relative;
+	padding-bottom: 1rem; /* Eviter une scrollbar verticale */
+}
+
+div.series-season {
+	display: grid;
+}
+
+/* L'axe reprend la règle graduée de la bibliothèque de cultures : une ligne,
+   des mois en minuscules, des numéros discrets dont seules les dizaines
+   s'appuient. L'année n'est qu'une étiquette, pas un bandeau. */
+div.series-season-year {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: bold;
+	line-height: 1;
+	font-size: 0.7rem;
+	letter-spacing: 0.3px;
+	padding: 0.25rem 0 0.125rem 0;
+	color: var(--muted);
+	border-bottom: 1px solid var(--border);
+}
+
+div.series-season-year.series-season-year-external {
+	color: #bbb;
+}
+
+div.series-season-year.series-season-year-current {
+	grid-column: span 12;
+}
+
+div.series-season-month {
+	text-align: center;
+	padding: 0.25rem 0;
+	line-height: 1;
+	font-size: 0.75rem;
+	font-weight: normal;
+	text-transform: none;
+	letter-spacing: 0;
+	color: var(--text);
+	border-left: 1px solid var(--border-light);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+div.series-season-month:first-of-type {
+	border-left-color: transparent;
+}
+
+div.series-season-month-external {
+	color: var(--muted);
+}
+
+div.series-season-weeks {
+	position: relative;
+	height: 1rem;
+	display: flex;
+	font-size: 0.5625rem;
+	font-weight: normal;
+	letter-spacing: 0;
+	text-align: center;
+	color: var(--text-intermediate);
+}
+
+div.series-season-weeks > div.util-graduation-mark-decade {
+	color: var(--text);
+}
+
+/* La graduation s'éclaircit avec la place : le composant `util-graduation` de component.css porte
+   cette règle, employée aussi par la frise de comparaison d'un groupe. Ne restent ici que la
+   couleur, propre à cet écran, et les noms de mois, qui passent à l'initiale au même seuil. */
+.series-season-month-short {
+	display: none;
+}
+
+@media (max-width: 1199px) {
+
+	.series-season-month-long {
+		display: none;
+	}
+
+	.series-season-month-short {
+		display: inline;
+	}
+
+}
+
+@media (max-width: 1400px) {
+
+	.panel div.series-season-weeks {
+		display: none;
+	}
+
+}
+
+div.series-season-weeks > div.series-season-week {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	letter-spacing: -0.3px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+table.series-printing td {
+	padding: 0 !important;
+}
+
+div.series-grid-now {
+	position: absolute;
+	border-right: 2px solid var(--secondary);
+	opacity: 0.5;
+	left: 0;
+	top: 0;
+	bottom: 0;
+}
+
+@media print {
+
+	div.series-grid-now {
+		display: none;
+	}
+
+}
+
+div.series-grid {
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	pointer-events: none;
+	z-index: 0;
+}
+
+@media (max-width: 991px) {
+
+	.panel div.series-grid-weeks {
+		display: none;
+	}
+
+}
+
+div.series-grid-weeks {
+	--series-grid-end: calc(var(--series-grid-left) + (var(--series-grid-count) - 0.5) * var(--series-grid-step));
+	--series-grid-first: calc(var(--series-grid-left) / var(--series-grid-end) * 100%);
+	--series-grid-period: calc(var(--series-grid-step) / var(--series-grid-end) * 100%);
+	background-image: repeating-linear-gradient(
+		to right,
+		var(--series-grid-line, #0001) calc(var(--series-grid-first) - 1px),
+		var(--series-grid-line, #0001) var(--series-grid-first),
+		transparent var(--series-grid-first),
+		transparent calc(var(--series-grid-first) - 1px + var(--series-grid-period))
+	);
+	background-size: calc(var(--series-grid-end) * 1%) 100%;
+	background-repeat: no-repeat;
+	-webkit-mask-image: repeating-linear-gradient(to bottom, #000 0 3px, transparent 3px 6px);
+	mask-image: repeating-linear-gradient(to bottom, #000 0 3px, transparent 3px 6px);
+}
+
+div.series-grid-months > div.series-grid-line {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+}
+
+div.series-grid-months > div.series-grid-line:not(:first-child) {
+	z-index: 100;
+}
+
+div.series-grid-months > div.series-grid-line {
+	border-left: 1px dashed #0001;
+}
+
+div.series-grid-weeks + div.series-grid-months > div.series-grid-line {
+	border-left: 0;
+}
+
+div.series-grid-months > div.series-grid-line:nth-child(even) {
+	background-color: #00000003;
+}
+
+div.series-grid-weeks + div.series-grid-months > div.series-grid-line:nth-child(even) {
+	border-left: 0;
+}
+
+
+#zone-container div.series-grid-weeks {
+	--series-grid-line: #0002;
+}
+
+div.series-item-header {
+	background: var(--background-body);
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+
+.series-printing div.series-item-header {
+	background: white;
+}
+
+/* L'en-tête collé passe devant le contenu des lignes : pastilles, campagnes et
+   délais sont positionnés et montent jusqu'à z-index 5, ils passeraient sinon
+   par-dessus la graduation en défilant. */
+@media (min-width: 768px) {
+
+	div.series-item-header:not(.series-item-forecast):not(.series-item-header-not-sticky) {
+		position: sticky;
+		top: calc(var(--mainSticky) - 1px);
+		z-index: 6;
+	}
+
+}
+
+@media (min-width: 992px) {
+
+	div.series-item-header.series-item-forecast {
+		position: sticky;
+		top: calc(var(--mainSticky) - 1px);
+		z-index: 6;
+	}
+
+}
+
+div.series-item-header-highlight {
+	border-bottom: 1px solid var(--border);
+}
+
+div.series-item-header > * {
+	padding-bottom: 0.25rem;
+}
+
+div.series-item-body {
+	position: relative;
+	background-color: white;
+	box-sizing: content-box;
+	border-bottom-left-radius: var(--radius);
+	border-bottom-right-radius: var(--radius);
+}
+
+.series-item-title {
+	background-color: #7771;
+	align-items: center;
+	margin-bottom: 0.5rem;
+	line-height: 1;
+	align-items: center !important;
+}
+
+.series-item-title-plant {
+	display: inline-flex;
+	align-items: center;
+	font-size: 0.9rem;
+	line-height: 1;
+	padding: 0.125rem 0;
+}
+
+.series-item-title-plant div.plant-vignette,
+.series-item-title-plant div.media-circle-view {
+	margin-right: 0.75rem;
+}
+
+.series-item-title-plant-name {
+	font-size: .8rem;
+	text-transform: uppercase;
+	font-weight: bold;
+	letter-spacing: 0.3px;
+}
+
+a.series-item-title-plant-safety {
+	margin-left: 0.5rem;
+	color: var(--muted);
+	font-size: .8rem;
+	letter-spacing: -0.1px;
+}
+
+.series-item {
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+
+.series-item:not(.series-item-title) {
+	padding-top: 0.25rem;
+	padding-bottom: 0.25rem;
+}
+
+.series-item.series-item-compare {
+	opacity: 0.5;
+}
+
+.series-item + .series-item.series-item-title {
+	margin-top: 0.25rem;
+}
+
+.series-item.series-item-title div.media-circle-view {
+	margin-top: -0.3rem;
+	margin-bottom: -0.3rem;
+}
+
+.series-item.series-item-title div.plant-vignette {
+	margin-top: -1.3rem;
+	margin-bottom: -1rem;
+}
+
+.series-item-body .series-item:not(.series-item-title):not(.series-item-gap) + .series-item:not(.series-item-title):not(.series-item-group):not(.series-item-gap) {
+	border-top: 1px dashed #ddd;
+}
+
+.series-item-planning {
+	display: grid;
+	align-items: baseline;
+	position: relative;
+	transition: background-color 0.5s;
+	text-decoration: none;
+	padding-left: 0;
+}
+
+.series-item-planning.series-item {
+	padding-right: 0;
+}
+
+.series-item-planning.series-item-header {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+/* L'assolement et les variétés passent sous le nom de la série : la colonne
+   disparaît et sa largeur revient au diagramme, qui est ce qu'on regarde. */
+
+.series-item-planning-wrapper {
+	--series-check: 3rem;
+	--series-details: 15rem;
+	--series-area: 7rem;
+	--series-gap: 0.5rem;
+	--series-timeline-gap: 1rem;
+}
+
+@media (min-width: 1600px) {
+
+	.series-item-planning-wrapper {
+		--series-details: 17rem;
+	}
+
+}
+
+@media (max-width: 1199px) {
+
+	.series-item-planning-wrapper {
+		--series-details: 14rem;
+	}
+
+}
+
+/* Densité, filets de séparation et chasse fixe, communs aux trois vues du plan.
+   Sans filets les colonnes flottent ; sans chasse fixe les chiffres ne s'empilent
+   pas et la colonne se lit moins vite qu'un tableau.
+
+   La cellule qui porte le diagramme ou les jetons est exclue : elle a son propre
+   positionnement, et la mettre en flex l'écrase. */
+
+.series-item-planning > *:not(.series-item-planning-timeline),
+.series-item-harvesting > *:not(.series-item-harvesting-weeks),
+.series-item-working-time > *:not(.series-item-working-time-tasks) {
+	border-right: 1px solid var(--border-light);
+	padding-right: 0.5rem;
+	align-self: stretch;
+	display: flex;
+	align-items: center;
+	font-size: .95rem;
+}
+
+/* Ces cellules portent souvent deux valeurs — un chiffre et son écart, deux
+   unités de récolte : elles s'empilent au lieu de se coller. */
+
+.series-item-planning > .series-item-planning-summary,
+.series-item-planning > .text-end,
+.series-item-harvesting > .text-end,
+.series-item-harvesting > .series-item-harvesting-yield,
+.series-item-harvesting > .series-item-harvesting-yield-expected,
+.series-item-working-time > .text-end,
+.series-item-working-time > .text-center {
+	flex-direction: column;
+	align-items: end;
+	justify-content: center;
+}
+
+.series-item-planning.series-item:not(.series-item-title),
+.series-item-harvesting.series-item:not(.series-item-title),
+.series-item-working-time.series-item:not(.series-item-title) {
+	padding-top: 0.25rem;
+	padding-bottom: 0.25rem;
+}
+
+.series-item-planning .series-item-planning-details,
+.series-item-harvesting .series-item-planning-details,
+.series-item-working-time .series-item-planning-details {
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+
+.series-item-planning.series-item-title,
+.series-item-harvesting.series-item-title,
+.series-item-working-time.series-item-title,
+.series-item-seeds.series-item-title {
+	margin-bottom: 0;
+	padding-top: 0.375rem;
+	padding-bottom: 0.375rem;
+	background-color: var(--background-even);
+}
+
+.series-item-planning {
+	grid-column-gap: var(--series-gap);
+	grid-template-columns:
+		var(--series-check)
+		var(--series-details)
+		var(--series-area)
+		1fr;
+}
+
+.series-printing {
+	--series-gap: 0px;
+	--series-check: 0px;
+	--series-details: 6cm;
+	--series-area: 2.5cm;
+	--series-harvest: 2.5cm;
+}
+
+/* Quatre colonnes, comme le markup : la série, le linéaire, l'objectif de
+   récolte, puis le diagramme. Avec trois, la quatrième cellule repartait sur une
+   ligne implicite et la graduation des mois se repliait sur sa largeur de texte. */
+.series-printing .series-item-planning {
+	grid-column-gap: 0;
+	grid-template-columns:
+		var(--series-details)
+		var(--series-area)
+		var(--series-harvest)
+		1fr;
+}
+
+.series-item-planning-wrapper div.series-grid {
+	left: calc(
+		var(--series-check) + var(--series-details) +
+		var(--series-area) + var(--series-harvest, 0px) +
+		3 * var(--series-gap) + var(--series-timeline-gap)
+	);
+}
+
+/* Affichage de la planification */
+
+/* Le voile de survol passe derrière le diagramme, comme la grille : les pastilles
+   et les barres gardent leur fond blanc. */
+div.series-item-planning:not(.series-item-header):hover::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-color: #7771;
+	pointer-events: none;
+}
+
+.series-item-planning-details {
+	line-height: 1.2;
+	min-width: 0;
+}
+
+/* Empilé seulement là où une seconde ligne existe : les vues Récoltes et Temps
+   de travail portent la variété sous le nom, le plan de culture non. */
+.series-item-planning-details:has(.series-item-planning-details-info) {
+	display: flex;
+	flex-direction: column;
+	align-items: start;
+	justify-content: center;
+	gap: 0.25rem;
+}
+
+/* Sans seconde ligne, le nom se centre sur la hauteur de sa ligne au lieu de
+   rester collé en haut. */
+.series-item-planning-details:not(:has(.series-item-planning-details-info)),
+.series-item-planning-details:not(:has(.series-item-planning-details-info)) .series-item-planning-details-link {
+	display: flex;
+	align-items: center;
+}
+
+/* La cellule du nom réserve sa place au menu : le lien s'arrête avant, l'icône
+   est toujours là, jamais coupée. */
+.series-item-planning-details:has(.series-item-planning-actions) {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 1.5rem;
+	align-items: center;
+	column-gap: 0.25rem;
+}
+
+.series-item-planning-details:has(.series-item-planning-actions) .series-item-planning-details-link {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: start;
+	justify-content: center;
+	gap: 0.1rem;
+	line-height: 1.2;
+	text-decoration: none;
+	color: inherit;
+}
+
+.series-item-planning-details-link:hover .series-item-planning-details-title {
+	text-decoration: underline;
+}
+
+.series-item-planning-details:has(.series-item-planning-closed) {
+	flex-direction: row;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.series-item-planning-details:has(.series-item-planning-closed) .series-item-planning-details-link {
+	flex: 1;
+	min-width: 0;
+}
+
+.series-item-planning-closed {
+	display: flex;
+	align-items: center;
+	margin-left: auto;
+	font-size: 1.25rem;
+	line-height: 1;
+	color: var(--text-intermediate);
+}
+
+/* Le menu d'une seule culture cochée : posé à droite de sa case. La cellule
+   entière coche : la case seule fait une cible de 1 rem au doigt. */
+#series-wrapper label.batch-checkbox {
+	position: relative;
+	align-self: stretch;
+	cursor: pointer;
+}
+
+#series-wrapper label.batch-checkbox:hover {
+	background-color: #0000000a;
+}
+
+#series-wrapper .batch-one-wrapper {
+	left: 2.5rem;
+	top: 50%;
+	transform: translateY(-50%);
+	white-space: nowrap;
+	z-index: 20;
+}
+
+/* La fiche d'implantation d'un semis ou d'une plantation, sous sa pastille. */
+/* La pastille ouvre sa fiche sans porter le chevron des menus : le diagramme
+   est déjà chargé. */
+.series-item-timeline-event-detailed {
+	cursor: pointer;
+}
+
+.series-item-timeline-event-detailed.dropdown-toggle::after {
+	display: none;
+}
+
+.series-item-implantation {
+	color: white;
+	display: grid;
+	grid-template-columns: auto auto;
+	gap: 0.25rem 1.5rem;
+	padding: 0.5rem 1rem 0.75rem;
+	font-size: 1rem;
+	white-space: nowrap;
+}
+
+.series-item-implantation-label {
+	color: #ffffffb3;
+}
+
+.series-item-implantation-value {
+	text-align: right;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Une série qui vient d'être créée ou dupliquée entre en une seconde, puis
+   s'allume le temps qu'on la repère : un halo posé par-dessus la ligne (ses
+   cellules sont opaques) et une pastille qui la nomme. */
+.series-item-planning-new {
+	position: relative;
+	z-index: 5;
+	animation: series-item-planning-appear 0.7s ease-out;
+}
+
+@keyframes series-item-planning-appear {
+	0% {
+		opacity: 0;
+		transform: translateY(-0.75rem) scaleY(0.9);
+	}
+	60% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+.series-item-planning-new::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	pointer-events: none;
+	border-radius: var(--radius);
+	background-image: linear-gradient(90deg, color-mix(in srgb, var(--secondary) 20%, transparent), color-mix(in srgb, var(--secondary) 4%, transparent) 55%, transparent);
+	box-shadow: inset 3px 0 0 var(--secondary), 0 0 0 1px color-mix(in srgb, var(--secondary) 40%, transparent), 0 0.25rem 1rem color-mix(in srgb, var(--secondary) 25%, transparent);
+	animation: series-item-planning-new 0.6s ease-out both;
+}
+
+@keyframes series-item-planning-new {
+	0% { opacity: 0; }
+	100% { opacity: 1; }
+}
+
+.series-item-planning-new-label {
+	position: absolute;
+	top: -0.2rem;
+	transform: translateY(-100%);
+	left: 2.25rem;
+	z-index: 6;
+	padding: 0.05rem 0.5rem;
+	border-radius: 1rem;
+	background-color: var(--secondary);
+	color: white;
+	font-size: 0.7rem;
+	font-weight: bold;
+	line-height: 1.4;
+	white-space: nowrap;
+	pointer-events: none;
+	box-shadow: 0 0.15rem 0.5rem #0003;
+	animation: series-item-planning-label 0.6s ease-out both;
+}
+
+@keyframes series-item-planning-label {
+	0% { opacity: 0; transform: translateY(calc(-100% + 0.4rem)); }
+	100% { opacity: 1; transform: translateY(-100%); }
+}
+
+.series-item-planning-new-out::after,
+.series-item-planning-new-out .series-item-planning-new-label {
+	animation: series-item-planning-out 0.6s ease-in both;
+}
+
+@keyframes series-item-planning-out {
+	0% { opacity: 1; }
+	100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.series-item-planning-new,
+	.series-item-planning-new::after,
+	.series-item-planning-new-label {
+		animation: none;
+	}
+}
+
+.series-item-planning-actions {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	border: 1px solid var(--border);
+	color: var(--text);
+	font-size: 1.25rem;
+	cursor: pointer;
+}
+
+.series-item-planning-actions::after {
+	display: none;
+}
+
+.series-item-planning-actions:hover,
+.series-item-planning-actions:has(+ .dropdown-placeholder) {
+	color: var(--primary);
+	background-color: #0000000d;
+}
+
+.series-item-planning-details-info {
+	display: block;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* La semaine de semis ou de plantation ne se fait jamais rogner : le nom de la
+   série se réduit et porte les points de suspension, la pastille et l'année
+   gardent leur place. */
+.series-item-planning-details-title {
+	display: flex;
+	align-items: baseline;
+	gap: 0.25rem;
+	max-width: 100%;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.series-item-planning-details-title > .series-item-planning-details-name {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.series-item-planning-details-title > *:not(.series-item-planning-details-name) {
+	flex: none;
+}
+
+
+
+.series-item-planning-details-info {
+	color: var(--muted);
+	font-size: 0.7rem;
+	font-variant-numeric: tabular-nums;
+}
+
+.series-item-planning-title {
+	display: flex;
+	align-items: baseline;
+	gap: 0.5rem;
+}
+
+div.series-item-planning-details {
+	text-decoration: none;
+}
+
+/* Le nom porte le lien vers la série dans les vues Récoltes et Temps de travail,
+   où la cellule entière n'en est pas un. Il garde la couleur de lien du plan et
+   ne se souligne qu'au survol, comme sur l'onglet Séries : forcer `inherit` le
+   rendait noir alors que le nom du plan est vert, hérité de sa cellule-lien. */
+div.series-item-planning-details .series-item-planning-details-name {
+	text-decoration: none;
+}
+
+div.series-item-planning-details:hover .series-item-planning-details-name {
+	text-decoration: underline;
+}
+
+.series-item-planning-details .plant-start {
+	margin-left: 0;
+}
+
+.series-item-timeline-event-shiftable {
+	touch-action: pan-y;
+	cursor: grab;
+}
+
+/* Le ruban d'un itinéraire est saisissable comme celui d'une série. La règle vit
+   ici, avec le pointillé de survol qu'elle accompagne : posée dans sequence.css,
+   elle pouvait manquer pendant que celle du survol était déjà là. */
+.sequence-plan .series-item-timeline-event-full.series-item-timeline-event-shiftable {
+	cursor: grab;
+}
+
+.series-item-planning:hover .series-item-timeline-event-shiftable {
+	box-shadow: 0 0 0 1px var(--primary);
+}
+
+.series-item-timeline-bound {
+	position: absolute;
+	top: 50%;
+	width: 1.25rem;
+	height: 1.5rem;
+	transform: translateY(-50%);
+	cursor: ew-resize;
+	touch-action: pan-y;
+	opacity: 0;
+	z-index: 3;
+}
+
+.series-item-timeline-bound-first {
+	left: -0.625rem;
+}
+
+.series-item-timeline-bound-last {
+	right: -0.625rem;
+}
+
+/* Une poignée ronde qui déborde du bout de la campagne, comme le curseur d'un
+   slider : elle dit « ça se tire » sans qu'on ait à le deviner. */
+.series-item-timeline-bound::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 0.75rem;
+	height: 0.75rem;
+	border-radius: 50%;
+	background-color: white;
+	border: 2px solid currentColor;
+	box-shadow: 0 1px 2px #0003;
+}
+
+.series-item-timeline-bound:hover::after,
+.series-item-timeline-event.series-item-timeline-holding .series-item-timeline-bound::after {
+	background-color: currentColor;
+}
+
+.series-item-planning:hover .series-item-timeline-bound {
+	opacity: 1;
+}
+
+.series-item-timeline-event-movable,
+.series-item-timeline-event-period[data-cultivation],
+.series-item-timeline-event-period[data-flow] {
+	cursor: grab;
+	touch-action: pan-y;
+}
+
+/* Une campagne qui ne se saisit pas le dit : sur une série clôturée, la barre
+   porte le curseur interdit plutôt que rien du tout. */
+.series-item-timeline-event-period:not([data-cultivation]):not([data-flow]) {
+	cursor: not-allowed;
+}
+
+/* Entre le relâchement et la réponse du serveur, l'élément reste là où on l'a
+   posé : le remettre à sa place produirait un aller-retour à l'écran. */
+.series-item-timeline-pending {
+	opacity: 0.55;
+	pointer-events: none;
+}
+
+.series-item-timeline-event-movable:hover,
+.series-item-timeline-event-period[data-cultivation]:hover,
+.series-item-timeline-event-period[data-flow]:hover,
+.series-item-timeline-event-shiftable:hover {
+	outline: 2px dashed var(--primary);
+	outline-offset: 2px;
+}
+
+.series-item-timeline-holding,
+.series-item-timeline-holding:hover {
+	outline: 2px solid var(--primary);
+	outline-offset: 2px;
+	cursor: grabbing;
+}
+
+.series-item-timeline-ghost {
+	opacity: 0.35;
+	filter: grayscale(1);
+	z-index: 0;
+}
+
+/* Une série qui change de rang après une modification de sa date de semis ou de
+   plantation : elle glisse de son ancienne place à la nouvelle plutôt que de
+   réapparaître ailleurs. */
+.series-item-planning.series-item-moving {
+	transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+	position: relative;
+	z-index: 4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.series-item-planning.series-item-moving {
+		transition: none;
+	}
+
+}
+
+.series-item-wrapper > .series-item-ruler {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	z-index: 0;
+	min-width: 0;
+	background-color: #0000000a;
+	pointer-events: none;
+}
+
+div.series-item-timeline {
+	align-self: center;
+	position: relative;
+	display: flex;
+	align-items: center;
+	height: 2.1rem;
+	overflow: hidden;
+}
+
+/* La forme de la pastille vient du composant `util-timeline-event` de component.css, partagé avec
+   la frise de comparaison d'un groupe. Ne reste ici que son placement sur l'axe de jours de cet
+   écran, et la couleur, qui est celle de l'intervention. */
+div.series-item-timeline-event {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	color: white;
+}
+
+div.series-item-timeline:not(.series-item-timeline-full) div.series-item-timeline-event {
+	border: 1px solid var(--muted) !important;
+}
+
+div.series-item-timeline-event.series-item-timeline-event-expected > span {
+	padding: 0.1rem;
+	border-radius: var(--radius);
+}
+
+/* Les barres passent au-dessus de la grille (et de son trait de semaine en
+   cours), qui est un calque posé sur toute la hauteur du plan. */
+div.series-item-timeline-event {
+	z-index: 1;
+}
+
+/* La forme du ruban vient de `util-timeline-event-frame`, partagé. Ne reste ici que le débordement,
+   que la barre de progression `--series-done` a besoin de couper. */
+div.series-item-timeline-event.series-item-timeline-event-full {
+	overflow: hidden;
+}
+
+div.series-item-timeline-event-full[style*="--series-done"]::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: var(--series-done);
+	background-color: white;
+}
+
+.series-item-timeline-event-done {
+	cursor: not-allowed;
+}
+
+/* Faite, donc plus déplaçable, mais elle ouvre toujours sa fiche : c'est un clic. */
+.series-item-timeline-event-done.series-item-timeline-event-detailed {
+	cursor: pointer;
+}
+
+/* La bulle du glissé, sous la pastille tenue : ce qui suit, et le choix de
+   l'emmener ou non. Chargée à l'appui long, remplacée par le serveur. */
+.series-item-timeline-choice {
+	position: absolute;
+	z-index: 40;
+	min-width: 15rem;
+	max-width: 20rem;
+	padding: 0.5rem 0.625rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background-color: white;
+	box-shadow: var(--shadow-v2);
+	font-size: 0.8rem;
+	cursor: default;
+}
+
+.series-item-timeline-choice-loading {
+	min-height: 2rem;
+	opacity: 0.6;
+}
+
+.series-item-timeline-choice-title {
+	font-weight: bold;
+	margin-bottom: 0.4rem;
+}
+
+.series-item-timeline-choice-title span {
+	font-family: var(--series-mono);
+	font-weight: normal;
+	color: var(--muted);
+	margin-left: 0.25rem;
+}
+
+.series-item-timeline-choice-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	color: var(--muted);
+	font-size: 0.75rem;
+}
+
+.series-item-timeline-choice-list li {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.15rem 0;
+}
+
+.series-item-timeline-choice-list li > span:last-child {
+	margin-left: auto;
+	font-family: var(--series-mono);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.series-item-timeline-choice-list .action-circle {
+	width: 0.7rem;
+	height: 0.7rem;
+	margin: 0;
+}
+
+.series-item-timeline-choice-harvest {
+	display: inline-flex;
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 50%;
+	background-color: var(--harvest);
+	color: white;
+	font-size: 0.45rem;
+	align-items: center;
+	justify-content: center;
+	font-weight: bold;
+}
+
+.series-item-timeline-choice-alone {
+	color: var(--muted);
+	font-size: 0.75rem;
+}
+
+/* Les deux cibles du glissé : monter emmène la suite, descendre laisse le reste
+   en place. Elles se dessinent autour de la pastille tenue et s'allument quand
+   le geste les atteint. */
+/* Au-dessus de la bulle qui détaille ce que « la suite » contient : c'est la
+   cible qui décide du geste, elle ne doit jamais passer dessous. */
+.series-item-timeline-targets {
+	position: absolute;
+	top: 50%;
+	width: 0;
+	height: 0;
+	z-index: 41;
+	pointer-events: none;
+}
+
+.series-item-timeline-target {
+	position: absolute;
+	left: 0;
+	transform: translateX(-50%);
+	padding: 0.3rem 0.85rem;
+	border-radius: 1rem;
+	border: 2px dashed var(--muted);
+	background-color: white;
+	color: var(--text);
+	font-size: 0.9rem;
+	font-weight: bold;
+	line-height: 1.2;
+	white-space: nowrap;
+	box-shadow: var(--shadow-v2);
+	transition: background-color 0.1s, color 0.1s, border-color 0.1s, transform 0.1s;
+}
+
+.series-item-timeline-target-up {
+	bottom: 1.9rem;
+}
+
+.series-item-timeline-target-down {
+	top: 1.9rem;
+}
+
+/* Celle qui est retenue se détache franchement de l'autre : c'est elle qui dira
+   ce que le lâcher va faire. */
+.series-item-timeline-targets.is-up .series-item-timeline-target-up,
+.series-item-timeline-targets.is-down .series-item-timeline-target-down {
+	background-color: var(--primary);
+	border-color: var(--primary);
+	border-style: solid;
+	color: white;
+	transform: translateX(-50%) scale(1.08);
+}
+
+/* Ce qui suivrait, dessiné en fantôme à sa position d'arrivée pendant le glissé. */
+.series-item-timeline-follower {
+	opacity: 0.45;
+	outline: 2px dashed var(--primary);
+	outline-offset: 2px;
+	pointer-events: none;
+}
+
+/* Au doigt : pas de menu contextuel ni de sélection de texte sur l'appui long,
+   et une zone de touche de 44 px autour de cibles qui n'en font que 25. Le
+   pseudo-élément agrandit la prise sans toucher au dessin. */
+.series-item-timeline-event-movable,
+.series-item-timeline-event-period,
+.series-item-timeline-event-shiftable,
+.series-item-timeline-bound {
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-touch-callout: none;
+}
+
+@media (pointer: coarse) {
+
+	.series-item-timeline-event-movable::after,
+	.series-item-timeline-event-period::after {
+		content: "";
+		position: absolute;
+		inset: -0.625rem;
+	}
+
+	.series-item-timeline-bound {
+		width: 2.75rem;
+		height: 2.75rem;
+		opacity: 1;
+	}
+
+	.series-item-timeline-bound-first {
+		left: -1.375rem;
+	}
+
+	.series-item-timeline-bound-last {
+		right: -1.375rem;
+	}
+
+}
+
+/* Les repères de semaine se posent sous la piste, dans la marge de la ligne :
+   la piste déborde donc au survol, et la ligne passe devant sa voisine. */
+.series-item-timeline-marks {
+	display: none;
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 12;
+}
+
+.series-item-planning:hover .series-item-timeline-marks {
+	display: block;
+}
+
+.series-item-planning:hover div.series-item-timeline {
+	overflow: clip visible;
+}
+
+.series-item-planning:hover {
+	z-index: 3;
+}
+
+.series-item-planning:has(#series-choice) {
+	z-index: 5;
+}
+
+.series-item-timeline-mark,
+.series-item-timeline-delay span {
+	position: absolute;
+	top: calc(100% - 0.15rem);
+	transform: translateX(-50%);
+	padding: 0 0.125rem;
+	background-color: white;
+	font-family: var(--series-mono);
+	font-variant-numeric: tabular-nums;
+	font-size: 0.625rem;
+	line-height: 1;
+	color: var(--muted);
+	white-space: nowrap;
+}
+
+.series-item-timeline-mark {
+	color: var(--primary);
+}
+
+.series-item-timeline-delay {
+	position: absolute;
+	top: calc(100% + 0.15rem);
+	height: 0;
+	border-top: 1px dotted var(--muted);
+}
+
+.series-item-timeline-delay span {
+	left: 50%;
+	top: -0.3rem;
+}
+
+div.series-item-timeline-event.series-item-timeline-event-expected {
+	border: 1px solid var(--border);
+}
+
+div.series-item-timeline-event-min div.series-item-timeline-event:not(.series-item-timeline-event-full) {
+	border-top-left-radius: var(--radius);
+	border-bottom-left-radius: var(--radius);
+}
+
+div.series-item-timeline-event-max div.series-item-timeline-event:not(.series-item-timeline-event-full) {
+	border-top-right-radius: var(--radius);
+	border-bottom-right-radius: var(--radius);
+}
+
+
+div.series-item-planning-timeline {
+	margin-left: var(--series-timeline-gap);
+	position: relative;
+}
+
+div.series-item-planning-timeline.util-table-header {
+	padding-bottom: 0;
+}
+
+div.series-item:not(.series-item-header) div.series-item-planning-timeline {
+	height: 100%;
+}
+
+div.series-item:not(.series-item-header) div.series-item-planning-summary {
+	text-align: right;
+	font-size: 0.9rem;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: -0.2px;
+	line-height: 1.2;
+}
+
+div.series-item-title div.series-item-planning-summary {
+	font-variant-numeric: tabular-nums;
+}
+
+.series-item-planning.series-item-header > .util-table-header,
+.series-item-harvesting.series-item-header > .util-table-header,
+.series-item-working-time.series-item-header > .util-table-header {
+	font-size: 0.65rem;
+	font-weight: 600;
+	letter-spacing: 0.3px;
+	line-height: 1.15;
+	padding-top: 0.5rem;
+	padding-bottom: 0.375rem;
+	align-items: end;
+	color: var(--muted);
+}
+
+.series-item-harvesting.series-item-header > .util-table-header.text-center,
+.series-item-working-time.series-item-header > .util-table-header.text-center {
+	justify-content: center;
+}
+
+.series-item-planning-gap {
+	color: inherit;
+	opacity: 0.55;
+	font-size: 0.7rem;
+	margin-left: 0.1875rem;
+}
+
+.series-item-planning-unit {
+	color: var(--muted);
+	font-weight: normal;
+	text-transform: none;
+}
+
+div.series-item-title div.series-item-planning-summary {
+	letter-spacing: -0.2px;
+	font-weight: bold;
+}
+
+/* Affichage des semences et plants */
+div.series-item-seeds {
+	display: grid;
+	grid-gap: 0.25rem;
+	align-items: baseline;
+}
+
+div.series-item-seeds-all {
+	grid-template-columns: minmax(9rem, 18%) 6.5rem 6rem 7rem 6.5rem 6.5rem 1fr;
+}
+
+div.series-item-seeds-sowing {
+	grid-template-columns: minmax(13rem, 20%) 8rem 7rem 9rem 1fr;
+}
+
+div.series-item-seeds-sowing .series-item-young-plant,
+div.series-item-seeds-sowing .series-item-young-plant-bought {
+	display: none;
+}
+
+div.series-item-seeds-young-plant {
+	grid-template-columns: minmax(12rem, 20%) 8rem 7rem 9rem 9rem 1fr;
+}
+
+div.series-item-seeds-young-plant .series-item-young-plant-bought {
+	display: none;
+}
+
+div.series-item-seeds-young-plant-bought {
+	grid-template-columns: minmax(15rem, 20%) 9rem 1fr;
+}
+
+div.series-item-seeds-young-plant-bought .series-item-sowing,
+div.series-item-seeds-young-plant-bought .series-item-stock,
+div.series-item-seeds-young-plant-bought .series-item-buy,
+div.series-item-seeds-young-plant-bought .series-item-young-plant {
+	display: none;
+}
+
+div.series-item-seeds-young-plant-bought .util-table-header br {
+	display: none;
+}
+
+div.series-item-seeds.series-item-title {
+	grid-template-columns: 1fr;
+}
+
+@media (min-width: 1600px) {
+
+	div.series-item-seeds-all {
+		grid-template-columns: minmax(10rem, 18%) 8rem 7rem 8rem 8rem 8rem 1fr;
+	}
+
+}
+@media (max-width: 991px) {
+
+	div.series-item-seeds-all {
+		grid-template-columns: minmax(9rem, 20%) 6.5rem 6rem 7rem 6.5rem 1fr;
+	}
+
+	div.series-item-seeds-all .series-item-young-plant {
+		display: none;
+	}
+
+	div.series-item-seeds-sowing {
+		grid-template-columns: minmax(12rem, 20%) 6.5rem 6rem 7rem 1fr;
+	}
+
+	div.series-item-seeds-young-plant-bought {
+		grid-template-columns: minmax(15rem, 20%) 9rem 1fr;
+	}
+
+	div.series-item-seeds-young-plant {
+		grid-template-columns: minmax(11rem, 20%) 6.5rem 6rem 7rem 7rem 1fr;
+	}
+
+	div.series-item-seeds.series-item-title {
+		grid-template-columns: 1fr;
+	}
+
+}
+
+
+div.series-item-seeds-value {
+	text-align: right;
+}
+
+div.series-item-seeds-alert {
+	font-size: 0.8rem;
+	line-height: 1.2;
+	margin-top: 0.125rem;
+}
+
+div.series-item-seeds-supplier {
+	font-size: 0.75rem;
+	line-height: 1;
+}
+
+div.series-item-seeds-weight {
+	font-size: 0.75rem;
+	line-height: 1;
+	margin-bottom: 0.25rem;
+	color: var(--muted);
+}
+
+div.series-item-seeds-series {
+	margin-left: 1rem;
+}
+
+div.series-item-seeds-week {
+	padding: 0 1rem;
+	margin-top: 2rem;
+}
+
+div.series-item-header + div.series-item-seeds-week {
+	margin-top: 0.5rem;
+}
+
+/* Affichage du prévisionnel */
+div.series-item-forecast {
+	display: grid;
+	grid-template-columns: 1fr 10rem 10rem 5rem 3rem 7rem 7rem 5rem 3rem 7rem 4rem;
+	align-items: center;
+	text-decoration: none;
+	padding-bottom: 0 !important;
+	padding-top: 0 !important;
+}
+
+@media (min-width: 1200px) {
+
+	div.series-item-forecast {
+		grid-template-columns: 1fr 10rem 10rem 6rem 4rem 7rem 8rem 5rem 3rem 7rem 4rem;
+	}
+
+}
+
+div.series-item-forecast:hover {
+	background-color: #7771;
+}
+
+div.series-item-forecast > * {
+	padding-bottom: 0.25rem;
+	padding-top: 0.25rem;
+}
+
+div.series-item-forecast .util-table-header {
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+}
+
+div.series-item-forecast.series-item-title {
+	margin-bottom: 0 !important;
+	margin-top: 0 !important;
+}
+
+div.series-item-forecast.series-item-gap {
+	height: 0.5rem;
+}
+
+.series-item-forecast-objective-title {
+	text-align: center;
+	text-transform: uppercase;
+	font-weight: bold;
+	border-top-left-radius: var(--radius);
+	border-top-right-radius: var(--radius);
+	background-color: #7771;
+	padding: 0.5rem 0;
+	border-left: 1px solid var(--muted);
+	border-right: 1px solid var(--muted);
+	border-top: 1px solid var(--muted);
+}
+
+
+.series-item-forecast-objective {
+	background-color: #bbb1;
+	padding: 0 0.5rem;
+	align-self: stretch;
+	display: flex;
+	align-items: center;
+	justify-content: end;
+}
+.series-item-forecast-objective.series-item-forecast-objective-unit {
+	justify-content: start;
+}
+
+.series-item-forecast-objective-first {
+	border-left: 1px solid var(--muted);
+	align-self: stretch;
+}
+.series-item-forecast-objective-last {
+	border-right: 1px solid var(--muted);
+	align-self: stretch;
+	padding-right: 1rem;
+}
+
+.series-item-forecast-objective-title,
+.series-item-forecast-objective-first {
+	margin-left: 1rem;
+}
+
+.series-item-forecast-objective.util-table-header {
+	align-self: stretch;
+	display: flex;
+	align-items: end;
+	justify-content: end;
+	text-align: center;
+}
+
+.series-item-forecast-series {
+	padding-right: 0.5rem;
+}
+
+a.series-item-forecast-missing {
+	font-size: 0.9rem;
+	letter-spacing: -0.1px;
+	color: var(--muted);
+}
+
+.series-item-forecast-series-gap {
+	padding-left: 1rem;
+	border-left: 2px solid var(--muted);
+	margin-left: 1rem;
+}
+
+.series-item-forecast-area {
+	text-align: right;
+}
+
+.series-item-forecast-sales {
+	text-align: right;
+}
+
+.series-item-forecast-sales:not(.color-muted) {
+	font-weight: bold;
+	font-size: 1.2rem;
+}
+
+.series-item-forecast-harvest-expected {
+	text-align: right;
+	padding-right: 0;
+}
+
+.series-item-forecast-price {
+	display: grid;
+	align-items: center;
+	column-gap: 1rem;
+	grid-template-columns: 1fr 3rem;
+}
+
+.series-item-forecast-price > div:first-child {
+	text-align: right;
+}
+
+.series-item-forecast-price > div:last-child {
+	font-size: 0.8rem;
+}
+
+.series-item-forecast-price .badge {
+	text-align: center;
+}
+
+.series-item-forecast-actions {
+	text-align: right;
+}
+
+/* Affichage des récoltes */
+.series-item-harvesting-wrapper {
+	--series-details: 16rem;
+	--series-yield: 6rem;
+	--series-gap: 0.5rem;
+}
+
+@media (max-width: 991px) {
+
+	.series-item-harvesting-wrapper {
+		--series-details: 14rem;
+		--series-yield: 5rem;
+	}
+
+}
+
+div.series-item-harvesting {
+	display: grid;
+	grid-template-columns:
+		var(--series-details)
+		repeat(5, var(--series-yield))
+		1fr;
+	grid-column-gap: var(--series-gap);
+	align-items: center;
+	text-decoration: none;
+}
+
+.series-item-harvesting-wrapper div.series-grid {
+	left: calc(
+		1rem + var(--series-details) + 5 * var(--series-yield) + 6 * var(--series-gap)
+	);
+	right: 1rem;
+}
+
+@media (min-width: 1200px) {
+
+	.series-item-harvesting {
+		font-size: 0.9rem;
+	}
+
+}
+
+div.series-item-title div.series-item-harvesting-yield {
+	color: var(--muted);
+}
+
+div.series-item-harvesting-weeks {
+	position: relative;
+	align-self: stretch;
+	min-height: 1.75rem;
+}
+
+.series-item-harvesting-run,
+.series-item-harvesting-done {
+	position: absolute;
+	top: calc(50% - 0.25rem);
+	height: 0.5rem;
+	border-radius: 0.25rem;
+}
+
+.series-item-harvesting-run {
+	background-color: color-mix(in srgb, var(--harvest) 25%, transparent);
+}
+
+.series-item-harvesting-done {
+	background-color: var(--harvest);
+}
+
+.series-item-header div.series-item-harvesting-weeks {
+	position: static;
+}
+
+div.series-item-harvesting-evolution {
+	font-size: 0.8rem;
+	line-height: 1.2;
+}
+
+span.series-item-planning-details-variety {
+	margin-left: 0.5rem;
+}
+
+span.series-item-planning-details-variety {
+	color: var(--muted);
+	line-height: 1.2;
+	font-size: 0.9rem;
+}
+@media screen {
+
+	@media (max-width: 1199px) {
+
+		.series-item-planning-details-variety {
+			display: none;
+		}
+
+	}
+
+}
+
+/* Affichage du temps de travail */
+.series-item-working-time-wrapper {
+	--series-details: 22rem;
+	--series-area: 7rem;
+	--series-harvested: 7rem;
+	--series-worked: 7rem;
+	--series-gap: 0.5rem;
+}
+
+@media (max-width: 1199px) {
+
+	.series-item-working-time-wrapper {
+		--series-details: 18rem;
+		--series-area: 6rem;
+		--series-harvested: 0px;
+		--series-worked: 6rem;
+	}
+
+}
+
+@media (max-width: 575px) {
+
+	.series-item-working-time-wrapper {
+		--series-details: 12rem;
+	}
+
+}
+
+div.series-item-working-time {
+	display: grid;
+	grid-template-columns:
+		var(--series-details)
+		var(--series-area)
+		var(--series-harvested)
+		var(--series-worked)
+		1fr;
+	grid-column-gap: var(--series-gap);
+	align-items: baseline;
+	text-decoration: none;
+}
+
+div.series-item-working-time > .series-item-working-time-tasks {
+	overflow: hidden;
+	position: relative;
+}
+
+div.series-item-working-time-tasks {
+	display: flex;
+	align-items: start;
+	column-gap: 0.5rem;
+}
+
+.series-item-header .series-item-working-time-tasks {
+	display: block;
+}
+
+div.series-item-working-time-task {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+}
+
+div.series-item-working-time-task-content {
+	padding: 0.5rem 0.75rem;
+	border-radius: var(--radius);
+	text-align: center;
+	color: white;
+}
+
+div.series-item-working-time-task-content h5 {
+	margin: 0;
+	white-space: nowrap;
+}
+
+
+@media (min-width: 1200px) {
+
+	div.series-item-working-time-task-content h5 {
+		font-size: 0.9rem;
+		letter-spacing: -0.1px;
+	}
+
+}
+
+span.series-item-working-time-task-value {
+	font-size: 1rem;
+}
+
+div.series-item-working-time-task-pace {
+	margin-top: 0.25rem;
+	font-size: 0.8rem;
+	white-space: nowrap;
+}
+
+/* Form */
+div.series-create-use {
+	background-color: white;
+	position: relative;
+	margin-bottom: 1.5rem;
+}
+
+#series-create-plant-list {
+	margin-bottom: 2rem;
+	display: grid;
+	grid-row-gap: 1.5rem;
+}
+
+@media (max-width: 991px) {
+
+	#series-create-plant-list {
+		grid-template-columns: 1fr;
+	}
+
+}
+
+#series-create-add-plant {
+	margin: 0 0 3rem 0;
+	opacity: 0.7;
+	transition: opacity 0.5s;
+}
+
+#series-create-add-plant:hover {
+	opacity: 1;
+}
+
+div.series-create-plant {
+	padding: 1rem;
+	background-color: var(--background-light);
+	position: relative;
+	border-radius: var(--radius);
+}
+
+div.series-create-plant:not(:last-child):after {
+	position: absolute;
+	content: '+';
+	background-color: var(--primary);
+	width: 3.5rem;
+	height: 3.5rem;
+	border-radius: 50%;
+	color: white;
+	font-size: 3rem;
+	font-weight: bold;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	left: calc(50% - 1.75rem);
+	bottom: -2.5rem;
+	z-index: 1;
+	line-height: 1;
+}
+
+div.series-create-plant .util-action {
+	margin-bottom: 2rem;
+}
+
+div.series-create-plant-title {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	grid-column-gap: 0.5rem;
+	align-items: center;
+}
+
+div.series-create-plant-title h4 {
+	margin: 0;
+}
+
+div.series-submit {
+	margin-bottom: 1rem;
+}
+
+/* Gestion du sol */
+#series-soil {
+	width: 100%;
+	margin-bottom: 1.5rem;
+}
+
+#series-soil .crop-item-body {
+	overflow-x: auto;
+}
+
+/* Dans la fiche, le retrait vient de la fiche seule : la grille rend le sien, et sa ligne de titres
+   perd le rem que `.util-table-header` prend en haut d'un tableau, le filet de l'en-tête en tenant
+   lieu ici. */
+#series-soil .series-soil-grid {
+	padding: 0;
+}
+
+#series-soil .series-soil-grid > .util-table-header {
+	padding-top: 0;
+}
+
+/* `crop-item-title` (production/sequence) réserve sa première colonne à la vignette de l'espèce,
+   que l'assolement ne montre pas */
+#series-soil .crop-item-title {
+	grid-template-columns: 1fr auto;
+}
+
+.series-soil-title {
+	line-height: 1;
+}
+
+/* Affichage des pérennes pour import sur une saison donnée */
+div.series-import-cultivation {
+	display: grid;
+	grid-auto-flow: row;
+	grid-row-gap: 0.25rem;
+}
+
+@media (max-width: 991px) {
+
+	div.series-import-cultivation > * {
+		display: none;
+	}
+
+}
+
+/* Affichage des emplacements */
+div.series-soil-grid {
+	display: grid;
+	align-items: center;
+	grid-row-gap: 0.25rem;
+	grid-column-gap: 1rem;
+	padding: 0.5rem;
+	min-width: 600px;
+}
+
+div.series-soil-grid-series {
+	grid-template-columns: auto auto auto auto auto 1fr;
+}
+
+div.series-soil-grid-series.series-soil-grid-target {
+	grid-template-columns: auto auto auto auto auto auto 1fr;
+}
+
+div.series-soil-grid-task {
+	grid-template-columns: auto auto 1fr;
+}
+
+@media (min-width: 768px) {
+
+	div.series-soil-grid {
+		display: grid;
+		align-items: center;
+		grid-column-gap: 1.5rem;
+	}
+
+	div.series-soil-grid-series {
+		grid-template-columns: auto auto auto 1fr auto auto;
+	}
+
+	div.series-soil-grid-series.series-soil-grid-target {
+		grid-template-columns: auto auto auto 1fr auto auto auto;
+	}
+
+	div.series-soil-grid-task {
+		grid-template-columns: auto auto 1fr;
+	}
+
+}
+
+div.series-soil-grid div.series-soil-grid-total {
+	border-top: 1px solid var(--border);
+	align-self: start;
+}
+
+div.series-soil-grid div.series-soil-grid-zone {
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+div.series-soil-grid div.series-soil-grid-plot {
+	white-space: nowrap;
+}
+
+div.series-soil-grid div.series-soil-grid-bed {
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+div.series-soil-grid div.series-soil-grid-size {
+	text-align: right;
+}
+
+div.series-soil-grid div.series-soil-grid-use {
+	text-align: right;
+}
+
+div.series-soil-grid div.series-soil-grid-area {
+	text-align: right;
+	white-space: nowrap;
+}
+
+/* Affichage du temps de travail sur une série */
+div.series-timesheet {
+	display: grid;
+	grid-template-columns: min-content auto auto 1fr 1fr;
+	grid-column-gap: 2rem;
+	grid-row-gap: 1rem;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+
+@media (max-width: 767px) {
+
+	div.series-timesheet {
+		grid-template-columns: auto auto;
+	}
+
+
+	div.series-timesheet-image {
+		display: none;
+	}
+
+}
+
+div.series-timesheet-cultivation {
+	display: flex;
+}
+
+div.series-timesheet-cultivation h4 {
+	margin: 0;
+}
+
+div.series-timesheet-total,
+div.series-timesheet-sum {
+	text-align: right;
+	font-weight: bold;
+	font-size: 1.2rem;
+}
+
+div.series-timesheet-sum {
+	margin-right: -0.75rem;
+}
+
+div.series-timesheet-content {
+	display: flex;
+	align-items: start;
+	flex-wrap: wrap;
+	grid-column: span 2;
+	column-gap: 1rem;
+	row-gap: 0.5rem;
+}
+
+td.series-field-cultivations {
+	background: linear-gradient(150deg, rgba(0, 0, 0, 0.03) 0, rgba(255, 255, 255, 0) 75%, rgba(255, 255, 255, 0) 100%);
+	line-height: 1.3;
+	padding-top: 0;
+	padding-bottom: 0;
+	padding-left: 1rem;
+}
+
+.series-field-cultivation {
+	font-size: 0.9rem;
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+	margin-right: .5rem;
+}
+
+.series-field-cultivation:not(:last-child) {
+	padding-right: 0.5rem;
+}
+
+.series-field-cultivation input:checked + * {
+	font-weight: bold;
+}
+
+.series-duplicate-copies {
+	line-height: 1;
+	display: flex;
+	column-gap: .75rem;
+	align-items: center;
+	user-select: none;
+}
+
+.series-duplicate-copies a {
+	font-size: 1.5rem;
+}
+
+.series-duplicate-copies-disabled {
+	pointer-events: none;
+	opacity: .25;
+}
+
+.series-duplicate-copies-label {
+	font-weight: bold;
+	font-size: 1.1rem;
+}
+
+.series-duplicate-list h5 {
+	margin-bottom: 0.5rem;
+}
+
+.series-duplicate-list[data-copies="1"] h5 {
+	display: none;
+}
+
+.series-duplicate-copy:not(:first-child) {
+	margin-top: 1rem;
+}
+
+.series-duplicate-interval {
+	margin-top: 0.25rem;
+}
+
+.series-duplicate-list[data-interval="0"] .series-duplicate-interval {
+	display: none;
+}
+
+
+#series-selector {
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: var(--nav-width);
+	z-index: 998;
+	background-color: white;
+	box-shadow: 0 0 1rem #0003;
+	position: fixed;
+	padding: 0 0.75rem 3rem 0.75rem;
+	overflow-y: auto;
+}
+
+body.series-selector-shown #series-selector-button {
+	display: none;
+}
+
+.series-selector-cultivation {
+	display: block;
+	text-decoration: none;
+	background-color: var(--background-light);
+}
+
+.series-selector-cultivation.selected {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	border: 0;
+	outline: 0;
+}
+
+.series-selector-cultivation:first-child {
+	border-top-left-radius: var(--radius);
+	border-top-right-radius: var(--radius);
+}
+
+.series-selector-cultivation:last-child {
+	border-bottom-left-radius: var(--radius);
+	border-bottom-right-radius: var(--radius);
+}
+
+.series-selector-cultivation:not(:last-child) {
+	border-bottom: 1px solid var(--border);
+}
+
+.series-selector-cultivation:hover {
+	cursor: pointer;
+	background-color: var(--background-body);
+}
+
+.series-selector-cultivation .place-context {
+	cursor: default;
+}
+
+.series-selector-cultivation.selected {
+	background-color: var(--info);
+}
+
+.series-selector-cultivation:not(.selected) .series-selector-header a {
+	pointer-events: none;
+}
+
+.series-selector-closed:not(.selected) {
+	opacity: 0.5;
+}
+
+.series-selector-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	padding: 0.375rem 0.5rem;
+}
+
+.series-selector-cultivation:not(.selected) {
+	cursor: pointer;
+}
+
+.series-selector-name {
+	margin-right: 0.375rem;
+}
+
+.series-selector-dates {
+	padding: 0.25rem 0 0;
+	font-size: 0.75rem;
+	opacity: 0.85;
+}
+
+.series-selector-open {
+	flex: none;
+	color: var(--muted);
+	font-size: 0.75rem;
+}
+
+.series-selector-cultivation:not(.selected) .series-selector-open {
+	display: none;
+}
+
+.series-selector-cultivation.selected .series-selector-open {
+	color: white;
+}
+
+.series-selector-place {
+	font-size: 0.85rem;
+	white-space: nowrap;
+}
+
+.series-selector-place[data-color="zero"] {
+	color: var(--danger);
+}
+
+.series-selector-place[data-color="gap"] {
+	color: var(--warning);
+}
+
+/* Sans objectif, il n'y a rien à rapporter. Objectif atteint, le vert le dit
+   déjà et les deux nombres sont les mêmes. */
+.series-selector-cultivation:not(.selected) .series-selector-place[data-color=""] .series-selector-target,
+.series-selector-cultivation:not(.selected) .series-selector-place[data-color="done"] .series-selector-target {
+	display: none;
+}
+/* Le diagramme du plan, posé à la verticale sur la fiche d'une série : une
+   bande par semaine ; une gouttière de mois à la verticale ; un rail neutre
+   qui porte le ruban, la campagne attendue et les pastilles ; les interventions
+   collées au rail. */
+.flow-timeline-vertical {
+	--flow-band: 1.5rem;
+}
+
+.flow-timeline-vertical .flow-timeline {
+	grid-template-columns: 1.5rem 4rem 2.2rem 1fr;
+	grid-column-gap: 0.25rem;
+	align-items: stretch;
+}
+
+@media (min-width: 992px) {
+
+	.flow-timeline-vertical .flow-timeline,
+	.flow-timeline-vertical .flow-timeline-year {
+		grid-template-columns: 1.5rem 6rem 2.2rem 1fr;
+	}
+
+	.flow-timeline-vertical .flow-timeline-axis-days br {
+		display: none;
+	}
+
+}
+
+.flow-timeline-vertical .flow-timeline-header {
+	position: sticky;
+	top: calc(var(--mainSticky) - 1px);
+	z-index: 2;
+	background: var(--background-body);
+	border-bottom: 1px solid var(--border-light);
+}
+
+.flow-timeline-vertical .flow-timeline-body {
+	background-color: transparent;
+	padding-bottom: 0.5rem;
+}
+
+/* L'en-tête porte le « tout cocher » à l'aplomb des cases des fiches : la fiche
+   commence en deuxième colonne de sa ligne (1,55 rem), recule de 2,25 rem, et
+   rend 1,1 rem de marge + 1 px de bordure. */
+.flow-timeline-vertical .flow-timeline-rows-header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.flow-timeline-vertical .flow-timeline-rows-header .flow-timeline-update {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin: 0 0 0 calc(0.4rem + 1px);
+	padding: 0;
+	width: auto;
+	background: none;
+	cursor: pointer;
+	font: inherit;
+	color: inherit;
+	text-transform: inherit;
+}
+
+
+.flow-timeline-vertical .flow-timeline-axis-header {
+	padding-left: 0.5rem;
+}
+
+/* ---- l'année ---- */
+
+.flow-timeline-vertical .flow-timeline-year {
+	grid-template-columns: 1.5rem 4rem 2.2rem 1fr;
+	background: none;
+	border-top: 0;
+}
+
+.flow-timeline-vertical div.flow-timeline-year div.flow-timeline-year-value {
+	width: auto;
+	text-align: left;
+	padding: 0.5rem 0 0.2rem 0.5rem;
+	font-family: var(--series-mono);
+	font-size: 0.75rem;
+	font-weight: bold;
+	letter-spacing: 0.3px;
+	color: var(--text);
+}
+
+/* ---- les bandes ---- */
+
+.flow-timeline-vertical .flow-timeline-band {
+	min-height: var(--flow-band);
+	border-top: 0;
+	position: relative;
+	background: none;
+}
+
+.flow-timeline-vertical .flow-timeline-band {
+	border-bottom: 1px dashed #0001;
+}
+
+.flow-timeline-vertical .flow-timeline-band-occupied {
+	border-bottom: 1px solid var(--border);
+}
+
+.flow-timeline-vertical .flow-timeline-harvest-note {
+	display: flex;
+	align-items: center;
+	height: 100%;
+	padding-left: 0.5rem;
+	font-size: 0.75rem;
+	color: var(--muted);
+}
+
+/* ---- la gouttière des mois : un trait par mois, un cran à chaque bout, le
+   nom à la verticale au début ---- */
+
+.flow-timeline-vertical .flow-timeline-month {
+	position: relative;
+}
+
+.flow-timeline-vertical .flow-timeline-month::before {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 0;
+	bottom: 0;
+	border-left: 1px solid var(--border);
+}
+
+.flow-timeline-vertical .flow-timeline-band-month-first .flow-timeline-month::before {
+	top: 0.25rem;
+}
+
+.flow-timeline-vertical .flow-timeline-band-month-last .flow-timeline-month::before {
+	bottom: 0.25rem;
+}
+
+.flow-timeline-vertical .flow-timeline-band-month-first .flow-timeline-month::after,
+.flow-timeline-vertical .flow-timeline-band-month-last .flow-timeline-month::after {
+	content: "";
+	position: absolute;
+	left: calc(50% - 0.25rem);
+	width: 0.5rem;
+	border-top: 1px solid var(--border);
+}
+
+.flow-timeline-vertical .flow-timeline-band-month-first .flow-timeline-month::after {
+	top: 0.25rem;
+}
+
+.flow-timeline-vertical .flow-timeline-band-month-last .flow-timeline-month::after {
+	bottom: 0.25rem;
+	top: auto;
+}
+
+/* Un mois qui commence et finit dans la même bande repliée : deux crans, on
+   dessine les deux (le ::after ne peut porter qu'un ; le second vient du
+   ::before réduit à ses bouts). */
+.flow-timeline-vertical .flow-timeline-month-name {
+	position: absolute;
+	left: 50%;
+	top: 0.6rem;
+	transform: translateX(-50%) rotate(180deg);
+	writing-mode: vertical-rl;
+	font-size: 0.6rem;
+	font-weight: 700;
+	letter-spacing: 0.6px;
+	text-transform: uppercase;
+	color: var(--muted);
+	background: var(--background-body);
+	padding: 0.2rem 0;
+	white-space: nowrap;
+	z-index: 1;
+}
+
+/* ---- l'axe ---- */
+
+.flow-timeline-vertical .flow-timeline-axis {
+	display: flex;
+	flex-direction: row;
+	align-items: baseline;
+	gap: 0.35rem;
+	padding: 0.1rem 0 0.1rem 0.5rem;
+	color: var(--muted);
+	text-decoration: none;
+	cursor: pointer;
+	min-width: 0;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.flow-timeline-vertical .flow-timeline-band-occupied .flow-timeline-axis {
+	align-items: flex-start;
+	flex-direction: column;
+	gap: 0;
+	justify-content: flex-start;
+	padding-top: 0.55rem;
+}
+
+.flow-timeline-vertical .flow-timeline-axis-week {
+	font-family: var(--series-mono);
+	font-variant-numeric: tabular-nums;
+	font-size: 0.7rem;
+	line-height: 1;
+	color: var(--text-intermediate);
+}
+
+.flow-timeline-vertical .flow-timeline-band-occupied .flow-timeline-axis-week {
+	font-size: 0.85rem;
+	font-weight: bold;
+	color: var(--text);
+}
+
+.flow-timeline-vertical .flow-timeline-band-today .flow-timeline-axis-week {
+	color: var(--secondary);
+}
+
+.flow-timeline-vertical .flow-timeline-axis-days {
+	font-family: var(--series-mono);
+	font-variant-numeric: tabular-nums;
+	font-size: 0.75rem;
+	line-height: 1.25;
+	color: var(--muted);
+}
+
+.flow-timeline-vertical .flow-timeline-axis-days-separator {
+	display: none;
+	padding: 0 0.15rem;
+}
+
+@media (min-width: 992px) {
+
+	.flow-timeline-vertical .flow-timeline-axis-days-separator {
+		display: inline;
+	}
+
+}
+
+/* ---- le rail : neutre ; ruban, campagne, pastilles ---- */
+
+.flow-timeline-vertical .flow-timeline-rail {
+	position: relative;
+	z-index: 3;
+}
+
+.flow-timeline-vertical .flow-timeline-rail::before {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 0;
+	bottom: 0;
+	transform: translateX(-50%);
+	border-left: 1px dashed var(--border);
+}
+
+/* Le ruban : la ligne de métro, neutre et pleine, de la première intervention à
+   la fin de la campagne. */
+.flow-timeline-vertical .flow-timeline-band-span .flow-timeline-rail::before {
+	width: 4px;
+	bottom: -1px;
+	border: 0;
+	border-radius: 2px;
+	background-color: var(--border);
+	transform: translateX(-50%);
+}
+
+.flow-timeline-vertical .flow-timeline-band-span-first .flow-timeline-rail::before {
+	top: 0.5rem;
+}
+
+.flow-timeline-vertical .flow-timeline-band-span-last .flow-timeline-rail::before {
+	bottom: 0.5rem;
+}
+
+/* La campagne de récolte attendue : la barre creuse du plan, à la verticale,
+   une par culture, côte à côte sur le rail (la culture k à k pas du centre),
+   avec son R au milieu et ses deux poignées. Chaque bande porte son segment ;
+   il déborde d'un pixel en bas pour couvrir le trait de la semaine. */
+.flow-timeline-vertical .flow-timeline-harvest {
+	--harvest-width: min(1.25rem, calc(2.2rem / var(--n) - 0.15rem));
+	--harvest-step: calc(var(--harvest-width) + 0.1rem);
+	position: absolute;
+	left: calc(50% + (var(--k) - (var(--n) - 1) / 2) * var(--harvest-step));
+	top: 0;
+	bottom: -1px;
+	width: var(--harvest-width);
+	transform: translateX(-50%);
+	border: 1px solid var(--harvest);
+	border-top: 0;
+	border-bottom: 0;
+	background-color: var(--background-body);
+	touch-action: none;
+}
+
+.flow-timeline-vertical .flow-timeline-harvest {
+	cursor: grab;
+}
+
+.flow-timeline-vertical:not(:has(.flow-timeline-harvest-bound)) .flow-timeline-harvest {
+	cursor: not-allowed;
+}
+
+.flow-timeline-vertical .flow-timeline-harvest-first {
+	top: 0.2rem;
+	border-top: 1px solid var(--harvest);
+	border-radius: 1rem 1rem 0 0;
+}
+
+.flow-timeline-vertical .flow-timeline-harvest-last {
+	bottom: 0.2rem;
+	border-bottom: 1px solid var(--harvest);
+	border-radius: 0 0 1rem 1rem;
+}
+
+.flow-timeline-vertical .flow-timeline-harvest-first.flow-timeline-harvest-last {
+	border-radius: 1rem;
+}
+
+.flow-timeline-vertical .flow-timeline-harvest.is-held {
+	border-color: var(--primary);
+}
+
+.flow-timeline-vertical .flow-timeline-harvest-label {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 1;
+	font-size: 0.7rem;
+	font-weight: bold;
+	color: var(--harvest);
+	pointer-events: none;
+}
+
+/* La vignette tient dans la largeur de sa barre : plus large, elle passerait
+   par-dessus les campagnes voisines. */
+.flow-timeline-vertical .flow-timeline-harvest-plant {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--harvest-width);
+	height: var(--harvest-width);
+	border-radius: 50%;
+	border: 1px solid var(--harvest);
+	background-color: var(--background-body);
+	overflow: hidden;
+	pointer-events: none;
+}
+
+/* La vignette garde une taille lisible et c'est la pastille qui la rogne : à
+   trois campagnes sur le rail, une vignette mise à la largeur de la barre ne se
+   reconnaîtrait plus. */
+.flow-timeline-vertical .flow-timeline-harvest-plant .plant-vignette,
+.flow-timeline-vertical .flow-timeline-harvest-plant .media-circle-view {
+	width: 0.85rem !important;
+	height: 0.85rem !important;
+	min-width: 0.85rem !important;
+	flex: none;
+}
+
+.flow-timeline-vertical .flow-timeline-harvest-plant svg {
+	width: 100%;
+	height: 100%;
+}
+
+.flow-timeline-vertical .flow-timeline-harvest-bound {
+	position: absolute;
+	left: 50%;
+	width: 0.75rem;
+	height: 0.75rem;
+	transform: translateX(-50%);
+	border-radius: 50%;
+	background-color: white;
+	border: 2px solid var(--harvest);
+	box-shadow: 0 1px 2px #0003;
+	z-index: 3;
+	cursor: ns-resize;
+	touch-action: none;
+}
+
+/* Les poignées débordent des bouts de la barre : dans une semaine occupée, la
+   première pastille est juste sous le sommet de la barre, la poignée s'en écarte. */
+.flow-timeline-vertical .flow-timeline-harvest-bound-first {
+	top: -0.45rem;
+}
+
+.flow-timeline-vertical .flow-timeline-harvest-bound-last {
+	bottom: -0.45rem;
+}
+
+.flow-timeline-vertical .flow-timeline-harvest-bound:hover,
+.flow-timeline-vertical .flow-timeline-harvest-bound.is-held {
+	background-color: var(--harvest);
+}
+
+.flow-timeline-vertical:has(.flow-timeline-harvest-bound.is-held) .flow-timeline-harvest-label,
+.flow-timeline-vertical:has(.flow-timeline-harvest-bound.is-held) .flow-timeline-harvest-plant,
+.flow-timeline-vertical:has(.flow-timeline-harvest.is-held) .flow-timeline-harvest-label,
+.flow-timeline-vertical:has(.flow-timeline-harvest.is-held) .flow-timeline-harvest-plant,
+.flow-timeline-vertical:has(.flow-timeline-harvest.is-held) .flow-timeline-harvest-note {
+	opacity: 0;
+}
+
+.flow-timeline-vertical .flow-timeline-pill {
+	position: relative;
+	z-index: 3;
+	flex: 0 0 auto;
+	width: 1.55rem;
+	height: 1.55rem;
+	border-radius: 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.7rem;
+	font-weight: bold;
+	line-height: 1;
+	border: 1px solid;
+	background-color: white;
+	color: white;
+	box-shadow: 0 0 0 3px var(--background-body);
+}
+
+.flow-timeline-vertical .flow-timeline-pill.series-item-timeline-event-expected {
+	background-color: white;
+}
+
+/* ---- les lignes : une pastille en tête, posée sur le rail par sa marge, et sa
+   fiche découpée autour d'elle (l'encoche) ; la fiche recule d'un demi-rem pour
+   laisser passer la barre de récolte ---- */
+
+.flow-timeline-vertical .flow-timeline-rows {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	padding: 0.4rem 0.5rem 0.4rem 0;
+	min-width: 0;
+}
+
+.flow-timeline-vertical .flow-timeline-band-empty .flow-timeline-rows {
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.flow-timeline-vertical .flow-timeline-row {
+	display: grid;
+	grid-template-columns: 1.55rem 1fr;
+	align-items: start;
+	position: relative;
+}
+
+.flow-timeline-vertical .flow-timeline-row .flow-timeline-pill {
+	margin-left: -2.075rem;
+	margin-top: 0.4rem;
+}
+
+.flow-timeline-vertical .flow-timeline-card {
+	position: relative;
+	z-index: 2;
+	min-width: 0;
+	margin-left: -2.25rem;
+	padding: 0.4rem 0.75rem 0.45rem 1.1rem;
+	background-color: white;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius);
+	transition: box-shadow 0.1s;
+}
+
+/* L'encoche : un disque de la couleur de la page posé sur le coin de la fiche,
+   autour de la pastille. Un disque plutôt qu'un masque, pour que ce qui sort de
+   la fiche (le menu d'une sélection unique) ne soit pas rogné. */
+.flow-timeline-vertical .flow-timeline-card::before {
+	content: "";
+	position: absolute;
+	left: -0.6rem;
+	top: 1.15rem;
+	width: 2.3rem;
+	height: 2.3rem;
+	transform: translate(-50%, -50%);
+	border-radius: 50%;
+	background-color: var(--background-body);
+	z-index: 1;
+	pointer-events: none;
+}
+
+/* Une ligne cochée passe devant ses voisines : son menu ne file pas dessous. */
+.flow-timeline-vertical .flow-timeline-row-selected {
+	z-index: 4;
+}
+
+.flow-timeline-vertical .flow-timeline-row:not(.flow-timeline-row-selected):hover .flow-timeline-card {
+	box-shadow: var(--shadow-v2);
+	border-color: var(--border);
+}
+
+.flow-timeline-vertical .flow-timeline-card-head {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-height: 1.55rem;
+}
+
+.flow-timeline-vertical .flow-timeline-card-head .flow-timeline-text {
+	flex: 0 0 auto;
+}
+
+.flow-timeline-vertical .flow-timeline-card-head .flow-timeline-description {
+	flex: 0 1 auto;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	color: var(--muted);
+	font-size: 0.85rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Une description à cases à cocher garde ses lignes : elle passe sous le titre. */
+.flow-timeline-vertical .flow-timeline-card-head .flow-timeline-description:has(.flow-timeline-description-list) {
+	flex-basis: 100%;
+	order: 10;
+	white-space: normal;
+	color: var(--text);
+}
+
+.flow-timeline-vertical .flow-timeline-card-side {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-left: auto;
+	white-space: nowrap;
+}
+
+.flow-timeline-vertical .flow-timeline-card-side .flow-timeline-done {
+	display: flex;
+}
+
+.flow-timeline-vertical .flow-timeline-card-side .tasks-planning-item-time {
+	font-family: var(--series-mono);
+	font-variant-numeric: tabular-nums;
+	font-size: 0.75rem;
+}
+
+/* La case en tête de fiche, avant le nom ; ce qui suit sous le titre (matériel,
+   commentaires, description repliée) s'aligne sur le texte de la première ligne. */
+.flow-timeline-vertical {
+	--flow-check: 1.65rem;
+}
+
+.flow-timeline-vertical .flow-timeline-card-head label.flow-timeline-select {
+	position: relative;
+	margin: 0;
+	padding: 0;
+	width: auto;
+	height: auto;
+	background: none;
+	flex: 0 0 auto;
+}
+
+/* Le menu d'une sélection unique s'accroche à sa case, pas à la bande. */
+.flow-timeline-vertical .flow-timeline-card-head .batch-one-wrapper {
+	left: calc(100% + 0.5rem);
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.flow-timeline-vertical .flow-timeline-card .flow-timeline-tools,
+.flow-timeline-vertical .flow-timeline-card .flow-timeline-comments {
+	margin-top: 0.15rem;
+	padding-left: var(--flow-check);
+}
+
+.flow-timeline-vertical .flow-timeline-card-head .flow-timeline-description:has(.flow-timeline-description-list) {
+	padding-left: var(--flow-check);
+}
+
+.flow-timeline-vertical .flow-timeline-row-selected .flow-timeline-card {
+	background-color: color-mix(in srgb, var(--primary) 6%, white);
+	border-color: var(--primary);
+}
+
+@media (max-width: 767px) {
+
+	.flow-timeline-vertical .flow-timeline-card-head {
+		flex-wrap: wrap;
+	}
+
+	.flow-timeline-vertical .flow-timeline-card-head .flow-timeline-description {
+		flex-basis: 100%;
+		order: 10;
+		white-space: normal;
+		margin-top: -0.1rem;
+		padding-left: var(--flow-check);
+	}
+
+}
+
+/* ---- les délais du plan : un trait à gauche du rail, d'une pastille à la
+   suivante (ou au bout de la campagne), le nombre de semaines au milieu ---- */
+
+.flow-timeline-vertical .flow-timeline-axis {
+	position: relative;
+	overflow: visible;
+}
+
+/* Une chaîne par culture : la k-ième dessine 0,55 rem plus à gauche. */
+.flow-timeline-vertical .flow-timeline-delay {
+	position: absolute;
+	right: calc(-0.4rem + var(--chain, 0) * 0.55rem);
+	width: 0.35rem;
+	border-left: 1px dotted var(--muted);
+	pointer-events: none;
+}
+
+@media (max-width: 991px) {
+
+	.flow-timeline-vertical .flow-timeline-delay {
+		display: none;
+	}
+
+}
+
+.flow-timeline-vertical .flow-timeline-delay-full {
+	top: 0;
+	bottom: 0;
+}
+
+/* Le départ et l'arrivée : accrochés au centre de la première pastille de la
+   bande (0,4 rem de marge des lignes + 0,4 rem de la pastille + son demi-rayon). */
+/* Le départ est porté par la dernière ligne de la semaine, depuis le centre de
+   sa pastille jusqu'au bas de la bande ; il traverse le rail vers la gauche
+   (deux gouttières de 0,25 rem, le rail de 2,2 rem, le trait qui déborde de
+   0,05 rem à droite de l'axe). */
+.flow-timeline-vertical .flow-timeline-row .flow-timeline-delay-start-row {
+	left: calc(-2.65rem - var(--chain, 0) * 0.55rem);
+	right: auto;
+	top: 1.175rem;
+	bottom: auto;
+	height: calc(100% - 1.175rem + 0.4rem);
+	border-top: 1px dotted var(--muted);
+	z-index: 0;
+}
+
+.flow-timeline-vertical .flow-timeline-delay-end-pill {
+	top: 0;
+	height: 1.575rem;
+	border-bottom: 1px dotted var(--muted);
+}
+
+.flow-timeline-vertical .flow-timeline-delay-start-top {
+	top: 0.2rem;
+	bottom: 0;
+	border-top: 1px dotted var(--muted);
+}
+
+.flow-timeline-vertical .flow-timeline-delay-end-bottom {
+	top: 0;
+	bottom: 0.2rem;
+	border-bottom: 1px dotted var(--muted);
+}
+
+.flow-timeline-vertical .flow-timeline-delay-start-bottom {
+	bottom: 0.2rem;
+	height: 0;
+	border-top: 1px dotted var(--muted);
+}
+
+.flow-timeline-vertical .flow-timeline-delay-end-top {
+	top: 0.2rem;
+	height: 0;
+	border-bottom: 1px dotted var(--muted);
+}
+
+.flow-timeline-vertical .flow-timeline-delay-label {
+	position: absolute;
+	left: 0;
+	top: 50%;
+	transform: translate(-50%, -50%) rotate(180deg);
+	writing-mode: vertical-rl;
+	padding: 0.15rem 0;
+	background-color: var(--background-body);
+	font-family: var(--series-mono);
+	font-variant-numeric: tabular-nums;
+	font-size: 0.625rem;
+	line-height: 1;
+	color: var(--muted);
+	white-space: nowrap;
+}
+
+.flow-timeline-vertical .flow-timeline-moving {
+	transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+	z-index: 4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.flow-timeline-vertical .flow-timeline-moving {
+		transition: none;
+	}
+}
+
+/* ---- le glissé ---- */
+
+.flow-timeline-vertical .flow-timeline-pill-movable {
+	cursor: grab;
+	touch-action: pan-x;
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-touch-callout: none;
+}
+
+.flow-timeline-vertical .flow-timeline-pill-movable:hover {
+	outline: 2px dashed var(--primary);
+	outline-offset: 2px;
+}
+
+.flow-timeline-vertical .flow-timeline-pill-holding {
+	outline: 2px solid var(--primary);
+	outline-offset: 2px;
+	opacity: 0.35;
+}
+
+.flow-timeline-vertical .flow-timeline-pill-selected {
+	outline: 2px solid var(--primary);
+	outline-offset: 2px;
+}
+
+.flow-timeline-vertical .flow-timeline-pill-will-move {
+	outline: 2px dashed var(--primary);
+	outline-offset: 2px;
+	transform: scale(1.12);
+	transition: transform 0.15s;
+}
+
+/* La campagne qui partira avec la suite : la barre passe en pointillé primaire. */
+.flow-timeline-vertical .flow-timeline-harvest-will-move {
+	border-color: var(--primary);
+	border-style: dashed;
+	background-color: color-mix(in srgb, var(--primary) 6%, var(--background-body));
+}
+
+.flow-timeline-vertical .flow-timeline-harvest-will-move .flow-timeline-harvest-label,
+.flow-timeline-vertical .flow-timeline-harvest-will-move .flow-timeline-harvest-bound {
+	color: var(--primary);
+	border-color: var(--primary);
+}
+
+.flow-timeline-vertical .flow-timeline-pill-pending {
+	opacity: 0.55;
+	pointer-events: none;
+}
+
+.flow-timeline-pill-ghost,
+.flow-timeline-pill-follower {
+	position: fixed;
+	z-index: 60;
+	width: 1.55rem;
+	height: 1.55rem;
+	margin: 0;
+	transform: translate(-50%, -50%);
+	border-radius: 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.7rem;
+	font-weight: bold;
+	border: 1px solid;
+	background-color: white;
+	pointer-events: none;
+}
+
+.flow-timeline-pill-ghost {
+	box-shadow: var(--shadow-v2);
+}
+
+.flow-timeline-pill-follower {
+	opacity: 0.5;
+	outline: 2px dashed var(--primary);
+	outline-offset: 2px;
+}
+
+.flow-timeline-harvest-ghost {
+	position: fixed;
+	z-index: 60;
+	width: 1.25rem;
+	transform: translateX(-50%);
+	border: 1px dashed var(--harvest);
+	border-radius: 1rem;
+	background-color: color-mix(in srgb, var(--harvest) 8%, white);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.7rem;
+	font-weight: bold;
+	color: var(--harvest);
+	opacity: 0.7;
+	pointer-events: none;
+}
+
+.flow-timeline-following-zone {
+	position: fixed;
+	z-index: 58;
+	border: 2px dashed var(--primary);
+	border-radius: 1.2rem;
+	background-color: color-mix(in srgb, var(--primary) 5%, transparent);
+	pointer-events: none;
+}
+
+.flow-timeline-chips {
+	position: fixed;
+	z-index: 59;
+	width: 0;
+	height: 0;
+	pointer-events: none;
+}
+
+.flow-timeline-chip {
+	position: absolute;
+	top: 0;
+	transform: translateY(-50%);
+	padding: 0.4rem 1rem;
+	border-radius: 1rem;
+	border: 2px dashed var(--muted);
+	background-color: white;
+	color: var(--text);
+	font-size: 1rem;
+	font-weight: bold;
+	line-height: 1.2;
+	white-space: nowrap;
+	box-shadow: var(--shadow-v2);
+	transition: background-color 0.1s, color 0.1s, border-color 0.1s, transform 0.1s;
+}
+
+.flow-timeline-chip-left {
+	right: 3rem;
+}
+
+.flow-timeline-chip-right {
+	left: 3rem;
+}
+
+/* Celle qui est retenue se détache franchement de l'autre. */
+.flow-timeline-chip.is-on {
+	background-color: var(--primary);
+	border-color: var(--primary);
+	border-style: solid;
+	color: white;
+	transform: translateY(-50%) scale(1.08);
+}
+
+/* Le trait d'insertion, quand on réordonne dans la semaine */
+.flow-timeline-vertical .flow-timeline-row-insert-before::before,
+.flow-timeline-vertical .flow-timeline-row-insert-after::after {
+	content: "";
+	position: absolute;
+	left: -2.7rem;
+	right: 0;
+	border-top: 2px solid var(--primary);
+	z-index: 5;
+	pointer-events: none;
+}
+
+.flow-timeline-vertical .flow-timeline-row-insert-before::before {
+	top: -0.25rem;
+}
+
+.flow-timeline-vertical .flow-timeline-row-insert-after::after {
+	bottom: -0.25rem;
+}
+
+.flow-timeline-vertical .flow-timeline-band.flow-timeline-drop {
+	background-color: color-mix(in srgb, var(--primary) 16%, white);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 40%, transparent);
+	border-radius: var(--radius);
+}
+
+.flow-timeline-vertical .flow-timeline-band.flow-timeline-drop .flow-timeline-axis-week {
+	color: var(--primary);
+	font-weight: bold;
+}
+
+/* ---- le filtre de la page : l'omnibox du design system, en mode local ---- */
+
+/*
+ * La recherche est l'outil des onglets du plan de culture, dans leur rangée (`tabs-page`,
+ * `component.css`).
+ *
+ * Le message d'absence de résultat en sort : getPlanFilter() rend aussi ce message, le menu de
+ * semaine et son script, et la rangée les prend tous pour des colonnes. Les deux derniers sont hors
+ * flux, celui-ci non, et sans cette ligne il s'afficherait entre les onglets et le champ.
+ */
+.series-views .series-filter-empty {
+	flex: 1 0 100%;
+}
+
+/*
+ * Le champ ne se laisse pas comprimer sous sa largeur naturelle pour tenir sur la
+ * ligne : en dessous il prend la sienne, où il retrouve toute la largeur.
+ *
+ * En rem et non en pixels, parce que la taille de base suit la largeur d'écran : 18rem
+ * valent 288px en grand et 234px sur un écran étroit. Un plancher en pixels
+ * repousserait le retour à la ligne bien après que le texte a rétréci autour.
+ */
+.series-views .series-filter {
+	min-width: 18rem;
+}
+
+.series-filter-empty {
+	margin-bottom: 0.75rem;
+	color: var(--muted);
+}
+
+/* ---- le filtre par semaine, ouvert depuis la graduation ---- */
+
+/*
+ * La graduation entière est cliquable, pas seulement les numéros affichés : sous
+ * 1200px une semaine sur cinq reste visible, et il n'y a pas de raison que les autres
+ * cessent d'être choisissables.
+ *
+ * Tout est accroché à series-season-filterable : une graduation sans omnibox derrière
+ * ne doit pas prendre l'apparence d'une cible. Le plan de culture filtre, les
+ * itinéraires techniques et les récoltes affichent la même frise sans rien filtrer.
+ */
+.series-season-filterable .series-season-weeks {
+	cursor: pointer;
+}
+
+.series-season-filterable .series-season-week:hover,
+.series-season-filterable .series-season-month[data-month]:hover {
+	color: var(--primary);
+	font-weight: bold;
+}
+
+.series-season-filterable .series-season-month[data-month] {
+	cursor: pointer;
+}
+
+.series-week-option {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	cursor: pointer;
+}
+
+.series-week-option-count {
+	margin-left: auto;
+	font-variant-numeric: tabular-nums;
+	opacity: 0.6;
+}
+
+.cultivation-implantation-weeks {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+/* ---- l'itinéraire technique : le diagramme de la page de série, plus un trait
+   par intervention qui se répète, entre la pastille et la fiche ---- */
+
+/* L'en-tête collé passe devant les fiches : sans ça, la première fiche de la
+   page lui monte dessus au défilement, les deux étant à z-index 2. */
+.flow-timeline-sequence .flow-timeline-header {
+	z-index: 3;
+}
+
+.flow-timeline-sequence .flow-timeline-row {
+	display: grid;
+	grid-template-columns: 1.55rem calc(var(--flow-lanes) * 0.5rem + 0.25rem) minmax(0, 1fr);
+	align-items: start;
+}
+
+.flow-timeline-sequence .flow-timeline-row .flow-timeline-pill {
+	margin-left: -2.075rem;
+	margin-top: 0.4rem;
+}
+
+.flow-timeline-sequence .flow-timeline-card {
+	margin-left: 0;
+	padding-left: 0.75rem;
+}
+
+.flow-timeline-sequence .flow-timeline-card::before {
+	display: none;
+}
+
+/* Sans période, rien ne passe entre la pastille et la fiche : la fiche reprend
+   sa place contre la pastille, avec son encoche. */
+.flow-timeline-sequence-without-lanes .flow-timeline-row {
+	grid-template-columns: 1.55rem 0 minmax(0, 1fr);
+}
+
+.flow-timeline-sequence-without-lanes .flow-timeline-card {
+	margin-left: -2.25rem;
+	padding-left: 1.1rem;
+}
+
+.flow-timeline-sequence-without-lanes .flow-timeline-card::before {
+	display: block;
+}
+
+/* Une semaine sans intervention ne porte que ses traits : elle prend la même
+   hauteur que sur la page de série. */
+.flow-timeline-sequence .flow-timeline-row-empty {
+	min-height: var(--flow-band);
+}
+
+
+/* Le couloir d'une période, tiré d'une ligne à la suivante : il déborde en haut
+   et en bas pour couvrir l'écart entre deux lignes, sinon le trait se lit comme
+   une suite de tirets. */
+.flow-timeline-sequence .flow-timeline-lanes {
+	position: relative;
+	align-self: stretch;
+}
+
+/* Le trait déborde largement en haut et en bas : entre deux lignes il y a le gap
+   de la bande, entre deux bandes une bordure et un rembourrage. Sans ce
+   débordement il se lit comme une suite de tirets. */
+.flow-timeline-sequence .flow-timeline-lane {
+	position: absolute;
+	top: -0.75rem;
+	bottom: -0.75rem;
+	left: calc(var(--flow-lane) * 0.5rem + 0.125rem);
+	width: 4px;
+}
+
+/* Les deux bouts : le trait démarre en haut de la semaine de départ et s'arrête
+   en bas de la dernière, arrondi aux deux extrémités. */
+.flow-timeline-sequence .flow-timeline-lane-start {
+	top: -0.2rem;
+	border-radius: 2px 2px 0 0;
+}
+
+.flow-timeline-sequence .flow-timeline-lane-stop {
+	bottom: -0.2rem;
+	border-radius: 0 0 2px 2px;
+}
+
+/* Les poignées d'une période : un point à chaque bout du trait, tiré vers le
+   haut ou vers le bas pour changer une seule des deux bornes. Le trait est fin,
+   la zone de préhension est élargie par le pseudo-élément. */
+.flow-timeline-sequence .flow-timeline-lane-handle {
+	position: absolute;
+	left: -3px;
+	width: 10px;
+	height: 10px;
+	border: 2px solid;
+	border-radius: 50%;
+	background-color: white;
+	cursor: ns-resize;
+	touch-action: none;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.1s;
+}
+
+/* La prise s'étend vers le haut et le bas, jamais sur les côtés : les couloirs
+   ne sont qu'à 0.5rem l'un de l'autre, deux poignées voisines se voleraient le
+   clic. */
+.flow-timeline-sequence .flow-timeline-lane-handle::before {
+	content: '';
+	position: absolute;
+	top: -8px;
+	right: 0;
+	bottom: -8px;
+	left: 0;
+}
+
+.flow-timeline-sequence .flow-timeline-lane-handle-start {
+	top: -3px;
+}
+
+.flow-timeline-sequence .flow-timeline-lane-handle-stop {
+	bottom: -3px;
+}
+
+.flow-timeline-sequence .flow-timeline-band:hover .flow-timeline-lane-handle,
+.flow-timeline-sequence .flow-timeline-lane-handle-holding {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+/* Une période qui partira avec la suite : le trait passe en pointillé primaire,
+   comme la campagne de récolte sur une série. */
+.flow-timeline-sequence .flow-timeline-lane-will-move {
+	background-color: color-mix(in srgb, var(--primary) 25%, white) !important;
+	outline: 1px dashed var(--primary);
+}
+
+/* La poignée du fantôme, au bout que l'on tire. */
+.flow-timeline-lane-ghost-handle {
+	position: absolute;
+	left: -3px;
+	width: 10px;
+	height: 10px;
+	border: 2px solid currentColor;
+	border-radius: 50%;
+	background-color: white;
+}
+
+.flow-timeline-lane-ghost-handle-start {
+	top: -3px;
+}
+
+.flow-timeline-lane-ghost-handle-stop {
+	bottom: -3px;
+}
+
+/* Le trait tenu par une poignée s'efface derrière son fantôme, comme la pastille
+   tenue derrière le sien. */
+.flow-timeline-sequence .flow-timeline-lane-holding {
+	opacity: 0.35;
+}
+
+/* Le fantôme d'une période, posé sur ses bandes d'arrivée pendant le glissé : il
+   porte la couleur de son intervention, sinon on ne sait pas quel trait on
+   déplace quand plusieurs se chevauchent. */
+.flow-timeline-lane-ghost {
+	position: fixed;
+	z-index: 60;
+	width: 4px;
+	transform: translateX(-50%);
+	border-radius: 2px;
+	background-color: currentColor;
+	outline: 1px dashed currentColor;
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+/* La portée que prendrait la période une fois la poignée lâchée : la semaine
+   visée porte en plus le cadre de la cible. */
+.flow-timeline-sequence .flow-timeline-band.flow-timeline-band-extend {
+	background-color: color-mix(in srgb, var(--primary) 13%, white);
+	border-radius: var(--radius);
+}
+
+/* Le lien vers la pastille : un pointillé, pas un trait plein — il dit
+   l'appartenance sans se confondre avec la période elle-même. */
+.flow-timeline-sequence .flow-timeline-lane-link {
+	position: absolute;
+	top: calc(1.175rem - 1px);
+	left: -2.09rem;
+	width: calc(var(--flow-lane) * 0.5rem + 0.125rem + 2.09rem);
+	border-top: 2px dotted;
+}
+
+.flow-timeline-sequence .flow-timeline-row-pending {
+	opacity: 0.55;
+	pointer-events: none;
+}
+
+.flow-timeline-sequence .flow-timeline-pill-movable {
+	touch-action: pan-x;
+}
+
+.flow-timeline-sequence .flow-timeline-frequency {
+	flex: none;
+	padding: 0 0.5rem;
+	border: 1px solid;
+	border-radius: 1rem;
+	font-size: 0.75rem;
+	white-space: nowrap;
+}
+
+.flow-timeline-sequence .flow-timeline-season,
+.flow-timeline-sequence .flow-timeline-year {
+	align-items: center;
+}
+
+.flow-timeline-sequence .flow-timeline-season-value {
+	grid-column: 2 / span 2;
+	padding: 0.75rem 0 0.25rem 0.5rem;
+	font-size: 0.9rem;
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+.flow-timeline-sequence .flow-timeline-year-value {
+	padding: 0.5rem 0 0.2rem 0.5rem;
+	font-family: var(--series-mono);
+	font-size: 0.75rem;
+	font-weight: bold;
+	letter-spacing: 0.3px;
+}
+
+
+.series-selector-head {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin: 0 -0.75rem 0.75rem;
+	padding: 0.5rem 0.75rem;
+	background-color: white;
+}
+
+.series-selector-head h3 {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin: 0;
+	flex: 1;
+	white-space: nowrap;
+}
+
+.series-selector-head select {
+	width: auto;
+	max-width: 9rem;
+	font-size: 0.8125rem;
+	padding-top: 0.25rem;
+	padding-bottom: 0.25rem;
+}
+
+.series-selector-count {
+	background-color: var(--production);
+	color: white;
+	border-radius: 999px;
+	padding: 0 0.5rem;
+	font-size: 0.8125rem;
+	min-width: 1.5rem;
+	text-align: center;
+}
+
+.series-selector-chain {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	background-color: var(--text);
+	color: white;
+	border-radius: var(--radius);
+	padding: 0.5rem 0.75rem;
+	margin-bottom: 0.75rem;
+	font-size: 0.8125rem;
+	cursor: pointer;
+}
+
+.series-selector-chain-label {
+	font-weight: 600;
+}
+
+.series-selector-chain-help {
+	opacity: 0.7;
+	line-height: 1.2;
+}
+
+.series-selector-cultivation {
+	border-radius: var(--radius);
+	margin-bottom: 0.25rem;
+	padding: 0.375rem 0.625rem;
+	border: 2px solid transparent;
+}
+
+.series-selector-cultivation.selected {
+	border-color: var(--production);
+	background-color: #f2f8f4;
+	padding: 0.625rem;
+}
+
+.series-selector-dot {
+	width: 0.75rem;
+	height: 0.75rem;
+	border-radius: 50%;
+	flex: none;
+}
+
+.series-selector-header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0;
+}
+
+/* La pastille se lit avec le nom, pas avec la longueur : elle le suit donc dans
+   un bloc qui prend seul la place restante, sinon l'écart du flex la repoussait
+   contre la valeur. */
+.series-selector-title {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 0.375rem;
+}
+
+span.series-selector-name {
+	flex: 0 1 auto;
+	min-width: 0;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--text);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Sans flex none, un nom long comprime la pastille au lieu de se tronquer
+   lui-même, alors qu'elle n'a que trois caractères à porter. Le bloc pose déjà
+   son écart par gap. */
+.series-selector-title .plant-start {
+	flex: none;
+	margin-left: 0;
+}
+
+.series-selector-place[data-color="done"] {
+	color: var(--production);
+}
+
+.series-selector-place[data-color="over"] {
+	color: var(--warning);
+}
+
+
+.series-selector-cultivation.selected {
+	background: var(--series-paint);
+	box-shadow: 0 0.25rem 0.875rem color-mix(in srgb, var(--series-paint-shadow) 45%, transparent);
+}
+
+.series-selector-cultivation.selected .series-selector-header,
+.series-selector-cultivation.selected .series-selector-name,
+.series-selector-cultivation.selected .series-selector-place,
+.series-selector-cultivation.selected .series-selector-dates {
+	color: white;
+}
+
+.series-selector-cultivation.selected .series-selector-dates {
+	opacity: 0.92;
+}
+
+.series-selector-cultivation.selected .series-selector-dot {
+	display: none;
+}
+
+.series-selector-cultivation.selected .place-context {
+	background-color: white;
+}
+
+.series-selector-cultivation:not(.selected) .place-context-close {
+	display: none;
+}
+
+.series-selector-cultivation.selected .series-selector-place {
+	display: none;
+}
+
+/* Ouverte, la carte porte sa ligne de dates, qui dit la même semaine avec son
+   action et sa fin : la pastille n'y ajoute rien, et son fond d'action se
+   confondrait avec la peinture de famille. */
+.series-selector-cultivation.selected .plant-start {
+	display: none;
+}
+
+.series-order-title {
+	margin: 1.5rem 0 0.5rem 0;
+	padding-bottom: 0.25rem;
+	border-bottom: 2px solid var(--secondary);
+	break-after: avoid;
+}
+
+.series-order-title:first-child {
+	margin-top: 0;
+}
+
+.series-order-group {
+	color: var(--secondary);
+	text-transform: none;
+	font-size: 1.0625rem;
+}
+
+.series-order-table {
+	width: 100%;
+	table-layout: fixed;
+}
+
+.series-order-check {
+	width: 2.75rem;
+}
+
+.series-order-table tr {
+	break-inside: avoid;
+}
+
+.series-order-quantity {
+	width: 6rem;
+	white-space: nowrap;
+}
+
+.series-order-weight {
+	color: var(--muted);
+}
+
+.series-order-box {
+	display: block;
+	width: 0.875rem;
+	height: 0.875rem;
+	border: 1px solid var(--secondary);
+	border-radius: 0.125rem;
+}
+
+.series-close-lot {
+	grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.series-close-lot.series-close-lot-harvested {
+	grid-template-columns: minmax(0, 1fr) auto 8rem auto;
+}
+
+.series-close-outcome .field-radio-group-item svg {
+	font-size: 1.5rem;
+}
+
+/* util-filter-options-field dessine des pastilles d'une ligne, sans marge verticale : l'icône posée
+   au-dessus de son mot y touchait les bords. */
+.series-close-outcome .field-radio-group-item {
+	min-width: 4.5rem;
+	padding: 0.375rem 0.75rem;
+}
+
+.series-close-choice {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.25rem;
+	line-height: 1.2;
+}
+
+.series-close-choice small {
+	font-size: 0.75rem;
+}
+
+/* La note est la dernière cellule de la rangée, même repliée : c'est elle qui prend le retrait de
+   droite que util-table pose sur :last-child, et le dénouement le perd. */
+.series-close-lot > .util-table-row > .series-close-lot-outcome {
+	padding-right: 1rem;
+}
+
+.series-close-lot .series-close-lot-comment {
+	grid-column: 1 / -1;
+	padding-inline: 1rem;
+}
+/* La hauteur par défaut de l'éditeur, répétée à chaque série du lot, repousserait le bouton de clôture loin sous l'écran. */
+.series-close-lot .series-close-lot-comment div.editor {
+	min-height: 4.5rem;
+}
+
+@media (max-width: 767px) {
+
+	.series-close-lot.series-close-lot-harvested {
+		grid-template-columns: minmax(0, 1fr) auto auto auto;
+	}
+
+	.series-close-lot .series-close-lot-outcome {
+		grid-column: 1 / -1;
+	}
+
+	.series-close-lot .util-table-head > .series-close-lot-outcome {
+		display: none;
+	}
+
+}
+
+.series-number td {
+	vertical-align: middle;
+}

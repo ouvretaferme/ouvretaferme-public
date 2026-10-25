@@ -1,0 +1,31 @@
+/* Family vignette */
+.family-vignette-letter {
+	width: 2rem;
+	height: 2rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+	color: white;
+	background-color: black;
+	font-weight: bold;
+	text-decoration: none;
+	font-variant: small-caps;
+	border-radius: 50%;
+}
+.plot-card .family-vignette-letter {
+	width: 1.5rem;
+	height: 1.5rem;
+	font-size: 0.6875rem;
+}
+
+.family-vignette-letter-empty {
+	background-color: var(--background-odd);
+	color: var(--muted);
+}
+
+.family-vignette-more {
+	background-color: var(--background-odd);
+	color: var(--muted);
+	font-size: 0.6875rem;
+}

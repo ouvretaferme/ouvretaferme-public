@@ -1,0 +1,81 @@
+/* Le corps du PDF des paniers de l'année (lot L4), entre les morceaux de la charte (`pdf.css` de
+   main) : une carte par semaine, quatre par rang sur un A4 portrait. Chargée par la seule vue du
+   document, elle ne croise aucun écran, mais ses sélecteurs gardent le préfixe `toolbox-pdf-`. */
+
+/* Marges du document, sur le modèle des PDF comptables (`financialYear/static/css/pdf.css`). Le bas
+   n'est pas posé : `pdf.js` le règle à 1cm dès qu'un gabarit de pied porte la pagination, et une
+   marge écrite ici l'écraserait par `preferCSSPageSize`. */
+@page {
+	margin-top: 1cm;
+	margin-left: 1cm;
+	margin-right: 1cm;
+}
+
+.toolbox-pdf-weeks {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 3mm 4mm;
+}
+
+/* Une carte ne se coupe pas entre deux pages : une semaine se lit d'un seul regard. Le filet du
+   haut reprend celui qui ouvre les chiffres de la charte. */
+.toolbox-pdf-week {
+	break-inside: avoid;
+	border-top: 1px solid #1a1a1a;
+	padding-top: 1.5mm;
+	font-size: 0.78rem;
+}
+
+.toolbox-pdf-week h4 {
+	font-family: 'Bricolage Grotesque', sans-serif;
+	font-size: 0.85rem;
+	font-weight: 600;
+	margin: 0 0 1mm;
+}
+
+.toolbox-pdf-week-row {
+	display: flex;
+	align-items: center;
+	gap: 1.5mm;
+}
+
+/* Le nom cède sa place aux quantités, qui ne se coupent jamais : un nom trop long se termine par
+   des points de suspension plutôt que de pousser la colonne des quantités hors de la carte. */
+.toolbox-pdf-week-plant {
+	display: flex;
+	align-items: center;
+	gap: 1.5mm;
+	flex: 1;
+	min-width: 0;
+}
+
+.toolbox-pdf-week-plant > span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.toolbox-pdf-week-row > span:not(.toolbox-pdf-week-plant) {
+	flex: none;
+	text-align: right;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Plusieurs tailles : une colonne de quantité par taille, de même largeur d'une carte à l'autre
+   pour que les nombres s'alignent sous le prix qui les titre. Le nom n'a plus que le tiers de la
+   carte : il revient à la ligne plutôt que de se couper, « Pomme de… » ne disant plus de quelle
+   espèce il s'agit. */
+.toolbox-pdf-weeks-sizes .toolbox-pdf-week-row > span:not(.toolbox-pdf-week-plant) {
+	width: 11mm;
+}
+
+.toolbox-pdf-weeks-sizes .toolbox-pdf-week-plant > span {
+	white-space: normal;
+	line-height: 1.15;
+}
+
+.toolbox-pdf-week-sizes {
+	font-size: 0.65rem;
+	color: var(--color-neutral);
+}

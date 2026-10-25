@@ -1,0 +1,247 @@
+@media (min-width: 1400px) {
+
+	html:has(> body[data-template~="doc"]) {
+		font-size: 16px;
+	}
+
+}
+
+body[data-template~="doc"] {
+	background-color: var(--background-surface);
+}
+
+body[data-template~="doc"]:has(#doc-menu-list.selected) {
+	overflow: hidden !important;
+}
+
+body[data-template~="doc"] .root-nav-wrapper {
+	border-bottom: 1px solid var(--border);
+}
+
+div.doc-wrapper {
+	display: grid;
+}
+
+div.doc-main {
+	min-width: 0;
+}
+
+@media (min-width: 768px) {
+
+	div.doc-wrapper {
+		grid-template-columns: 20rem 1fr;
+	}
+
+	#doc-menu-list {
+		padding: var(--space-lg) var(--space-xs) var(--space-xs) 0;
+		width: 20rem;
+		position: fixed;
+		border-right: 1px solid var(--border);
+		height: calc(100vh - var(--nav-base-height) - var(--customize-height, 0px));
+		overflow: auto;
+	}
+
+	#doc-menu-open {
+		display: none;
+	}
+
+}
+
+/* Sous 768 px, le texte d'une page de lecture se tient à `--space-md` du bord de l'écran. Le
+   conteneur en pose déjà `--container-padding` : le bouton du menu, le titre et le contenu n'ajoutent
+   que la différence, `--doc-gutter`. */
+@media (max-width: 767px) {
+
+	body[data-template~="doc"] {
+		--doc-gutter: calc(var(--space-md) - var(--container-padding));
+	}
+
+	#doc-menu-list {
+		padding: var(--space-md) var(--space-xs) var(--space-xs);
+		width: calc(var(--screen-width) - 2 * var(--container-padding));
+		border-radius: var(--radius);
+		border: 1px solid var(--border);
+		/* Ouvert au téléphone, le menu se lit au doigt, entrées et intitulés en corps de 1,2 rem. */
+		--filter-option-size: 1.2rem;
+		height: calc(100vh - (var(--nav-base-height) + 3rem) - 2rem - var(--customize-height, 0px));
+		overflow: auto;
+		background-color: var(--background-surface);
+		z-index: 11;
+	}
+
+	#doc-menu-list:not(.selected) {
+		display: none;
+	}
+
+	#doc-menu-open {
+		z-index: 11;
+		width: 50vw;
+		height: var(--nav-base-height);
+	}
+
+	#doc-menu-open a {
+		margin: var(--space-xs) 0 var(--space-xs) var(--doc-gutter);
+	}
+
+}
+
+div.doc-header {
+	background-position: center center;
+	background-size: cover;
+	padding: 2rem 2rem 1rem;
+	color: var(--secondary-on-light, var(--secondary));
+}
+
+
+div.doc-header h1 {
+	font-size: 3rem;
+	line-height: 1;
+	max-width: 80rem;
+	padding-bottom: 1rem;
+}
+
+div.doc-header h1:has(> .util-stamp) {
+	line-height: 1.6;
+}
+
+div.doc-header h1 > .util-stamp {
+	vertical-align: middle;
+}
+
+@media (max-width: 767px) {
+
+	div.doc-header h1 {
+		font-size: 2.5rem;
+	}
+
+}
+
+div.doc-header h4 {
+	margin: 1rem auto 0 auto;
+	color: var(--muted);
+}
+
+
+div.doc-content {
+	padding: 2rem;
+	max-width: 1200px;
+	margin: auto;
+}
+
+@media (max-width: 767px) {
+
+	div.doc-header,
+	div.doc-content {
+		padding: var(--space-md) var(--doc-gutter);
+	}
+
+}
+
+div.doc-content h2 {
+	font-size: 2.2rem;
+	color: var(--text);
+	margin-top: 3rem;
+	margin-bottom: 2rem;
+	padding-bottom: 0.5rem;
+	border-bottom: var(--heading-border, 2px dashed var(--color-neutral-variant));
+}
+
+div.doc-content .util-title > h2 {
+	color: var(--heading-color, var(--text));
+}
+
+@media (max-width: 767px) {
+
+	div.doc-content h2 {
+		font-size: 2rem;
+	}
+
+}
+
+div.doc-content [id] {
+	scroll-margin-top: calc(var(--nav-base-height) + 1rem);
+}
+
+div.doc-content h3 {
+	font-size: 1.5rem;
+	margin-top: 2rem;
+	font-weight: var(--heading-weight, normal);
+}
+
+/* util-title est en flex : la marge du h3 n'y fusionne plus avec celle du titre, et décale le h3 sous
+   le bouton qui l'accompagne. */
+div.doc-content .util-title > h3 {
+	margin-top: 0;
+}
+
+div.doc-content a.doc-anchor {
+	margin-left: 0.5rem;
+	font-size: 0.75em;
+	color: var(--muted);
+}
+
+div.doc-content a.doc-anchor:hover {
+	color: var(--primary);
+}
+
+div.doc-content h4,
+div.doc-content h5 {
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+}
+
+div.doc-content pre {
+	margin: 0;
+	display: inline-block;
+}
+
+div.doc-content img:not(.asset-icon) {
+	display: block;
+	max-width: 100%;
+	border: 2px solid var(--border);
+	border-radius: var(--radius);
+	margin-top: 1rem;
+	margin-bottom: 1rem !important;
+}
+
+/* Le disque est posé dans une phrase, et une ponctuation le suit sans espace */
+div.doc-content .doc-icon {
+	margin: 0 var(--space-xxs);
+}
+
+ul.doc-list-icons {
+	list-style-type: none;
+	padding-left: 0.75rem;
+}
+
+label:has(.doc-hidden-checkbox) {
+	display: block;
+}
+label:has(.doc-hidden-checkbox:checked) [doc-hidden-checkbox] {
+	border-color: red;
+	display: inherit;
+}
+label:has(.doc-hidden-checkbox:not(:checked)) [doc-hidden-checkbox] {
+	border-color: green;
+	display: none;
+}
+
+/* Une carte de l'aide qui s'ouvre sur un titre de section n'en garde pas la marge haute
+   (`div.doc-content h2`), qui sépare deux sections et n'a pas de sens en tête de carte. Parmi les
+   gabarits qui rendent `doc-content`, seul celui de l'aide porte `presentation` : la fiche et les
+   leçons d'une formation y posent leurs propres cartes. */
+body[data-template~="presentation"] div.doc-content .util-block > :is(h2, h3):first-child {
+	margin-top: 0;
+}
+
+.doc-image-right {
+	display: flex;
+	flex-direction: row;
+  gap: 1rem;
+}
+@media (max-width: 991px) {
+	.doc-image-right {
+		flex-direction: column;
+		align-items: center;
+	}
+}

@@ -1,0 +1,15 @@
+.role-list-overflow {
+	overflow-x: auto;
+}
+
+.role-list-overflow table tr > td:first-child,
+.role-list-overflow table tr > th:first-child {
+	width: 24rem;
+
+	@media (max-width: 575px) {
+
+		width: 20rem;
+
+	}
+
+}

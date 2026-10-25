@@ -1,0 +1,350 @@
+@media (min-width: 1100px) and (min-height: 600px) {
+
+	:root {
+		--nav-main: 3.5rem;
+		--nav-main-sticked: 3.5rem;
+		--nav-structure: 0;
+		--mainSticky: 0rem;
+	}
+
+}
+
+@media (max-width: 1099px), (max-height: 599px) {
+
+	:root {
+		/* La rangée des univers, son retrait de `--space-xxs` en haut et en bas compris
+		   (`template-structure.css`). Le téléphone ne l'affiche pas. */
+		--structureSections: 4rem;
+		--nav-structure: 4rem;
+		/* La tête collante de la structure porte la rangée des univers et le fil : `zone.js` lit la somme
+		   des deux en rem, elle s'écrit donc sans `calc()`. */
+		--mainSticky: 8rem;
+		--nav-main-sticked: 0rem;
+	}
+
+	@media (max-width: 767px) {
+
+		:root {
+			--nav-main: 3rem;
+		}
+
+	}
+
+	@media (min-width: 768px) {
+
+		:root {
+			--nav-main: 3rem;
+		}
+
+	}
+
+}
+
+h1 {
+	font-weight: lighter;
+	font-size: 2.5rem;
+}
+
+@media screen {
+
+	h1 {
+		font-family: 'Bricolage Grotesque', sans-serif;
+	}
+
+}
+
+@media (min-width: 450px) and (max-width: 575px) {
+
+	h1 {
+		font-size: 2rem;
+	}
+
+}
+
+@media (max-width: 449px) {
+
+	h1 {
+		font-size: 1.75rem;
+	}
+
+}
+
+h1 a {
+	color: inherit;
+	transition: color 0.5s;
+}
+
+h1 a:hover {
+	text-decoration: none;
+	color: var(--primary);
+}
+
+h2 {
+	font-weight: lighter;
+	font-size: 2rem;
+}
+
+:where(.util-title) > h2 {
+	font-weight: var(--heading-weight, lighter);
+}
+
+@media screen {
+
+	h2 {
+		font-family: 'Bricolage Grotesque', sans-serif;
+	}
+
+}
+
+@media (min-width: 450px) and (max-width: 575px) {
+
+	h2 {
+		font-size: 1.75rem;
+	}
+
+}
+
+@media (max-width: 449px) {
+
+	h2 {
+		font-size: 1.5rem;
+	}
+
+}
+
+h3 {
+	font-family: var(--font-title);
+	font-size: 1.4rem;
+}
+
+:where(.util-title) > h3 {
+	font-weight: var(--heading-weight, normal);
+}
+
+h4 {
+	font-size: 1.25rem;
+}
+
+h5 {
+	font-weight: bold;
+	font-size: 1rem;
+}
+
+h6 {
+	font-size: 1rem;
+	color: var(--muted);
+	font-weight: normal;
+	text-transform: uppercase;
+	letter-spacing: 3%;
+}
+
+@media screen {
+
+	body {
+		display: grid;
+		grid-template-rows: max-content max-content 1fr max-content;
+	}
+
+	@media (max-width: 1099px), (max-height: 599px) {
+
+		body {
+			min-height: 150vh;
+		}
+
+	}
+
+	@media (min-width: 1100px) and (min-height: 600px) {
+
+		body {
+			min-height: 100vh;
+		}
+
+	}
+
+}
+
+@media print {
+
+	body {
+		background-color: white;
+	}
+
+}
+
+.color-harvest {
+	color: var(--harvest) !important;
+}
+.color-order {
+	color: var(--order) !important;
+}
+
+body[data-template~="panel"] header,
+body[data-template~="panel"] main,
+body[data-template~="panel"] footer,
+body[data-template~="panel"] nav {
+	display: none;
+}
+
+@media (min-width: 1100px) and (min-height: 600px) {
+
+	body[data-template~="structure"] > header {
+		top: var(--nav-main);
+	}
+
+	body[data-template~="structure"] > nav {
+		position: fixed;
+		top: 0;
+	}
+
+}
+
+body[data-template~="structure"] > main > div.container:not(:first-child) {
+	margin-top: 0;
+}
+
+header h1:only-child {
+	margin: 0;
+}
+
+@media (min-width: 768px) {
+
+	.util-stick-main {
+		position: sticky;
+		top: calc(var(--mainSticky) - 1px);
+		z-index: 1;
+	}
+
+}
+
+body {
+	overflow-y: scroll;
+}
+
+/* Footer */
+footer:empty {
+	display: none;
+}
+
+
+.text-secondary a {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.plant-start {
+	font-weight: bold;
+	display: inline-block;
+	white-space: nowrap;
+	font-size: 0.9em;
+	margin-left: 0.25em;
+	background-color: #8881;
+	border-radius: 0.5em;
+	line-height: 1;
+}
+
+.plant-start-background {
+	padding: 0.25em 0.375em;
+}
+
+.plant-start-border {
+	border: 1px solid #8888;
+	padding: 0.25em;
+}
+
+/* L'année d'une série pérenne, qui suit la pastille de départ (`CultivationUi::getPerennialSeason()`) sur le
+   plan de culture et sur les Récoltes du planning : comme la pastille, elle sort de la feuille des séries.
+   « Année » et son numéro ne se séparent pas, la colonne d'une série pouvant être étroite. */
+span.series-item-planning-details-cycle {
+	margin-left: var(--space-xs);
+	color: var(--muted);
+	font-size: 0.9rem;
+	text-decoration: underline;
+	white-space: nowrap;
+}
+
+div.logout-external {
+	position: fixed;
+	bottom: 10px;
+	right: 10px;
+	max-width: 300px;
+	z-index: 100000;
+	font-size: 0.875rem;
+	padding: 1rem;
+	border-radius: var(--radius);
+	color: white;
+	background-color: #ff1dfd;
+}
+
+div.logout-external a {
+	color: white;
+	text-decoration: underline;
+}
+
+/* À droite : le pied du rail, à gauche, porte le lien des paramètres. */
+.tab-identity {
+	position: fixed;
+	bottom: 10px;
+	right: 10px;
+	max-width: 300px;
+	z-index: 100000;
+	font-size: 0.875rem;
+	padding: var(--space-xs) var(--space-md);
+	border-radius: var(--radius);
+	color: white;
+	background-color: var(--color-brand);
+}
+
+.tab-identity a {
+	color: inherit;
+	text-decoration: underline;
+	margin-left: var(--space-sm);
+}
+
+
+.root-nav-wrapper {
+	color: var(--color-brand);
+	justify-content: start;
+	height: var(--nav-base-height);
+}
+.root-nav-wrapper > .container {
+	display: flex;
+	align-items: center;
+	height: 100%;
+}
+
+.root-nav-title a {
+	display: flex;
+	align-items: center;
+	font-family: var(--font-title);
+	font-size:1.5rem;
+	font-weight: 600;
+	letter-spacing: 4%;
+	color: var(--color-brand);
+
+	@media (max-width: 767px) {
+		font-size: 1.2rem;
+	}
+
+	@media (max-width: 575px) {
+		font-size: 1.1rem;
+	}
+
+}
+
+.root-nav-title svg {
+	width: 1.154rem;
+	margin-right: .5rem;
+}
+
+
+.root-nav-actions {
+	display: flex;
+	flex-grow: 1;
+	align-items: center;
+}
+
+/* Le grossissement ne compte pas dans la mise en page : le bouton du compte garde la taille que lui
+   donnent les initiales. */
+a.nav-user > .media-vignette-image {
+	transform: scale(1.3);
+}

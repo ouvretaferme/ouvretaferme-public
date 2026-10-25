@@ -1,0 +1,188 @@
+<?php
+namespace plant;
+
+class SizeUi {
+
+	public function displayByPlant(\structure\Structure $eStructure, Plant $ePlant, \Collection $cSize): \Panel {
+
+		$h = '';
+
+		if($cSize->empty()) {
+			$h .= '<div class="util-empty">';
+				$h .= s("Vous n'avez pas encore ajouté de calibre pour cette espèce.");
+			$h .= '</div>';
+			if($eStructure->canManage()) {
+
+				$h .= '<h4>'.s("Ajouter un calibre").'</h4>';
+
+				$eSize = new Size([
+					'structure' => $eStructure,
+					'plant' => $ePlant
+				]);
+
+				$h .= $this->createForm($eSize, 'inline');
+
+			}
+		} else {
+
+			if($eStructure->canManage()) {
+				$h .= '<div class="text-end">';
+					$h .= '<a href="/plant/size:create?structure='.$eStructure['id'].'&plant='.$ePlant['id'].'" class="btn btn-primary">'.\Asset::icon('plus-circle').' '.s("Nouveau calibre").'</a>';
+				$h .= '</div>';
+			}
+
+			$h .= '<table>';
+				$h .= '<thead>';
+					$h .= '<tr>';
+						$h .= '<th>'.s("Nom").'</th>';
+						$h .= '<th>'.s("Commentaire").'</th>';
+						$h .= '<th>'.s("Calcul du rendement").'</th>';
+						$h .= '<th></th>';
+					$h .= '</tr>';
+				$h .= '</thead>';
+
+				$h .= '<tbody>';
+
+				foreach($cSize as $eSize) {
+
+					$h .= '<tr>';
+						$h .= '<td>';
+							$h .= encode($eSize['name']);
+						$h .= '</td>';
+						$h .= '<td>';
+							if($eSize['comment'] === NULL) {
+								$h .= '-';
+							} else {
+								$h .= new \editor\EditorUi()->value($eSize['comment']);
+							}
+						$h .= '</td>';
+						$h .= '<td>';
+							$h .= self::p('yield')->values[$eSize['yield']];
+						$h .= '</td>';
+						$h .= '<td class="text-end">';
+							if($eStructure->canManage()) {
+								$h .= '<a href="/plant/size:update?id='.$eSize['id'].'" class="btn btn-only-icon btn-color-primary">';
+									$h .= \Asset::icon('gear-fill');
+								$h .= '</a> ';
+								$h .= '<a data-ajax="/plant/size:doDelete" data-confirm="'.s("Supprimer ce calibre ?").'" post-id="'.$eSize['id'].'" class="btn btn-only-icon btn-outline-primary">';
+									$h .= \Asset::icon('trash-fill');
+								$h .= '</a>';
+							}
+						$h .= '</td>';
+					$h .= '</tr>';
+				}
+				$h .= '</tbody>';
+			$h .= '</table>';
+
+		}
+
+		return new \Panel(
+			id: 'panel-size-list',
+			title: s("Les calibres"),
+			subTitle: PlantUi::getPanelHeader($ePlant),
+			body: $h,
+			close: 'reload'
+		);
+
+	}
+
+	public function create(Size $eSize): \Panel {
+
+		return new \Panel(
+			id: 'panel-size-create',
+			title: s("Ajouter un calibre"),
+			body: $this->createForm($eSize, 'panel'),
+			close: 'reload'
+		);
+
+	}
+
+	protected function createForm(Size $eSize, string $origin): string {
+
+		$form = new \util\FormUi();
+
+		$h = $form->openAjax('/plant/size:doCreate', ['data-ajax-origin' => $origin]);
+
+			$h .= $form->hidden('structure', $eSize['structure']);
+			$h .= $form->hidden('plant', $eSize['plant']);
+
+			$h .= $form->group(
+				s("Espèce"),
+				$form->fake($eSize['plant']['name'])
+			);
+			$h .= $form->dynamicGroups(new Size(), ['name', 'yield', 'comment'], [
+				'yield' => function(\PropertyDescriber $d) {
+					$d->default = TRUE;
+				}
+			]);
+			$h .= $form->group(
+				content: $form->submit(s("Ajouter"))
+			);
+
+		$h .= $form->close();
+
+		return $h;
+
+	}
+
+	public function update(Size $eSize): \Panel {
+
+		$form = new \util\FormUi();
+
+		$h = $form->openAjax('/plant/size:doUpdate');
+
+			$h .= $form->hidden('id', $eSize['id']);
+
+			$h .= $form->group(
+				s("Espèce"),
+				$form->fake($eSize['plant']['name'])
+			);
+
+			$h .= $form->dynamicGroups($eSize, ['name', 'yield', 'comment']);
+			$h .= $form->group(
+				content: $form->submit(s("Enregistrer"))
+			);
+
+		$h .= $form->close();
+
+		return new \Panel(
+			id: 'panel-size-update',
+			title: s("Modifier un calibre de la ferme"),
+			body: $h,
+			close: 'reload'
+		);
+
+	}
+
+	/**
+	 * Describe properties
+	 */
+	public static function p(string $property): \PropertyDescriber {
+
+		$d = Size::model()->describer($property, [
+			'name' => s("Nom"),
+			'comment' => s("Observations"),
+			'plant' => s("Espèce"),
+			'structure' => s("Ferme"),
+			'yield' => s("Calcul du rendement"),
+		]);
+
+		switch($property) {
+
+			case 'yield' :
+				$d->field = 'radio';
+				$d->values = [
+					TRUE => \Asset::icon('check-lg').' '.s("inclus"),
+					FALSE => \Asset::icon('x-lg').' '.s("exclu"),
+				];
+				$d->required = TRUE;
+				break;
+
+		}
+
+		return $d;
+
+	}
+
+}
+?>

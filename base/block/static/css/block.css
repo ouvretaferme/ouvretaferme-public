@@ -1,0 +1,668 @@
+/* L'éditeur des blocs : les blocs à gauche, chacun édité dans sa forme de lecture, et le plan de
+   l'objet dans une colonne à droite. Sous 768 px, le plan disparaît et les flèches du bloc ouvert
+   rangent seules.
+
+   L'écart entre deux blocs y est de 1,5 rem, contre 1 rem en lecture (`read.css`), et jamais moins de
+   24 px, le diamètre du « + » (`--block-gap`). L'édition ajoute le fond du bloc survolé ou ouvert,
+   seule marque de sa limite et de son état, la barre du bloc ouvert (son nom, puis ses gestes) et le
+   « + » dans l'écart. Un bloc ouvert rend à son enveloppe le débord bas de son fond, pour que son
+   « + » se pose bord à bord dessous : tant qu'il est ouvert, le bloc suivant descend de 0,5 rem, en
+   plus de la bande de tête. */
+.block-editor {
+	--block-gap: max(1.5rem, 24px);
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 14rem;
+	gap: 2rem;
+	align-items: start;
+}
+
+.block-main {
+	min-width: 0;
+}
+
+/* La liste réserve en haut et en bas l'écart du premier et du dernier « + », que sa marge de lecture
+   rend à ce qui la suit. */
+.block-editor .block-list {
+	position: relative;
+	gap: var(--block-gap);
+	padding: var(--block-gap) 0;
+	margin-bottom: 0;
+}
+
+.block-list > :is([data-block], #block-new, #block-split) {
+	position: relative;
+}
+
+.block-item {
+	position: relative;
+	border-radius: var(--radius);
+	cursor: pointer;
+}
+
+/* Le fond d'un bloc déborde de son contenu de 0,5 rem en haut et en bas, de 1 rem sur les côtés, sans
+   rien décaler : les marges négatives rendent ce que le rembourrage prend, et le texte reste où la
+   lecture le pose. Deux fonds voisins laissent entre eux 0,5 rem de l'écart, sans se chevaucher.
+   Un enfant fait de même dans son parent, de 0,5 rem de tous côtés. */
+.block-list > :is([data-block], #block-new, #block-split) > .block-item {
+	margin: -0.5rem -1rem;
+	padding: 0.5rem 1rem;
+}
+
+.block-child {
+	margin: -0.5rem;
+	padding: 0.5rem;
+}
+
+/* Le « + » d'un bloc ouvert se pose bord à bord sous son fond. Ce fond déborde de 0,5 rem en bas, et
+   le « + » occupe tout l'écart sous l'enveloppe du bloc (`.block-insert`) : ouvert, le bloc rend ce
+   débord à son enveloppe (marge basse nulle), et ce qui suit descend de 0,5 rem tant qu'il est
+   ouvert. Le bloc suivant ne remonte plus son fond dans l'écart : sinon, survolé, il passerait sous
+   la moitié basse du « + » du bloc ouvert, qui l'emporte. Sa marge et son rembourrage hauts tombent
+   ensemble, et son texte ne bouge pas. Le `:has()` a pour sujet
+   l'enveloppe d'un bloc et pour argument son enfant direct : Firefox réévalue un `:has()` pour chaque
+   ancêtre d'un nœud touché qui peut en être le sujet, et un sujet aussi étroit borne ce travail. */
+.block-list > :is([data-block], #block-new, #block-split) > .block-item.block-item-selected {
+	margin-bottom: 0;
+}
+
+.block-list > [data-block]:has(> .block-item-selected) + :is([data-block], #block-new) > .block-item {
+	margin-top: 0;
+	padding-top: 0;
+}
+
+/* Le bandeau d'une section court sur les enveloppes, de la sienne (`data-block-section`,
+   `BlockUi::getItem()`) jusqu'à celle qui précède la section suivante, ou jusqu'à la dernière, sous le
+   même fond et du même débord qu'à la lecture (`read.css`). Il couvre l'écart au-dessus de chaque
+   enveloppe qu'il emporte, où le « + » du bloc précédent reste posé. Le « + » de la dernière enveloppe
+   ajoute lui aussi dans la section : il se pose dans le bas du bandeau, sur la hauteur d'un écart, et
+   non dans l'écart qui sépare deux bandeaux, que seul le « + » d'un bloc hors section occupe. Rien ne
+   se calcule : le bandeau suit l'ordre des enveloppes, et un geste qui ajoute, retire, déplace ou
+   copie un bloc ne rend que ce qu'il touche. Le `:has()` a pour sujet une enveloppe et pour argument
+   son frère suivant, aussi étroit que celui du bloc ouvert ci-dessus. Les coins ne s'arrondissent
+   qu'à partir de 768 px : en dessous, le bandeau va d'un bord à l'autre de l'écran. */
+#block-list > [data-block-section],
+#block-list > [data-block-section] ~ * {
+	margin-top: calc(-1 * var(--block-gap));
+	padding-top: var(--block-gap);
+	background: var(--section-background, color-mix(in srgb, var(--primary) 10%, var(--background-surface)));
+}
+
+#block-list > [data-block-section] {
+	margin-top: 0;
+	padding-top: var(--space-md);
+}
+
+#block-list > [data-block-section]:is(:last-child, :has(+ [data-block-section])),
+#block-list > [data-block-section] ~ :is(:last-child, :has(+ [data-block-section])) {
+	padding-bottom: var(--block-gap);
+}
+
+#block-list > [data-block-section]:is(:last-child, :has(+ [data-block-section])) > .block-insert,
+#block-list > [data-block-section] ~ :is(:last-child, :has(+ [data-block-section])) > .block-insert {
+	bottom: 0;
+}
+
+@media (min-width: 768px) {
+
+	#block-list > [data-block-section],
+	#block-list > [data-block-section] ~ * {
+		margin-inline: calc(-1 * var(--space-lg));
+		padding-inline: var(--space-lg);
+	}
+
+	#block-list > [data-block-section] {
+		border-top-left-radius: var(--radius-lg);
+		border-top-right-radius: var(--radius-lg);
+	}
+
+	#block-list > [data-block-section]:is(:last-child, :has(+ [data-block-section])),
+	#block-list > [data-block-section] ~ :is(:last-child, :has(+ [data-block-section])) {
+		border-bottom-left-radius: var(--radius-lg);
+		border-bottom-right-radius: var(--radius-lg);
+	}
+
+}
+
+@media (max-width: 767px) {
+
+	#block-list > [data-block-section],
+	#block-list > [data-block-section] ~ * {
+		margin-inline: calc(-1 * var(--container-padding));
+		padding-inline: var(--container-padding);
+	}
+
+}
+
+/* `util-title` est une rangée où le titre ne prend que sa largeur : ouvert, il s'écrit dans un champ
+   qui prend toute la ligne. */
+.block-form .block-section-head > .util-title > h2 {
+	flex: 1;
+}
+
+body[data-touch="no"] .block-item:hover {
+	background-color: var(--background-hover);
+}
+
+/* Le fond d'un bloc ouvert est une teinte de la marque et non de `--primary`, qui est un gris neutre
+   (`reboot.css`) : sous les têtes d'un onglet, un aplat gris d'une ligne se lisait comme un champ. */
+.block-item.block-item-selected,
+body[data-touch="no"] .block-item.block-item-selected:hover {
+	background-color: var(--background-column-hover);
+	cursor: auto;
+}
+
+/* Un enfant ouvert prend la teinte d'un bloc ouvert, et son parent perd la sienne : les deux ne
+   s'additionnent pas en un gris foncé qui se lirait comme un champ de saisie. Le parent ne garde que
+   sa bande, qui porte la barre de l'enfant. */
+.block-item.block-item-child-open,
+body[data-touch="no"] .block-item.block-item-child-open:hover {
+	background-color: transparent;
+}
+
+/* Un lien dans le texte d'un bloc lu ne se suit pas dans l'éditeur : le clic ouvre le bloc. Retiré
+   à la souris, le lien ne promet plus d'être suivi (ni main ni survol), et le clic arrive au bloc
+   sans passer par l'écouteur des liens du cadriciel. */
+.block-item:not(.block-item-selected) a {
+	pointer-events: none;
+}
+
+/* Les onglets d'un bloc lu se choisissent dans l'éditeur comme en lecture : c'est le seul moyen
+   d'atteindre les enfants des autres onglets. */
+.block-item:not(.block-item-selected) .tab-item {
+	pointer-events: auto;
+}
+
+/* Un texte vidé reste un bloc : lu, sa `.reador` n'a aucun enfant et montre l'invite de l'éditeur,
+   dans le style de `div.editor:empty:before` (`editor.css`). Ouvert, c'est l'éditeur qui décide. */
+.block-item:not(.block-item-selected) > .reador:empty::before {
+	content: attr(data-placeholder-empty);
+	font-style: italic;
+	font-weight: lighter;
+	color: var(--muted);
+	display: block;
+}
+
+/* Une barre ne cache jamais de texte. L'écart entre deux blocs (`--block-gap`) ne peut pas loger une barre de
+   gestes, qui fait plus de 2 rem : le bloc ouvert lui ouvre donc une bande en tête de son fond, et son
+   contenu descend d'autant tant qu'il est ouvert. La bande porte le nom du bloc, ou celui de l'enfant
+   ouvert, puis ses gestes : la barre d'un enfant (`block-tools-child`) y prend la place de celle du
+   parent (`BlockEditor.fillBand()`), et ne se montre nulle part ailleurs. */
+.block-tools {
+	display: none;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.25rem;
+	margin-bottom: 0.5rem;
+}
+
+.block-item-selected > .block-tools {
+	display: flex;
+}
+
+.block-item-child-open > .block-tools:not(.block-tools-child),
+.block-child > .block-tools {
+	display: none;
+}
+
+.block-type {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	margin-right: auto;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--primary);
+	white-space: nowrap;
+}
+
+/* Le formulaire d'un bloc attend dans son `<template>` sans savoir où la liste l'aura mis : c'est sa
+   place, lue ici, qui retire la flèche sans effet. Le premier bloc suit le « + » de tête. Le bloc à
+   écrire d'une leçon vide n'est pas un `[data-block]` et n'a pas de flèches. Un enfant se rend
+   toujours avec sa fratrie, qui décide des siennes (`BlockUi::getTools()`). */
+#block-list > .block-insert + [data-block] > .block-item > .block-tools [data-block-move="-1"],
+#block-list > [data-block]:last-child > .block-item > .block-tools [data-block-move="1"] {
+	display: none;
+}
+
+/* La couleur d'une entrée du menu de l'encadré : `util-card-accent-*` porte `--accent`. Le menu se
+   peint en `--primary` (`dropdown-list`), qu'un accent peut égaler, celui d'« Information » venant de
+   `--secondary` : la pastille se pose sur un disque de surface, où tout accent se lit. */
+.block-variant {
+	display: inline-flex;
+	padding: 0.125rem;
+	border-radius: 50%;
+	background-color: var(--background-surface);
+	color: var(--accent);
+}
+
+/* Au survol, le nom seul, dans une pastille posée dans l'écart au-dessus du bloc : le fond déborde de
+   0,5 rem, la pastille remonte encore de 0,5 rem, et s'arrête où le texte commence. */
+.block-hint {
+	position: absolute;
+	top: -0.5rem;
+	right: 1rem;
+	display: none;
+	align-items: center;
+	gap: 0.25rem;
+	height: 1rem;
+	padding: 0 0.375rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1;
+	color: var(--primary);
+	background-color: var(--background-surface);
+	border-radius: var(--radius);
+	z-index: 3;
+}
+
+body[data-touch="no"] .block-item:not(.block-item-selected):hover > .block-hint {
+	display: inline-flex;
+}
+
+/* ------------------------------------------------------------------------------------------------
+   Les champs du bloc ouvert s'écrivent à leur place (util-inplace-field, component.css) et prennent la
+   forme de ce qu'ils écrivent : le titre de l'encadré a la taille et la couleur de util-card-title, la
+   valeur d'un chiffre celle de util-figure-value. */
+
+/* Le nom d'un onglet s'écrit dans l'onglet, le libellé d'un bouton dans le bouton, un mot dans sa
+   pastille, à la largeur de ce qu'on tape (util-inplace-field-fit), jamais sous six caractères : sous
+   Firefox, `BlockEditor.sizeField()` tient le même plancher par l'attribut `size`. */
+.tab-item > input.util-inplace-field,
+.block-button .btn > input.util-inplace-field,
+.block-tags-edit > .badge > input.util-inplace-field {
+	min-width: 6ch;
+}
+
+/* La vidéo ouverte (`BlockTypeUi::getVideoEditable()`) : l'adresse sous le cadre, dans un champ qui
+   garde son cadre de champ (ce n'est pas un texte qu'on lit). La légende s'écrit à sa place et en
+   hérite l'alignement et l'italique de sa lecture (`read.css`). */
+figure.block-video > .block-video-url {
+	margin-top: var(--space-xs);
+}
+
+/* Le texte d'une vidéo reste dans le formulaire en pleine largeur et en petite taille, masqué : un champ
+   retiré viderait le texte au premier enregistrement (`BlockTypeUi::getVideoEditable()`). Le menu de la
+   barre change la disposition sans recharger le bloc (`BlockEditor.setVariant()`) : `order` remet le
+   texte du côté choisi jusqu'au rendu suivant, qui le pose dans l'ordre de la lecture. */
+.block-editor div:is(.block-video-full, .block-video-small) > .block-video-text {
+	display: none;
+}
+
+.block-editor div.block-video-left > .block-video-text {
+	order: 1;
+}
+
+.block-editor div.block-video-right > .block-video-text {
+	order: -1;
+}
+
+/* Le bouton ouvert (`BlockTypeUi::getButtonEditable()`) : le libellé dans le bouton, l'icône à sa
+   droite, l'adresse dessous, dans un champ cadré comme celle d'une vidéo. Le bouton ouvert reste sur
+   une ligne, contre la règle de lecture qui laisse passer à la ligne celui qu'on lit (`read.css`) : un
+   libellé long s'arrête au bord du bloc et défile dans le champ, qui rétrécit seul et garde l'icône à
+   côté de lui, au lieu de pousser le bouton hors de l'écran ou de laisser l'icône seule dessous. */
+.block-list .block-button .btn.btn-readonly {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-xxs);
+	max-width: 100%;
+	white-space: nowrap;
+}
+
+.block-button .btn-readonly > input.util-inplace-field {
+	flex: 0 1 auto;
+}
+
+.block-button > .block-button-url {
+	margin-top: var(--space-xs);
+}
+
+/* Les étiquettes ouvertes (`BlockTypeUi::getTagsEditable()`) : chaque mot s'écrit dans sa pastille,
+   sa croix à côté, et « + Étiquette » se range au bout. La rangée de `badges` aligne ses marques sur
+   leur ligne de base, qu'un bouton n'a pas à la même hauteur : elle les centre ici. */
+.block-tags-edit {
+	align-items: center;
+}
+
+/* Sur le fond de sélection du bloc ouvert, la pastille prend le fond d'un champ pour s'en détacher.
+   Même poids que le fond de `.badge` (`component.css`), écrite plus tard : le design system prévoit
+   qu'une feuille de package redessine ainsi la marque sur son écran. Une pastille ne déborde jamais
+   de la rangée : un mot long défile dans son champ. */
+.block-tags-edit > .badge {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-xxs);
+	max-width: 100%;
+	background-color: var(--background-surface);
+}
+
+.block-tags-edit > .badge > input.util-inplace-field {
+	max-width: 100%;
+}
+
+.block-tags-remove {
+	color: inherit;
+	line-height: 1;
+	cursor: pointer;
+}
+
+/* Le nom d'un onglet ouvert attend ici que le script le pose dans la tête (`BlockEditor.fillBand()`). */
+[data-block-head] {
+	display: none;
+}
+
+/* Il porte aussi le refus d'un nom vide (`Block::title.tabName`, `Lime.Alert.showErrors()`), qui se
+   lit alors en tête du panneau, sous la tête de l'onglet où le champ est resté. */
+[data-block-head].form-error-wrapper {
+	display: block;
+}
+
+/* ------------------------------------------------------------------------------------------------
+   Les enfants dans leur parent. Un chiffre est une tuile de la rangée, une réponse une carte de la
+   grille : son enveloppe prend la place de la tuile ou de la carte de lecture, qui remplit
+   l'enveloppe, pour que la rangée garde des tuiles ou des cartes de même hauteur. `flex` ne joue que
+   pour une tuile, la carte étant un élément de grille. */
+:is(.util-figures, .block-answers) > :is([data-block], #block-new) {
+	flex: 1 1 10rem;
+	display: flex;
+	flex-direction: column;
+}
+
+/* `:not([hidden])` : la tuile lue d'un chiffre ouvert est cachée par l'attribut (`BlockEditor.open()`),
+   que ce `display` battrait sinon, et la tuile s'afficherait au-dessus de son formulaire. */
+:is(.util-figures, .block-answers) .block-child:not([hidden]) {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+:is(.util-figures, .block-answers) .block-child > :is(.util-figure, .util-card, .block-form),
+:is(.util-figures, .block-answers) .block-child > .block-form > :is(.util-figure, .util-card) {
+	flex: 1;
+}
+
+:is(.util-figures, .block-answers) .block-child > .block-form {
+	display: flex;
+	flex-direction: column;
+}
+
+/* Deux volets d'un accordéon gardent l'écart de la lecture (`read.css`), où ils sont frères : ici,
+   chacun est dans son enveloppe, et c'est l'enveloppe qui l'éloigne de la précédente. Par un
+   rembourrage et non une marge : la marge se fondrait avec la marge négative du fond de l'enfant
+   (`block-child`), et l'écart ne vaudrait plus 1 rem (mesuré : 24 px au lieu de 16). Une rangée de
+   tuiles ou de cartes a le sien. */
+[data-block-composite] :not(.util-figures, .block-answers) > :is([data-block], #block-new) + :is([data-block], #block-new) {
+	padding-top: 1rem;
+}
+
+/* Le « + » d'un parent n'est là que parent ouvert, au bout de ses enfants. */
+[data-block-composite] > .block-item:not(.block-item-selected) :is(.block-insert-child, .block-insert-tab, .block-insert-figure) {
+	display: none;
+}
+
+.block-insert-child {
+	display: flex;
+	margin-top: 0.5rem;
+}
+
+/* Sous les étapes, aligné sur leurs titres : la pastille (2 rem) et son écart (0,75 rem). */
+.util-procedure + .block-insert-child {
+	padding-left: 2.75rem;
+}
+
+.tab-item.block-insert-tab {
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+}
+
+.tab-item.block-insert-tab::after {
+	display: none;
+}
+
+.btn.block-insert-figure {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 4rem;
+}
+
+/* ------------------------------------------------------------------------------------------------
+   Le « + » dans l'écart. Au repos : un rond teinté de la marque, centré dans l'écart, entre deux traits
+   en `--border`, toujours affichés (retour du 01/10/2026). Son
+   diamètre est en px, comme les cibles tactiles, pour ne pas rétrécir avec la racine ; l'écart ne
+   descend pas sous ce diamètre, pour qu'il ne morde jamais sur les blocs voisins. Survolé : les traits et le rond
+   prennent la même teinte. Au doigt, rien ne change. Il est toujours là : on ajoute un bloc sans en ouvrir un. Seul le rond reçoit le clic : la
+   ligne couvre le bord des fonds voisins, qui s'ouvrent toujours au clic. */
+.block-insert {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: calc(-1 * var(--block-gap));
+	height: var(--block-gap);
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	z-index: 2;
+	pointer-events: none;
+}
+
+#block-list > .block-insert {
+	top: 0;
+	bottom: auto;
+}
+
+.block-insert::before,
+.block-insert::after {
+	content: "";
+	flex: 1;
+	height: 2px;
+	border-radius: 1px;
+	background-color: var(--border);
+}
+
+/* `a.btn` passe devant `.btn.btn-sm` (`component.css`), qui reprendrait la taille et le padding. */
+.block-insert > a.btn,
+.block-insert-child > a.btn {
+	pointer-events: auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border-radius: 50%;
+	font-size: 14px;
+	color: var(--color-brand);
+	border-color: transparent;
+	background-color: color-mix(in srgb, var(--color-brand) 12%, var(--background-surface));
+}
+
+/* La remontée de `.asset-icon` (`reboot.css`) l'aligne sur une ligne de texte : dans un rond centré
+   par flex, elle le décentrerait vers le haut. */
+.block-insert > a.btn > .asset-icon,
+.block-insert-child > a.btn > .asset-icon {
+	margin-top: 0;
+}
+
+/* Un « + » à plusieurs entrées ouvre un menu et garde sa flèche, comme tout bouton qui en ouvre un
+   (`buttonsUsage`, page du design system) : le rond s'allonge alors en pastille, comme un disque de
+   la tête d'écran qui porte la sienne. */
+.block-insert > a.btn.dropdown-toggle {
+	width: auto;
+	gap: var(--space-xxs);
+	padding: 0 var(--space-xs);
+	border-radius: 999px;
+}
+
+.block-insert > a.btn.dropdown-toggle::after {
+	margin-left: 0;
+}
+
+/* Le survol s'écarte de `--primary`, la règle des états de survol : c'est un gris neutre, et le « + »
+   demande une couleur du design system qui n'en soit pas un (01/10/2026). */
+body[data-touch="no"] .block-insert:hover::before,
+body[data-touch="no"] .block-insert:hover::after {
+	background-color: var(--color-bg-vert-sauge);
+}
+
+body[data-touch="no"] .block-insert > a:hover,
+body[data-touch="no"] .block-insert-child > a:hover {
+	color: var(--color-brand);
+	border-color: var(--color-bg-vert-sauge);
+	background-color: var(--color-bg-vert-sauge);
+}
+
+/* L'aperçu du texte d'après le « / », le temps que la coupe réponde (`BlockSlash.choose()`). */
+#block-split > .block-item {
+	opacity: 0.6;
+	cursor: default;
+}
+
+/* ------------------------------------------------------------------------------------------------
+   La colonne colle au défilement et ne dépasse pas la partie visible sous la barre : une leçon de
+   quarante blocs a un plan plus haut que l'écran, dont les dernières lignes seraient sinon hors
+   d'atteinte. Elle défile seule, sans entraîner la page au bout de sa course. */
+.block-aside {
+	position: sticky;
+	top: calc(var(--mainSticky) + 1rem);
+	max-height: calc(100vh - var(--mainSticky) - 2rem);
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+/* Sous les gabarits « base » (administration, groupe), la barre collée en haut est `#root-nav`, haute
+   de `--nav-main` : `--mainSticky` y décrit la barre d'une structure, que ces écrans n'ont pas, et
+   vaut 0 au grand écran, où le plan passerait sous `#root-nav`. */
+body[data-template~="base"] .block-aside {
+	top: calc(var(--nav-main) + 1rem);
+	max-height: calc(100vh - var(--nav-main) - 2rem);
+}
+
+#block-plan .util-deck-row.block-plan-selected {
+	background-color: var(--background-column-hover);
+}
+
+/* De même que les flèches, la ligne seule du plan n'a rien avec quoi s'échanger : un bloc ajouté
+   n'apporte que sa propre ligne, et la poignée de celle qui était seule paraît avec elle. */
+#block-plan .util-deck-row:only-child .util-drag-handle {
+	display: none;
+}
+
+/* ------------------------------------------------------------------------------------------------
+   Au doigt : pas de survol, donc ni fond ni nom au repos. La bande du bloc ouvert porte des gestes à
+   la taille d'une cible tactile, quelle que soit la largeur : une tablette garde le plan mais se
+   touche aussi. Le « + » reste au milieu de l'écart, et sa cible de 44 px déborde sur les fonds
+   voisins, jamais sur leur texte : la colonne garde la largeur de la lecture. */
+body[data-touch="yes"] .block-item-selected > .block-tools .btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: var(--touch-target);
+	min-height: var(--touch-target);
+}
+
+body[data-touch="yes"] :is(.block-insert, .block-insert-child) > a {
+	position: relative;
+}
+
+/* `::before`, parce que `::after` porte la flèche d'un « + » qui ouvre un menu. */
+body[data-touch="yes"] :is(.block-insert, .block-insert-child) > a::before {
+	content: "";
+	position: absolute;
+	width: var(--touch-target);
+	height: var(--touch-target);
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+}
+
+/* Sous 576 px, la gouttière du conteneur n'a plus le rem du débord : le fond sortirait de l'écran et
+   la page défilerait à l'horizontale. Il ne déborde plus que de 0,5 rem. */
+@media (max-width: 575px) {
+
+	.block-list > :is([data-block], #block-new, #block-split) > .block-item {
+		margin-left: -0.5rem;
+		margin-right: -0.5rem;
+		padding-left: 0.5rem;
+		padding-right: 0.5rem;
+	}
+
+}
+
+/* Sous 768 px, la colonne perd le plan : elle n'a alors plus à coller ni à défiler. */
+@media (max-width: 767px) {
+
+	.block-editor {
+		display: block;
+	}
+
+	.block-aside {
+		position: static;
+		max-height: none;
+		overflow: visible;
+	}
+
+	#block-plan {
+		display: none;
+	}
+
+}
+
+/* La liste des types du « / », posée par `BlockSlash.place()` sous le « / » ou au-dessus, dans la
+   partie visible de la fenêtre. Hors de `.block-editor` parce qu'elle vit dans `body`, comme toute
+   liste déroulante, pour ne pas être coupée par le bloc. */
+.dropdown-list.block-slash {
+	position: absolute;
+	min-width: 14rem;
+	overflow: auto;
+	overscroll-behavior: contain;
+}
+
+body[data-touch="yes"] .dropdown-list.block-slash {
+	min-width: 0;
+}
+
+body[data-touch="yes"] .block-slash .dropdown-item,
+body[data-touch="yes"] .block-insert-list .dropdown-item,
+body[data-touch="yes"] .dropdown-item[data-block-variant] {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-height: var(--touch-target);
+}
+
+/* ------------------------------------------------------------------------------------------------
+   Le tableau ouvert (`BlockTypeUi::getTableEditable()`). La colonne des roues des lignes le précède, à
+   sa largeur, et reste en vue au défilement (`util-table-sticky-column`). Une cellule y prend 1 rem de
+   plus qu'en lecture, pour son champ. Deux classes : la règle doit battre celle de `read.css`, quel que
+   soit l'ordre de chargement des deux feuilles. */
+.block-table.block-table-edit {
+	grid-template-columns: max-content repeat(var(--block-table-columns), minmax(8rem, 1fr));
+}
+
+/* La roue d'une ligne se centre sur sa hauteur. La cellule fixe garde l'étirement que lui donne
+   `util-table-sticky-column`, qui couvre la hauteur du rang de son fond : c'est son contenu qui se
+   centre, pas elle. */
+.block-table-edit > .util-table-row > :first-child {
+	display: flex;
+	align-items: center;
+}
+
+/* La roue d'une colonne au bout de son intitulé, sur la même ligne, comme la roue d'une ligne au bout de la ligne :
+   posée au-dessus, elle se lisait comme celle de la case voisine. */
+.block-table-head {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+.block-table-head > .util-inplace-field {
+	flex: 1;
+	min-width: 0;
+}
+
+.block-insert-table {
+	display: flex;
+	gap: 0.5rem;
+	margin-top: 0.75rem;
+}

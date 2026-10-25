@@ -1,0 +1,161 @@
+.onboarding[data-mode="temporary"] .onboarding-stepper span[data-step="5"],
+.onboarding[data-mode="temporary"] .onboarding-progress-names span[data-onboarding-name="5"] {
+	display: none;
+}
+
+/* Le plan garde la borne commune du panneau mais s'aligne sur le bord gauche de l'introduction qui le précède, au lieu de se centrer */
+#onboarding .onboarding-panel-plain {
+	margin-inline: 0;
+}
+
+.onboarding-mini {
+	display: flex;
+	gap: 3px;
+	width: 6rem;
+	height: 2.75rem;
+	padding: 5px;
+	background: var(--background-even);
+	border-radius: 6px;
+	flex-shrink: 0;
+}
+
+.onboarding-mini-beds span {
+	flex: 1;
+	background: var(--open-field-background);
+	border: 1px solid #b7d3bf;
+	border-radius: 2px;
+}
+
+.onboarding-mini-surface span {
+	flex: 1;
+	border: 1.5px dashed #b7c9be;
+	border-radius: 2px;
+	background: repeating-linear-gradient(135deg, #e6efe9 0 5px, transparent 5px 10px);
+}
+
+.onboarding-beds {
+	display: flex;
+	flex-direction: column;
+	gap: 0.625rem;
+}
+
+/* Les champs d'une étape forment un seul bloc, comme le fieldset du jardin : l'écart de l'étape sépare ses blocs, et ses groupes
+   s'espacent de leur seul rembourrage, comme dans un formulaire du produit. La carte d'un tracé en prend autant, pour se tenir à
+   l'écart de son interrupteur et du champ qui suit */
+#onboarding-plot {
+	margin-inline: 0;
+	padding-block: 0;
+}
+
+#onboarding [data-drawing-block] {
+	padding-block: var(--space-xs);
+}
+
+/* L'interrupteur d'un tracé s'espace comme un groupe, sans en prendre la colonne de libellé : il s'aligne sur le bord gauche du titre
+   de l'étape et de la carte qu'il ouvre */
+#onboarding .onboarding-drawing-switch {
+	padding-block: var(--space-xs);
+}
+
+/* Le jardin est en groupes de formulaire, que la grille de .form-columns affiche : le champ de l'autre mode doit l'emporter sur elle */
+#onboarding .onboarding-plot[data-plot-mode="open-field"] [data-plot-field="greenhouse"],
+#onboarding .onboarding-plot[data-plot-mode="greenhouse"] [data-plot-field="open-field"] {
+	display: none;
+}
+
+.onboarding-field-note {
+	font-size: 0.8rem;
+	color: var(--muted);
+	margin-top: 0.25rem;
+}
+
+/* Le segment garde la largeur de ses deux choix, et non celle d'un .form-control */
+.onboarding-seg .field-radio-group {
+	display: inline-flex;
+	width: auto;
+	padding: 0;
+	gap: 0;
+	border-radius: 2rem;
+	border-color: var(--border);
+	overflow: hidden;
+	flex-shrink: 0;
+}
+
+.onboarding-seg .field-radio-group-item {
+	display: block;
+	padding: 0.4rem 0.75rem;
+	font-size: 0.85rem;
+	white-space: nowrap;
+}
+
+.onboarding-seg .field-radio-group-item > input[type="radio"] {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.onboarding-seg .field-radio-group-item:has(> input:checked) {
+	background: var(--open-field);
+	color: white;
+	font-weight: normal;
+}
+
+.onboarding-seg .field-radio-group-item:has(> input[value="greenhouse"]:checked) {
+	background: var(--greenhouse);
+}
+
+.onboarding-seg .field-radio-group-item:hover:not(:has(> input:checked)) {
+	background: var(--background-light);
+}
+
+.onboarding-bed[data-plot-mode="greenhouse"] {
+	background: #fffaf2;
+	border-color: #f1dfbc;
+}
+
+.onboarding-bed[data-plot-mode="open-field"] {
+	background: #f7fbf8;
+	border-color: #d6e7dc;
+}
+
+.onboarding-bed-label {
+	font-weight: bold;
+	font-size: 0.95rem;
+}
+
+.onboarding-bed-label small {
+	font-weight: normal;
+	color: var(--muted);
+	margin-left: 0.5rem;
+}
+
+.onboarding-bed-fields {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.5rem;
+}
+
+.onboarding-bed-fields .input-group {
+	flex-wrap: nowrap;
+}
+
+.onboarding-bed-fields input {
+	min-width: 4.5rem;
+}
+
+.onboarding-bed-fields .input-group-addon {
+	white-space: nowrap;
+}
+
+.onboarding[data-mode="temporary"] .onboarding-step[data-step="4"] [data-onboarding-next],
+.onboarding[data-mode="permanent"] .onboarding-step[data-step="4"] [data-onboarding-submit] {
+	display: none;
+}
+
+@media (max-width: 575px) {
+
+	.onboarding-bed-fields {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+}

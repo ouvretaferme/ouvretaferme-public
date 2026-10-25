@@ -1,0 +1,735 @@
+/* L'accueil d'une structure.
+
+   Tout sélecteur est borné par `#dashboard`, et par `body[data-template~="structure-dashboard"]`
+   quand il vise le mobilier du socle, qui vit hors de `#dashboard` : une feuille de package reste
+   chargée longtemps après qu'on a quitté l'écran qui l'a demandée, la navigation ajax ne retirant
+   pas la `<link>`. La vue pose ce jeton (`view/dashboard.v.php`). */
+
+#dashboard .dashboard-head-type {
+	display: grid;
+	gap: 0 var(--space-xxl);
+	padding-top: var(--space-xl);
+	padding-bottom: var(--space-lg);
+	border-bottom: 1px solid var(--border);
+}
+
+#dashboard .dashboard-head-type-top {
+	grid-column: 1 / -1;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-sm);
+	margin-bottom: var(--space-xxs);
+}
+
+#dashboard .dashboard-head-type-kicker {
+	margin: 0;
+	color: var(--muted);
+	font-variant-numeric: tabular-nums;
+}
+
+#dashboard .dashboard-head-type-date {
+	margin: 0;
+	font-family: var(--font-title);
+	font-size: 3rem;
+	font-weight: 700;
+	line-height: 1.05;
+	letter-spacing: -0.02em;
+}
+
+/* Le chiffre de la semaine sous la date, en une phrase (L62). Le montant de la semaine en cours prend
+   la fonte du titre, à chasse fixe pour qu'un chiffre qui change ne fasse pas bouger la ligne. */
+#dashboard .dashboard-head-type-sentence {
+	margin: var(--space-sm) 0 0;
+	text-wrap: pretty;
+}
+
+#dashboard .dashboard-head-type-sentence b {
+	font-family: var(--font-title);
+	font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 575px) {
+
+	#dashboard .dashboard-head-type-date {
+		font-size: 2.2rem;
+	}
+
+}
+
+/* Le champ de saisie clôt la tête (`DashboardUi::getHead()`, S6). Dès 992px, la tête prend les trois
+   pistes des colonnes et leur écart, et le champ en couvre deux, « À faire » et « À suivre », où une saisie
+   se voit, en laissant au bilan sa place. Plus étroit, les colonnes se suivent et il prend toute la
+   largeur. */
+#dashboard #entry-dashboard {
+	--util-omnibox-max-width: none;
+	margin-top: var(--space-md);
+}
+
+@media (min-width: 992px) {
+
+	#dashboard .dashboard-head-type {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	#dashboard .dashboard-head-type > * {
+		grid-column: 1 / -1;
+	}
+
+	#dashboard .dashboard-head-type > #entry-dashboard {
+		grid-column: span 2;
+	}
+
+}
+
+/* L'équipe en 3D clôt la tête (`DashboardUi::getTeam()`, A8 de 3d-avatars) : en pied, les pieds sur le filet du bas,
+   la liste des absences à sa droite. Plus étroit que 992px, elle suit le champ de saisie. */
+#dashboard .dashboard-head-team {
+	--dashboard-head-team-height: 7rem;
+	position: relative;
+	display: flex;
+	align-items: flex-end;
+	justify-content: flex-end;
+	gap: var(--space-xs);
+	margin-top: var(--space-md);
+	/* Annule le padding-bottom de .dashboard-head-type : si celui-ci change, les pieds quittent le filet */
+	margin-bottom: calc(-1 * var(--space-lg));
+}
+
+#dashboard #dashboard-head-team-scene {
+	position: relative;
+	flex: 1 1 auto;
+	min-width: 0;
+	height: var(--dashboard-head-team-height);
+}
+
+/* Hors du flux : la largeur du tampon serait sinon celle du canevas dans la mise en page, et une scène large d'un instant,
+   pendant qu'une fenêtre rétrécit, retiendrait cette largeur que le ResizeObserver relit, de sorte que la scène ne se
+   mesure plus jamais plus petite (arbitrage 28) */
+#dashboard #dashboard-head-team-scene > canvas {
+	position: absolute;
+	inset: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+/* La liste des absences, à droite du rang, finit au niveau des pieds */
+#dashboard .dashboard-head-team-aside {
+	flex: 0 0 auto;
+	margin-left: var(--space-sm);
+}
+
+/* Une ligne par personne absente cette semaine, le prénom puis les jours en mots (planche v6). Deux colonnes, pour que
+   les jours s'alignent sans deux-points entre le prénom et ce qui lui arrive */
+#dashboard .dashboard-head-team-absences {
+	font-size: 90%;
+	line-height: 1.5;
+}
+
+#dashboard .dashboard-head-team-absences > h4 {
+	margin: 0;
+	font-size: inherit;
+	font-weight: bold;
+}
+
+#dashboard .dashboard-head-team-absences > dl {
+	display: grid;
+	gap: 0 var(--space-sm);
+	margin: 0;
+}
+
+#dashboard .dashboard-head-team-absences > dl > div {
+	display: contents;
+}
+
+#dashboard .dashboard-head-team-absences dt {
+	grid-column: 1;
+	font-weight: normal;
+}
+
+#dashboard .dashboard-head-team-absences dd {
+	grid-column: 2;
+	margin: 0;
+	color: var(--muted);
+}
+
+/* Les jours d'une absence passent entiers à la ligne, et seule une plage d'heures se détache de son jour
+   (`DashboardUi::getAbsenceDays()`, arbitrage 30) : « samedi et » en fin de ligne et « dimanche » sous lui se lisent mal,
+   « après- » et « midi » aussi. Un morceau plus large que la liste se coupe plutôt que d'en déborder */
+#dashboard .dashboard-head-team-absences dd > span {
+	display: inline-block;
+	max-width: 100%;
+	text-indent: 0;
+}
+
+/* Au-delà de quatre absences, la ligne qui compte les autres (arbitrage 26) */
+#dashboard .dashboard-head-team-absences-more {
+	display: block;
+}
+
+/* L'invitation à faire son avatar se tient à côté de la roue (arbitrage 26) : sous la liste des absences, elle poussait
+   le titre jusqu'à la roue. La date de la semaine lui cède la place et passe sur deux lignes quand l'écran est étroit */
+#dashboard .dashboard-head-type-invite {
+	flex: none;
+	margin-left: auto;
+	white-space: nowrap;
+}
+
+/* Le prénom de la personne survolée, au-dessus de sa tête */
+#dashboard .dashboard-head-team-name {
+	position: absolute;
+	transform: translate(-50%, -100%);
+	padding: 0 var(--space-xs);
+	border-radius: var(--radius);
+	background: var(--text);
+	color: var(--background-light);
+	line-height: 1.6;
+	white-space: nowrap;
+	pointer-events: none;
+}
+
+/* Dès 992px, l'équipe prend la troisième piste, de la date au champ de saisie, posée en bas ; la date et ses phrases
+   passent sur les deux premières, comme le champ. Le nombre de phrases change d'une structure à l'autre : l'équipe
+   s'étend donc sur des rangées qu'aucun autre enfant n'occupe, vides et sans écart vertical, qui reçoivent ce qu'elle
+   a de plus haut que la date, ses phrases et le champ. */
+@media (min-width: 992px) {
+
+	#dashboard .dashboard-head-type:has(> .dashboard-head-team) > :is(.dashboard-head-type-date, .dashboard-head-type-sentence, #dashboard-home) {
+		grid-column: 1 / span 2;
+	}
+
+	#dashboard .dashboard-head-type > .dashboard-head-team {
+		--dashboard-head-team-height: 9.5rem;
+		grid-column: 3;
+		grid-row: 2 / span 20;
+		align-self: end;
+		margin-top: 0;
+	}
+
+}
+
+/* De 992 à 1599 px, la troisième piste de la tête ne tient pas deux colonnes de liste et le rang : chaque absence devient
+   une phrase, le prénom puis les jours à sa suite, qui ne passe à la ligne que faute de place, et dont la suite se retire
+   d'un cran pour qu'on voie où commence la suivante (planche v6, arbitrage 30). Quatre lignes et « et N autres » tiennent
+   dans la hauteur du rang, et le titre garde sous la roue l'écart de la grille de la tête sans que celle-ci grandisse :
+   l'interligne se resserre */
+@media (min-width: 992px) and (max-width: 1599px) {
+
+	#dashboard .dashboard-head-team-absences {
+		line-height: 1.3;
+	}
+
+	#dashboard .dashboard-head-team-absences > dl {
+		display: block;
+		width: 10.5rem;
+	}
+
+	#dashboard .dashboard-head-team-absences > dl > div {
+		display: block;
+		padding-left: var(--space-sm);
+		text-indent: calc(-1 * var(--space-sm));
+	}
+
+	#dashboard .dashboard-head-team-absences dt,
+	#dashboard .dashboard-head-team-absences dd {
+		display: inline;
+	}
+
+}
+
+/* ------------------------------------------------- les trois colonnes
+
+   « À faire », « À suivre » et « Bilan » (`DashboardUi::getColumns()`), chacune sous son titre et en
+   une seule pile de tuiles (`util-tiles-1`). Dès 992px, trois pistes égales, autant que
+   `DashboardSetting::COLUMNS` : une colonne garde la même largeur d'une structure à l'autre, et celle
+   qui n'a rien à montrer laisse sa place vide plutôt que d'élargir les tuiles des autres. Sous 992px
+   elles se suivent dans l'ordre du balisage, ce qui demande un geste d'abord. Mesuré sur 77 le
+   2026-10-19, la plus étroite tient 240px, à 1100px, juste avant que le menu de gauche passe en haut
+   (L69). */
+#dashboard .dashboard-columns-grid {
+	display: grid;
+	gap: var(--space-xl) var(--space-xxl);
+	padding-top: var(--space-xl);
+}
+
+@media (min-width: 992px) {
+
+	#dashboard .dashboard-columns-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+}
+
+/* Le titre d'une colonne est celui d'une section de la page : plus grand que celui du tableau du
+   socle, qui coiffe une bande d'univers, et plus près de ses tuiles, que la grille espace déjà. */
+#dashboard :is(.dashboard-column, .dashboard-open) > .util-board-title {
+	margin-bottom: var(--space-md);
+}
+
+/* Le titre d'un bloc à découvert est celui d'une colonne, y compris dans la rangée du réglage, qui
+   porte l'écart à sa place pour centrer l'interrupteur sur le titre. */
+#dashboard :is(.dashboard-column, .dashboard-open, .dashboard-open > .dashboard-setting-title) > .util-board-title {
+	font-size: 1.5rem;
+}
+
+/* Un bloc à découvert (`DashboardSetting::OPEN`) suit les colonnes, sur toute la largeur et sous son
+   propre titre : il prend au-dessus de lui l'écart de deux sections empilées, celui de la grille, et
+   non celui de deux tuiles. Sans colonne au-dessus de lui, la grille ne pose pas son écart. */
+#dashboard .dashboard-open {
+	padding-top: var(--space-xl);
+}
+
+/* ------------------------------------------------- les tuiles
+
+   Un bloc de colonne est une tuile (`DashboardUi::getBlock()`, L46) : son intitulé, son corps rendu par
+   son package, ses liens. L'intitulé colle au corps (`component.css`), et la phrase par laquelle un
+   package ouvre le corps pose l'écart que la liste et la bande de jours posent déjà par leur marge. */
+#dashboard .util-tile .util-board-column-body > p:first-child {
+	margin-top: var(--space-sm);
+}
+
+/* ------------------------------------------------- la file de ce qui attend un geste
+
+   La première tuile de « À faire » : une ligne par geste attendu. La ligne a la même forme à toute
+   largeur, la colonne ayant la sienne : l'univers au-dessus, puis ce qui attend et son bouton à droite.
+   Le texte se place dans la première piste, ce qui envoie l'univers seul sur la ligne d'au-dessus et
+   le bouton dans la seconde piste. */
+#dashboard .dashboard-queue ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+#dashboard .dashboard-queue li {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	gap: var(--space-xs) var(--space-sm);
+	padding: var(--space-xs) 0;
+	border-top: 1px solid var(--border);
+}
+
+/* La tuile borde déjà la première et la dernière ligne. */
+#dashboard .dashboard-queue li:first-child {
+	padding-top: 0;
+	border-top: 0;
+}
+
+#dashboard .dashboard-queue li:last-child {
+	padding-bottom: 0;
+}
+
+#dashboard .dashboard-queue-what {
+	grid-column: 1;
+}
+
+#dashboard .dashboard-queue-what b {
+	font-variant-numeric: tabular-nums;
+}
+
+#dashboard .dashboard-queue-what small {
+	display: block;
+	font-size: 0.9rem;
+	color: var(--text-intermediate);
+}
+
+/* Le nombre d'une ligne, cerclé. Le cercle suit la couleur du nombre par currentColor : celle de la
+   ligne pour un <b>, celle du badge pour une attente dépassée. L'arrondi en 1lh plutôt qu'en 50 % fait
+   d'un nombre à trois chiffres une pilule, et non une ellipse. 1lh se mesure sur la hauteur de ligne de
+   l'élément lui-même : sans l'héritage, le 1.1 de .badge ferait du cercle d'une attente dépassée un
+   cercle plus petit que celui d'un nombre à l'heure. La rotation est fixe, sans animation, donc hors de
+   prefers-reduced-motion ; le −8° reprend celui de component.css. */
+#dashboard .dashboard-queue-what > b,
+#dashboard .dashboard-queue-what > .badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 1lh;
+	height: 1lh;
+	line-height: inherit;
+	margin-right: var(--space-xxs);
+	padding: 0 var(--space-xxs);
+	vertical-align: middle;
+	border: 2px solid currentColor;
+	border-radius: 1lh;
+	transform: rotate(-8deg);
+}
+
+#dashboard .dashboard-board {
+	padding-bottom: var(--space-xl);
+}
+
+/* ------------------------------------------------- les bandes d'univers
+
+   La forme du tableau de bord d'une AMAP (`DashboardUi::getSections()`), l'accueil et son réglage
+   rangeant en colonnes. Une bande par univers, de toute la largeur de l'écran, son contenu dans le `.container` qu'elle
+   porte. Une seule prend un fond, celle que `getSections()` marque `is-colored` et habille en
+   `util-brushed`, la bande au coup de pinceau du design system (`component.css`) : les autres restent
+   sur le fond de la page et ne se séparent que par leur espacement (arbitré le 2026-10-05).
+   `--domain` vient de `util-domain-<univers>` (`component.css`), posé sur la bande : les intitulés et
+   les chiffres de ses cellules le lisent sans connaître leur univers. */
+#dashboard .dashboard-univers {
+	padding: var(--space-xl) 0;
+}
+
+#dashboard .dashboard-univers.is-colored {
+	--util-brushed-color: var(--color-bg-vert-menthe);
+	margin: var(--space-lg) 0;
+	padding: var(--space-xxl) 0;
+}
+
+@media (max-width: 767px) {
+
+	#dashboard .dashboard-univers {
+		padding: var(--space-lg) 0;
+	}
+
+	#dashboard .dashboard-univers.is-colored {
+		padding: var(--space-xl) 0;
+	}
+
+}
+
+/* Les blocs sur tout le rang passent avant la grille de leur bande (`DashboardUi::getSection()`), et
+   s'en séparent par le filet qu'util-board pose entre deux colonnes empilées, à la teinte de l'univers.
+   Une grille qui n'a plus de cellule ne laisse pas de filet sous eux. */
+#dashboard .dashboard-univers .dashboard-univers-wide:has(+ .util-board-columns .util-board-column) {
+	margin-bottom: var(--space-lg);
+	padding-bottom: var(--space-lg);
+	border-bottom: 1px solid color-mix(in srgb, var(--domain) 25%, transparent);
+}
+
+/* Deux chiffres côte à côte dans une cellule (`DashboardUi::getValue()`). */
+#dashboard .dashboard-univers-pair {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-lg);
+}
+
+/* ------------------------------------------------- le bilan
+
+   Les dix semaines en grand (`DashboardUi::getChart()`), en couleur d'univers, la semaine du bilan
+   pleine et les autres atténuées comme dans la tête. */
+#dashboard .dashboard-bilan-chart {
+	margin-top: var(--space-lg);
+}
+
+#dashboard .dashboard-bilan-chart .util-bars {
+	height: 8rem;
+	color: var(--domain);
+}
+
+#dashboard .dashboard-bilan-chart .util-bars > :not(:last-child) {
+	opacity: 0.45;
+}
+
+/* Le socle écrit l'axe et l'échelle à 0,625 rem pour des barres de 2 rem : sous des barres de 8 rem,
+   sur la racine de 12 px d'un téléphone, ils tomberaient à 7,5 px. Même relèvement que
+   `.toolbox-composition-calendar-axis` (`production/toolbox/static/css/composition.css`). */
+#dashboard .dashboard-bilan-chart :is(.dashboard-bilan-axis, .dashboard-bilan-max) {
+	font-size: 0.9rem;
+}
+
+/* La liste repliée sous son compte (`DashboardUi::getFold()`). Le triangle natif est retiré au
+   profit du chevron du produit, qui tourne à l'ouverture : `list-style` pour Firefox,
+   `::-webkit-details-marker` pour Chrome et Safari, qui ne lisent pas le premier sur `<summary>`. */
+#dashboard .dashboard-fold summary {
+	display: flex;
+	align-items: center;
+	gap: var(--space-xxs);
+	margin-top: var(--space-sm);
+	font-weight: 600;
+	list-style: none;
+	cursor: pointer;
+}
+
+#dashboard .dashboard-fold summary::-webkit-details-marker {
+	display: none;
+}
+
+#dashboard .dashboard-fold[open] summary svg {
+	transform: rotate(90deg);
+}
+
+#dashboard .dashboard-fold .util-rows {
+	margin-top: var(--space-xs);
+}
+
+/* Un bloc lourd qui retire son nœud après le rendu, quand il emporte la dernière tuile ou feuille d'une
+   colonne ou la dernière cellule d'un univers, laisserait un titre au-dessus de rien ou une bande vide
+   qui garde ses marges, et le dernier d'un accueil un tableau vide : util-board ne retire que son titre
+   et sa grille. */
+#dashboard .dashboard-column:not(:has(.util-tile, .util-note)),
+#dashboard .dashboard-columns-grid:not(:has(.util-tile, .util-note)),
+#dashboard .dashboard-univers:not(:has(.util-board-column)),
+#dashboard .dashboard-board:not(:has(.util-tile, .util-note, .dashboard-open, .util-board-column)) {
+	display: none;
+}
+
+/* ------------------------------------------------- la bande de jours
+
+   Un sélecteur de jour, posé au-dessus de ce qu'il commande, pour que le second clic tombe là où le
+   premier est parti. Dans les prochaines livraisons, seuls le chiffre du jour et sa légende la
+   précèdent : le chiffre tient une ligne, la légende aussi dans une tuile de toute la largeur, donc la
+   bande ne bouge pas d'un jour à l'autre (mesuré sur la 7 de 360 à 1440 px, « commandes et 1 marché à
+   livrer aujourd'hui, 501,79 € HT » contre « marché à livrer demain 17 octobre »). La météo de la tête
+   en reprend les tuiles ; c'est le socle qui la dessine, comme il dessine une cellule de chiffres,
+   pour qu'elle se lise pareil d'un package à l'autre. */
+#dashboard .dashboard-days {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	/* Les deux rangs se règlent sur le plus haut : sans `1fr`, un rang dont l'état tient sur une
+	   ligne est plus court que celui dont il en prend deux, et le bas de la bande part en escalier. */
+	grid-auto-rows: 1fr;
+	gap: 0.5rem;
+	margin: 1.5rem 0 1rem;
+}
+
+/* Une semaine tient sur un rang dès que le bloc est assez large pour sept tuiles, et retombe sur
+   quatre sinon. La largeur interrogée est celle du corps de la colonne (`util-board-column-body`,
+   `component.css`), jamais celle de la fenêtre : la place offerte à un bloc est une piste de la grille
+   du socle, qui dépend du nombre de blocs que la section range, et une requête de média couperait au
+   mauvais endroit à fenêtre égale. Le seuil est l'arithmétique de la composition : « Lun. 28/09 » mesure
+   67,7 px à 13 px de racine et la tuile porte 1 rem de marge intérieure, soit 6,21 rem, arrondis à
+   6,25 rem ; sept tuiles demandent donc 7 × 6,25 rem plus les six écarts qui les séparent. Il est
+   écrit en clair parce qu'une requête de conteneur ne lit pas les propriétés personnalisées, comme
+   une requête de média.
+
+   Les pistes sont celles d'une semaine pleine et non celles des jours que la bande porte : une tuile
+   garde la largeur qu'elle aurait sur sept jours, les tuiles restent rangées à gauche et le vide reste
+   à droite (arbitré le 2026-09-30). C'est la règle que la rangée de chiffres du poste suit
+   déjà, plus haut dans cette feuille. Sans elle, la bande des prochaines livraisons étirait ce qu'elle
+   portait : une seule livraison prenait toute la largeur de la carte, et deux jours faisaient deux
+   tuiles de mi-carte, là où la même bande à sept jours en fait sept de 1/7. Le nombre de jours n'a donc
+   plus à descendre du PHP : sept est la semaine que la bande découpe, quatre ce qu'elle en montre de
+   front quand le bloc est étroit. */
+@container util-board-column (min-width: 46.75rem) {
+
+	#dashboard .dashboard-days {
+		grid-template-columns: repeat(7, 1fr);
+	}
+
+}
+
+/* Le nom du jour est la première ligne des sept tuiles et l'état la dernière : la tuile est une
+   colonne, et son état est poussé en pied par une marge automatique, comme la cellule de la rangée de
+   chiffres pousse son histogramme. Les deux lignes que toutes les tuiles ont en commun sont alors à
+   la même hauteur dans toute la rangée, qu'un jour porte un compte ou non, et quel que soit le nombre
+   de lignes que prend son état. */
+#dashboard .dashboard-days .util-figure {
+	display: flex;
+	flex-direction: column;
+	padding: 0.5rem;
+	min-width: 0;
+}
+
+/* Ce que la tuile dit de son jour, dans un nœud à part : c'est lui qu'une réponse ciblée remplace
+   quand un geste de la carte change un compte, et la marque de sélection, posée sur la tuile, n'est
+   alors jamais en cause. Il reprend la colonne de sa tuile pour que la marge automatique de l'état
+   continue de le pousser en pied. */
+#dashboard .dashboard-days .dashboard-day-state {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-width: 0;
+}
+
+#dashboard .dashboard-days .util-figure-label {
+	margin-top: 0;
+	line-height: 1.2;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	color: var(--text);
+}
+
+#dashboard .dashboard-days .util-figure-value {
+	font-size: 1.25rem;
+	line-height: 1.15;
+}
+
+#dashboard .dashboard-days .util-annotation {
+	display: block;
+	margin-top: auto;
+	padding-top: 0.25rem;
+}
+
+/* Le jour choisi se marque par son fond, jamais par une bordure, qui décalerait ses voisins. Et
+   « sélectionné bat survol » par la structure du sélecteur et non par l'ordre des règles : le socle
+   écarte le survol de l'élément choisi (`a.util-deck:not(.util-deck-selected):hover`,
+   `component.css:5907`), ce qu'une feuille de package ne peut pas faire sur une règle qu'elle ne
+   possède pas. Le survol de la tuile choisie est donc nommé ici, et les deux sélecteurs passent
+   devant `a.util-figure:hover` (`component.css:4910`) par leur ancrage, à deux classes d'écart. */
+#dashboard .dashboard-days .dashboard-day-selected,
+#dashboard .dashboard-days a.dashboard-day-selected:hover {
+	background-color: color-mix(in srgb, var(--color-bg-vert-sauge) 70%, var(--color-bg-vert-bleu));
+}
+
+/* Le jour choisi est celui qui se lit le mieux. Sur ce fond, `--muted` tombe à 3,59:1 contre 4,92 sur
+   une tuile ordinaire : l'état y fonce, comme `util-deck-row-unread` le fait sur le sien
+   (`component.css:6371`, à la même part de 78 %), et repasse au-dessus du contraste qu'il a partout
+   ailleurs. */
+#dashboard .dashboard-days .dashboard-day-selected .util-annotation {
+	color: color-mix(in srgb, var(--text) 78%, white);
+}
+
+/* Aujourd'hui garde sa marque quand un autre jour est choisi, et c'est le gras du nom : le fond est
+   pris par le jour choisi, et deux fonds sur une même bande se liraient comme deux jours choisis.
+   C'est la marque que le planning emploie déjà (`production/series/static/css/planning.css:226`), et
+   les six autres jours gardent la graisse du composant, qui n'en pose aucune. */
+#dashboard .dashboard-days .dashboard-day-today .util-figure-label {
+	font-weight: bold;
+}
+
+/* Dans une tuile, la bande garde des jours d'au moins 6rem et en loge autant que la tuile en offre, le
+   vide restant à droite : une demi-tuile n'a pas la place de quatre jours, et une tuile sur tout le
+   rang en a pour sept. Le seuil arrondit au-dessus la largeur d'une tuile de jour, 6,25rem. */
+#dashboard .util-tile .dashboard-days {
+	grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+}
+
+/* Dans une tuile, la bande est à plat (`util-flat`) : les jours perdent leur fond, et le jour
+   choisi, qui se marquait par le sien, se souligne de l'encre de son univers. Le trait de 2px reprend
+   l'épaisseur des filets pleins de `component.css`, qu'aucun jeton ne nomme. */
+#dashboard .util-flat .dashboard-days .util-figure,
+#dashboard .util-flat .dashboard-days .dashboard-day-selected,
+#dashboard .util-flat .dashboard-days a.dashboard-day-selected:hover {
+	padding: 0;
+	background: none;
+}
+
+#dashboard .util-flat .dashboard-days .dashboard-day-selected .util-figure-label {
+	text-decoration: underline;
+	text-decoration-color: var(--domain, var(--color-brand));
+	text-decoration-thickness: 2px;
+	text-underline-offset: 0.3em;
+}
+
+/* Un seul jour : la bande redirait le jour et le nombre que la phrase du bloc vient de donner. */
+#dashboard .util-flat .dashboard-days:has(> :only-child) {
+	display: none;
+}
+
+/* ------------------------------------------------- l'accueil en réglage
+
+   Le réglage est l'accueil lui-même (L43), dans les mêmes colonnes (L45) : chaque titre prend
+   une poignée à gauche et un interrupteur à droite, et une pièce éteinte garde sa place, estompée.
+   Seul ce qui se lit s'estompe, le titre ou le nom : l'interrupteur reste net, c'est lui qu'on vient
+   chercher pour rallumer. L'introduction et les univers se règlent entre la tête et les colonnes,
+   une carte chacun. */
+/* Poignée, intitulé et interrupteur se partagent un rang, comme sur les univers.
+   L'intitulé part d'une base nulle : il prend ce qui reste et passe à la ligne entre deux mots, et
+   l'interrupteur ne quitte le rang que si le plus long mot ne tient plus. Il colle au corps comme
+   sur l'accueil. */
+#dashboard .dashboard-setting-title {
+	flex-wrap: wrap;
+	gap: var(--space-xs);
+	margin-bottom: 0;
+}
+
+#dashboard .dashboard-setting-title > :is(h2, h3) {
+	flex: 1 1 0;
+}
+
+/* Sur une tuile, la rangée porte la tête d'univers (util-tile-head) et rend l'écart que la tête pose
+   sous elle sur l'accueil, que le zéro ci-dessus annulerait. */
+#dashboard .util-tile > .dashboard-setting-title {
+	margin-bottom: var(--space-md);
+}
+
+/* Dans le réglage, l'écart sous le titre d'un bloc à découvert passe à la rangée qui le porte avec son
+   interrupteur, pour que celui-ci se centre sur le titre. `.util-board-title` pose sa propre marge après
+   `.util-title > *` dans component.css et l'emporterait, d'où le zéro écrit sur le titre. */
+#dashboard .dashboard-open > .dashboard-setting-title {
+	margin-bottom: var(--space-md);
+}
+
+#dashboard .dashboard-open > .dashboard-setting-title > h2 {
+	margin-bottom: 0;
+}
+
+#dashboard .dashboard-setting-title > :last-child {
+	margin-left: auto;
+}
+
+/* La poignée porte sa propre cible, --touch-target, centrée : elle tient lieu de marge à gauche du
+   bloc et d'écart avant l'intitulé, comme dans util-deck-sm. C'est ce qui laisse à l'intitulé d'une
+   tuile étroite de « À suivre » la place de garder l'interrupteur sur son rang. Les retraits
+   suivent le remplissage de util-tile et de util-note dans component.css. */
+#dashboard .dashboard-setting-title > .util-drag-handle {
+	margin-right: calc(-1 * var(--space-xs));
+}
+
+#dashboard .util-tile > .dashboard-setting-title > .util-drag-handle {
+	margin-left: calc(-1 * var(--space-lg));
+}
+
+#dashboard .util-note > .dashboard-setting-title > .util-drag-handle {
+	margin-left: calc(-1 * var(--space-md));
+}
+
+@media (max-width: 575px) {
+
+	#dashboard .util-tile > .dashboard-setting-title > .util-drag-handle {
+		margin-left: calc(-1 * var(--space-md));
+	}
+
+	#dashboard .util-note > .dashboard-setting-title > .util-drag-handle {
+		margin-left: calc(-1 * var(--space-sm));
+	}
+
+}
+
+#dashboard .dashboard-setting-name {
+	display: flex;
+	align-items: center;
+	gap: var(--space-xs);
+}
+
+#dashboard .dashboard-block-off .dashboard-setting-title > :is(h2, h3),
+#dashboard .util-deck.is-off .util-deck-title {
+	opacity: 0.4;
+}
+
+/* La barre qui ferme le réglage : le bandeau collé du système de design, le texte à gauche et le geste
+   à droite. Elle n'a pas de croix, d'où la marge de droite rendue. `util-block-sticked` se cale sur la
+   fenêtre et passe sous la colonne de navigation des écrans de structure
+   (`ouvretaferme/design/ui/Design.u.php`, « util-block-sticked ») : la barre se décale de sa largeur,
+   sans media query, `--nav-width` valant `0rem` là où la colonne ne paraît pas (`template-structure.css`). */
+#dashboard .dashboard-setting-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-sm);
+	padding-right: var(--space-md);
+	left: calc(var(--nav-width) + 1rem);
+}
+
+/* Le bas de l'écran reste lisible sous la barre, haute de 3,5rem avec sa marge. */
+#dashboard.dashboard-setting .dashboard-board {
+	padding-bottom: calc(var(--space-xxl) * 2);
+}
+
+/* L'emplacement d'un bloc lourd ne montre rien tant que sa route n'a pas dit s'il a quelque chose à
+   montrer (`DashboardUi::getBlock()`). */
+.dashboard-block-pending {
+	display: none;
+}
+
+/* L'image d'une nouvelle du blog (`website\DashboardUi`) : une hauteur fixe, parce que les images du
+   blog n'ont pas de proportion commune, et le haut gardé, parce que c'est là qu'elles portent leur
+   sujet (captures d'écran, en-têtes). Bornée par la page « Du nouveau », qui vit hors de `#dashboard`. */
+#dashboard-news .dashboard-news-cover {
+	display: block;
+	height: 9rem;
+	margin-bottom: 1rem;
+}
+
+#dashboard-news .dashboard-news-cover img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center top;
+}

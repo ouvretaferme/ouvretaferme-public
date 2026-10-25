@@ -1,0 +1,17 @@
+Task:
+  id: serial32
+  reference: int32(0, null) # id of the structure that requested the task (no element type: structure is unknown to framework/queue)
+  action: text8(1, 50) @charset(ascii)
+  element: ?int32(0, null)
+  payload: json = PHP([])
+  status: enum(PENDING, RUNNING, FAILED) = PENDING
+  tries: int8(0, null) = 0
+  runAt: datetime = SPECIAL(now)
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["action", "status", "runAt"],
+    ["status", "runAt"]
+  ]
+  UNIQUE: [
+    ["reference", "action", "element"]
+  ]

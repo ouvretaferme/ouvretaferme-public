@@ -1,0 +1,11 @@
+{
+	"sources": {
+		"static/js/avatar.js": "dd7ea3264580000042ffac729c9fe5300337ce11",
+		"static/avatar/catalog.json": "7fd5e01defe05944909e6ace11271a7eb29a2e40",
+		"upload/avatar.json": "7a3b97e343061486da48f7a122fab9ec5b539275",
+		"upload/upload.mjs": "39ea48082ce274e6cee22f0828d4c87d3c1d4b66",
+		"upload/glb.mjs": "491089e8cfd682aa6df5be5f6a965a903390b3f5",
+		"upload/samples.mjs": "7051716699ee755ef4352f5537d2950bf212ae93",
+		"upload/avatar/composer.mjs": "69241fd1010122213ff24757c2114951375b4999"
+	}
+}

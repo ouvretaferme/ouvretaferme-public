@@ -1,0 +1,98 @@
+{
+	"building": {
+		"length": [4, 30],
+		"width": [3, 16],
+		"height": [2.5, 7],
+		"settings": {
+			"roof": ["deux-pans", "appentis", "croupe"],
+			"cover": ["tole", "tuile", "ardoise", "panneaux-solaires"],
+			"coverTint": ["tuile", "ardoise", "toleSombre", "tole", "rouge", "feuilleSombre"],
+			"wall": ["bardage-bois", "bardage-tole", "crepi", "pierre"],
+			"wallTint": ["pierre", "creme", "bois", "blanc", "gris", "tuile"],
+			"door": ["porte-pleine", "porte-coulissante", "baie", "aucune"],
+			"windows": [0, 2, 4]
+		},
+		"tints": {
+			"coverTint": ["cover", {"tole": "toleSombre", "tuile": "tuile", "ardoise": "ardoise", "panneaux-solaires": "tole"}],
+			"wallTint": ["wall", {"bardage-bois": "bois", "bardage-tole": "pierre", "crepi": "creme", "pierre": "pierre"}]
+		},
+		"colors": {
+			"coverTint": {"tuile": "#b9553a", "ardoise": "#55677a", "toleSombre": "#6f7a80", "tole": "#aab3b8", "rouge": "#d6452f", "feuilleSombre": "#2f7d3d"},
+			"wallTint": {"pierre": "#d5c6ab", "creme": "#efe3cc", "bois": "#c79a62", "blanc": "#f6f3ea", "gris": "#8d9499", "tuile": "#b9553a"}
+		},
+		"excluded": [],
+		"initial": {
+			"length": 14,
+			"width": 9,
+			"height": 4.2,
+			"settings": {"roof": "deux-pans", "cover": "tuile", "coverTint": "tuile", "wall": "pierre", "wallTint": "pierre", "door": "porte-pleine", "windows": 0}
+		}
+	},
+	"hangar": {
+		"length": [12, 30],
+		"width": null,
+		"height": [4, 7],
+		"settings": {
+			"cover": ["tole", "panneaux-solaires"],
+			"coverTint": ["toleSombre", "tole", "ardoise", "rouge", "feuilleSombre"],
+			"wall": ["bardage-tole", "bardage-bois"],
+			"wallTint": ["creme", "bois", "gris", "blanc", "feuilleSombre", "rouge"],
+			"door": ["porte-coulissante", "baie", "aucune"]
+		},
+		"tints": {
+			"coverTint": ["cover", {"tole": "toleSombre", "panneaux-solaires": "tole"}],
+			"wallTint": ["wall", {"bardage-tole": "creme", "bardage-bois": "bois"}]
+		},
+		"colors": {
+			"coverTint": {"toleSombre": "#6f7a80", "tole": "#aab3b8", "ardoise": "#55677a", "rouge": "#d6452f", "feuilleSombre": "#2f7d3d"},
+			"wallTint": {"creme": "#efe3cc", "bois": "#c79a62", "gris": "#8d9499", "blanc": "#f6f3ea", "feuilleSombre": "#2f7d3d", "rouge": "#d6452f"}
+		},
+		"excluded": [],
+		"initial": {
+			"length": 18,
+			"width": null,
+			"height": 5,
+			"settings": {"cover": "tole", "coverTint": "toleSombre", "wall": "bardage-tole", "wallTint": "creme", "door": "porte-coulissante"}
+		}
+	},
+	"house": {
+		"length": [8, 16],
+		"width": [6, 10],
+		"height": null,
+		"settings": {
+			"roof": ["deux-pans", "croupe"],
+			"cover": ["tuile", "ardoise"],
+			"coverTint": ["tuile", "rouge", "ardoise", "toleSombre"],
+			"wall": ["crepi", "pierre", "bardage-bois"],
+			"wallTint": ["creme", "blanc", "pierre", "gris", "bois", "tuile"],
+			"levels": [1, 2],
+			"windows": [2, 3, 4],
+			"shutters": ["aucun", "paire", "clos"],
+			"door": ["porte-vitree", "porte-pleine"],
+			"joinery": ["blanc", "boisSombre", "bois", "feuilleSombre", "gris", "ardoise"],
+			"chimney": [0, 1]
+		},
+		"tints": {
+			"coverTint": ["cover", {"tuile": "tuile", "ardoise": "ardoise"}],
+			"wallTint": ["wall", {"crepi": "creme", "pierre": "pierre", "bardage-bois": "bois"}]
+		},
+		"colors": {
+			"coverTint": {"tuile": "#b9553a", "rouge": "#d6452f", "ardoise": "#55677a", "toleSombre": "#6f7a80"},
+			"wallTint": {"creme": "#efe3cc", "blanc": "#f6f3ea", "pierre": "#d5c6ab", "gris": "#8d9499", "bois": "#c79a62", "tuile": "#b9553a"},
+			"joinery": {"blanc": "#f6f3ea", "boisSombre": "#6f4b32", "bois": "#c79a62", "feuilleSombre": "#2f7d3d", "gris": "#8d9499", "ardoise": "#55677a"}
+		},
+		"excluded": [
+			{"cover": "tuile", "coverTint": "ardoise"},
+			{"cover": "tuile", "coverTint": "toleSombre"},
+			{"cover": "ardoise", "coverTint": "tuile"},
+			{"cover": "ardoise", "coverTint": "rouge"},
+			{"levels": 2, "windows": 4}
+		],
+		"initial": {
+			"length": 11,
+			"width": 8,
+			"height": null,
+			"settings": {"roof": "deux-pans", "cover": "tuile", "coverTint": "tuile", "wall": "crepi", "wallTint": "creme", "levels": 2, "windows": 3, "shutters": "paire", "door": "porte-vitree", "joinery": "feuilleSombre", "chimney": 1}
+		}
+	}
+}

@@ -1,0 +1,296 @@
+[
+ {
+  "organisme": "Ministère de l'Agriculture, de l'Agro-alimentaire et de la Souveraineté alimentaire",
+  "variantes": [],
+  "type": "etat",
+  "echelon": "national",
+  "zones": [
+   "national"
+  ],
+  "url_aides": [
+   "https://mesdemarches.agriculture.gouv.fr/production-fili%C3%A8res/"
+  ],
+  "aides": 56,
+  "cofinance": 1,
+  "accorde": true,
+  "remarque": "Autorité de gestion du PSN, du 1er pilier et des mesures surfaciques du FEADER ; instruction par les DDT(M) et DAAF, pilotage régional par les DRAAF. Dispositifs nationaux instruits localement par les DDT(M)/DAAF et les DRAAF, paiement souvent par l'ASP. Les anciennes URL mesdemarches.../demarches/... renvoient 404."
+ },
+ {
+  "organisme": "MSA",
+  "variantes": [],
+  "type": "operateur-etat",
+  "echelon": "national",
+  "zones": [
+   "national"
+  ],
+  "url_aides": [
+   "https://www.msa.fr/lfp/en/soutien-exploitant"
+  ],
+  "aides": 10,
+  "cofinance": 0,
+  "accorde": true,
+  "remarque": "35 caisses : montants d'action sanitaire et sociale fixés par chaque caisse."
+ },
+ {
+  "organisme": "Collectivité de Corse",
+  "variantes": [],
+  "type": "region",
+  "echelon": "regional",
+  "zones": [
+   "94"
+  ],
+  "url_aides": [
+   "https://www.isula.corsica/"
+  ],
+  "aides": 0,
+  "cofinance": 18,
+  "accorde": true,
+  "remarque": "Collectivité à statut particulier qui remplace depuis le 1er janvier 2018 la collectivité territoriale de Corse et les deux conseils départementaux (2A, 2B). Autorité de gestion du volet régional FEADER du PSN. Elle n'instruit pas elle-même les aides agricoles : elle les délègue à son office, l'ODARC, et les aides aux entreprises à l'ADEC."
+ },
+ {
+  "organisme": "ODARC (Office du développement agricole et rural de Corse)",
+  "variantes": [
+   "Office du développement agricole et rural de Corse (ODARC)"
+  ],
+  "type": "autre",
+  "echelon": "regional",
+  "zones": [
+   "94",
+   "national"
+  ],
+  "url_aides": [
+   "https://www.odarc.corsica/Les-dispositifs-d-aide_r50.html",
+   "https://agriculture.gouv.fr/les-aides-des-regions"
+  ],
+  "aides": 22,
+  "cofinance": 0,
+  "accorde": true,
+  "remarque": "Établissement public de la Collectivité de Corse. Service instructeur de toutes les aides agricoles de la Collectivité ET organisme payeur (FEADER, ICHN, CAB, MAEC), cas unique en métropole où l'ASP ne paie pas ces aides. Dépôt papier à Bastia ou en ligne sur teleprocedures-odarc.fr. / Organisme payeur du 2e pilier en Corse pour la Collectivité de Corse ; relève plutôt de la zone 94."
+ },
+ {
+  "organisme": "Région Bretagne",
+  "variantes": [],
+  "type": "region",
+  "echelon": "regional",
+  "zones": [
+   "53"
+  ],
+  "url_aides": [
+   "https://www.bretagne.bzh/aides/"
+  ],
+  "aides": 17,
+  "cofinance": 2,
+  "accorde": true,
+  "remarque": "Autorité de gestion FEADER pour l'installation et les investissements (gamme AGRI). Portail relu dans Chrome en passe 2 (2026-10-21) après la vérification Cloudflare ; europe.bzh aussi."
+ },
+ {
+  "organisme": "Région Centre-Val de Loire",
+  "variantes": [],
+  "type": "region",
+  "echelon": "regional",
+  "zones": [
+   "24"
+  ],
+  "url_aides": [
+   "https://www.centre-valdeloire.fr/aides-et-appels-projet/agriculture"
+  ],
+  "aides": 29,
+  "cofinance": 0,
+  "accorde": true,
+  "remarque": "Autorité de gestion du FEADER 2023-2027 (PRI, 23 dispositifs) : fiches sur europeocentre-valdeloire.eu, dépôt sur nosaidesenligneregion.centre-valdeloire.fr (AIDEN). Ses aides propres passent surtout par les CAP filières (contrats de 4 ans par filière), dont les fiches du guide ne publient ni taux ni plafond."
+ },
+ {
+  "organisme": "Région Hauts-de-France",
+  "variantes": [],
+  "type": "region",
+  "echelon": "regional",
+  "zones": [
+   "32"
+  ],
+  "url_aides": [
+   "https://guide-aides.hautsdefrance.fr/"
+  ],
+  "aides": 31,
+  "cofinance": 2,
+  "accorde": true,
+  "remarque": "Deux guichets : guide-aides.hautsdefrance.fr (aides régionales, dépôt sur aides.hautsdefrance.fr) et europe-en-hautsdefrance.eu (appels à projets FEADER, dépôt sur euro-pac.hautsdefrance.fr). Autorité de gestion du FEADER non surfacique 2023-2027."
+ },
+ {
+  "organisme": "Région Île-de-France",
+  "variantes": [],
+  "type": "region",
+  "echelon": "regional",
+  "zones": [
+   "11"
+  ],
+  "url_aides": [
+   "https://www.iledefrance.fr/aides-et-appels-a-projets"
+  ],
+  "aides": 20,
+  "cofinance": 3,
+  "accorde": true,
+  "remarque": "Autorité de gestion du FEADER (PSN 2023-2027, volet régional). Dépôt de toutes ses aides sur mesdemarches.iledefrance.fr. Le filtre thématique du catalogue ne restreint pas à l'agriculture : recensement fait par recherche."
+ },
+ {
+  "organisme": "Région Normandie",
+  "variantes": [],
+  "type": "region",
+  "echelon": "regional",
+  "zones": [
+   "28"
+  ],
+  "url_aides": [
+   "https://www.normandie.fr/agriculture"
+  ],
+  "aides": 15,
+  "cofinance": 2,
+  "accorde": true,
+  "remarque": "Site normandie.fr refusé à la lecture automatique (403) ; contenus relevés par les index de recherche, la chambre d'agriculture et Fève. Guichet de dépôt : Mon Espace Aides Normandie (monespace-aides.normandie.fr). Autorité de gestion du FEADER pour l'installation, l'investissement et le conseil."
+ },
+ {
+  "organisme": "Région Pays de la Loire",
+  "variantes": [],
+  "type": "region",
+  "echelon": "regional",
+  "zones": [
+   "52"
+  ],
+  "url_aides": [
+   "https://www.paysdelaloire.fr/les-aides"
+  ],
+  "aides": 31,
+  "cofinance": 4,
+  "accorde": true,
+  "remarque": "Autorité de gestion du FEADER (DJA, PCAE, transformation à la ferme, MAEC API et PRM, LEADER). Catalogue filtrable par profil (Particuliers 142, Entreprises 141, Associations 139) ; le filtre thématique « Agriculture et Pêche » n'a pas pu être appelé par URL. Conventions agricoles Région-Départements (art. L3232-1-2 CGCT) qui encadrent toutes les aides départementales ci-dessous."
+ },
+ {
+  "organisme": "Département de la Mayenne",
+  "variantes": [],
+  "type": "departement",
+  "echelon": "departemental",
+  "zones": [
+   "52"
+  ],
+  "url_aides": [
+   "https://www.lamayenne.fr/may-aides?thematique=875"
+  ],
+  "aides": 3,
+  "cofinance": 2,
+  "accorde": true,
+  "remarque": "Portail MAY Aides, thématique 875 « Agriculture et agroalimentaire » : 2 aides listées ; l'aide transformation à la ferme et l'aide bocage n'y figurent pas."
+ },
+ {
+  "organisme": "Département de La Réunion",
+  "variantes": [],
+  "type": "departement",
+  "echelon": "departemental",
+  "zones": [
+   "974",
+   "drom"
+  ],
+  "url_aides": [
+   "https://www.reunioneurope.org/les-financements-europeens-2021-2027-FEADER/"
+  ],
+  "aides": 11,
+  "cofinance": 0,
+  "accorde": true,
+  "remarque": "Autorité de gestion régionale du FEADER 2023-2027, alors qu'une Région existe. Site departement974.fr en maintenance le 2026-10-21."
+ },
+ {
+  "organisme": "Parc naturel régional Normandie-Maine",
+  "variantes": [],
+  "type": "autre",
+  "echelon": "intercommunal",
+  "zones": [
+   "28",
+   "52"
+  ],
+  "url_aides": [
+   "https://www.parc-naturel-normandie-maine.fr/aide-a-la-plantation.html"
+  ],
+  "aides": 2,
+  "cofinance": 0,
+  "accorde": true,
+  "remarque": "Parc à cheval sur deux régions (Normandie, Pays de la Loire) : Orne, Manche, Mayenne, Sarthe. / Syndicat mixte de PNR à cheval sur Normandie (28) et Pays de la Loire (52), départements 53 et 72 pour la zone."
+ },
+ {
+  "organisme": "Union européenne (FEADER, 2e pilier de la PAC)",
+  "variantes": [],
+  "type": "union-europeenne",
+  "echelon": "europeen",
+  "zones": [
+   "national"
+  ],
+  "url_aides": [
+   "https://agriculture.gouv.fr/les-aides-surfaciques-au-developpement-rural"
+  ],
+  "aides": 0,
+  "cofinance": 0,
+  "accorde": true,
+  "remarque": "Cofinance ICHN (65 %), MAEC (80 %), bio, assurance récolte, prédation, installation et investissements régionaux."
+ },
+ {
+  "organisme": "Agence de l'eau Loire-Bretagne",
+  "variantes": [],
+  "type": "agence-eau",
+  "echelon": "regional",
+  "zones": [
+   "24",
+   "27",
+   "52",
+   "53",
+   "75",
+   "national"
+  ],
+  "url_aides": [
+   "https://aides-redevances.eau-loire-bretagne.fr/home/aides/acteurs-agricoles/aides-pour-les-acteurs-agricoles.html",
+   "https://aides-redevances.eau-loire-bretagne.fr/"
+  ],
+  "aides": 18,
+  "cofinance": 6,
+  "accorde": true,
+  "remarque": "Couvre la majeure partie de la région. Dans la zone, cofinance le SIAP Eau (dispositif 05) et la CAB (48 %). Programme de bassin traité par l'agent national. / Couvre l'ouest de la Nièvre et de la Saône-et-Loire ; recensée par l'agent national. / Bassin à cheval sur plusieurs régions (zone 52 entière). 12e programme 2025-2030, dépôt sur Rivage. Plusieurs fiches n'ont pas de taux propre : elles reprennent le taux de l'autorité de gestion régionale (PCAE). Peut doublonner avec la zone national. / Lue dans Chrome en passe 2 (2026-10-21) sur le site des aides ; agence.eau-loire-bretagne.fr ne répond pas. 12e programme 2025-2030, dépôt sur RIVAGE. Ses aides agricoles valent pour tout le bassin et sont saisies une fois dans national.aides.jsonl (ids national-aelb-*) : PSE, cofinancement CAB et MAEC, matériel agroécologique, mise aux normes des élevages, haies, retenues de substitution. / agence.eau-loire-bretagne.fr ne répond pas ; le site des aides a été lu en passe 2 Chrome (2026-10-21) pour la zone 53. Ses aides agricoles valent pour tout le bassin (16, 17, 79, 86, 87 en partie) et sont saisies dans national.aides.jsonl (ids national-aelb-*). / Bassin Loire-Bretagne : Bretagne, Pays de la Loire, Centre-Val de Loire, parties de Nouvelle-Aquitaine, Auvergne-Rhône-Alpes, Normandie, Bourgogne-Franche-Comté et Occitanie. Site institutionnel agence.eau-loire-bretagne.fr injoignable le 2026-10-21 ; le site aides-redevances répond."
+ },
+ {
+  "organisme": "Agence de l'eau Seine-Normandie",
+  "variantes": [],
+  "type": "agence-eau",
+  "echelon": "regional",
+  "zones": [
+   "11",
+   "24",
+   "27",
+   "28",
+   "32",
+   "44",
+   "national"
+  ],
+  "url_aides": [
+   "https://www.eau-seine-normandie.fr/agriculteurs/aides-financieres-du-programme-eau-climat-biodiversite",
+   "https://draaf.centre-val-de-loire.agriculture.gouv.fr/IMG/pdf/2601_modalites-financement-cab-2025_vf-2.pdf",
+   "https://www.eau-seine-normandie.fr/agriculteur",
+   "https://www.eau-seine-normandie.fr/appels_a_projets",
+   "https://www.eau-seine-normandie.fr/les-aides-du-programme-eau-climat-et-biodiversite-2025-2030"
+  ],
+  "aides": 18,
+  "cofinance": 5,
+  "accorde": true,
+  "remarque": "Bassin sur plusieurs régions (11, 28, 44, 32, 24, 27) : ses aides de bassin sont probablement recensées aussi par l'agent national, à dédoublonner. Dépôt par Démarches Numériques. / Nord de l'Eure-et-Loir et du Loiret. Cofinance la CAB (50 %) et le SIAP Eau dans la zone ; site de l'agence non consulté, programme de bassin traité par l'agent national. / Couvre l'Yonne et le nord de la Côte-d'Or et de la Nièvre ; recensée par l'agent national. / Programme Eau, climat et biodiversité 2025-2030 ; dépôts suspendus du 30/09/2026 à mi-janvier 2027 (bascule vers la plateforme RIVAGE). Détail des aides agricoles non lu. Cofinance aussi l'aide à la conversion bio sur les zones à enjeu eau. / Couvre une partie de 02, 60 et 80. Seul appel agricole ouvert : AMI filières à bas niveau d'intrants, destiné aux opérateurs de filière, à l'échelle du bassin (laissé au lot national). / Couvre l'ouest de la région (Marne, Aube, Haute-Marne, sud des Ardennes). Cofinance IPAGE grandes cultures et des MAEC en aires de captage. Dépôts suspendus du 30/09/2026 à mi-janvier 2027. / Bassin Seine-Normandie : Île-de-France, Normandie, parties du Grand Est, des Hauts-de-France, de Bourgogne-Franche-Comté et du Centre-Val de Loire. Dépôts suspendus du 30/09/2026 à mi-janvier 2027 (passage à Rivage)."
+ },
+ {
+  "organisme": "Région Occitanie",
+  "variantes": [],
+  "type": "region",
+  "echelon": "regional",
+  "zones": [
+   "76"
+  ],
+  "url_aides": [
+   "https://www.laregion.fr/Agriculture-Viticulture-Alimentation"
+  ],
+  "aides": 44,
+  "cofinance": 9,
+  "accorde": true,
+  "remarque": "Autorité de gestion du FEADER 2023-2027. Deux sites : laregion.fr (fonds propres, dépôt Mes Aides en Ligne) et europe-en-occitanie.eu (29 dispositifs FEADER, dépôt Euro-pac) ; laregion.fr redirige parfois vers europe-en-occitanie.eu et inversement. Instruction des investissements par antennes départementales. Portail agriculture paginé, environ 65 entrées dont forêt, coopération transfrontalière, restauration collective."
+ }
+]

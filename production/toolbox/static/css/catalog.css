@@ -1,0 +1,35 @@
+/*
+ * Les produits autorisés (planche pf-catalogue-phyto, arbitrage Q2 B du 29/09). Borné par
+ * `catalog-`, la feuille restant chargée après qu'on a quitté l'outil en navigation ajax.
+ */
+
+.catalog-products {
+	grid-template-columns: minmax(min-content, 1fr) auto minmax(0, 1fr) auto auto;
+}
+
+/* Un compte d'objets ne quitte pas son unité sans se couper : « diffuseurs/ » tient 61 px, plus que
+   la colonne des doses n'en a à 360 px. La césure (la page est en lang="fr") le ramène sous 45 px. */
+.catalog-products > .util-table-row > .text-end {
+	hyphens: auto;
+}
+
+/* La colonne des usages sort de la grille : ils passent sous le nom du produit, dont la colonne
+   garde au moins la moitié de la largeur. Sans ce plancher, les colonnes auto prennent leur largeur
+   de contenu (« 2 à 2,7 L/ha » tenait 120 px à 360 px), le nom tombait à 74 px et ses usages
+   s'étiraient sur plus de vingt lignes. 55 % faisaient déborder la page de 6 px à 360 px, une
+   valeur ne se séparant plus du symbole de son unité (« 11,25 kg/ », 51 px). */
+@media (max-width: 575px) {
+
+	.catalog-products {
+		grid-template-columns: minmax(50%, 1fr) auto auto auto;
+	}
+
+}
+
+/* La place d'une vignette pour une culture sans dessin (rosier, houblon), à la taille de celles que
+   pose PlantUi::getVignette() : les noms d'une même colonne restent alignés. */
+.catalog-vignette-place {
+	display: inline-block;
+	width: 1.25rem;
+	vertical-align: middle;
+}

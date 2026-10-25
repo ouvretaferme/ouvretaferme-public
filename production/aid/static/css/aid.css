@@ -1,0 +1,37 @@
+/*
+ * L'outil « Aides agricoles » de la Boîte à outils. Borné par `aid-`, la feuille restant chargée
+ * après qu'on a quitté l'outil en navigation ajax.
+ */
+
+/* La colonne de droite d'une carte a la même largeur sur toutes, pour que les montants et les clôtures
+   s'alignent d'une carte à l'autre. 15,5 rem tient « Dépôt jusqu'au 30/08/2026 » sur une ligne, la plus
+   longue des lignes courantes ; un taux écrit par l'organisme ou une campagne passée vont à la ligne.
+   Posée sur la grille et non par aide, la liste et les compléments de la fiche portant la même. */
+.aid-cards {
+	--deck-aside-width: 15.5rem;
+}
+
+/* Les tags d'une carte suivent la ligne de périmètre, un texte nu qui n'a pas de marge à leur céder :
+   sans la leur, les badges touchent la ligne au-dessus. */
+.aid-cards .util-deck-body > .badges {
+	margin-top: var(--space-xs);
+}
+
+/* `.badge` est insécable : un tag long (« Écorégime, paiements pour services environnementaux »)
+   élargissait la grille, et toutes les cartes débordaient à 360. Même remède que `.util-deck-title .badge`. */
+.aid-cards .util-deck-body > .badges .badge {
+	white-space: normal;
+}
+
+/* Le menu du territoire porte le champ « Un autre département », dont les résultats s'ouvrent sous le
+   champ, hors du menu : le défilement d'un menu ouvert (lime.css) les rognerait au bord du menu. */
+.dropdown-list:has([data-autocomplete-field="aidDepartment"]) {
+	overflow: visible;
+}
+
+/* Ce que le papier écrit en clair, à la place de ce qui ne s'imprime pas : un lien, un bouton, et la règle
+   d'achat, que le design system retire d'une page imprimée avec tout `util-warning`. L'écran en a déjà le
+   geste ou l'alerte (aid\AidUi::getDeposit()), `util-print-block` le rend à l'impression. */
+.aid-deposit .aid-deposit-print {
+	display: none;
+}

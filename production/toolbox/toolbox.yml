@@ -1,0 +1,471 @@
+CompositionFormula:
+  id: serial32
+  plan: toolbox\CompositionPlan
+  # La taille sur laquelle celle-ci s'appuie (lot r17) : ses semaines reprennent les lignes écrites de
+  # la base, quantités augmentées et espèces ajoutées jusqu'au prix (CompositionLib::propose()). NULL
+  # pour une taille qui se compose seule. Un seul étage (CompositionFormula::properties(), chain) :
+  # une base n'a pas de base. Sans index, les formules se lisant toujours par plan.
+  base: ?toolbox\CompositionFormula
+  name: text8(1, null) @collate(general)
+  # Le prix visé de l'étape 8 de la règle. Le départ le préremplit au prix médian mesuré d'un panier
+  # partagé, que la personne garde ou change : aucun défaut dans le schéma, parce que la médiane
+  # bougera avec le relevé.
+  price: decimal(8, 2, 0.01, null)
+  # Le nombre de paniers de cette taille livrés chaque semaine. C'est une réponse du départ, sans
+  # défaut : un nombre inventé donnerait à l'année des quantités que personne n'a dites.
+  baskets: int16(1, null)
+  # L'écart maximum au prix visé, en pourcentage entier : la valeur au-delà de laquelle une semaine
+  # s'écarte du prix. Il gouverne la relance du nombre de lignes à l'étape 8 de la règle et le
+  # décompte des semaines au-delà. La borne haute est le bord de l'axe de l'étendue (prix ± 20 %),
+  # la borne basse celle en deçà de laquelle l'arrondi des quantités suffit à écarter une semaine.
+  gap: int8(2, 20) = 5
+  # Les bornes du nombre de légumes d'un panier, que l'étape 8 de la règle ne franchit pas en ajoutant
+  # ou en retirant une espèce (CompositionLib::getLinesStart() et la relance). Le plafond à 8 est la
+  # demande du 27/09 (« on pose une limite à 8 »), le plancher à 4 celui de la règle. Au
+  # plus 12, deux de plus que l'ancien plafond fixe de la règle (10) ; linesMin ne dépasse pas
+  # linesMax (CompositionFormula::properties()). Le plafond par organe du tirage cède devant le
+  # plancher (r70, CompositionLib::draw() et drawAdded()) : une semaine, composée seule ou dérivée
+  # d'une plus petite, ne reste sous linesMin que faute de candidates ou, pour une taille dérivée,
+  # faute de place sous linesMax.
+  linesMin: int8(1, 12) = 4
+  linesMax: int8(1, 12) = 8
+  # Le tirage de la règle qui a composé la formule : il n'entre que dans le bruit qui départage les
+  # dettes (CompositionLib::getNoise()), et « Rejouer les paniers » l'avance d'un cran
+  # (CompositionFormulaLib::replay()). 0 est le tirage d'avant le rejeu, que le hash garde sans
+  # suffixe : les formules que personne n'a rejouées ne bougent pas.
+  version: int16 = 0
+  position: int8(0, null)
+  # Un plan ne porte pas deux tailles du même nom (lot r40, décidé le 01/10) : les onglets
+  # et les menus ne les distingueraient plus. Le refus se dit avant l'écriture
+  # (CompositionFormula::properties(), name.duplicate), la contrainte ne retient que deux envois
+  # simultanés. Elle commence par plan et sert donc aussi les lectures par plan : pas d'INDEX à côté.
+  UNIQUE: [
+    ["plan", "name"]
+  ]
+
+CompositionLine:
+  id: serial32
+  week: toolbox\CompositionWeek
+  # L'espèce du plan que la ligne sert (r76), et non la fiche d'espèce : une variante est une espèce du
+  # plan de plus sur la même fiche (`CompositionSpecies.name`), et deux variantes d'une même espèce ne
+  # se distinguent que par elle.
+  species: toolbox\CompositionSpecies
+  # L'unité de référence (structure IS NULL), celle que aggregate\Price emploie comme clé. Une unité
+  # clonée par une structure porte le même nom et un autre id : elle ne vaut pas comme clé de prix.
+  unit: product\Unit
+  # Ce qui est servi : la quantité proposée, ou celle que l'utilisateur a réglée.
+  quantity: decimal(8, 2, 0.01, null)
+  # Ce que la règle avait proposé, lu par l'annotation « proposé 0,8 kg ». N'a de sens que sous
+  # origin = PROPOSED : une ligne ajoutée à la main n'a jamais été proposée.
+  quantityProposed: ?decimal(8, 2)
+  # Le prix employé par l'étape 8 au moment du calcul, figé avec la proposition : le cron de 4 h
+  # déplace aggregate\Price, et une valeur relue ferait bouger la nuit un plan que personne n'a
+  # touché. NULL quand aucun prix n'était employable (dispersion high/low >= 3) : la ligne compte
+  # alors pour zéro dans la valeur de la semaine, et l'écran le dit.
+  unitPrice: ?decimal(10, 4)
+  origin: enum(PROPOSED, USER) = PROPOSED
+  # Une semaine ne sert une espèce du plan qu'une fois (lot r40, décidé le 01/10). Le refus
+  # se dit avant l'écriture (CompositionLine::properties(), species.duplicate), la contrainte ne retient
+  # que deux envois simultanés. Elle commence par week et sert donc aussi les lectures par semaine.
+  UNIQUE: [
+    ["week", "species"]
+  ]
+  # Savoir si une espèce du plan est encore servie avant de supprimer sa fiche
+  # (`CompositionSpeciesLib::isDeletable()`) se lit sur la seule espèce, sans semaine.
+  INDEX: [
+    ["species"]
+  ]
+
+CompositionPlan:
+  id: serial32
+  # Une seule composition par structure : l'écran n'a pas de saison, il ouvre celle-ci.
+  structure: structure\Structure
+  # La saison dont la composition lit le plan de culture, posée à la création.
+  season: int16(0, null)
+  # CULTIVATION quand le plan a été synchronisé sur le plan de culture (lot r27) : les espèces
+  # qu'il date ont pris la saison de leurs semaines de récolte et de conservation, et une espèce
+  # recochée reprend la sienne. Les quantités y sont bornées par le stock prévu.
+  # CALENDAR quand le plan est parti du calendrier type de son climat (lot r48b,
+  # `aggregate\Calendar`) : ses espèces y prennent la saison que le calendrier leur donne.
+  reference: enum(CULTIVATION, COMMUNITY, CALENDAR) = COMMUNITY
+  # Le climat choisi au départ d'un plan parti du calendrier type, NULL sous les deux autres origines.
+  climate: ?enum(OCEANIC, CONTINENTAL, MEDITERRANEAN, MOUNTAIN)
+  # Les semaines ISO livrées, communes à toutes les formules du plan. Même forme que
+  # series\Cultivation.harvestWeeks. Posée par le Lib à la création, jamais lue avec un défaut.
+  weeks: json
+  createdAt: datetime = SPECIAL(now)
+  updatedAt: ?datetime
+  UNIQUE: [
+    ["structure"]
+  ]
+
+CompositionSpecies:
+  id: serial32
+  plan: toolbox\CompositionPlan
+  plant: plant\Plant
+  # Le nom d'une variante de l'espèce dans les paniers (r76), « Carotte vrac » à côté de la carotte :
+  # une autre ligne du plan sur la même fiche d'espèce, avec ses propres réglages, sans créer d'espèce.
+  # NULL pour l'espèce elle-même.
+  name: ?text8(1, null) @collate(general)
+  # D'où vient la saison de vente, portée par l'enum et non par la présence d'une valeur :
+  # NATURAL = écrite depuis les paniers de la communauté, CULTIVATION = écrite par la
+  # synchronisation sur le plan de culture, CUSTOM = réglée à la main, EXCLUDED = espèce décochée,
+  # sans saison. La synchronisation ne réécrit que les deux premiers : ce qu'on a réglé à la main
+  # ne se perd que si on le demande.
+  # CALENDAR (lot r48b) = écrite depuis le calendrier type du climat du plan.
+  status: enum(NATURAL, CUSTOM, EXCLUDED, CULTIVATION, CALENDAR) = NATURAL
+  # La saison de vente, en intervalles [début, fin] de semaines ISO, triés et fusionnés, sans
+  # passage d'année. Posée sous tous les états sauf EXCLUDED, où elle vaut NULL.
+  windowWeeks: ?json
+  # L'unité où l'espèce entre au panier, choisie par la structure (lot r14) : le kilo, la pièce ou la
+  # botte du référentiel partagé. NULL vaut l'unité de la communauté (`CompositionLib::getSource()`).
+  # Le prix, le pas, le minimum, la quantité par défaut et le poids ci-dessous s'expriment dans cette
+  # unité, et changer d'unité les efface (`CompositionSpeciesLib::update()`).
+  unit: ?product\Unit
+  # Le prix tapé sur l'espèce, dans l'unité où elle entre au panier, pour toutes les tailles du plan.
+  # NULL laisse la cascade décider (`CompositionLib::getPrices()`), une valeur passe devant elle.
+  price: ?decimal(8, 2, 0.01, null)
+  # Le pas de la quantité au panier, dans l'unité où l'espèce y entre : la quantité proposée s'y
+  # arrondit. NULL vaut le pas de l'unité, 0,1 pour une unité décimale, 1 pour une unité entière.
+  step: ?decimal(8, 2, 0.01, null)
+  # La quantité en dessous de laquelle l'espèce n'entre pas au panier, dans la même unité. NULL vaut
+  # un pas.
+  minimum: ?decimal(8, 2, 0.01, null)
+  # La quantité que prend l'espèce quand on l'ajoute à la main au panier d'une semaine (r30, #92),
+  # dans la même unité. NULL vaut le minimum. Changer d'unité l'efface, comme les trois au-dessus.
+  quantity: ?decimal(8, 2, 0.01, null)
+  # La quantité que l'espèce prend dans un panier, dans la même unité, pour une espèce que la
+  # communauté ne sait pas compter (lot r48c, qui l'emploie ; la colonne part avec r48b pour ne faire
+  # qu'une migration). NULL laisse la communauté la donner.
+  quantityBasket: ?decimal(8, 2, 0.01, null)
+  # Le poids d'une unité du panier, en kilos, pour une espèce qui y entre à la pièce ou à la botte
+  # (lot L3) : 0,5 pour une botte de carottes. NULL laisse la cascade décider
+  # (`CompositionLib::getWeightReference()`), une valeur passe devant elle.
+  weight: ?decimal(8, 3, 0.001, null)
+  # La fréquence choisie pour l'espèce (lot L9) : BASE trois semaines sur quatre, MEDIUM une sur deux,
+  # LOW une sur trois, DIVERSIFICATION une sur cinq (`CompositionLib::FREQUENCIES`). NULL laisse la
+  # règle la servir comme toutes les autres, à la part que lui donnent les paniers partagés.
+  frequency: ?enum(BASE, MEDIUM, LOW, DIVERSIFICATION)
+  # Le produit en vente qui porte l'espèce quand une semaine des paniers se vend dans un produit
+  # composé (r37b), retenu d'une vente à l'autre : même espèce et même unité que le panier. NULL
+  # laisse la page « Mettre en vente » le proposer. Changer d'unité l'efface, et un produit désactivé
+  # ou d'une autre unité ne compte plus comme retenu (`CompositionSaleLib::getRetained()`). Sans
+  # index : l'espèce se lit toujours par plan.
+  product: ?product\Product
+  # Une variante ne porte pas deux fois le même nom sur une espèce. MySQL ne compare pas deux NULL :
+  # l'espèce elle-même ne se retient pas ici, et c'est l'étape `plant.duplicate` de
+  # CompositionSpecies::properties() qui la refuse une seconde fois dans un plan.
+  UNIQUE: [
+    ["plan", "plant", "name"]
+  ]
+
+CompositionWeek:
+  id: serial32
+  formula: toolbox\CompositionFormula
+  week: int8(1, 52)
+  # Posé par n'importe lequel des trois amendements. Un retrait de ligne ne laisse aucune ligne
+  # derrière lui : ce drapeau est la seule mémoire du retrait, et l'avertissement avant perte le lit.
+  amended: bool = FALSE
+  # Ce que la règle a dû relâcher, que l'écran écrit sur la semaine.
+  relaxedFloor: set(LEAF, ROOT, FRUIT) = 0
+  UNIQUE: [
+    ["formula", "week"]
+  ]
+
+Equipment:
+  id: serial32
+  structure: structure\Structure
+  # Le matériel de la structure (« Mon matériel ») que le carnet suit. Un matériel ne se suit qu'une
+  # fois : « Ne plus suivre » le passe inactif et garde son historique, et le suivre de nouveau
+  # réveille la même ligne (EquipmentLib::follow()).
+  tool: work\Tool
+  # Le compteur du matériel, en heures ou en kilomètres, choisi quand il entre au carnet (retour de
+  # du 30/09 sur la recette T4). NULL : pas de compteur, donc pas de relevé, et les entretiens
+  # ne reviennent qu'à la date (arbitrage Q6 de la planche pf-t4-v2). L'unité vaut pour toutes les
+  # valeurs de compteur du matériel : relevés, entretiens et entretiens faits.
+  meter: ?enum(HOURS, KILOMETERS)
+  # La dernière unité que le compteur a portée, qui survit à sa coupure : les valeurs de compteur déjà
+  # saisies y restent, et le compteur ne revient qu'à elle (étape `locked` d'`Equipment::properties()`,
+  # planche pf-t4-v3). NULL tant que le matériel n'a jamais eu de compteur.
+  lastMeter: ?enum(HOURS, KILOMETERS)
+  # Le numéro d'immatriculation d'un matériel à compteur, que la tête de son bloc affiche avant le
+  # compteur (demande du 01/10). Il reste en base quand le compteur est coupé, comme
+  # `lastMeter`, et revient avec lui.
+  registration: ?text8(1, 20) @collate(general)
+  # Le jour où la croix du planning a passé le relevé du compteur (demande du 03/10) : le
+  # compteur quitte le planning sans relevé et revient au rappel suivant
+  # (`NotificationLib::getReadingDate()`). Un relevé fait après la rend caduque sans la remettre à NULL.
+  readingSkippedDate: ?date
+  readingPostponedDate: ?date
+  status: enum(ACTIVE, INACTIVE) = ACTIVE
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  UNIQUE: [
+    ["tool"]
+  ]
+  INDEX: [
+    ["structure", "status"]
+  ]
+
+EquipmentReading:
+  id: serial32
+  # Portée par le matériel, et recopiée ici pour que le droit de lire un relevé se juge sans le charger.
+  structure: structure\Structure
+  equipment: toolbox\Equipment
+  # L'unité du matériel au jour du relevé, que `EquipmentReadingLib::create()` recopie. Elle survit au
+  # compteur coupé (Equipment.meter à NULL) : un matériel qui a des relevés ne change plus d'unité, et
+  # revenir au compteur retrouve ses relevés (étape `readings` d'Equipment::properties()).
+  meter: enum(HOURS, KILOMETERS)
+  date: date
+  # Ce qu'affiche le compteur ce jour-là. Un compteur ne recule pas (étapes `backwards` et `ahead` de
+  # EquipmentReading::properties()), et un second relevé du même jour remplace le premier, d'où
+  # l'unicité sur (equipment, date). Dans l'unité du compteur (Equipment.meter).
+  value: int32(0, null)
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  UNIQUE: [
+    ["equipment", "date"]
+  ]
+  INDEX: [
+    ["structure"]
+  ]
+
+Favorite:
+  id: serial32
+  structure: structure\Structure
+  # Un favori est personnel, comme les vues du planning (structure\Member.viewPlanning) : chacun
+  # choisit les outils qui paraissent sous son onglet Boîte à outils.
+  user: user\User
+  tool: enum(RAIN, BASKET, TREATMENT, DENSITY, CATALOG, MAINTENANCE, WATER, FERTILIZATION, AID)
+  createdAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["structure", "user", "tool"]
+  ]
+
+# Le référentiel du calculateur des besoins en fertilisation : une ligne par espèce partagée dont une
+# source publie les besoins. Il ne se saisit pas dans le produit, il se repose en entier par
+# `toolbox/configure/fertilizationReference`. Le phosphore et le potassium sont en oxydes, l'unité des
+# sources françaises : `phosphate` est le P2O5, `potash` le K2O (`n` ne peut pas servir de clé, YAML le
+# lit comme un booléen) ; une valeur que la source ne publie pas reste NULL, jamais 0.
+FertilizationCrop:
+  id: serial32
+  plant: plant\Plant
+  # Ce que la récolte emporte, par tonne de produit frais.
+  exportedNitrogen: ?decimal(5, 2, 0, null)
+  exportedPhosphate: ?decimal(5, 2, 0, null)
+  exportedPotash: ?decimal(5, 2, 0, null)
+  # Le document qui publie chaque exporté : l'azote et les oxydes viennent souvent de deux sources.
+  exportedNitrogenSource: ?toolbox\FertilizationSource
+  exportedPhosphateSource: ?toolbox\FertilizationSource
+  exportedPotashSource: ?toolbox\FertilizationSource
+  UNIQUE: [
+    ["plant"]
+  ]
+
+FertilizationMaterial:
+  id: serial32
+  name: text8(1, null)
+  # Teneurs en kg par tonne de produit brut. Une case vide dit que la matière n'apporte pas l'élément :
+  # une matière dont la source tait un élément qu'elle apporte n'entre pas dans le référentiel.
+  nitrogen: ?decimal(6, 2, 0, null)
+  phosphate: ?decimal(6, 2, 0, null)
+  potash: ?decimal(6, 2, 0, null)
+  # Part de l'élément disponible la première année (le Keq des sources). NULL pour le phosphore
+  # compte 100 %, comme le potassium, que les sources retenues donnent tout disponible.
+  availableNitrogen: ?decimal(4, 3, 0, 1)
+  availablePhosphate: ?decimal(3, 2, 0, 1)
+  source: toolbox\FertilizationSource
+  position: int8(0, null)
+
+# Un document publié dont le référentiel tire ses valeurs, que l'écran cite par son libellé court
+# (« Agroscope 2017 ») et ouvre par son adresse.
+FertilizationSource:
+  id: serial32
+  name: text8(1, null)
+  url: url
+  UNIQUE: [
+    ["name"]
+  ]
+
+FertilizationYield:
+  id: serial32
+  crop: toolbox\FertilizationCrop
+  name: ?text8
+  # En t/ha. NULL quand la source ne dit pas à quel rendement elle a mesuré.
+  yield: ?decimal(5, 1, 0, null)
+  # Ce que la plante entière mobilise à ce rendement, en kg/ha.
+  nitrogen: decimal(5, 1, 0, null)
+  phosphate: ?decimal(5, 1, 0, null)
+  potash: ?decimal(5, 1, 0, null)
+  source: toolbox\FertilizationSource
+  position: int8(0, null)
+  INDEX: [
+    ["crop"]
+  ]
+
+Gauge:
+  id: serial32
+  structure: structure\Structure
+  # Posé sur une zone de la structure, ou sur la ferme entière quand la pluie n'est pas relevée
+  # parcelle par parcelle (retour du 23/09) : la zone est alors nulle.
+  zone: ?map\Zone
+  # Un pluviomètre supprimé garde ses relevés en base (arbitrage de M-Prod du 23/09) : il passe
+  # inactif, et chaque lecture ne part que des pluviomètres actifs. En reposer un au même endroit
+  # en crée un neuf, qui repart de zéro.
+  status: enum(ACTIVE, INACTIVE) = ACTIVE
+  createdAt: datetime = SPECIAL(now)
+  # Sans auteur pour ceux que pose la reprise des interventions (`toolbox/configure/rainImport`).
+  createdBy: ?user\User = SPECIAL(user)
+  INDEX: [
+    ["structure", "status"]
+  ]
+
+Maintenance:
+  id: serial32
+  structure: structure\Structure
+  equipment: toolbox\Equipment
+  name: text8(1, 60) @collate(general)
+  # Un entretien régulier revient toutes les N unités du compteur (heures ou kilomètres), tous les N
+  # mois, ou au premier des deux : au moins l'un des deux est posé (étape `frequency`). Un entretien
+  # « Une seule fois » n'en a aucun (arbitrage Q2 de la planche pf-t4-v4). La valeur de compteur ne se
+  # lit que sur un matériel à compteur.
+  everyValue: ?int32(1, 1000000)
+  everyMonths: ?int16(1, 240)
+  # « Prochaine fois » : la date, le compteur, ou le premier des deux, à laquelle l'entretien est dû
+  # (au moins l'un des deux, étape `planned`). Un entretien fait d'un entretien régulier la fait
+  # repartir de lui, un retard ignoré d'aujourd'hui (MaintenanceLib::plan()).
+  plannedDate: ?date
+  plannedValue: ?int32(0, null)
+  # « Ignorer ce retard » : le jour où l'alerte a été écartée, que la rangée rappelle tant qu'aucun
+  # entretien fait ne l'a suivi (MaintenanceDoneLib::create()).
+  ignoredDate: ?date
+  postponedDate: ?date
+  # Un entretien « Une seule fois » passe à DONE quand il est fait et quitte le bloc du matériel ; un
+  # entretien retiré passe à DELETED. Les deux gardent les entretiens faits de l'historique, qui les nomment.
+  status: enum(ACTIVE, DONE, DELETED) = ACTIVE
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["equipment"],
+    ["structure"]
+  ]
+
+MaintenanceConfiguration:
+  id: serial32
+  structure: structure\Structure
+  # L'intervention que prend, au planning, la tâche créée par un entretien fait : une seule par ferme
+  # (planche production-finir-carnet-planning, « L'intervention se règle au global pour la ferme »),
+  # choisie parmi celles de la catégorie « Sur l'outil de production » (étape `usable`). La ligne
+  # n'existe pas tant que la ferme n'a rien réglé, et le premier « Fait » la pose.
+  action: work\Action
+  # Le rythme du rappel des compteurs à relever (`NotificationLib::READING`), en mois : 1, 2, 3 ou 6
+  # (`MaintenanceConfiguration::READING_EVERY_MONTHS`), le schéma ne bornant que les deux bouts. Une
+  # ferme sans ligne suit le défaut, lu ici et nulle part recopié.
+  readingEveryMonths: int8(1, 6) = 3
+  UNIQUE: [
+    ["structure"]
+  ]
+
+MaintenanceDone:
+  id: serial32
+  structure: structure\Structure
+  equipment: toolbox\Equipment
+  # Une intervention (« Consigner un entretien ») n'a pas d'entretien : elle entre dans l'historique
+  # sous son propre libellé, sans échéance (étapes `name` de MaintenanceDone::properties()).
+  maintenance: ?toolbox\Maintenance
+  name: ?text8(1, 60) @collate(general)
+  date: date
+  # Le compteur au moment de l'entretien, sur un matériel à compteur : saisi, il devient aussi le relevé
+  # du jour, sinon il est lu dans les relevés (MaintenanceDoneLib::create()).
+  value: ?int32(0, null)
+  cost: ?decimal(8, 2, 0.0, null)
+  comment: ?text16
+  # Le hash d'une photo du type de média `maintenance-done`, sans élément : le formulaire le poste
+  # avec l'entretien (`media\MaintenanceDoneAiLib`).
+  photo: ?textFixed(20, 20) @charset(ascii)
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  INDEX: [
+    ["equipment"],
+    ["maintenance"],
+    ["structure"]
+  ]
+
+Rain:
+  id: serial32
+  # Portée par le pluviomètre, et recopiée ici pour que le droit de lire un relevé se juge sans le charger.
+  structure: structure\Structure
+  gauge: toolbox\Gauge
+  date: date
+  # Le total du jour en mm : un second relevé du même jour s'y ajoute (RainLib::create()), d'où
+  # l'unicité sur (gauge, date).
+  rain: decimal(6, 1, 0.1, null)
+  createdAt: datetime = SPECIAL(now)
+  # Sans auteur pour les relevés repris des interventions (`toolbox/configure/rainImport`).
+  createdBy: ?user\User = SPECIAL(user)
+  updatedAt: ?datetime
+  UNIQUE: [
+    ["gauge", "date"]
+  ]
+
+WaterConfiguration:
+  id: serial32
+  structure: structure\Structure
+  # Le rythme du rappel des compteurs d'eau à relever (`NotificationLib::WATER_READING`), en mois :
+  # 1, 2, 3 ou 6, la liste du carnet d'entretien (`MaintenanceConfiguration::READING_EVERY_MONTHS`),
+  # que le schéma ne borne qu'aux deux bouts. Une structure sans ligne suit le défaut, lu ici et nulle
+  # part recopié.
+  readingEveryMonths: int8(1, 6) = 3
+  UNIQUE: [
+    ["structure"]
+  ]
+
+WaterMeter:
+  id: serial32
+  structure: structure\Structure
+  name: text8(1, 50) @collate(general)
+  # Le nombre de chiffres des m³ entiers que le compteur affiche, sans ses décimales : c'est lui qui
+  # dit ce qu'un compteur revenu à une faible valeur a compté en passant par zéro
+  # (`WaterReadingLib::getConsumption()`), et qui borne un relevé (étape `digits` de
+  # WaterReading::properties()).
+  digits: int8(4, 9) = 5
+  # Le relevé passé par la croix du planning, comme celui d'un matériel (`Equipment.readingSkippedDate`).
+  readingSkippedDate: ?date
+  readingPostponedDate: ?date
+  # Un compteur supprimé garde ses relevés en base, comme un pluviomètre (`Gauge.status`) : il passe
+  # inactif, et chaque lecture ne part que des compteurs actifs.
+  status: enum(ACTIVE, INACTIVE) = ACTIVE
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  INDEX: [
+    ["structure", "status"]
+  ]
+
+WaterReading:
+  id: serial32
+  # Portée par le compteur, et recopiée ici pour que le droit de lire un relevé se juge sans le charger.
+  structure: structure\Structure
+  meter: toolbox\WaterMeter
+  date: date
+  # Ce que le compteur affiche ce jour-là, en m³, et non ce qui a été consommé : la consommation est
+  # l'écart entre deux relevés qui se suivent. Un second relevé du même jour remplace le premier, d'où
+  # l'unicité sur (meter, date). Un relevé plus bas que le précédent est un compteur qui a fait le tour :
+  # rien ne le marque en base, il se relit à chaque affichage.
+  value: decimal(10, 1, 0.0, null)
+  # Le compteur a été remplacé ce jour-là : `value` est ce que le nouveau affiche à la pose, d'où les
+  # relevés repartent, et aucun tour de compteur ne se lit à travers ce relevé. `changedValue` est ce
+  # que l'ancien affichait à la dépose, quand on le sait : c'est lui qui dit ce qui a été consommé
+  # depuis le relevé d'avant. `changedDigits` est le nombre de chiffres de l'ancien compteur, qui borne
+  # et compte les relevés d'avant le changement ; `WaterMeter.digits` est celui du compteur en place
+  # (`WaterReadingLib::getDigits()`).
+  changed: bool = FALSE
+  changedValue: ?decimal(10, 1, 0.0, null)
+  changedDigits: ?int8(4, 9)
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  updatedAt: ?datetime
+  UNIQUE: [
+    ["meter", "date"]
+  ]
+  INDEX: [
+    ["structure"]
+  ]

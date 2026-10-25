@@ -1,0 +1,14 @@
+Preference:
+  id: serial32
+  user: user\User
+  structure: structure\Structure
+  name: text8(1, 50) @charset(ascii)
+  position: ?int8(0, null)
+  hidden: bool = FALSE
+  updatedAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["structure"]
+  ]
+  UNIQUE: [
+    ["user", "structure", "name"]
+  ]

@@ -1,0 +1,69 @@
+/* Gabarit « Classeur » des pages de formations d'un réseau : le classeur remis en stage. Feuilles
+   blanches, titres de section en intercalaire trapézoïdal teinté de la couleur, bandeau fermé en bas
+   par les tranches d'intercalaires, onglet actif en languette.
+
+   Le titre de section lit `--heading-color`, l'encre du texte, sur son intercalaire de la teinte
+   que `CustomizeUi::getStyles()` tire du fond choisi et de la couleur, claire sous toutes les
+   couleurs, comme l'onglet actif ; un h2 nu de l'éditeur ne le lit pas et reste en `--text` (`template-doc.css`). Les
+   tranches d'intercalaires sont des teintes de la couleur sur le blanc. La page et les surfaces sont
+   celles du fond choisi : Classeur n'est pas dans `LearningSetting::DESIGN_MATTERS`.
+
+   Acme n'a qu'une face, en 400 : les titres écrits dans la police de titre (`h1`, `h2`, `h3`) sont
+   bornés à 400 pour ne pas se voir en gras synthétisé, et l'intercalaire se distingue par sa forme
+   et sa couleur. `DesignSentinel::testTitleWeights()` le vérifie. Les polices viennent de
+   `LearningSetting::DESIGN_FONTS`. */
+
+.learning-public[data-learning-design="classeur"],
+.learning-doc[data-learning-design="classeur"] {
+	--radius: .25rem;
+	--radius-lg: .5rem;
+	--border: color-mix(in srgb, var(--primary) 16%, white);
+	--shadow-v2: 0 1px 2px rgb(0 0 0 / 12%), 0 3px 0 -1px white, 0 3px 2px -1px rgb(0 0 0 / 14%);
+	--heading-weight: 400;
+	--heading-justify: flex-start;
+	--heading-border: none;
+	--heading-background: var(--learning-tint);
+	--heading-color: var(--text);
+	--heading-padding: .25rem 1.5rem;
+	--heading-clip: polygon(0 100%, .75rem 0, calc(100% - .75rem) 0, 100% 100%);
+	--button-weight: 600;
+	--figure-background: color-mix(in srgb, var(--primary) 8%, white);
+	--callout-background: white;
+	--callout-accent-width: 1.25rem;
+	--marker-radius: .25rem .25rem 0 0;
+	--table-head-background: color-mix(in srgb, var(--primary) 14%, white);
+	--table-head-case: none;
+	--table-head-border: 3px solid var(--primary);
+	--tab-active-background: var(--learning-tint);
+	--tab-active-color: var(--text);
+	--tab-radius: .5rem .5rem 0 0;
+	--tab-bar-height: 0;
+	--quote-background: white;
+	--quote-border: 1px solid color-mix(in srgb, var(--primary) 16%, white);
+	--quote-padding: 1rem 1.25rem 1rem 2.25rem;
+	--calendar-radius: .25rem .25rem 0 0;
+	--calendar-ring: inset 0 3px 0 var(--primary);
+}
+
+.learning-public[data-learning-design="classeur"] h1,
+.learning-public[data-learning-design="classeur"] h2,
+.learning-public[data-learning-design="classeur"] h3,
+.learning-doc[data-learning-design="classeur"] h1,
+.learning-doc[data-learning-design="classeur"] h2,
+.learning-doc[data-learning-design="classeur"] h3 {
+	font-weight: 400;
+}
+
+/* Les tranches d'intercalaires ferment le bas du bandeau, sur le fond de la page : la couleur pleine
+   puis quatre teintes de plus en plus claires. */
+.learning-public[data-learning-design="classeur"] .community-header {
+	padding-bottom: var(--space-xl);
+	background:
+		linear-gradient(to right,
+			var(--primary) 0 20%,
+			color-mix(in srgb, var(--primary) 70%, white) 20% 40%,
+			color-mix(in srgb, var(--primary) 45%, white) 40% 60%,
+			color-mix(in srgb, var(--primary) 25%, white) 60% 80%,
+			color-mix(in srgb, var(--primary) 12%, white) 80% 100%) 0 100% / 100% .75rem no-repeat,
+		transparent;
+}

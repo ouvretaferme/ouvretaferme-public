@@ -1,0 +1,29 @@
+
+
+body[data-position="left"]:has(.customize-bar) nav {
+	padding-bottom: var(--customize-height);
+}
+
+.customize-color {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.15rem;
+	cursor: pointer;
+}
+
+.customize-color input {
+	height: 1.6rem;
+}
+
+.customize-color span {
+	font-size: 0.65rem;
+	opacity: 0.6;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.customize-color-unset input {
+	border-style: dotted;
+	opacity: 0.55;
+}

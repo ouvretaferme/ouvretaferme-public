@@ -1,0 +1,21 @@
+.api-authorize {
+	max-width: 44rem;
+	margin: var(--space-xl) auto;
+}
+
+.api-authorize-buttons {
+	justify-content: flex-end;
+	margin-top: var(--space-lg);
+}
+
+@media (max-width: 575px) {
+
+	.api-authorize {
+		margin-top: var(--space-md);
+	}
+
+	.api-authorize-buttons > .btn {
+		flex: 1;
+	}
+
+}

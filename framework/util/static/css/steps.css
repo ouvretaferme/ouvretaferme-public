@@ -1,0 +1,83 @@
+.util-steps {
+	display: flex;
+	margin: 1rem 0;
+}
+
+.util-steps-step {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+	position: relative;
+}
+
+.util-steps-step:not(:first-child)::before {
+	content: '';
+	position: absolute;
+	bottom: calc(1.5rem + 2px);
+	left: -50%;
+	width: 100%;
+	height: 2px;
+	background: #ddd;
+	z-index: 0;
+}
+
+.util-steps-step.warning::before {
+	background: var(--warning);
+}
+.util-steps-step.done::before {
+	background: var(--secondary-light);
+}
+
+/* L'écart entre deux libellés se prend dans l'étape : un écart entre les étapes raccourcirait les
+   traits, dont la largeur est celle de l'étape. */
+.util-steps-label {
+	padding-inline: var(--space-xxs);
+	font-size: 1rem;
+	text-align: center;
+	font-family: "Roboto Mono";
+	text-transform: uppercase;
+}
+
+.util-steps-who {
+	margin-bottom: 0.5rem;
+	font-size: 0.8rem;
+	text-align: center;
+}
+.util-steps-step.done .util-steps-label,
+.util-steps-step.active .util-steps-label {
+	color: inherit;
+	font-weight: bold;
+}
+
+.util-steps-circle {
+	width: 3rem;
+	height: 3rem;
+	border-radius: 50%;
+	border: 2px solid var(--border);
+	background: var(--background-light);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	z-index: 1;
+	font-size: 0.9rem;
+}
+
+.util-steps-step.warning .util-steps-circle {
+	border-color: var(--warning);
+	background: var(--warning);
+	color: white;
+}
+.util-steps-step.done .util-steps-circle {
+	border-color: var(--secondary-light);
+	background: var(--secondary-light);
+	color: white;
+}
+
+.util-steps-step.active .util-steps-circle {
+	border-color: var(--primary);
+	color: var(--primary);
+	font-weight: bold;
+}

@@ -1,0 +1,8 @@
+/* Les cotes en tête des choix, une rangée qui passe à la ligne quand une cote descend sous --map-building-dimension :
+   deux cotes, celles du hangar et de la maison, prennent toute la largeur */
+.map-building-dimensions {
+	--map-building-dimension: 7rem;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(var(--map-building-dimension), 1fr));
+	gap: var(--space-sm);
+}

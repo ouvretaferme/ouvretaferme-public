@@ -1,0 +1,64 @@
+/* La météo (L52), sous les entrées du groupe Bureau dans la colonne, au-dessus d'elles quand le
+   menu est en bas (plus loin), et sous la date de l'accueil à la tablette, où `pilotage.js` déplace
+   le nœud. `PilotageUi::getHome()` charge la feuille, sur l'écran qui rend le groupe comme dans la
+   réponse qui remplit son emplacement.
+
+   Tout sélecteur est borné par `#structure-pilotage` ou `#structure-pilotage-home`, que seul ce
+   package pose : une feuille de package reste chargée après qu'on a quitté l'écran qui l'a demandée,
+   la navigation ajax ne retirant pas la `<link>`. */
+
+#structure-pilotage > #structure-pilotage-home:has(> .dashboard-weather) {
+	margin-top: var(--space-md);
+	padding-bottom: var(--space-sm);
+}
+
+/* Le retrait est celui du contenu d'une entrée : la marge de son wrapper et le remplissage de
+   `.structure-tab` (`template-structure.css`). */
+#structure-pilotage > #structure-pilotage-home > .dashboard-weather {
+	margin-inline: calc(var(--space-xs) + var(--space-sm));
+	padding-top: var(--space-sm);
+	border-top: 1px solid var(--structure-cadre-filet);
+}
+
+/* Quand le menu est en bas, la feuille s'ouvre au-dessus de la barre et grandit vers le haut : la
+   météo, qui arrive après les entrées, se pose au-dessus d'elles pour ne pas les déplacer sous le
+   pouce (L77). Son filet passe alors entre elle et les entrées. La requête est celle de
+   `Structure.BAR`. */
+@media (max-width: 767px), (max-height: 599px) {
+
+	#structure-pilotage {
+		display: flex;
+		flex-direction: column;
+	}
+
+	#structure-pilotage > #structure-pilotage-home {
+		order: -1;
+	}
+
+	#structure-pilotage > #structure-pilotage-home:has(> .dashboard-weather) {
+		margin-top: 0;
+		margin-bottom: var(--space-md);
+		padding-bottom: 0;
+	}
+
+	#structure-pilotage > #structure-pilotage-home > .dashboard-weather {
+		padding-top: 0;
+		padding-bottom: var(--space-sm);
+		border-top: none;
+		border-bottom: 1px solid var(--structure-cadre-filet);
+	}
+
+}
+
+/* Sous la date, la météo prend plus que la colonne du menu : la pluie d'un jour y tient sur sa ligne,
+   que la colonne lui fait couper. La largeur passe par `flex-basis`, un `max-width` en dur n'ayant
+   pas de token de reboot.css. */
+#dashboard-home > #structure-pilotage-home {
+	display: flex;
+	margin-top: var(--space-md);
+}
+
+#dashboard-home > #structure-pilotage-home > .dashboard-weather {
+	flex: 0 1 22rem;
+	min-width: 0;
+}

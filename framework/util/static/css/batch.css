@@ -1,0 +1,337 @@
+
+/* Batch */
+.batch-group-wrapper {
+	position: fixed;
+	bottom: 0;
+	left: var(--nav-width, 0px);
+	right: 0;
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	pointer-events: none;
+}
+
+.batch-group-wrapper.batch-group-preview {
+	position: relative;
+	margin-top: 1.5rem;
+	pointer-events: auto;
+}
+
+.batch-group-wrapper > form {
+	display: flex;
+	flex-direction: column;
+	width: max-content;
+	min-width: min(992px, 100%);
+	max-width: 100%;
+}
+
+.batch-title {
+	display: flex;
+	user-select: none;
+	-webkit-user-select: none;
+	align-items: flex-end;
+	column-gap: 0.5rem;
+	padding: 0 1rem;
+	margin-bottom: -0.875rem;
+	position: relative;
+	z-index: 1;
+	pointer-events: auto;
+}
+
+.batch-title h4 {
+	margin-bottom: 0;
+	display: flex;
+	align-items: center;
+	column-gap: 0.5rem;
+	background-color: var(--secondary-light);
+	color: white;
+	border-radius: 999px;
+	padding: 0.375rem 0.875rem;
+	font-size: 0.85rem;
+	font-weight: 700;
+	line-height: 1.2;
+	box-shadow: 0 0.375rem 1rem 0 color-mix(in srgb, var(--secondary-light) 35%, transparent);
+	white-space: nowrap;
+}
+
+.batch-title .util-counter {
+	border-color: color-mix(in srgb, white 60%, transparent);
+	font-weight: 700;
+}
+
+.batch-hide {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	line-height: 1;
+	border-radius: 999px;
+	background-color: white;
+	color: var(--secondary-light);
+	border: 1px solid color-mix(in srgb, var(--secondary-light) 40%, white);
+	cursor: pointer;
+}
+
+.batch-hide:hover {
+	background-color: color-mix(in srgb, var(--secondary-light) 15%, white);
+	color: var(--secondary-light);
+}
+
+.batch-checkbox {
+	position: relative;
+}
+
+.batch-menu {
+	overflow-x: auto;
+	user-select: none;
+	-webkit-user-select: none;
+	display: flex;
+	justify-content: space-between;
+	background-color: color-mix(in srgb, var(--secondary-light) 10%, white);
+	border: 1px solid color-mix(in srgb, var(--secondary-light) 40%, white);
+	border-bottom: none;
+	border-radius: var(--radius) var(--radius) 0 0;
+	box-shadow: 0 0 5rem color-mix(in srgb, black 60%, var(--secondary-light));
+	padding: 1.5rem 0.75rem 0.75rem;
+	pointer-events: auto;
+}
+
+@media (min-width: 992px) {
+
+	.batch-group-wrapper > form {
+		margin-bottom: 1rem;
+	}
+
+	.batch-menu {
+		border-bottom: 1px solid color-mix(in srgb, var(--secondary-light) 40%, white);
+		border-radius: var(--radius);
+	}
+
+}
+
+@media (max-width: 767px) {
+
+	.batch-menu {
+		border-left: none;
+		border-right: none;
+		border-radius: 0;
+	}
+
+}
+
+.batch-main,
+.batch-danger {
+	display: flex;
+	justify-content: start;
+	align-items: stretch;
+	width: max-content;
+}
+
+@media (max-width: 575px) {
+
+	.batch-main {
+		justify-content: center;
+	}
+
+}
+
+
+.batch-item {
+	display: flex;
+	align-items: center;
+	justify-content: end;
+	flex-direction: column;
+	white-space: nowrap;
+	color: var(--secondary);
+	padding: 0.375rem 0.75rem;
+	min-width: 3.75rem;
+	position: relative;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1;
+}
+
+.batch-item.disabled {
+	pointer-events: none;
+	opacity: 0.5;
+}
+
+.batch-item-number {
+	font-size: 1.2rem;
+	line-height: 1;
+	font-weight: lighter;
+	margin-bottom: 0.5rem;
+}
+
+.batch-item-count {
+	top: 0.25rem;
+	margin-left: 0.25rem;
+	width: max-content;
+}
+
+a.batch-item-danger {
+	color: var(--danger);
+}
+
+.batch-item:hover {
+	text-decoration: none;
+	color: var(--secondary);
+}
+
+.batch-item:hover span:last-child {
+	text-decoration: underline;
+	text-decoration-color: var(--color-neon);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 3px;
+}
+
+a.batch-item-danger:hover span:last-child {
+	text-decoration-color: var(--danger);
+}
+
+.batch-main .batch-item:not(.batch-item-last) {
+	border-right: 1px solid color-mix(in srgb, var(--secondary-light) 40%, white);
+}
+
+.batch-item > svg {
+	margin-bottom: 0.375rem;
+	font-size: 1.1rem;
+}
+
+@media (min-width: 1600px) {
+
+	.batch-item {
+		font-size: 0.85rem;
+		min-width: 4.25rem;
+	}
+
+	.batch-item > svg {
+		font-size: 1.5rem;
+		margin-bottom: 0.5rem;
+	}
+
+}
+
+.batch-item span {
+	line-height: 1.2;
+	text-align: center;
+	margin-top: 0.125rem;
+}
+
+@media (max-width: 575px) {
+
+	.batch-item span:last-child {
+		font-size: 0.75rem;
+	}
+
+}
+
+@media (max-width: 449px) {
+
+	.batch-item span:last-child {
+		font-size: 0.7rem;
+	}
+
+}
+
+
+.batch-one-wrapper {
+	position: absolute;
+	top: calc(50% - 2rem);
+	z-index: 20;
+	border-radius: var(--radius);
+	background-color: color-mix(in srgb, var(--secondary-light) 10%, white);
+	border: 1px solid color-mix(in srgb, var(--secondary-light) 40%, white);
+	box-shadow: 0 0 5rem color-mix(in srgb, black 60%, var(--secondary-light));
+	padding: 0.375rem 0.25rem;
+}
+
+.batch-one-menu {
+	display: flex;
+	align-items: stretch;
+}
+
+.batch-one-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: end;
+	white-space: nowrap;
+	color: var(--secondary);
+	padding: 0.375rem 0.75rem;
+	min-width: 3.75rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1;
+	text-align: center;
+}
+
+@media (max-width: 767px), (min-width: 1400px) {
+
+	.batch-one-item {
+		padding: 0.375rem 0.5rem;
+	}
+
+}
+
+.batch-one-item:not(:last-child) {
+	border-right: 1px solid color-mix(in srgb, var(--secondary-light) 40%, white);
+}
+
+a.batch-one-item {
+	color: var(--secondary);
+}
+
+a.batch-one-item:hover {
+	text-decoration: none;
+	color: var(--secondary);
+}
+
+a.batch-one-item:hover span:last-child {
+	text-decoration: underline;
+	text-decoration-color: var(--color-neon);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 3px;
+}
+
+a.batch-one-item.batch-item-danger,
+a.batch-one-item.batch-item-danger:hover {
+	color: var(--danger);
+}
+
+a.batch-one-item.batch-item-danger:hover span:last-child {
+	text-decoration-color: var(--danger);
+}
+
+.batch-one-item > svg {
+	font-size: 1.1rem;
+	margin-bottom: 0.375rem;
+}
+
+.batch-one-item span {
+	font-size: 0.8rem;
+	line-height: 1.2;
+	margin-top: 0.125rem;
+}
+
+@media (min-width: 1600px) {
+
+	.batch-one-item {
+		font-size: 0.85rem;
+		min-width: 4.25rem;
+	}
+
+	.batch-one-item > svg {
+		font-size: 1.5rem;
+		margin-bottom: 0.5rem;
+	}
+
+}
+
+.batch-mute {
+	opacity: 0.25;
+	pointer-events: none;
+}

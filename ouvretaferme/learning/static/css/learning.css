@@ -1,0 +1,1386 @@
+/* Le visuel d'une formation, en attendant une image déposée : un aplat aux couleurs de la section
+   que sa thématique désigne, posé en tête d'une carte util-deck-top ou à côté du titre d'une fiche.
+   Positionné, pour que util-card-badges s'accroche à son coin et non à celui de la carte. */
+.learning-cover {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	aspect-ratio: 16 / 5;
+	border-radius: var(--radius) var(--radius) 0 0;
+	/* Pas le raccourci `background` : à poids égal avec media-banner-view, il remettait à zéro son
+	   cover et son centrage chaque fois que media.css précédait cette feuille dans le document. */
+	background-color: var(--learning-cover-background);
+	color: var(--learning-cover);
+	padding: 0 0.75rem;
+}
+
+/* La typographie du nom de la thématique, posée sur lui seul : un badge suit la taille de son parent
+   quand elle est plus petite que la sienne, et les marques de util-card-badges rapetissaient. */
+.learning-cover > span {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	text-align: center;
+}
+
+/* L'icône de l'aplat seule, pas celles des marques de util-card-badges, qui gardent la taille du badge. */
+.learning-cover > .asset-icon {
+	width: 1.5rem;
+	height: 1.5rem;
+}
+
+.learning-cover-production {
+	--learning-cover: var(--production);
+	--learning-cover-background: var(--production-neutral);
+}
+
+.learning-cover-commercialisation {
+	--learning-cover: var(--commercialisation);
+	--learning-cover-background: var(--commercialisation-neutral);
+}
+
+.learning-cover-accounting {
+	--learning-cover: var(--accounting);
+	--learning-cover-background: var(--accounting-neutral);
+}
+
+.learning-cover-settings {
+	--learning-cover: var(--settings);
+	--learning-cover-background: var(--settings-neutral);
+}
+
+/* Une formation pas encore classée : le gris structurel du socle et l'icône des formations, jamais
+   --muted, qui dit « inactif » alors que cette formation-là est celle sur laquelle on travaille. */
+.learning-cover-neutral {
+	--learning-cover: var(--primary);
+	--learning-cover-background: var(--background-dark);
+}
+
+/* La pastille d'un bloc pas encore classé, mêmes tokens que l'aplat ci-dessus. `util-icon` ne lit
+   que ces deux variables. */
+.learning-icon-neutral {
+	--icon: var(--primary);
+	--icon-background: var(--background-dark);
+}
+
+/* Sur 4 rem de large l'icône générique ne distingue plus rien d'une ligne à l'autre : l'aplat seul
+   suffit à marquer la ligne. */
+.learning-cover-neutral.learning-cover-xs .asset-icon {
+	display: none;
+}
+
+.learning-cover-lg {
+	aspect-ratio: 16 / 9;
+	border-radius: var(--radius);
+}
+
+.learning-cover-lg > span {
+	font-size: 0.9375rem;
+}
+
+/* Sous des marques, l'icône et le nom de la thématique descendent au bas de l'aplat, à l'écart du
+   rang qu'elles occupent en haut. */
+.learning-cover-badges {
+	align-items: flex-end;
+	padding-bottom: 0.75rem;
+}
+
+/* media-banner-view (media.css) pose width, min-width et height à 100 % et un inline-flex pour remplir
+   un conteneur déjà dimensionné, et les deux feuilles arrivent dans un ordre qui dépend de la
+   navigation (media.css d'abord quand l'écran précédent la portait déjà) : la boîte de la formation
+   garde sa propre taille, que portent la bande, la fiche et la liste. */
+.learning-cover.media-banner-view {
+	display: flex;
+	width: auto;
+	min-width: 0;
+	height: auto;
+}
+
+/* Le visuel en tête d'une ligne de la liste d'administration : il fait reconnaître la ligne, jusque
+   sous 575 px. Le nom de la thématique n'y tient pas, l'icône seule reste sur l'aplat. */
+.learning-cover.learning-cover-xs {
+	width: 4rem;
+	aspect-ratio: 16 / 9;
+	border-radius: var(--radius);
+	padding: 0;
+}
+
+.learning-cover-xs > span {
+	display: none;
+}
+
+.learning-cover-xs .asset-icon {
+	width: 1rem;
+	height: 1rem;
+}
+
+/* Le visuel d'une ligne des listes de formations mène à la fiche : un bouton de lecture posé en son
+   centre, le même sur une image, un aplat de thématique et l'aplat neutre. L'icône de la thématique
+   se retire, deux pictogrammes superposés ne se lisent pas. Le visuel est moins haut qu'une cible
+   tactile : le ::after la porte à --touch-target sans rien changer à la hauteur du rang. */
+.learning-cover-play {
+	position: relative;
+	display: block;
+	width: fit-content;
+}
+
+.learning-cover-play::after {
+	content: '';
+	position: absolute;
+	inset: 50% 0 auto 0;
+	height: var(--touch-target);
+	transform: translateY(-50%);
+}
+
+.learning-cover-play > .btn {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.learning-cover-play .learning-cover > .asset-icon {
+	display: none;
+}
+
+/* Le survol du socle (.btn-white:hover) ne joue que sur le bouton : ici c'est le visuel entier qui
+   se clique, le bouton répond donc au survol du lien. */
+.learning-cover-play:hover > .btn {
+	box-shadow: inset 0 0 0 100px rgba(0, 0, 0, .1);
+}
+
+/* Le visuel en logo de l'en-tête de l'éditeur (util-page-header, qui ne fixe pas la taille d'un
+   logo) : 3rem de haut, la taille unique d'une image d'identité de getPageHeader(), à toutes les
+   largeurs, la largeur suivant le 16/9. Trop petit pour le nom de la thématique, dont l'icône reste
+   seule sur l'aplat. */
+.learning-cover.learning-cover-md {
+	height: 3rem;
+	width: auto;
+	aspect-ratio: 16 / 9;
+	border-radius: var(--radius);
+	padding: 0;
+}
+
+.learning-cover-md > span {
+	display: none;
+}
+
+.learning-cover-md .asset-icon {
+	width: 1.25rem;
+	height: 1.25rem;
+}
+
+/* Le visuel est un enfant direct de .util-deck, qui ne porte pas de marge intérieure : il en
+   épouse les coins hauts, un pixel en retrait pour rester sous la bordure. */
+.learning-card > .learning-cover {
+	border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+}
+
+/* L'ami de la thématique à la place de son icône et de son nom, sur l'aplat d'une carte sans
+   vignette (planche catalogue-attractif v3). Sous les marques, il se centre dans la place qu'elles
+   laissent au lieu de descendre au bas de l'aplat comme le nom. */
+.learning-cover-friend > svg {
+	flex: none;
+	width: auto;
+	height: 4rem;
+}
+
+.learning-cover-friend.learning-cover-badges {
+	align-items: center;
+	padding-top: var(--space-xl);
+	padding-bottom: var(--space-xs);
+}
+
+.learning-cover-friend.learning-cover-badges > svg {
+	height: 3.5rem;
+}
+
+.learning-cover-md.learning-cover-friend > svg {
+	height: 2.25rem;
+}
+
+/* Une date de l'agenda du catalogue : util-calendar lit sa taille et sa teinte dans des variables,
+   posées ici pour une pastille plus grande que celle d'une carte, pleine à la teinte de la section
+   de sa thématique. Le visuel à droite est plus haut que celui de l'en-tête de l'éditeur. */
+.learning-date {
+	--calendar-size: 4rem;
+	--calendar-day-size: 1.6rem;
+}
+
+.learning-date-production {
+	--accent: var(--production);
+}
+
+.learning-date-commercialisation {
+	--accent: var(--commercialisation);
+}
+
+.learning-date-accounting {
+	--accent: var(--accounting);
+}
+
+.learning-date-settings {
+	--accent: var(--settings);
+}
+
+.learning-date > .util-deck-head {
+	align-items: center;
+}
+
+.learning-date .learning-cover.learning-cover-md {
+	height: 4.5rem;
+}
+
+.learning-date .learning-cover-md.learning-cover-friend > svg {
+	height: 3.5rem;
+}
+
+/* Sous 576 px, la vignette prendrait un tiers de la carte et ferait passer titre, horaire et lieu
+ * sur deux lignes : le pavé de date suffit. */
+@media (max-width: 575px) {
+
+	.learning-date > .util-deck-head > .util-deck-aside {
+		display: none;
+	}
+
+}
+
+/* Les trois amis de la tête du catalogue. util-welcome-mascot est masqué sous 576 px : le flex ne
+   se pose qu'au-dessus, sans quoi il le ferait reparaître. */
+@media (min-width: 576px) {
+
+	.util-welcome-mascot.learning-friends {
+		display: flex;
+		align-items: flex-end;
+		gap: var(--space-xs);
+	}
+
+}
+
+.util-welcome-mascot.learning-friends > svg {
+	width: 4rem;
+}
+
+.util-welcome-mascot.learning-friends > svg:nth-child(2) {
+	width: 5rem;
+}
+
+/* util-icon est un bloc flex : sans ligne flex sur le titre, la pastille de la thématique passait
+   au-dessus de son nom. */
+.learning-theme-title {
+	display: flex;
+	align-items: center;
+	gap: var(--space-sm);
+}
+
+/* Deux onglets et la loupe tiennent sur une ligne jusqu'à 360 px : la colonne unique que
+   tabs-item-wrapper prend sous 768 px poserait la loupe seule sur un rang. */
+div.learning-tabs div.tabs-item-wrapper {
+	grid-template-columns: 1fr max-content;
+}
+
+.learning-card-goals {
+	margin: 0.5rem 0 0;
+	padding-left: 1rem;
+	font-size: 0.8125rem;
+	color: var(--muted);
+}
+
+.learning-card-goals li + li {
+	margin-top: 0.125rem;
+}
+
+/* Le jour de la prochaine date, ou les leçons d'une formation en ligne : la seule ligne forte sous le
+   titre. Deux classes pour passer devant `.util-deck-head p`, qui pose la couleur intermédiaire et
+   0,9 rem sur tout paragraphe de tête. */
+.learning-card .learning-card-when {
+	margin-top: var(--space-xxs);
+	font-size: 1rem;
+	color: var(--text);
+}
+
+.learning-card .learning-card-more {
+	font-size: 0.9rem;
+	color: var(--muted);
+}
+
+.learning-progress {
+	flex: 1 1 6rem;
+	margin-left: 0.75rem;
+}
+
+/* Avec l'échéance à sa suite, le texte ne laisse plus de place à la barre : elle prend sa ligne,
+   sans le retrait qui la sépare du texte, et passe après « Mon suivi » de la fiche, qui suit le
+   texte au lieu de tomber sur une troisième ligne. La carte et la fiche rendent la même bande. */
+.learning-progress-due > .learning-progress {
+	flex-basis: 100%;
+	order: 1;
+	margin-left: 0;
+}
+
+/* Sept thématiques ne se basculent pas d'un clic sur un téléphone : le groupe porte une liste, qui
+   garde la largeur de son groupe plutôt que celle de la barre entière. */
+.learning-filters select {
+	width: auto;
+	min-width: 14rem;
+	max-width: 100%;
+}
+
+.learning-format {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	white-space: nowrap;
+}
+
+.learning-row-meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0 0.75rem;
+	font-weight: 400;
+}
+
+.learning-row-actions {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.5rem;
+}
+
+.learning-follow {
+	column-gap: 1rem;
+}
+
+.learning-fiche-head {
+	display: flex;
+	align-items: flex-start;
+	gap: 1.5rem;
+	flex-wrap: wrap;
+	margin-bottom: 1rem;
+}
+
+.learning-fiche-head > .learning-cover-lg {
+	flex: 0 0 16rem;
+}
+
+/* En tête de fiche, le nom du réseau se lit en entier : ses marques sont dans le flux de l'aplat
+   (util-card-badges-wrap), où elles prennent le premier rang en entier, l'icône et le nom de la
+   thématique passant dessous. */
+.learning-fiche-head > .learning-cover-badges {
+	flex-wrap: wrap;
+	align-content: space-between;
+	padding-top: var(--space-sm);
+}
+
+.learning-fiche-head > .learning-cover-badges > .util-card-badges {
+	flex: 0 0 100%;
+}
+
+.learning-fiche-head > div {
+	flex: 1 1 22rem;
+}
+
+.learning-table-fiche {
+	grid-template-columns: 14rem minmax(0, 1fr);
+}
+
+/* Une adresse e-mail n'a pas de point de césure : longue, elle sortait de sa cellule à 360 px et
+   poussait la page. La coupe ne joue que sur un mot qui ne tient pas. */
+.learning-table-fiche .util-table-row > :last-child {
+	overflow-wrap: anywhere;
+}
+
+/* Un encadrant présenté prend son bloc : l'écart sépare deux encadrants, la présentation reste
+   collée au nom qu'elle suit. Le nom et son rôle sont enveloppés en un seul enfant, sans quoi la
+   colonne empilerait le nom en gras et le texte qui le suit. */
+.learning-fiche-staff {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-xxs);
+}
+
+.learning-fiche-staff + .learning-fiche-staff {
+	margin-top: var(--space-sm);
+}
+
+.learning-table-courses {
+	grid-template-columns: auto minmax(0, 1fr) auto auto auto auto auto auto;
+}
+
+/* La rangée s'aligne sur la ligne de base (util-table), et une boîte sans texte prend la sienne à son
+   bord bas : le visuel abaissait alors le titre et toute la rangée. Centré, il sort de cet alignement. */
+.learning-table-courses > .util-table-row > :first-child,
+.learning-table-community > .util-table-row > :first-child,
+.learning-table-network > .util-table-row > :first-child,
+.learning-table-themes > .util-table-row > :first-child {
+	align-self: center;
+}
+
+.learning-table-community {
+	grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+}
+
+/* Les formations d'un réseau : autant de pistes que de cellules visibles à chaque palier, les rangées
+   lisant la grille en subgrid (util-table). Le visuel ouvre la ligne à toutes les largeurs, dans sa
+   piste `auto`. L'état, le type et la marque du catalogue se lisent sous le nom et n'ont pas de colonne.
+   « À confirmer » (-requested) est une colonne de plus quand le tableau la porte, d'où deux grilles
+   par palier. Les leçons tombent à 1199 px (hide-lg-down), la date, les demandes et les lecteurs à
+   575 px (hide-xs-down), qui garde trois pistes : le visuel, le nom et la roue. Chaque grille est
+   d'une seule classe : à poids égal, la dernière déclarée gagne, donc -requested suit la grille de
+   base à chaque palier, et le palier 1199 précède le bloc 575, sans quoi il rendrait cinq ou six
+   pistes sur un écran de téléphone. Un réseau sans formation en ligne n'a ni leçons ni lecteurs
+   (-dated, -dated-requested) : deux pistes de moins, à redire au palier 1199 après la grille de
+   base, qui les écraserait sinon. */
+.learning-table-network {
+	grid-template-columns: auto minmax(0, 1fr) auto auto auto auto;
+}
+
+.learning-table-network-requested {
+	grid-template-columns: auto minmax(0, 1fr) auto auto auto auto auto;
+}
+
+.learning-table-network-dated {
+	grid-template-columns: auto minmax(0, 1fr) auto auto;
+}
+
+.learning-table-network-dated-requested {
+	grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+}
+
+/* Une piste `auto` s'élargit jusqu'au contenu le plus long de sa colonne avant que le nom, en `1fr`,
+   reçoive quoi que ce soit : « PROCHAINE DATE » tenait 135 px au-dessus d'un simple tiret, pris sur
+   le nom. Un titre en `min-content` ne pèse plus que son mot le plus long, et passe à la ligne entre
+   deux mots ; la colonne se règle alors sur ses valeurs. Les titres alignés à droite sont des nombres
+   courts, et « À confirmer », seul d'entre eux à porter deux mots, se lisait coupé sur deux lignes à
+   1199 px (retour du 01/10) : ceux-là restent sur une ligne, en `max-content`. Leur boîte ne remplit
+   plus la piste, un titre aligné à droite se pose donc lui-même au bord. */
+.learning-table-network > .util-table-head > :nth-child(n+3) {
+	width: min-content;
+}
+
+.learning-table-network > .util-table-head > .text-end {
+	width: max-content;
+	justify-self: end;
+}
+
+@media (max-width: 1199px) {
+
+	.learning-table-network {
+		grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+	}
+
+	.learning-table-network-requested {
+		grid-template-columns: auto minmax(0, 1fr) auto auto auto auto;
+	}
+
+	.learning-table-network-dated {
+		grid-template-columns: auto minmax(0, 1fr) auto auto;
+	}
+
+	.learning-table-network-dated-requested {
+		grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+	}
+
+}
+
+.learning-table-themes {
+	grid-template-columns: auto minmax(0, 1fr) auto auto;
+}
+
+.learning-table-levels {
+	grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+/* Les encadrants d'un réseau : le nom, l'adresse, le nombre de formations, l'interrupteur, la roue.
+   Le nom et l'adresse se partagent la largeur à parts égales : en piste auto, une adresse longue
+   prendrait la sienne entière et réduirait le nom à un mot par ligne. Un mot plus long que sa piste
+   s'y coupe en dernier recours, après les coupures que l'adresse propose (wbr,
+   SupervisorUi::getEmail()). */
+.learning-table-supervisors {
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto auto auto;
+}
+
+.learning-table-supervisors > .util-table-row > * {
+	overflow-wrap: anywhere;
+}
+
+/* Le catalogue public dans l'administration (lot L14) : la formation, le réseau, la date et les
+   gestes. Sous 575 px, le réseau et la date passent sous le nom (hide-xs-down, hide-sm-up). */
+/* Les trois tableaux de l'onglet se suivent sur la même page : des colonnes à largeur fixe les
+   alignent entre eux, là où `auto` suivrait le contenu de chacun. La dernière tient les trois gestes
+   d'une demande (voir, accepter, refuser). */
+.learning-table-catalog {
+	grid-template-columns: minmax(0, 1fr) 12rem 8rem 17rem;
+}
+
+@media (max-width: 575px) {
+
+	.learning-table-catalog {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+
+}
+
+/* Les avis dans l'administration : l'avis, le signalement ou le motif, la formation, les gestes.
+   Sous 575 px, le signalement et le motif passent sous l'avis (hide-xs-down, hide-sm-up).
+   La colonne des gestes a une largeur fixe et non `auto` : les tableaux Signalés et Masqués se
+   suivent sur la page, et une colonne réglée sur son contenu (deux boutons dans l'un, une roue dans
+   l'autre) décalerait tous leurs bords. 14rem tient Masquer et Garder côte à côte ; sous 575 px ils
+   s'empilent pour laisser la place à l'avis, et 7rem tient le plus large des deux. */
+.learning-table-reviews {
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 12rem 14rem;
+}
+
+@media (max-width: 575px) {
+
+	.learning-table-reviews {
+		grid-template-columns: minmax(0, 1fr) 7rem;
+	}
+
+	.learning-table-reviews .learning-row-actions {
+		flex-direction: column;
+		align-items: flex-end;
+	}
+
+}
+
+/* La section « Avis » de la fiche : la grande note à gauche, la répartition par note à droite. */
+.learning-reviews-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 1rem 2rem;
+	margin-bottom: 1rem;
+}
+
+/* Le Bilan de l'éditeur : la barre de chaque leçon prend la place que le nom lui laisse. */
+#learning-usage .learning-usage-progress {
+	width: 30%;
+}
+
+.learning-review-text {
+	margin: 0.25rem 0 0;
+}
+
+/* La réponse de qui écrit la formation, en filet gauche et non en bloc coloré : elle ne pèse pas plus
+   que l'avis auquel elle répond (planche L15, décision de la réponse). */
+.learning-review-answer {
+	margin-top: 0.5rem;
+	padding-left: 0.75rem;
+	border-left: 2px solid var(--border);
+}
+
+/* La graisse normale d'une ligne de liste ne vise que le paragraphe enfant direct du nom
+   (`.util-deck-row-name > p`) : celui du filet est un niveau plus bas. */
+.util-deck-row-name .learning-review-answer p {
+	font-weight: normal;
+}
+
+/* Un avis masqué ne se lit plus que par qui écrit la formation et par l'équipe : atténué, comme ce
+   qui est inactif dans le produit. */
+.learning-review-hidden > .util-deck-row-name {
+	color: var(--muted);
+}
+
+.learning-table-attachment {
+	grid-template-columns: auto minmax(0, 1fr) auto auto;
+}
+
+.learning-table-question {
+	grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+}
+
+/* Chaque cellule porte un contrôle de hauteur différente (case, champ, appareil photo) : la ligne
+   de base de `util-table` n'aligne rien entre eux, le milieu si. */
+.learning-table-choice {
+	grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+}
+
+.learning-table-choice > .util-table-row > * {
+	align-self: center;
+}
+
+.learning-attachments {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem 0.5rem;
+}
+
+/* Une colonne par leçon, leur nombre posé par l'écran (`--learning-lessons`), derrière celle du
+   stagiaire qui porte aussi son compte de leçons suivies : elle reste en vue quand le tableau
+   défile dans son `util-overflow` (`util-table-sticky-column`), le compte avec elle. Le tableau
+   prend la largeur de son contenu et ne défile que lorsqu'il ne tient plus. */
+.learning-table-suivi {
+	grid-template-columns: minmax(10rem, 1.8fr) max-content repeat(var(--learning-lessons), minmax(min-content, 1fr));
+	min-width: min-content;
+	column-gap: 0.5rem;
+}
+
+/* Les cellules d'un rang prennent toute sa hauteur : la cellule fixe du stagiaire en porte le fond,
+   et un rang dont une leçon a son score sur deux lignes laisserait sinon voir les leçons défiler
+   sous elle. */
+.learning-table-suivi .util-table-row > * {
+	align-self: stretch;
+}
+
+/* Le stagiaire à gauche, le compte de ses leçons suivies à droite ; en tête, « Stagiaire » et
+   « Leçons » au-dessus d'eux. */
+.learning-track-person {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 0.5rem;
+}
+
+.learning-track-person > span:last-child {
+	flex: none;
+}
+
+/* La cellule d'une leçon, une ligne par morceau : le badge de ce qu'a fait le stagiaire, son score,
+   puis le constat de l'équipe. Chacun d'un seul tenant, pour que la colonne ne se resserre pas
+   jusqu'à couper « 4 sur 5 ». */
+.learning-track > * {
+	display: block;
+	white-space: nowrap;
+}
+
+.learning-track > .badge {
+	display: inline-block;
+}
+
+/* Le menu des leçons nomme la leçon regardée : borné à la largeur de l'écran, son libellé se coupe
+   en ellipse par la fin, pour que le numéro et le début du nom restent lisibles. Un élément flex
+   ne descend pas sous la largeur de son contenu sans min-width: 0, d'où les deux niveaux. Quand
+   l'export passe sous le menu, l'espace qui les séparait disparaît au retour à la ligne : l'écart
+   est un gap, celui de util-title, dans les deux sens. */
+.learning-track-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+	min-width: 0;
+	max-width: 100%;
+}
+
+.learning-track-actions > .learning-track-lesson {
+	display: inline-flex;
+	align-items: center;
+	max-width: 100%;
+}
+
+.learning-track-actions > .learning-track-lesson > span {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* La vue d'une leçon : stagiaire, état, constat ; une leçon à quiz y ajoute son score et les
+   tentatives. Sous 575 px, les tentatives s'effacent, le score dit déjà l'essentiel. */
+.learning-table-suivi-lesson-view {
+	grid-template-columns: minmax(8rem, 1fr) auto auto;
+}
+
+.learning-table-suivi-lesson-view-quiz {
+	grid-template-columns: minmax(8rem, 1fr) auto auto auto auto;
+}
+
+/* Les inscrits d'une date : la personne et sa ferme, son statut, le jour de sa demande, la marque
+   d'état. Sous 575 px, le statut passe sous le nom (hide-sm-up dans la première cellule) et le jour
+   s'efface : l'ordre des rangs dit déjà qui a demandé avant qui.
+   La colonne de la roue a une largeur fixe, pas un plancher `auto` : les places, l'attente et les
+   annulées sont trois tableaux empilés dont les colonnes doivent tomber les unes sous les autres, et
+   une annulée n'a pas de roue. Une largeur qui suit le bouton ne vaut que dans les tableaux qui en
+   ont un : au-delà de 1599 px, la marge droite de util-table passe à 1.5rem, la roue déborde tout
+   plancher de 5rem et les annulées se décalaient de 3 à 5 px. 6rem tient la roue et cette marge,
+   5rem sous 575 px où la roue est seule avec le nom. */
+.learning-table-enrolled {
+	grid-template-columns: minmax(10rem, 1.4fr) minmax(0, 1fr) auto 6rem;
+}
+
+/* Au quiz ouvert, le jour et le quiz prennent leur part de la place libre au lieu de la laisser au
+   statut : réduits à leur contenu, ils se lisaient d'un tenant. La part garde aussi au quiz sa
+   largeur quand personne ne l'a encore passé, où il se réduirait sinon à son en-tête. */
+.learning-table-enrolled.learning-table-enrolled-quiz {
+	grid-template-columns: minmax(10rem, 1.4fr) minmax(0, 1fr) minmax(max-content, 0.5fr) minmax(max-content, 1fr) 6rem;
+}
+
+/* Une date passée n'a plus de geste sur ses lignes : la piste de la roue sort de ses tableaux. Celui
+   des places d'une date finie gagne la case de présence et les heures (lot L8e). */
+.learning-table-enrolled.learning-table-enrolled-past {
+	grid-template-columns: minmax(10rem, 1.4fr) minmax(0, 1fr) auto;
+}
+
+.learning-table-enrolled.learning-table-enrolled-past.learning-table-enrolled-quiz {
+	grid-template-columns: minmax(10rem, 1.4fr) minmax(0, 1fr) minmax(max-content, 0.5fr) minmax(max-content, 1fr);
+}
+
+.learning-table-enrolled.learning-table-enrolled-attendance {
+	grid-template-columns: minmax(10rem, 1.4fr) minmax(0, 1fr) auto auto auto;
+}
+
+.learning-table-enrolled.learning-table-enrolled-attendance.learning-table-enrolled-quiz {
+	grid-template-columns: minmax(10rem, 1.4fr) minmax(0, 1fr) minmax(max-content, 0.5fr) minmax(max-content, 1fr) auto auto;
+}
+
+/* Une date finie d'une formation sans leçon rend la roue aux places pointées, qui y trouvent leur
+   attestation de présence (lot L8f) : la piste de 6rem revient. Sans leçon, pas de quiz. */
+.learning-table-enrolled.learning-table-enrolled-attendance.learning-table-enrolled-attestation {
+	grid-template-columns: minmax(10rem, 1.4fr) minmax(0, 1fr) auto auto auto 6rem;
+}
+
+/* Les fichiers de la feuille signée d'une date : le nom prend la place, le type, le jour du dépôt
+   et la roue suivent leur contenu. */
+.learning-table-sheet {
+	grid-template-columns: minmax(0, 1fr) auto auto auto;
+}
+
+/* Les dernières inscriptions du tableau de bord d'un réseau : la formation prend la place libre, le
+   jour de réception et les places suivent leur contenu. */
+.learning-table-last {
+	grid-template-columns: minmax(10rem, 1fr) minmax(0, 1.6fr) auto auto;
+}
+
+@media (max-width: 575px) {
+
+	/* Le nom et les places seuls : la formation et sa date passent sous le nom. */
+	.learning-table-last {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+
+	.learning-table-last > * > :is(:nth-child(2), :nth-child(3)) {
+		display: none;
+	}
+
+	.learning-table-enrolled {
+		grid-template-columns: minmax(0, 1fr) 5rem;
+	}
+
+	.learning-table-enrolled.learning-table-enrolled-quiz {
+		grid-template-columns: minmax(0, 1fr) minmax(7rem, auto) 5rem;
+	}
+
+	.learning-table-enrolled.learning-table-enrolled-past {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.learning-table-enrolled.learning-table-enrolled-past.learning-table-enrolled-quiz {
+		grid-template-columns: minmax(0, 1fr) minmax(7rem, auto);
+	}
+
+	.learning-table-enrolled.learning-table-enrolled-attendance {
+		grid-template-columns: minmax(0, 1fr) auto auto;
+	}
+
+	.learning-table-enrolled.learning-table-enrolled-attendance.learning-table-enrolled-quiz {
+		grid-template-columns: minmax(0, 1fr) minmax(7rem, auto) auto auto;
+	}
+
+	.learning-table-enrolled.learning-table-enrolled-attendance.learning-table-enrolled-attestation {
+		grid-template-columns: minmax(0, 1fr) auto auto 5rem;
+	}
+
+	/* Le nom et la roue seuls : le type se lit sur l'icône, le jour du dépôt n'aide pas à choisir. */
+	.learning-table-sheet {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+
+	.learning-table-sheet > * > :is(:nth-child(2), :nth-child(3)) {
+		display: none;
+	}
+
+	.learning-table-enrolled > .util-table-head > :is(:nth-child(2), :nth-child(3)),
+	.learning-table-enrolled > .util-table-row > :is(:nth-child(2), :nth-child(3)) {
+		display: none;
+	}
+
+	.learning-table-suivi-lesson-view-quiz {
+		grid-template-columns: minmax(0, 1fr) auto auto auto;
+	}
+
+	.learning-table-suivi-lesson-view-quiz > * > :nth-child(4) {
+		display: none;
+	}
+
+	.learning-table-fiche {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.learning-table-fiche .util-table-row > *:first-child {
+		padding-bottom: 0;
+	}
+
+	.learning-table-courses {
+		grid-template-columns: auto minmax(0, 1fr) auto auto;
+	}
+
+	.learning-table-community {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+	}
+
+	.learning-table-network,
+	.learning-table-network-requested,
+	.learning-table-network-dated,
+	.learning-table-network-dated-requested {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+	}
+
+	.learning-table-themes {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+	}
+
+	.learning-table-levels {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+
+	.learning-table-supervisors {
+		grid-template-columns: minmax(0, 1fr) auto auto auto;
+	}
+
+	.learning-table-question {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+	}
+
+	.learning-table-question > * > :nth-child(3),
+	.learning-table-question > * > :nth-child(4) {
+		display: none;
+	}
+
+	/* La ligne d'un choix passe sur deux rangs : la case et le libellé sur toute la largeur, puis
+	   l'image et la corbeille. La poignée disparaît, le tri se fait sur un écran plus large. */
+	.learning-table-choice {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+	}
+
+	.learning-table-choice > * > :first-child,
+	.learning-table-choice > .util-table-head > :nth-child(4) {
+		display: none;
+	}
+
+	.learning-table-choice > .util-table-row > :nth-child(2) {
+		grid-column: 1;
+		grid-row: 1;
+	}
+
+	.learning-table-choice > .util-table-row > :nth-child(3) {
+		grid-column: 2 / -1;
+		grid-row: 1;
+	}
+
+	.learning-table-choice > .util-table-row > :nth-child(4) {
+		grid-column: 2;
+		grid-row: 2;
+		justify-self: start;
+	}
+
+	.learning-table-choice > .util-table-row > :nth-child(5) {
+		grid-column: 3;
+		grid-row: 2;
+	}
+
+}
+
+/* La barre de l'écran d'une leçon : les deux déplacements aux extrémités. Le conteneur de gauche
+   reste dans le flux même vide, sur la première leçon du programme, pour que « Leçon suivante »
+   garde sa place à droite. */
+.learning-lesson-bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}
+
+.learning-lesson-bar > div {
+	display: flex;
+	gap: 0.5rem;
+}
+
+/* Le conteneur de droite est un flex : son bouton se pousse par l'axe principal, `text-end` n'ayant
+   aucune prise dessus. Sans cette règle il reste collé au milieu dès que la barre passe en grille. */
+.learning-lesson-bar-move:last-child {
+	justify-content: flex-end;
+}
+
+/* Sous 575 px les deux déplacements se partagent la ligne à parts égales, plutôt que de laisser le
+   second passer dessous, à gauche. */
+@media (max-width: 575px) {
+
+	.learning-lesson-bar {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+	}
+
+}
+
+/* La sortie d'une leçon (`lesson:leave`) ramène à la formation sur la leçon qu'on vient d'écrire,
+   « Commencer la formation » sur le quiz (`QuizUi::url()`), les étoiles de la fiche et la
+   notification d'un avis sur la section des avis (`ReviewUi::urlCourse()`) : l'en-tête collant
+   cacherait la ligne ou le titre visés. Un module du programme (`CourseUi::getProgram()`) est de
+   même la cible des liens `#module-{id}` de la FAQ sur la fiche. */
+.learning-table-program tr[id^="lesson-"],
+.learning-program-chapter,
+#learning-quiz,
+.learning-reviews {
+	scroll-margin-top: calc(var(--nav-base-height) + var(--space-md));
+}
+
+/* Le numéro d'un module ou d'une leçon a sa colonne, pour que les noms partagent leur bord gauche.
+   Sur la ligne d'un module, le gras de `tr.tr-title` revient au nom seul. */
+.learning-table-program .learning-program-number {
+	font-weight: normal;
+	font-variant-numeric: tabular-nums;
+	color: var(--muted);
+}
+
+/* Sur un écran étroit, le mot « Module » élargirait la colonne de toutes les lignes aux dépens des
+   noms : la colonne ne garde que les chiffres, et celui du module reprend le poids de sa ligne de
+   titre, seul moyen de le distinguer alors de ceux des leçons. */
+@media (max-width: 449px) {
+
+	.learning-table-program tr.tr-title > .learning-program-number {
+		font-weight: inherit;
+		color: inherit;
+	}
+
+}
+
+.learning-quiz {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.learning-quiz-question > h4 {
+	margin-bottom: 0.5rem;
+}
+
+.learning-quiz-question > h4 > .badge {
+	vertical-align: 0.1em;
+}
+
+.learning-quiz-question > .util-annotation {
+	margin-top: -0.25rem;
+	margin-bottom: 0.5rem;
+}
+
+/* « Poser ce quiz », dans le titre de la section du quiz de l'éditeur d'une leçon, reste un petit
+   bouton à côté de la marque « Pas posé » : au doigt, le ::before porte sa cible à --touch-target
+   sans rien changer à sa taille ni à la hauteur du titre (motif de `util-presentation-fill`). */
+@media (max-width: 575px) {
+
+	.learning-quiz-pose {
+		position: relative;
+	}
+
+	.learning-quiz-pose::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 0;
+		right: 0;
+		height: var(--touch-target);
+		transform: translateY(-50%);
+	}
+
+}
+
+.learning-quiz .learning-quiz-question img.learning-quiz-image {
+	display: block;
+	width: 100%;
+	max-width: 20rem;
+	height: auto;
+	border-radius: var(--radius);
+	margin-bottom: 0.75rem;
+}
+
+.learning-quiz .field-radio-group-item img.learning-quiz-choice-image,
+.learning-quiz .learning-quiz-reading img.learning-quiz-choice-image {
+	display: block;
+	width: 100%;
+	max-width: 12rem;
+	height: auto;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+	border-radius: var(--radius);
+}
+
+.learning-quiz .field-radio-group-item:has(> div > .learning-quiz-choice-image) {
+	align-items: start;
+}
+
+/* Des choix en images se lisent côte à côte, comme dans le formulaire, et une puce devant une
+   image ne distinguerait rien. */
+.learning-quiz-reading-images {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	padding-left: 0;
+	list-style: none;
+}
+
+/* La correction est du texte : la règle du cadriciel qui met en gras le choix `:checked` n'a plus
+   de champ où s'appliquer. */
+.learning-quiz-picked {
+	font-weight: bold;
+}
+
+.learning-quiz div.field-radio-group-item {
+	cursor: default;
+}
+
+.learning-quiz div.field-radio-group-item:hover {
+	background-color: transparent;
+}
+
+.learning-quiz-result {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+/* Le parcours d'inscription emprunte le composant onboarding dans un panneau : les 3 rem de marge
+   sous le parcours, faites pour une page, laisseraient un vide au-dessus du pied collant.
+   Il le fait sans `.onboarding-steps`, dont la bordure et la marge latérale sont celles d'une colonne
+   à côté d'un aperçu : l'espace que cette colonne met au-dessus de la barre et entre la barre et
+   l'étape se rend donc ici, aux valeurs de `onboarding.css`, le haut du `panel-body` en déduction. */
+.onboarding.learning-enrollment-steps {
+	margin-bottom: 0;
+	gap: 1.25rem;
+	padding-top: 1rem;
+}
+
+@media (max-width: 575px) {
+
+	.onboarding.learning-enrollment-steps {
+		padding-top: calc(1.25rem - var(--container-xs-padding));
+	}
+
+}
+
+/* La page publique des formations intégrée au site d'un réseau : ni navigation, ni pied, la page
+   hôte portant les siens. Le défilement vertical est celui de la page hôte, qui règle la hauteur de
+   l'iframe (`LearningPublic`) ; une barre dans l'iframe doublerait la sienne. */
+body[data-template~="learning-embed"] {
+	overflow-y: hidden;
+}
+
+body[data-template~="learning-embed"] > nav,
+body[data-template~="learning-embed"] > footer {
+	display: none;
+}
+
+/* Le thème du réseau se pose sur deux portées : `.learning-public`, le conteneur de la page du réseau,
+   de ses étapes et de ses leçons, et `.learning-doc`, le conteneur de la fiche, menu compris. Rien
+   sur `body`, dont la navigation et le pied gardent les couleurs du produit.
+
+   Les polices du réseau passent par des variables que `Customize.setFont()` réécrit sur la racine pour
+   montrer une police sans recharger : posées en dur, l'essai resterait sans effet. Elles redéfinissent
+   `--font-title` et `--font-text` sous la portée, que lisent les titres du socle et les composants.
+   Une variable ne peut pas se citer elle-même en repli : les polices du produit sont relevées sur la
+   portée, et redéfinies un étage plus bas. `font-size-adjust` s'hérite : les titres reprennent celui
+   de leur police, sinon ils garderaient celui calibré pour la police du texte. */
+.learning-public,
+.learning-doc {
+	--learning-font-title: var(--font-title);
+	--learning-font-text: var(--font-text);
+}
+
+.learning-public > *,
+.learning-doc > * {
+	--font-title: var(--customTitleFont, var(--learning-font-title));
+	--font-text: var(--customFont, var(--learning-font-text));
+	font-family: var(--font-text);
+	font-size-adjust: var(--customFontAdjust, none);
+}
+
+.learning-public :is(h1, h2, h3, h4),
+.learning-doc :is(h1, h2, h3, h4) {
+	font-size-adjust: var(--customTitleFontAdjust, none);
+}
+
+/* `root.css` écrit la police de `h1` et `h2` en dur, sans passer par `--font-title`. */
+.learning-public :is(h1, h2),
+.learning-doc :is(h1, h2) {
+	font-family: var(--font-title);
+}
+
+/* Sur la page du réseau, la portée descend jusqu'au pied en reprenant à son compte la marge basse
+   de `main` et la marge haute du pied, que le `<footer>` transparent laisse voir : la trame d'un
+   gabarit court ainsi d'un seul tenant, là où une bande débordante, unie, marquait la fin de la
+   portée. Le pied, peint après la portée, reste au-dessus d'elle. */
+.learning-public {
+	background-color: var(--learning-background);
+	margin-bottom: calc(-1 * (var(--main-margin-bottom) + var(--footer-margin-top)));
+	padding-bottom: calc(var(--main-margin-bottom) + var(--footer-margin-top));
+}
+
+/* Sur une page courte, `main` grandit dans le `body` en colonne pour pousser le pied en bas, et la
+   portée, en bloc, ne le suivrait pas : une `min-height: 100%` n'y fait rien, la hauteur de `body`
+   n'étant qu'un minimum. En colonne, `main` lui donne sa hauteur, trames et images comprises. Ses
+   autres enfants, feuilles et styles, ne s'affichent pas. */
+body[data-template~="learning-public"] > main {
+	display: flex;
+	flex-direction: column;
+}
+
+body[data-template~="learning-public"] > main > .learning-public {
+	flex-grow: 1;
+}
+
+/* Sur la fiche, le fond du conteneur court jusqu'au bord de l'écran sur trois côtés, à gauche, à
+   droite et en bas, à toutes les largeurs : `.container` est borné en largeur et centré, et le menu
+   en occupe la gauche. Le fond passe par une image de bordure débordante : elle ne compte ni dans
+   la mise en page ni dans le défilement et, à l'inverse d'un `clip-path`, ne rogne pas ce qui sort
+   du conteneur vers le haut, un menu déroulant ouvert vers le haut. Sans `fill`, elle ne peint que
+   la bande débordante et laisse voir les images que la signature d'un gabarit pose sur le
+   conteneur. Sans fond posé, la variable manque, le dégradé est invalide et rien n'est peint. */
+.learning-doc {
+	background-color: var(--learning-background);
+	border-image: conic-gradient(var(--learning-background) 0 0) 1 / 0 100vmax 100vmax / 0 100vmax 100vmax;
+}
+
+/* Le menu de la formation est dans la portée et prend le fond de la page : `template-doc.css` peint
+   en blanc la liste ouverte sous 768 px, qu'on laisse transparente. Un gabarit dont la trame
+   brouillerait les liens lui donne un aplat par `--learning-menu-background`. */
+.learning-doc #doc-menu-list {
+	background-color: var(--learning-menu-background, transparent);
+}
+
+/* Sous le thème d'un réseau, la bande de la leçon (`LessonUi::getBody()`) laisse voir le fond que la
+   portée peint, trame d'un gabarit comprise. La FAQ d'un réseau pose aussi une `util-band` sous la
+   portée : la règle se borne à la bande de la leçon. */
+.learning-public .learning-lesson {
+	--band-background: transparent;
+}
+
+/* Les blocs d'une leçon d'un réseau personnalisé s'écartent d'un cran de plus que dans le produit
+   (`read.css`, `.block-list`), quel que soit le gabarit : un gabarit habille des blocs, il ne règle
+   pas leur rythme. Deux volets voisins d'un accordéon gardent l'écart de
+   deux blocs. `DesignSentinel::testBlockGap()` tient la valeur et refuse qu'une feuille de gabarit
+   y touche. */
+.learning-public .learning-lesson .block-list {
+	gap: var(--space-lg);
+}
+
+.learning-public .learning-lesson .block-list .util-deck + .util-deck {
+	margin-top: var(--space-lg);
+}
+
+/* Une section d'une leçon (`read.css`, `.block-section`) court sur la teinte du gabarit, comme les
+   surfaces teintées des gabarits eux-mêmes, et en prend le gris : les textes atténués des blocs
+   qu'elle emporte, une légende ou une annotation, gardent leur contraste sur la teinte. */
+.learning-public[data-learning-design] .learning-lesson .block-section {
+	--section-background: var(--learning-tint);
+	--muted: var(--learning-tint-muted);
+}
+
+/* Ce que tous les gabarits posent à l'identique : l'encre du texte sur le bandeau de la liste, que
+   son titre et son surtitre reprennent au lieu des encres de la couleur du réseau
+   (`template-community.css`), et sur la tête d'un tableau et le titre d'un encadré. Un gabarit ne
+   redéclare pas ces valeurs : à spécificité égale, sa feuille se charge avant `learning.css` sur la
+   page du réseau et après sur la fiche, et l'écran changerait d'une page à l'autre. Ce qui varie
+   d'un gabarit à l'autre, comme l'onglet actif, reste dans sa feuille.
+   `DesignContrastSentinel` mesure chaque gabarit sous ces règles. */
+.learning-public[data-learning-design],
+.learning-doc[data-learning-design] {
+	--callout-title-color: var(--text);
+	--table-head-color: var(--text);
+}
+
+.learning-public[data-learning-design] .community-header {
+	color: var(--text);
+}
+
+/* Le surtitre reçoit son encre par le jeton de son composant, sur sa ligne et non plus haut, comme
+   dans `template-community.css` : `currentColor` ne se résout que sur le surtitre, qui reprend
+   ainsi l'encre du bandeau. */
+.learning-public[data-learning-design] .community-header .community-main-back {
+	--scope-line-title-ink: currentColor;
+}
+
+/* Sous la photo du réseau, le bandeau de la liste reprend l'encre claire : la photo et son voile
+   sombre (`template-community.css`) recouvrent le fond clair que le gabarit lui donne, et l'encre
+   sombre que la règle commune pose sur le bandeau, que son titre et son surtitre héritent, ne s'y
+   lirait plus. */
+.learning-public[data-learning-design] .community-header:has(.community-header-media) {
+	color: white;
+}
+
+/* Où la leçon se tient dans la formation (`LessonUi::getPosition()`) prend la teinte et l'encre de la
+   bande. Hors de la couleur d'un réseau, ni l'une ni l'autre n'est posée : la pastille reprend alors
+   les replis de la bande (`component.css`, `.util-page-hero`). */
+.badge.learning-lesson-position {
+	background-color: var(--page-hero-background, var(--color-bg-turquoise));
+	color: var(--page-hero-ink, var(--primary-on-light, var(--color-brand)));
+}
+
+/* Le titre de la carte mène aux étapes (`LearningVideoCard`), et l'instant d'une étape ramène à la
+   vidéo de la carte (`BlockVideo.jump()`) : l'une et l'autre arrivent sous la barre collée en haut de
+   la page, haute de `--nav-base-height` (`template-base.css`), et non dessous. */
+#learning-lesson-steps,
+.learning-lesson-video .block-video-frame {
+	scroll-margin-top: calc(var(--nav-base-height) + var(--space-md));
+}
+
+/* Le lecteur d'une leçon (`LessonUi::getReader()`) : les étapes à gauche, à droite la capture de
+   l'étape choisie (`LearningReader`) et ses flèches, collées au défilement pour que le geste reste en
+   vue pendant qu'on lit les étapes. Le script recopie la capture : tant qu'il n'a pas tourné
+   (`learning-reader-ready`), chaque étape garde la sienne sous son texte, comme sur une colonne. Les
+   étapes prennent la largeur de la maquette des tutoriels, de 18,75 à 24,375 rem, et la capture le
+   reste. La leçon est sous le gabarit « base », où la barre collée en haut est `#root-nav`, haute de
+   `--nav-base-height` (`template-base.css`) : la vue se colle sous elle, comme le plan de l'éditeur
+   (`block.css`).
+
+   Le fond d'une section déborde de sa colonne dans le retrait du document (`read.css`). Dans le
+   lecteur, la colonne des étapes part du bord de la carte vidéo posée au-dessus d'elle, et l'écart
+   entre les deux colonnes reste entier : la section reste dans sa colonne des deux côtés.
+
+   Sur une colonne, il n'y a plus de côté où poser la capture : la vue se retire, et chaque étape se
+   lit avec sa capture sous son texte. */
+@media (min-width: 992px) {
+
+	.learning-reader {
+		display: grid;
+		grid-template-columns: minmax(18.75rem, 24.375rem) minmax(0, 1fr);
+		gap: var(--space-xl);
+		align-items: start;
+	}
+
+	.learning-reader-text .block-list > .block-section {
+		margin-inline: 0;
+	}
+
+	.learning-reader-view {
+		position: sticky;
+		top: calc(var(--nav-base-height) + var(--space-md));
+	}
+
+	/* L'étape se choisit d'un clic, et se marque par un fond à la teinte de la bande. Deux étapes
+	   voisines se touchent : le fond reste dans la boîte de l'étape en hauteur, pour qu'une étape
+	   choisie et sa voisine survolée ne se recouvrent pas, et l'air au-dessus du titre est une
+	   bordure transparente, que le fond peint : un rembourrage décalerait le trait qui relie les
+	   pastilles, placé depuis le bord intérieur de l'étape (`util-procedure`). Cette bordure éloigne
+	   aussi la pastille suivante du bout du trait : le trait s'allonge d'autant (`--step-line-end`),
+	   pour garder au-dessus d'elle l'air qu'il laisse sous la sienne. Une liste posée dans une étape
+	   porte la même bordure, et le même réglage. Sur les côtés, le fond déborde par une ombre : un
+	   rembourrage y déplacerait les pastilles hors de l'alignement du texte qui précède la liste. Un
+	   critère d'une liste cochée ne se choisit pas (`LearningReader.getSteps()`). Les flèches
+	   remettent l'étape choisie en vue sous la barre collée. */
+	.learning-reader-text .util-procedure:not(.util-procedure-check) > .util-procedure-step {
+		--step-background: transparent;
+		--step-line-end: calc(var(--space-xxs) - var(--space-xs));
+		cursor: pointer;
+		scroll-margin-top: calc(var(--nav-base-height) + var(--space-md));
+		border-top: var(--space-xs) solid transparent;
+		border-radius: var(--radius);
+		background-color: var(--step-background);
+		box-shadow: calc(-1 * var(--space-xs)) 0 0 0 var(--step-background), var(--space-xs) 0 0 0 var(--step-background);
+	}
+
+	.learning-reader-text .util-procedure:not(.util-procedure-check) > .util-procedure-step:hover {
+		--step-background: var(--background-column-hover);
+	}
+
+	.learning-reader-text .util-procedure:not(.util-procedure-check) > .util-procedure-step.selected {
+		--step-background: var(--page-hero-background, var(--color-bg-turquoise));
+	}
+
+	.learning-reader-ready .learning-reader-text .block-step-media {
+		display: none;
+	}
+
+	.learning-reader-capture .block-step-media {
+		display: block;
+	}
+
+	/* La capture recopiée sort de la liste des blocs, dont `read.css` borne la règle de la capture
+	   d'une étape : elle la reprend ici, marges comprises. */
+	.learning-reader-capture .block-step-media > img:not(.asset-icon) {
+		display: block;
+		width: 100%;
+		height: auto;
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		margin-top: 0;
+		margin-bottom: 0;
+	}
+
+}
+
+@media (max-width: 991px) {
+
+	.learning-reader-view {
+		display: none;
+	}
+
+}
+
+/* À l'impression, le décor d'un gabarit (fond, trames, ombres, filtres) coûte de l'encre sans rien
+   dire : seuls restent la police et la couleur. Les signatures des gabarits posent ce décor sous des
+   sélecteurs plus forts que n'importe quelle règle commune à tous, d'où `!important`, qui reste
+   borné à l'impression. */
+@media print {
+
+	.learning-public,
+	.learning-doc,
+	.learning-public *,
+	.learning-doc *,
+	.learning-public *::before,
+	.learning-doc *::before,
+	.learning-public *::after,
+	.learning-doc *::after {
+		border-image: none !important;
+		background-image: none !important;
+		box-shadow: none !important;
+		text-shadow: none !important;
+		filter: none !important;
+	}
+
+}
+
+/* La couleur d'une pastille de la barre vient de la donnée : elle voyage par une variable posée sur la
+   pastille, que `Customize.showDefaults()` remplace par la couleur de la page quand rien n'est choisi. */
+.learning-customize-swatch {
+	background-color: var(--learning-swatch);
+}
+
+/* `onboarding-panel-plain` se centre par `margin-inline: auto` dans `.onboarding`, une colonne flex :
+   la marge automatique annule l'étirement, et le panneau prend la largeur de son contenu. Les trois
+   étapes changeraient donc de largeur de l'une à l'autre ; le panneau prend toute la place que sa
+   borne de 60 rem lui laisse. */
+.learning-public-steps > .onboarding-panel-plain {
+	width: 100%;
+}
+
+/* Les noms des étapes faites mènent à leur étape par `data-href`, que le cadriciel ne signale pas
+   au pointeur puisqu'il vaut sur n'importe quel élément. */
+.learning-public-steps .onboarding-progress-names > span[data-href] {
+	cursor: pointer;
+}
+
+/* L'adresse et le code de la page publique, dans le panneau des réglages : une seule chaîne sans
+   espace, qui déborderait du champ sans point de coupure. */
+.learning-copy-box {
+	overflow-wrap: anywhere;
+}
+
+/* Le lien de la visio dans la carte d'une date de l'éditeur : même adresse sans point de césure,
+   posée dans une bande en flex, dont elle fixerait la largeur minimale et sortirait à 360 px. */
+.learning-date-link {
+	overflow-wrap: anywhere;
+}
+
+/* Les séances d'une date (lot date-mixte) : le champ des horaires porte deux heures et leur « à »,
+   et les 11 rem des champs de ligne du parcours le coupaient en deux. Seul sur son rang sous 575 px. */
+.learning-date-sequences .onboarding-row-details > .onboarding-field:first-child {
+	min-width: 14rem;
+}
+
+@media (max-width: 575px) {
+	.learning-date-sequences .onboarding-row-details > .onboarding-field:first-child {
+		min-width: 100%;
+	}
+}

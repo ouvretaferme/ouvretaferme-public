@@ -1,0 +1,120 @@
+Contact:
+  id: serial32
+  website: website\Website
+  structure: structure\Structure
+  name: text8(1, null)
+  email: email
+  title: text8(1, null)
+  content: text16(1, null)
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["structure", "website"]
+  ]
+
+Design:
+  id: serial32
+  fqn: fqn
+  name: text8(1, null)
+  free: bool = FALSE
+
+Menu:
+  id: serial32
+  website: website\Website
+  structure: structure\Structure
+  url: ?url
+  webpage: ?website\Webpage
+  parent: ?website\Menu
+  label: text8(1, 50)
+  position: ?int32(0, null)
+  status: enum(ACTIVE, INACTIVE)
+  INDEX: [
+    ["website"]
+  ]
+  UNIQUE: [
+    ["webpage"]
+  ]
+
+News:
+  id: serial32
+  website: website\Website
+  structure: structure\Structure
+  title: text8(1, null)
+  content: editor24(1, null)
+  status: enum(DRAFT, READY) = DRAFT
+  createdAt: datetime = SPECIAL(now)
+  publishedAt: datetime
+  INDEX: [
+    ["website"]
+  ]
+
+Template:
+  id: serial32
+  fqn: fqn
+  name: text8(1, null)
+  description: text8(1, null)
+  defaultUrl: ?text8(0, null)
+  defaultLabel: ?text8(1, null)
+  defaultTitle: text8(1, null)
+  defaultDescription: ?text8(1, 200)
+  defaultContent: ?editor24
+  autocreate: bool = FALSE
+  structureType: ?enum(PRODUCER, SHOP, AMAP, COMMUNITY)
+  position: ?int8(1, null)
+  INDEX: [
+    ["structureType"]
+  ]
+  UNIQUE: [
+    ["fqn"]
+  ]
+
+Webpage:
+  id: serial32
+  title: text8(1, null)
+  website: website\Website
+  structure: structure\Structure
+  template: website\Template
+  banner: ?textFixed(30, 30) @charset(ascii)
+  url: text8(0, 50)
+  description: ?text8(1, 200)
+  content: ?editor24
+  public: bool = TRUE
+  createdAt: datetime = SPECIAL(now)
+  status: enum(ACTIVE, INACTIVE) = INACTIVE
+  INDEX: [
+    ["website"]
+  ]
+  UNIQUE: [
+    ["website", "url"]
+  ]
+
+Website:
+  id: serial32
+  structure: structure\Structure
+  internalDomain: text8(1, null)
+  domain: ?text8(1, null)
+  domainStatus: ?enum(PENDING, CONFIGURED_UNSECURED, PINGED_UNSECURED, FAILURE_UNSECURED, CERTIFICATE_CREATED, FAILURE_CERTIFICATE_CREATED, CONFIGURED_SECURED, PINGED_SECURED, FAILURE_SECURED)
+  domainTry: int16(0, null) = 0
+  logo: ?textFixed(30, 30) @charset(ascii)
+  favicon: ?textFixed(30, 30) @charset(ascii)
+  banner: ?textFixed(30, 30) @charset(ascii)
+  name: text8(1, 40)
+  footer: ?editor24
+  description: ?text8(1, 200)
+  customDesign: website\Design = PHP(\website\WebsiteSetting::DESIGN_DEFAULT_ID)
+  customDesignPosition: enum(LEFT, TOP) = TOP
+  customText: enum(BLACK, WHITE) = BLACK
+  customColor: color = PHP(\website\WebsiteSetting::COLOR_DEFAULT)
+  customLinkColor: ?color
+  customBackground: color = PHP("#f0f2f4")
+  customDisabledFooter: bool = FALSE
+  customTitleFont: text8 = PHP("'PT Serif', serif")
+  customFont: text8 = PHP("'PT Serif', serif")
+  customWidth: int(800, null) = 1000
+  createdAt: datetime = SPECIAL(now)
+  status: enum(ACTIVE, INACTIVE) = ACTIVE
+  UNIQUE: [
+    ["structure"],
+    ["internalDomain"],
+    ["domain"]
+  ]
+

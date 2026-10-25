@@ -1,0 +1,556 @@
+{
+	"Immortelles": [
+		"immortelle",
+		"repli de famille"
+	],
+	"Soucis": [
+		"calendula",
+		"même espèce"
+	],
+	"Rudbekia annuelle": [
+		"rudbeckia",
+		"même espèce"
+	],
+	"Nigelle de damas": [
+		"nigelle",
+		"repli de famille"
+	],
+	"Reine marguerite": [
+		"reine-marguerite",
+		"repli de famille"
+	],
+	"Pied d'alouette": [
+		"delphinium",
+		"même espèce"
+	],
+	"Marguerite des prés": [
+		"marguerite",
+		"même espèce"
+	],
+	"Campanule bisannuelle": [
+		"campanule",
+		"même espèce"
+	],
+	"centaurée annuel": [
+		"bleuet",
+		"même espèce"
+	],
+	"Matricaire": [
+		"camomille",
+		"même espèce"
+	],
+	"Chou": [
+		"chou-blanc",
+		"même espèce"
+	],
+	"Cynara": [
+		"cardon",
+		"même espèce"
+	],
+	"Atriplex": [
+		"arroche",
+		"repli de famille"
+	],
+	"Limonium": [
+		"statice",
+		"repli de famille"
+	],
+	"Centaurée vivace": [
+		"bleuet",
+		"proche"
+	],
+	"Catananche": [
+		"bleuet",
+		"proche"
+	],
+	"Eryngium": [
+		"bleuet",
+		"proche"
+	],
+	"Echinops": [
+		"bleuet",
+		"proche"
+	],
+	"Agératum": [
+		"bleuet",
+		"proche"
+	],
+	"Sauge": [
+		"sauge",
+		"proche"
+	],
+	"Veronica": [
+		"lavande",
+		"proche"
+	],
+	"Daucus carota": [
+		"aneth",
+		"proche",
+		{
+			"color": "#eadfe2"
+		}
+	],
+	"Ammi majus": [
+		"ammi",
+		"même espèce"
+	],
+	"Orlaya": [
+		"aneth",
+		"proche",
+		{
+			"color": "#f4f1e4"
+		}
+	],
+	"Bupleurum rotundifolium": [
+		"aneth",
+		"proche"
+	],
+	"Pyrethre": [
+		"camomille",
+		"proche"
+	],
+	"Tanacetum": [
+		"camomille",
+		"proche"
+	],
+	"Gypsophile": [
+		"camomille",
+		"proche"
+	],
+	"Ammobium": [
+		"camomille",
+		"proche"
+	],
+	"Anthémis des teinturier": [
+		"rudbeckia",
+		"proche"
+	],
+	"Gaillarde": [
+		"rudbeckia",
+		"proche"
+	],
+	"Helenium": [
+		"rudbeckia",
+		"proche"
+	],
+	"Lonas": [
+		"rudbeckia",
+		"proche"
+	],
+	"Craspedia": [
+		"rudbeckia",
+		"proche"
+	],
+	"Rose d'inde": [
+		"tagete",
+		"même espèce"
+	],
+	"Carthamus": [
+		"calendula",
+		"proche"
+	],
+	"Asclepias": [
+		"calendula",
+		"proche"
+	],
+	"soleil maximilien": [
+		"topinambour",
+		"proche"
+	],
+	"Echinacée": [
+		"zinnia",
+		"proche"
+	],
+	"Dianthus vivace": [
+		"zinnia",
+		"proche"
+	],
+	"Dianthus bisannuelle": [
+		"zinnia",
+		"proche"
+	],
+	"Dianthus annuel": [
+		"zinnia",
+		"proche"
+	],
+	"Phlox annuel": [
+		"phlox",
+		"même espèce"
+	],
+	"Acroclinium": [
+		"zinnia",
+		"proche"
+	],
+	"Glaïeul": [
+		"digitale",
+		"proche"
+	],
+	"Tabac d'ornement": [
+		"digitale",
+		"proche",
+		{
+			"color": "#f3f0e2",
+			"accent": "#cfd9a0"
+		}
+	],
+	"Molucelle": [
+		"digitale",
+		"proche",
+		{
+			"color": "#8fc45a",
+			"accent": "#6fa046"
+		}
+	],
+	"Giroflée": [
+		"lupin",
+		"proche"
+	],
+	"Lunaria bisannuelle": [
+		"lupin",
+		"proche"
+	],
+	"Hesperis": [
+		"lupin",
+		"proche"
+	],
+	"Lys": [
+		"tulipe",
+		"proche"
+	],
+	"Alstroemère": [
+		"tulipe",
+		"proche"
+	],
+	"viola cornuta": [
+		"campanule",
+		"proche"
+	],
+	"Heuchère": [
+		"campanule",
+		"proche"
+	],
+	"Aquilegia cultivé en bisannuelle": [
+		"ancolie",
+		"même espèce"
+	],
+	"Trèfle ornemental": [
+		"celosie",
+		"proche"
+	],
+	"Trachelium": [
+		"scabieuse",
+		"proche",
+		{
+			"color": "#6f4fb0"
+		}
+	],
+	"Gomphrena": [
+		"scabieuse",
+		"proche"
+	],
+	"Talinum": [
+		"sarrasin",
+		"proche"
+	],
+	"Sétaria": [
+		"avoine",
+		"proche"
+	],
+	"Phalaris": [
+		"avoine",
+		"proche"
+	],
+	"Panicum": [
+		"avoine",
+		"proche"
+	],
+	"Mélinis": [
+		"avoine",
+		"proche"
+	],
+	"Chasmanthium": [
+		"avoine",
+		"proche"
+	],
+	"Polypogon": [
+		"orge",
+		"proche"
+	],
+	"Pennisetum": [
+		"orge",
+		"proche"
+	],
+	"Lagurus": [
+		"orge",
+		"proche"
+	],
+	"Miscanthus": [
+		"seigle",
+		"proche"
+	],
+	"Silène vivace": [
+		"cosmos",
+		"proche"
+	],
+	"Nielle des blés": [
+		"cosmos",
+		"proche"
+	],
+	"Silver lace": [
+		"sauge",
+		"proche"
+	],
+	"Cinéraire maritime": [
+		"sauge",
+		"proche"
+	],
+	"Euphorbe annuel": [
+		"sauge",
+		"proche"
+	],
+	"Salpiglossis": [
+		"anemone",
+		"proche"
+	],
+	"Pavot annuel": [
+		"coquelicot",
+		"proche"
+	],
+	"Godetia": [
+		"coquelicot",
+		"proche",
+		{
+			"color": "#ea7fa8"
+		}
+	],
+	"Myosotis": [
+		"bourrache",
+		"proche"
+	],
+	"Cerinthe": [
+		"bourrache",
+		"proche"
+	],
+	"Mauve": [
+		"hibiscus",
+		"proche",
+		{
+			"accent": "#e58fb5"
+		}
+	],
+	"Malope": [
+		"hibiscus",
+		"proche",
+		{
+			"accent": "#d0408a"
+		}
+	],
+	"Léonotis": [
+		"amarante",
+		"proche",
+		{
+			"color": "#f08a1c",
+			"accent": "#d8701a"
+		}
+	],
+	"Lepidium": [
+		"moutarde",
+		"proche",
+		{
+			"color": "#a8c46a"
+		}
+	],
+	"Crocosmia": [
+		"narcisse",
+		"proche",
+		{
+			"color": "#f0702a",
+			"accent": "#e04a1a"
+		}
+	],
+	"Arum d'Etiopie": [
+		"narcisse",
+		"proche",
+		{
+			"color": "#f6f3e6"
+		}
+	],
+	"Arum / Calla": [
+		"narcisse",
+		"proche",
+		{
+			"color": "#f6f3e6"
+		}
+	],
+	"Agapanthe": [
+		"ciboulette",
+		"proche",
+		{
+			"color": "#5f7fe0"
+		}
+	],
+	"Figuier": [
+		"figue",
+		"même espèce"
+	],
+	"Aillet": [
+		"ail",
+		"même espèce"
+	],
+	"Nashi": [
+		"poire",
+		"proche"
+	],
+	"Grenadier": [
+		"pomme",
+		"proche"
+	],
+	"Œillet de poète": [
+		"zinnia",
+		"proche"
+	],
+	"tomate cerise": [
+		"tomate",
+		"même espèce"
+	],
+	"chou chinois": [
+		"chou-pe-tsai",
+		"même espèce"
+	],
+	"salade": [
+		"laitue",
+		"proche"
+	],
+	"potimarron": [
+		"courge",
+		"même espèce"
+	],
+	"butternut": [
+		"courge",
+		"proche"
+	],
+	"oignon botte": [
+		"oignon",
+		"même espèce"
+	],
+	"chou pommé": [
+		"chou-blanc",
+		"même espèce"
+	],
+	"oignon blanc": [
+		"oignon",
+		"même espèce"
+	],
+	"sucrine": [
+		"laitue",
+		"même espèce"
+	],
+	"tomate ancienne": [
+		"tomate",
+		"même espèce"
+	],
+	"chou de pontoise": [
+		"chou-de-milan",
+		"même espèce"
+	],
+	"cebette": [
+		"oignon",
+		"proche"
+	],
+	"cébette": [
+		"oignon",
+		"proche"
+	],
+	"petit pois": [
+		"pois",
+		"même espèce"
+	],
+	"oignon rouge": [
+		"oignon",
+		"même espèce"
+	],
+	"achillée millefeuille": [
+		"achillee",
+		"même espèce"
+	],
+	"shiso": [
+		"perilla",
+		"même espèce"
+	],
+	"tagete": [
+		"tagete",
+		"même espèce"
+	],
+	"oeillet d'inde": [
+		"tagete",
+		"même espèce"
+	],
+	"œillet d'inde": [
+		"tagete",
+		"même espèce"
+	],
+	"Bâche d'ensilage": [
+		null,
+		"rien"
+	],
+	"Pavot de Californie (Eschscholtzia californica), fam. Papaveracées": [
+		"pavot-californie",
+		"même espèce"
+	],
+	"Eschscholzia": [
+		"pavot-californie",
+		"même espèce"
+	],
+	"Pavot de calif": [
+		"pavot-californie",
+		"même espèce"
+	],
+	"Pavot californien": [
+		"pavot-californie",
+		"même espèce"
+	],
+	"Chicorée": [
+		"chicoree-scarole",
+		"proche"
+	],
+	"Chicoree": [
+		"chicoree-scarole",
+		"proche"
+	],
+	"Chicorée pain de sucre": [
+		"chou-pe-tsai",
+		"proche"
+	],
+	"Pain de sucre": [
+		"chou-pe-tsai",
+		"proche"
+	],
+	"Chicoree pain de sucre": [
+		"chou-pe-tsai",
+		"proche"
+	],
+	"Chicoreepain de sucre": [
+		"chou-pe-tsai",
+		"proche"
+	],
+	"Chicoré pain de sucre": [
+		"chou-pe-tsai",
+		"proche"
+	],
+	"Chicorée pain sucre": [
+		"chou-pe-tsai",
+		"proche"
+	],
+	"Chicorée sucrine pain de sucre": [
+		"chou-pe-tsai",
+		"proche"
+	],
+	"Salade pain de sucre": [
+		"chou-pe-tsai",
+		"proche"
+	],
+	"Eschscholtzia": [
+		"pavot-californie",
+		"même espèce"
+	]
+}

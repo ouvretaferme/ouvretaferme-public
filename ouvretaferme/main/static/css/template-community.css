@@ -1,0 +1,346 @@
+.community-header {
+	position: relative;
+	padding: 3rem 0 0 0;
+	background-color: var(--community);
+	color: var(--community-ink);
+	margin-bottom: 2rem;
+}
+
+.community-header-media {
+	position: absolute;
+	inset: 0;
+	background-size: cover;
+	background-position: center;
+}
+
+/* Les trois valeurs sont mesurées sur un rendu réel, pas calculées : le pire cas est une photo
+   blanche, et c'est le surtitre qui décide — il vit en haut, là où le dégradé ne pèse presque
+   rien. Avec l'ombre portée, 0,37 est le minimum qui franchit 4,5:1 ; 0,30 n'en donne que 3,90.
+   Le dégradé reste faible exprès : le voile uniforme qui garantirait le texte sans ombre
+   demanderait 0,59 et effacerait la photo aux deux tiers, ce que le choix du dégradé refusait. */
+.community-header-media:after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background-image: linear-gradient(
+		to bottom,
+		rgba(23, 23, 23, 0.37) 0%,
+		rgba(23, 23, 23, 0.5) 45%,
+		rgba(23, 23, 23, 0.88) 100%
+	);
+}
+
+.community-header > .container {
+	position: relative;
+}
+
+/* La barre de portée prolonge le bandeau, mais elle ne s'habille pas comme lui : **claire sans
+   image**, sombre sur sombre ne tenait pas — un `#2b2b2b` sous un `#373737` rend une bande
+   fantôme, et la trace de 5 px à 12 % de blanc que chaque onglet pose en `bottom: 0` s'y détachait
+   en pastille flottante, alors qu'elle est dessinée pour se lire contre le blanc de la page.
+
+   Avec une photo, rien : la barre **est** de la photo, et c'est le seul cas où elle allonge
+   vraiment le bandeau. Un aplat ou un filet y couperaient l'image d'un trait horizontal à quarante
+   pixels du bas, ce qui annulerait exactement le gain cherché.
+
+   Le voile du dégradé n'a pas eu à bouger : mesuré sur le rendu, le libellé de portée occupe 87 à
+   96 % de la hauteur de l'en-tête, où le dégradé vaut 0,79 à 0,85. Sur le pire cas possible, une
+   photo entièrement blanche, le blanc du libellé y garde 9,2:1 en haut et 11,5:1 en bas — le seuil
+   de 4,5:1 est franchi deux fois. C'est le surtitre du haut, à 0,37, qui reste le cas serré, et
+   lui n'a pas changé de place. */
+.community-header-scope {
+	position: relative;
+	background-color: white;
+	border-bottom: 1px solid #e5e5e5;
+	padding: 0.625rem 0;
+}
+
+.community-header:has(.community-header-media) .community-header-scope {
+	background-color: transparent;
+	border-bottom: 0;
+}
+
+/* Le titre de la ligne de portée garde sa couleur de marque sur la barre claire, et ne passe au
+   blanc que sur la photo. La classe ne bouge pas, c'est le contexte qui décide.
+   ⚠️ Sur la photo, le blanc reste un blanc et non l'encre du groupe : ce qui est derrière est le
+   dégradé de l'image, pas la couleur choisie.
+   ⚠️ La règle se borne à la barre : le surtitre du bandeau porte le même composant, et il garde
+   l'encre du bandeau, avec l'ombre qui le tient sur la photo. */
+.community-header:has(.community-header-media) .community-header-scope .util-scope-line-title {
+	color: white;
+}
+
+
+/* La rangée porte les onglets à gauche et les commandes à droite, sur la même ligne de base. Le
+   défilement horizontal reste sur les seuls onglets : posé sur la rangée entière, il emporterait
+   les commandes hors de l'écran. */
+.community-header-tabs {
+	margin-top: 1rem;
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.community-tabs-row {
+	min-width: 0;
+	overflow-x: auto;
+}
+
+/* Le soulignement de l'onglet actif ferme le bandeau : il doit toucher son bord, sinon la bande
+   sombre continue sur 1,5 rem de vide sous les onglets.
+
+   ⚠️ `tabs-item-sticked` est censée annuler cette marge, et elle le fait — mais **seulement sous
+   992 px** : `component.css:3316` la déclare dans le bloc `max-width: 991px`, et le bloc
+   `min-width: 992px` repose `margin-bottom: 1.5rem` sur `:not(div.tabs-v) div.tabs-item` sans
+   son pendant. Les sept écrans qui emploient la classe portent donc la marge sur grand écran.
+   Le sélecteur du cadriciel pèse (0,2,2), d'où les trois classes ici, qui font (0,3,1). */
+.community-header-tabs div.tabs-item.tabs-item-sticked {
+	margin-bottom: 0;
+}
+
+/* La marge les garde à droite quand la rangée n'a pas d'onglet, comme chez l'adhérent d'une AMAP. */
+.community-header-tabs-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding-bottom: var(--space-xs);
+	flex: 0 0 auto;
+	margin-left: auto;
+}
+
+/* La rangée repliée en menu : rendue toujours, montrée sous 768 px seulement. Le menu est une
+   commande comme celles de droite, et la rangée s'aligne par le bas : il prend le même retrait
+   qu'elles, sans quoi il se pose plus bas sur la ligne. */
+.community-tabs-menu {
+	display: none;
+	padding-bottom: var(--space-xs);
+}
+
+/* Les onglets inactifs à l'encre pleine, et l'onglet choisi reconnu à son seul soulignement : une
+   encre atténuée passe sous 4,5:1 sur toute couleur de luminance comprise entre 0,091 et 0,529, quelle
+   que soit l'encre, alors que la pleine tient sur toute couleur que `Community::color` accepte.
+   L'état choisi et le survol sont nommés : la couleur de `.tab-item.selected` du composant les
+   battrait sinon. */
+.community-header-tabs .tab-item,
+.community-header-tabs .tab-item:hover,
+.community-header-tabs .tab-item.selected {
+	color: var(--community-ink);
+}
+
+/* Au repos, l'onglet ne porte pas le trait pâle du composant : posé au bord de l'aplat, sous chaque
+   libellé, il dessine une ligne de tirets à la limite du bandeau, et le trait de l'onglet choisi n'y
+   est plus le seul à dire où l'on est. */
+.community-header-tabs .tab-item:after {
+	background-color: transparent;
+}
+
+.community-header-tabs .tab-item:hover:after,
+.community-header-tabs .tab-item.selected:after {
+	background-color: var(--community-ink);
+}
+
+/* La pastille claire de l'onglet ouvert, de la teinte de la bande claire qui suit (N1) : celle des
+   groupes, ou celle des réseaux et des AMAP, que leur bandeau déclare. Trois classes dans chaque
+   sélecteur, le choisi et le survol étant nommés plus haut en (0,3,0). */
+.community-header-network {
+	--page-hero-background: var(--network-background);
+}
+
+.community-header-amap {
+	--page-hero-background: var(--amap-background);
+}
+
+.community-header-tabs.community-tabs-pill .tab-item {
+	padding: var(--space-xs) var(--space-sm);
+	border-radius: 2rem;
+}
+
+.community-header-tabs.community-tabs-pill .tab-item:after {
+	display: none;
+}
+
+.community-header-tabs.community-tabs-pill div.tabs-item.tabs-item-sticked {
+	gap: var(--space-xxs);
+}
+
+/* Sans soulignement à poser contre le bord, rien ne retient les pastilles en bas : la rangée centre
+   onglets, menu et commandes sur un même axe et porte seule l'espace qui la sépare du bord. Aligner
+   par le bas des éléments de hauteurs différentes décale leurs milieux. */
+.community-header-tabs.community-tabs-pill {
+	align-items: center;
+	padding-bottom: var(--space-sm);
+}
+
+.community-header-tabs.community-tabs-pill .community-header-tabs-actions,
+.community-header-tabs.community-tabs-pill .community-tabs-menu {
+	padding-bottom: 0;
+}
+
+.community-header-tabs.community-tabs-pill .tab-item:hover {
+	background-color: color-mix(in srgb, var(--community-ink) 14%, transparent);
+}
+
+.community-header-tabs.community-tabs-pill .tab-item.selected {
+	background-color: var(--page-hero-background, var(--color-bg-turquoise));
+	color: var(--color-encre);
+}
+
+/* Sous 768 px, la rangée devient le menu ≡, qui prend la forme de l'onglet choisi. */
+.community-header-tabs.community-tabs-pill .community-tabs-menu .btn {
+	background-color: var(--page-hero-background, var(--color-bg-turquoise));
+	border-color: var(--page-hero-background, var(--color-bg-turquoise));
+	color: var(--color-encre);
+}
+
+/* La bande claire de l'écran prolonge le bandeau, sans la marge qui les séparait. */
+.community-header:has(+ .community-masthead),
+.community-header:has(+ .tabs > .community-masthead:first-child) {
+	margin-bottom: 0;
+}
+
+.community-header-inner {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	column-gap: 1rem;
+	align-items: end;
+}
+
+/* La ligne du surtitre donne au surtitre (`util-scope-line-title-sm`) l'encre du bandeau, opaque et
+   non translucide : posé sur une photo, un texte semi-transparent se compose avec elle, donc
+   assombrir le fond l'assombrit avec, et renforcer le voile ne le sauvait pas. Sa hiérarchie tient à
+   sa taille, ses capitales et son interlettrage, pas à sa transparence.
+   ⚠️ L'encre se déclare sur la ligne du surtitre, pas sur le bandeau : la ligne de portée, plus bas
+   dans le bandeau, porte le même composant et en hériterait. */
+.community-header .community-main-back {
+	grid-column: 1;
+	grid-row: 1;
+	margin-bottom: 0.5rem;
+	min-height: 1.4em;
+	--scope-line-title-ink: var(--community-ink);
+}
+
+.community-header .community-main-actions {
+	grid-column: 2;
+	grid-row: 1 / 3;
+	align-self: center;
+}
+
+body[data-template~="base"] .community-header h1 {
+	grid-column: 1;
+	grid-row: 2;
+	font-size: var(--h1-size);
+	text-transform: uppercase;
+	margin-bottom: 0;
+	overflow-wrap: anywhere;
+}
+
+/* L'ombre est le seul réglage qui gagne du contraste sans coûter la photo ; `text-shadow` a quatre
+   précédents dans le dépôt, tous sur du texte posé sur une image. Sur l'aplat, l'encre peut être
+   sombre, et l'ombre y bave en halo noir. */
+.community-header:has(.community-header-media) .util-scope-line-title-sm {
+	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+/* La variante de la page de saisie publique d'un réseau : sans onglets, le bandeau n'a plus de
+   talon, et c'est son rembourrage qui le ferme à la place de la marge qu'il réservait pour eux. */
+.community-header.is-public {
+	padding-bottom: 2.5rem;
+	margin-bottom: 0;
+}
+
+.community-wrapper {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	margin-top: 1.5rem;
+}
+
+.community-main {
+	min-width: 0;
+}
+
+.community-main-back {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 0.75rem;
+	min-width: 0;
+}
+
+.community-main-back > a {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.community-main-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+/* La carte d'un membre, sur la page des membres. Elle vient du rail, qui la partageait ; il est
+   parti, elle reste où elle est employée. */
+.community-member {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	align-items: start;
+	gap: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.community-member-name {
+	min-width: 0;
+	line-height: 1.25;
+}
+
+.community-member-structures {
+	line-height: 1.35;
+}
+
+.community-member-structures > div {
+	overflow-wrap: anywhere;
+}
+
+@media (max-width: 767px) {
+
+	/* Sous 768 px la rangée devient un menu : le bouton porte le nom de l'écran ouvert, la liste
+	   porte les mêmes liens. */
+	.community-tabs-row {
+		display: none;
+	}
+
+	.community-tabs-menu {
+		display: block;
+	}
+
+	.community-header-inner {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.community-header .community-main-actions {
+		grid-column: 1;
+		grid-row: 3;
+		justify-content: flex-end;
+		margin-top: 0.75rem;
+	}
+
+}
+
+.community-main > .util-page-band {
+	margin-bottom: var(--space-lg);
+}
+
+/* Le rôle qualifie le nom, les fermes en sont une liste : même atténuation, graisses
+   différentes, sinon les deux lignes se lisent comme une seule énumération. */
+.community-member-role {
+	font-weight: 600;
+}
+
+.community-members-section + .community-members-section {
+	margin-top: 2rem;
+}
+
+/* Un gabarit peint le fond de sa portée : la bande du corps le laisse voir. */
+.learning-public[data-learning-design] .util-band {
+	--band-background: transparent;
+}

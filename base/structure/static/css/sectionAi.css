@@ -1,0 +1,40 @@
+.section-create {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}
+
+.section-create > *:first-child {
+	flex: 0 1 20rem;
+	min-width: 0;
+}
+
+.section-line-name {
+	overflow-wrap: anywhere;
+}
+
+.section-line-actions {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.5rem;
+}
+
+.section-compose-member {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 0.25rem 1rem;
+	overflow-wrap: anywhere;
+}
+
+.section-list tbody + tbody > tr:first-child > * {
+	border-top: 1px solid var(--border);
+}
+
+.section-list tr.color-muted a {
+	color: inherit;
+}

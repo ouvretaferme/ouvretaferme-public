@@ -1,0 +1,23 @@
+/* Le carnet d'entretien d'un matériel en PDF : quatre colonnes au plus, le document reste en
+   portrait. Le bas de page n'est pas posé, `pdf.js` le règle dès qu'un gabarit de pied porte la
+   pagination (même raison que `pdf.css` de l'outil). Le tableau est celui de `pdfTable.css`. */
+@page {
+	margin-top: 1cm;
+	margin-left: 1cm;
+	margin-right: 1cm;
+}
+
+table.toolbox-pdf-maintenances th:nth-child(1) { width: 34%; }
+table.toolbox-pdf-maintenances th:nth-child(2) { width: 26%; }
+table.toolbox-pdf-maintenances th:nth-child(3) { width: 26%; }
+table.toolbox-pdf-maintenances th:nth-child(4) { width: 14%; }
+
+/* La date, le compteur et le coût prennent la largeur de leur plus longue valeur, l'entretien et sa
+   note le reste. Sans compteur, la colonne manque et l'entretien s'élargit d'autant. */
+table.toolbox-pdf-history th:nth-child(1) { width: 14%; }
+table.toolbox-pdf-history th.text-end { width: 15%; }
+
+/* Un document imprimé en noir ne porte pas le rouge de l'écran : le retard s'y dit par la graisse. */
+td.toolbox-pdf-overdue {
+	font-weight: 600;
+}

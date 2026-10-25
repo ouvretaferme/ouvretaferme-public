@@ -1,0 +1,329 @@
+<?php
+namespace website;
+
+class DomainLib {
+
+	public static function buildRewrites(): void {
+
+		$cWebsite = Website::model()
+			->select('id', 'domain', 'domainStatus')
+			->whereDomainStatus('IN', [Website::PENDING, Website::CERTIFICATE_CREATED])
+			->getCollection();
+
+		foreach($cWebsite as $eWebsite) {
+
+			$domain = self::getDomain($eWebsite);
+
+			$file = self::getRewriteFile($eWebsite);
+
+			if(is_file($file)) {
+				unlink($file);
+			}
+
+			$content = self::getRewriteContent($domain, match($eWebsite['domainStatus']) {
+				Website::PENDING => FALSE,
+				Website::CERTIFICATE_CREATED => TRUE
+			});
+
+			file_put_contents($file, $content);
+
+			if(is_file($file)) {
+
+				Website::model()->update($eWebsite, [
+					'domainStatus' => match($eWebsite['domainStatus']) {
+						Website::PENDING => Website::CONFIGURED_UNSECURED,
+						Website::CERTIFICATE_CREATED => Website::CONFIGURED_SECURED
+					}
+				]);
+
+			}
+
+		}
+
+		if($cWebsite->notEmpty()) {
+			exec('sudo /usr/sbin/service nginx reload');  // /etc/sudoers
+		}
+
+	}
+
+	public static function getRewritesOutdated(): \Collection {
+
+		$cWebsite = Website::model()
+			->select('id', 'domain', 'domainStatus')
+			->whereDomainStatus('NOT IN', [Website::PENDING, Website::CERTIFICATE_CREATED])
+			->getCollection();
+
+		return $cWebsite->find(function(Website $eWebsite) {
+
+			$file = self::getRewriteFile($eWebsite);
+
+			return (
+				is_file($file) and
+				file_get_contents($file) !== self::getRewriteContentByStatus($eWebsite)
+			);
+
+		});
+
+	}
+
+	public static function refreshRewrites(\Collection $cWebsite): void {
+
+		foreach($cWebsite as $eWebsite) {
+			file_put_contents(self::getRewriteFile($eWebsite), self::getRewriteContentByStatus($eWebsite));
+		}
+
+		if($cWebsite->notEmpty()) {
+			exec('sudo /usr/sbin/service nginx reload');  // /etc/sudoers
+		}
+
+	}
+
+	protected static function getRewriteContentByStatus(Website $eWebsite): string {
+
+		return self::getRewriteContent(self::getDomain($eWebsite), match($eWebsite['domainStatus']) {
+			Website::CONFIGURED_UNSECURED, Website::PINGED_UNSECURED, Website::FAILURE_UNSECURED, Website::FAILURE_CERTIFICATE_CREATED => FALSE,
+			Website::CONFIGURED_SECURED, Website::PINGED_SECURED, Website::FAILURE_SECURED => TRUE
+		});
+
+	}
+
+	/*
+	 * Supprimer les fichiers de rewrite obsolètes
+	 */
+	public static function cleanRewrites(): void {
+
+		$files = glob(self::getRewriteDirectory().'/*');
+
+		foreach($files as $file) {
+
+			$id = (int)pathinfo($file, PATHINFO_FILENAME);
+
+			if(Website::model()
+				->whereId($id)
+				->whereDomain('!=', NULL)
+				->exists() === FALSE) {
+				unlink($file);
+			}
+
+		}
+
+	}
+
+	protected static function getRewriteDirectory(): string {
+		return '/var/www/otf-rewrite';
+	}
+
+	protected static function getRewriteFile(Website $eWebsite): string {
+		return self::getRewriteDirectory().'/'.$eWebsite['id'].'.cfg';
+	}
+
+	public static function getChallengeDirectory(): string {
+		return '/var/www/letsencrypt';
+	}
+
+	public static function getRewriteContent(string $url, bool $ssl): string {
+
+		$listen = ($ssl ? 'listen 443 ssl http2' : 'listen 80');
+
+		$certificate = $ssl ? 'ssl_certificate /etc/letsencrypt/live/'.$url.'/fullchain.pem;
+	ssl_certificate_key /etc/letsencrypt/live/'.$url.'/privkey.pem;
+	include /etc/letsencrypt/options-ssl-nginx.conf;
+	ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;' : '';
+
+		$rewrite =
+
+'server {
+
+	'.$listen.';
+	server_name '.$url.';
+	root /var/www/otf;
+
+	'.$certificate.'
+
+	include /var/www/otf/ouvretaferme/main/conf/rewrite/acme.cfg;
+	include /var/www/otf/framework/dev/conf/rewrite/bot.cfg;
+	include /var/www/otf/framework/dev/conf/rewrite/scan.cfg;
+	include /var/www/otf/ouvretaferme/main/conf/rewrite/minify.cfg;
+	include /var/www/otf/framework/dev/conf/rewrite/static.cfg;
+
+	location @minify {
+		rewrite ^(.*)$ /_lime?$args&limeEnv=prod&limeApp=ouvretaferme&limeName=$1? last;
+	}
+
+	location / {
+		rewrite ^(\/[a-zA-Z0-9\:\_\-\.]*)$ /_lime?$args&origin=external&limeEnv=prod&limeApp=ouvretaferme&limeName=/public/'.$url.'$1? last;
+		rewrite ^(.*)$ /_lime?$args&origin=external&limeEnv=prod&limeApp=ouvretaferme&limeName=/public/'.$url.'/400? last;
+	}
+	
+	include /var/www/otf/framework/dev/conf/rewrite/lime.cfg;
+	
+}
+
+';
+
+		if($ssl) {
+
+			$rewrite .=
+
+'server {
+
+	listen 80;
+	server_name '.$url.';
+
+	include /var/www/otf/ouvretaferme/main/conf/rewrite/acme.cfg;
+
+	location / {
+		return 301 https://'.$url.'$request_uri;
+	}
+
+}
+
+';
+
+		}
+
+		return $rewrite;
+
+	}
+
+	public static function buildPingUnsecure(): void {
+
+		$cWebsite = Website::model()
+			->select('id', 'domain', 'domainTry')
+			->whereDomainStatus('IN', [Website::CONFIGURED_UNSECURED, Website::FAILURE_UNSECURED])
+			->whereDomainTry('<', WebsiteSetting::DOMAIN_MAX_TRY)
+			->getCollection();
+
+		if($cWebsite->notEmpty()) {
+			exec('sudo /usr/bin/resolvectl flush-caches');  // /etc/sudoers
+		}
+
+		foreach($cWebsite as $eWebsite) {
+
+			$domain = self::getDomain($eWebsite);
+
+			\dev\ErrorPhpLib::createExceptionFromError(TRUE);
+
+			try {
+				$ping = file_get_contents('http://'.$domain.'/:test');
+			} catch(\Exception) {
+				$ping = '';
+			}
+
+			\dev\ErrorPhpLib::createExceptionFromError(FALSE);
+
+			if(str_contains($ping, '***OK***')) {
+
+				Website::model()->update($eWebsite, [
+					'domainTry' => 0,
+					'domainStatus' => Website::PINGED_UNSECURED
+				]);
+
+			} else {
+
+				Website::model()->update($eWebsite, [
+					'domainTry' => $eWebsite['domainTry'] + 1,
+					'domainStatus' => Website::FAILURE_UNSECURED
+				]);
+
+			}
+
+		}
+
+	}
+
+	public static function buildCertificate(): void {
+
+		$cWebsite = self::getForCertificate();
+
+		foreach($cWebsite as $eWebsite) {
+
+			$domain = self::getDomain($eWebsite);
+
+			// Jamais --standalone, qui arrête nginx pour occuper le port 80 et coupe donc tous les sites le temps de l'essai
+			exec('sudo /usr/bin/certbot certonly --webroot -w '.escapeshellarg(self::getChallengeDirectory()).' -d '.escapeshellarg($domain).' -n');
+
+			if(is_file('/etc/letsencrypt/renewal/'.$domain.'.conf')) {
+
+				Website::model()->update($eWebsite, [
+					'domainStatus' => Website::CERTIFICATE_CREATED
+				]);
+
+			} else {
+
+				Website::model()->update($eWebsite, [
+					'domainTry' => $eWebsite['domainTry'] + 1,
+					'domainStatus' => Website::FAILURE_CERTIFICATE_CREATED
+				]);
+
+			}
+
+		}
+
+		if($cWebsite->notEmpty()) {
+			exec('sudo /usr/sbin/service nginx reload');  // /etc/sudoers
+		}
+
+	}
+
+	public static function getForCertificate(): \Collection {
+
+		return Website::model()
+			->select('id', 'domain', 'domainTry')
+			->whereDomainStatus('IN',  [Website::PINGED_UNSECURED, Website::FAILURE_CERTIFICATE_CREATED])
+			->whereDomainTry('<', WebsiteSetting::DOMAIN_MAX_TRY)
+			->getCollection();
+
+	}
+
+	public static function buildPingSecure(): void {
+
+		$cWebsite = Website::model()
+			->select('id', 'domain', 'domainTry')
+			->whereDomainStatus('IN', [Website::CONFIGURED_SECURED, Website::FAILURE_SECURED])
+			->whereDomainTry('<', WebsiteSetting::DOMAIN_MAX_TRY)
+			->getCollection();
+
+		foreach($cWebsite as $eWebsite) {
+
+			$domain = self::getDomain($eWebsite);
+
+			\dev\ErrorPhpLib::createExceptionFromError(TRUE);
+
+			try {
+				$ping = file_get_contents('https://'.$domain.'/:test');
+			} catch(\Exception) {
+				$ping = '';
+			}
+
+			\dev\ErrorPhpLib::createExceptionFromError(FALSE);
+
+			if(str_contains($ping, '***OK***')) {
+
+				Website::model()->update($eWebsite, [
+					'domainTry' => 0,
+					'domainStatus' => Website::PINGED_SECURED
+				]);
+
+			} else {
+
+				Website::model()->update($eWebsite, [
+					'domainTry' => $eWebsite['domainTry'] + 1,
+					'domainStatus' => Website::FAILURE_SECURED
+				]);
+
+			}
+
+		}
+
+	}
+
+	private static function getDomain(Website $eWebsite): string {
+		return match(LIME_ENV) {
+			'dev' => 'dev-'.$eWebsite['domain'],
+			'prod' => $eWebsite['domain']
+		};
+	}
+
+}
+?>

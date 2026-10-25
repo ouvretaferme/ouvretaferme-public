@@ -1,0 +1,20 @@
+{
+	"conforme.glb": {
+		"triangles": 756
+	},
+	"refus-piece.glb": {
+		"refusal": "piece",
+		"values": {
+			"name": "enseigne.001",
+			"pieces": "batiment, vitre, vantailGauche, vantailDroit"
+		}
+	},
+	"refus-texture.glb": {
+		"refusal": "texture",
+		"values": {}
+	},
+	"refus-sol.glb": {
+		"refusal": "ground",
+		"values": {}
+	}
+}

@@ -1,0 +1,37 @@
+/* Les traits des dates de l'axe, dans la frise du mois à venir (`AbsenceUi::getUpcoming()`). Chacun court sur toute
+   la hauteur de sa cellule, d'une ligne à l'autre sans interruption, derrière la frise : la cellule fait contexte
+   d'empilement pour que le trait passe sous son contenu sans passer sous son fond.
+
+   La frise occupe la boite de contenu de la cellule, et les traits se placent en pourcentage de sa largeur. Le calque
+   couvre donc toute la cellule et en reprend la marge intérieure, qui n'est pas la même selon la place de la colonne
+   dans le tableau : la boite qu'il porte a la largeur de la frise et la hauteur de la cellule. */
+.hr-absence-upcoming-rail {
+	position: relative;
+	isolation: isolate;
+}
+
+.hr-absence-upcoming-weeks {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	padding-left: inherit;
+	padding-right: inherit;
+}
+
+/* Un trait par jour, au centre de sa case comme celui des lundis, et plus pâle que lui pour que les semaines
+   se lisent encore. Le nombre de jours de la frise, `--days`, est posé par l'écran. */
+.hr-absence-upcoming-weeks > div {
+	position: relative;
+	height: 100%;
+	background-image: linear-gradient(to right, transparent calc(50% - 0.5px), color-mix(in srgb, var(--border) 50%, transparent) calc(50% - 0.5px) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+	background-size: calc(100% / var(--days)) 100%;
+}
+
+.hr-absence-upcoming-week {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 1px;
+	transform: translateX(-50%);
+	background-color: color-mix(in srgb, var(--border), var(--text) 12%);
+}

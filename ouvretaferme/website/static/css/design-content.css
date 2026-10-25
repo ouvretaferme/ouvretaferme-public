@@ -1,0 +1,132 @@
+
+
+div.website-menu-news-wrapper h4:has(> a.website-menu-item) {
+	margin: 0;
+	padding: 0;
+	border: none;
+	background: none;
+	box-shadow: none;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: none;
+}
+
+@media (min-width: 768px) {
+
+	body[data-position="top"] li.website-menu-list-news div.website-menu-news-wrapper,
+	body[data-position="top"] li.website-menu-list-news:hover div.website-menu-news-wrapper,
+	body[data-position="top"] li.website-menu-list-news:focus-within div.website-menu-news-wrapper {
+		position: static;
+		min-width: 0;
+		max-width: none;
+		background: none;
+		border: none;
+		box-shadow: none;
+		border-radius: 0;
+		padding: 0;
+		margin: 0;
+		transform: none;
+	}
+
+	body[data-position="top"] li.website-menu-list-news div.website-menu-news-wrapper > a.website-menu-news,
+	body[data-position="top"] li.website-menu-list-news:hover div.website-menu-news-wrapper > a.website-menu-news,
+	body[data-position="top"] li.website-menu-list-news:focus-within div.website-menu-news-wrapper > a.website-menu-news {
+		display: none;
+	}
+
+}
+
+main div.readitor :is(h1, h2, h3, h4, h5, h6):has(> br:only-child),
+main div.readitor :is(h1, h2, h3, h4, h5, h6):empty {
+	display: none;
+}
+
+main div.readitor figure h2,
+main div.readitor figure h3,
+main div.readitor figure h4 {
+	margin-top: 0;
+	padding-top: 0;
+	padding-bottom: 0;
+	border-top: none;
+	border-bottom: none;
+	background-color: transparent;
+	background-image: none;
+	box-shadow: none;
+	transform: none;
+	color: inherit;
+}
+
+main div.readitor figure h2:before,
+main div.readitor figure h2:after,
+main div.readitor figure h3:before,
+main div.readitor figure h3:after {
+	content: none;
+}
+
+a.website-menu-item-plain {
+	cursor: default;
+}
+
+main div.readitor {
+	overflow-wrap: break-word;
+}
+
+main div.readitor a {
+	overflow-wrap: anywhere;
+}
+
+a.website-menu-item,
+label.website-menu-item,
+.website-menu-open,
+div.website-menu-news-wrapper h4,
+div.website-menu-news-wrapper a.website-menu-news {
+	font-family: var(--customFont);
+	font-size-adjust: var(--customFontAdjust, none);
+}
+
+body[data-position] ul.website-menu-sub a.website-menu-item,
+body[data-position] ul.website-menu-sub a.website-menu-item:hover,
+body[data-position] ul.website-menu-sub a.website-menu-item.selected {
+	border-radius: 0;
+}
+
+main div.readitor .editor-media[data-type="quote"] .editor-quote blockquote h2 {
+	text-align: inherit;
+	margin-top: 0;
+	margin-left: 0;
+	margin-right: 0;
+	padding: 0;
+	border: none;
+	background: none;
+	background-color: transparent;
+	box-shadow: none;
+	clip-path: none;
+	transform: none;
+	counter-increment: none;
+	display: block;
+}
+
+main div.readitor .editor-media[data-type="quote"] .editor-quote blockquote h2:before,
+main div.readitor .editor-media[data-type="quote"] .editor-quote blockquote h2:after {
+	content: none;
+}
+
+body[data-position="left"] div.website-menu-news-wrapper h4 > a.website-menu-item {
+	background: none;
+	border: none;
+	box-shadow: none;
+	border-radius: 0;
+	transform: none;
+	padding-left: 0;
+	padding-right: 0;
+	font-size: 0.78rem;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 0.09em;
+	opacity: 0.6;
+}
+
+body[data-position="left"] div.website-menu-news-wrapper h4 > a.website-menu-item:hover {
+	opacity: 1;
+	background: none;
+}

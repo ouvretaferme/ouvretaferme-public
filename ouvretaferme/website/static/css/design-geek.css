@@ -1,0 +1,639 @@
+
+body {
+	--radius: 0.25rem;
+	--radius-lg: 0.25rem;
+	--secondary: var(--text);
+	--website-mono: ui-monospace, SFMono-Regular, "SF Mono", "JetBrains Mono", "Fira Mono", Menlo, Consolas, monospace;
+	--border: color-mix(in srgb, var(--textColor) 22%, transparent);
+	--website-rule: color-mix(in srgb, var(--textColor) 20%, transparent);
+	--website-sheet: #fff;
+	--website-tint: color-mix(in srgb, var(--primary) 8%, var(--background));
+	--website-gutter: 2.5rem;
+	--website-aside: 17rem;
+	--website-comment: color-mix(in srgb, var(--textColor) 55%, transparent);
+}
+
+@media (max-width: 991px) {
+
+	body {
+		--website-aside: 14rem;
+		--website-gutter: 2rem;
+	}
+
+}
+
+@media (max-width: 767px) {
+
+	body {
+		--website-gutter: 1.25rem;
+	}
+
+}
+
+html {
+	background-color: var(--background);
+}
+
+body[data-touch="no"] {
+	overflow-y: scroll;
+}
+
+@keyframes website-geek-caret {
+	50% {
+		opacity: 0;
+	}
+}
+
+div.website-wrapper {
+	font-family: var(--customFont);
+	font-size-adjust: var(--customFontAdjust, none);
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	background-image:
+		linear-gradient(to right, color-mix(in srgb, var(--textColor) 5%, transparent) 1px, transparent 1px),
+		linear-gradient(to bottom, color-mix(in srgb, var(--textColor) 5%, transparent) 1px, transparent 1px);
+	background-size: 2.5rem 2.5rem;
+}
+
+header, main, footer {
+	margin-left: auto;
+	margin-right: auto;
+	max-width: var(--containerMaxWidth);
+	width: 100%;
+	position: relative;
+}
+
+main {
+	flex: 1;
+}
+
+/* Toute la barre se peint à partir de son encre, jamais d'un blanc en dur.
+   La couleur du texte suit le fond : le bandeau est en couleur principale
+   quand le menu est en haut, mais design-left.css le repose sur le fond de
+   page quand il passe à gauche — et il gagne, son sélecteur étant plus fort
+   que celui d'un thème. Un survol calculé sur `currentColor` reste alors
+   visible dans les deux cas. */
+nav {
+	position: sticky;
+	top: 0;
+	z-index: 30;
+	background-color: var(--primary);
+	color: var(--primaryText);
+	border-bottom: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+}
+
+.website-nav {
+	max-width: var(--containerMaxWidth);
+	margin-left: auto;
+	margin-right: auto;
+	padding: 0.6rem var(--website-gutter);
+	min-height: 3.25rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	position: relative;
+}
+
+.website-name {
+	font-weight: bold;
+	font-size: 1.15rem;
+	letter-spacing: -0.02em;
+	line-height: 1.05;
+	display: flex;
+	align-items: center;
+	color: currentColor;
+}
+
+@media (max-width: 767px) {
+
+	.website-name {
+		font-size: 1rem;
+	}
+
+}
+
+.website-name a,
+.website-name a:hover {
+	color: currentColor;
+	text-decoration: none;
+}
+
+.website-logo {
+	line-height: 0;
+	background-color: var(--website-sheet);
+	border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+	border-radius: var(--radius);
+	padding: 0.35rem 0.5rem;
+}
+
+@media (min-width: 768px) {
+
+	.website-logo {
+		align-self: center;
+	}
+
+	.website-logo img {
+		max-width: 100%;
+		height: auto;
+		max-height: 3.5rem;
+	}
+
+}
+
+@media (max-width: 767px) {
+
+	.website-logo img {
+		height: 1.75rem;
+		width: auto;
+	}
+
+}
+
+#website-menu-input {
+	display: none;
+}
+
+.website-nav .website-menu-open {
+	cursor: pointer;
+	font-size: 0.85rem;
+	font-weight: bold;
+	line-height: 1;
+	padding: 0.55rem 0.8rem;
+	background-color: color-mix(in srgb, currentColor 12%, transparent);
+	border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+	color: currentColor;
+	border-radius: var(--radius);
+	white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+
+	.website-menu-open {
+		display: none;
+	}
+
+	.website-menu-wrapper {
+		width: 100%;
+	}
+
+}
+
+ul.website-menu {
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+}
+
+@media (min-width: 768px) {
+
+	ul.website-menu {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		align-items: stretch;
+		gap: 0;
+	}
+
+}
+
+ul.website-menu a.website-menu-item {
+	display: block;
+	text-decoration: none;
+	color: currentColor;
+	font-size: 0.9rem;
+	line-height: 1.2;
+	padding: 0.6rem 0.9rem;
+	border-radius: 0;
+	border-bottom: 2px solid transparent;
+}
+
+ul.website-menu a.website-menu-item:hover {
+	color: currentColor;
+	text-decoration: none;
+	opacity: 1;
+	background-color: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+ul.website-menu a.website-menu-item.selected {
+	background-color: color-mix(in srgb, currentColor 10%, transparent);
+	border-bottom-color: currentColor;
+	font-weight: bold;
+}
+
+ul.website-menu a.website-menu-item svg {
+	font-size: 0.65rem;
+	margin-left: 0.25rem;
+}
+
+@media (max-width: 767px) {
+
+	#website-menu-input:not(:checked) + .website-menu {
+		display: none;
+	}
+
+	#website-menu-input:checked + .website-menu {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 100%;
+		background-color: var(--primary);
+		color: var(--primaryText);
+		border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+		padding: 0.25rem 0;
+		z-index: 100;
+		display: grid;
+	}
+
+	ul.website-menu a.website-menu-item {
+		padding: 0.7rem var(--website-gutter);
+		border-bottom: none;
+		border-left: 2px solid transparent;
+	}
+
+	ul.website-menu a.website-menu-item.selected {
+		border-left-color: currentColor;
+	}
+
+}
+
+div.website-menu-news-wrapper h4 {
+	margin: 0.6rem 0 0.2rem;
+	font-size: 0.72rem;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	color: color-mix(in srgb, currentColor 75%, transparent);
+}
+
+div.website-menu-news-wrapper a.website-menu-news {
+	display: block;
+	text-decoration: none;
+	line-height: 1.4;
+	color: currentColor;
+	font-size: 0.85rem;
+	padding: 0.25rem 0;
+}
+
+div.website-menu-news-wrapper a.website-menu-news:hover {
+	text-decoration: underline;
+}
+
+div.website-menu-news-wrapper a.website-menu-news small {
+	color: color-mix(in srgb, currentColor 65%, transparent);
+	white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+
+	div.website-menu-news-wrapper {
+		padding: 0 var(--website-gutter) 0.25rem;
+	}
+
+}
+
+.website-banner {
+	background-size: cover;
+	background-position: center center;
+	min-height: 20rem;
+	display: flex;
+	align-items: flex-end;
+	color: white;
+	position: relative;
+	z-index: 1;
+	border-bottom: 1px solid var(--website-rule);
+}
+
+@media (max-width: 767px) {
+
+	.website-banner {
+		min-height: 12rem;
+	}
+
+}
+
+.website-banner:after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(to bottom, transparent 35%, #000000b8 100%);
+}
+
+.website-banner .website-header {
+	z-index: 2;
+	width: 100%;
+	padding-bottom: 1.5rem;
+}
+
+.website-banner h1 {
+	color: white;
+}
+
+header:not(:has(.website-banner)) .website-header {
+	padding-top: 2.5rem;
+}
+
+.website-header {
+	padding: 1.5rem var(--website-gutter) 1rem;
+}
+
+h1 {
+	font-family: var(--customTitleFont);
+	font-size-adjust: var(--customTitleFontAdjust, none);
+	font-size: 2.4rem;
+	letter-spacing: -0.03em;
+	line-height: 1.15;
+	margin-bottom: 0;
+	color: var(--textColor);
+	overflow-wrap: break-word;
+}
+
+h1:after {
+	content: '_';
+	margin-left: 0.08em;
+	opacity: 0.5;
+	animation: website-geek-caret 1.15s steps(1) infinite;
+}
+
+@media (max-width: 991px) {
+
+	h1 {
+		font-size: 1.9rem;
+	}
+
+}
+
+@media (max-width: 449px) {
+
+	h1 {
+		font-size: 1.55rem;
+	}
+
+}
+
+main {
+	padding: 1.25rem var(--website-gutter) 3.5rem;
+}
+
+main div.readitor {
+	line-height: 1.7;
+}
+
+main h2,
+main h3,
+main h4 {
+	font-family: var(--customTitleFont);
+	font-size-adjust: var(--customTitleFontAdjust, none);
+	line-height: 1.25;
+	letter-spacing: -0.02em;
+}
+
+main h2 {
+	margin-top: 2.5rem;
+	font-size: 1.4rem;
+	padding-bottom: 0.4rem;
+	border-bottom: 1px solid var(--website-rule);
+}
+
+main h3 {
+	margin-top: 1.75rem;
+	font-size: 1.1rem;
+}
+
+main hr {
+	border: none;
+	height: 1px;
+	background-image: repeating-linear-gradient(to right, var(--website-rule) 0 0.5rem, transparent 0.5rem 0.9rem);
+	margin: 2.5rem 0;
+}
+
+main div.readitor figure > div.editor-media > .editor-image {
+	border: 1px solid var(--website-rule);
+	border-radius: var(--radius);
+	overflow: hidden;
+}
+
+main div.readitor figure > figcaption {
+	color: var(--website-comment);
+	font-size: 0.85rem;
+	margin-top: 0.6rem;
+}
+
+div.readitor div.editor-media[data-type="quote"] {
+	border-left: 3px solid var(--primary);
+	background-color: var(--website-tint);
+	padding: 1rem 1.25rem;
+	border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+main form.form-columns div.form-group:not(.form-group-nested) {
+	display: block;
+	padding: 0.4rem 0;
+}
+
+main form.form-columns div.form-group > .form-control-label {
+	display: block;
+	font-weight: bold;
+	font-size: 0.85rem;
+	margin-bottom: 0.3rem;
+}
+
+main form.form-columns div.form-group > .form-control-label:empty {
+	display: none;
+}
+
+main .form-control {
+	border: 1px solid var(--website-rule);
+	border-radius: var(--radius);
+	padding: 0.6rem 0.8rem;
+	background-color: var(--website-sheet);
+}
+
+main .form-control:focus {
+	border-color: var(--primary);
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 25%, transparent);
+	outline: none;
+}
+
+main .btn.btn-primary,
+div.website-wrapper div.website-widget-shop-order a {
+	border-radius: var(--radius);
+	padding: 0.7rem 1.4rem;
+	font-weight: bold;
+}
+
+div.website-wrapper div.website-widget-shop,
+div.website-wrapper div.website-widget-header-block {
+	border-radius: var(--radius);
+}
+
+div.website-wrapper div.website-widget-header-block {
+	border: 1px solid var(--website-rule);
+	background-color: var(--website-tint);
+}
+
+div.website-wrapper div.website-widget-shop-order a {
+	border: none;
+	background-color: var(--primary);
+	color: var(--primaryText);
+}
+
+div.website-wrapper div.website-widget-shop-order a:hover {
+	background-color: var(--primaryDark);
+	opacity: 1;
+}
+
+div.website-wrapper div.website-widget-shop div.shop-header-block {
+	background-color: var(--website-tint);
+	border-radius: var(--radius);
+}
+
+div.website-news {
+	background-color: var(--website-sheet);
+	border: 1px solid var(--website-rule);
+	border-left: 3px solid var(--primary);
+	border-radius: var(--radius);
+	padding: 1.25rem 1.5rem;
+	margin-bottom: 1.5rem;
+}
+
+@media (max-width: 767px) {
+
+	div.website-news {
+		padding: 1rem 1.15rem;
+	}
+
+}
+
+div.website-news h2.website-news-title {
+	border-bottom: none;
+	padding-bottom: 0;
+	margin-top: 0;
+	margin-bottom: 0.3rem;
+}
+
+/* Seule chasse fixe du thème : la date d'une actualité, qui se lit comme un
+   horodatage et s'aligne d'un article à l'autre. */
+/* Le titre est un inline-block dans le châssis : une date en inline-block se
+   collerait à sa suite sur la même ligne. */
+div.website-news div.website-news-date {
+	font-family: var(--website-mono);
+	font-size-adjust: none;
+	display: block;
+	color: var(--website-comment);
+	font-size: 0.78rem;
+	letter-spacing: 0.02em;
+	margin-bottom: 1rem;
+}
+
+div.website-news div.website-news-date:before {
+	content: '// ';
+}
+
+footer {
+	font-size: 0.88rem;
+	padding: 0 var(--website-gutter) 3rem;
+}
+
+div.website-footer {
+	border-top: 1px solid var(--website-rule);
+	padding: 1.5rem 0 1rem;
+}
+
+div.website-ad {
+	padding-top: 1rem;
+	color: var(--muted);
+	font-size: 0.8rem;
+}
+
+@media (min-width: 768px) {
+
+	/* design-left.css repose le bandeau sur le fond de page : l'encre du menu
+	   redevient celle du texte courant, et tout ce qui s'en déduit suit. */
+	body[data-position="left"] nav {
+		color: var(--textColor);
+		border-bottom: none;
+		border-right: 1px solid var(--website-rule);
+		padding: 1.5rem 1.25rem 2rem;
+	}
+
+	body[data-position="left"] .website-logo {
+		border-color: var(--website-rule);
+	}
+
+	body[data-position="left"] .website-nav {
+		align-items: stretch;
+		gap: 1.5rem;
+		min-height: 0;
+	}
+
+	body[data-position="left"] ul.website-menu {
+		align-items: stretch;
+		justify-content: flex-start;
+	}
+
+	body[data-position="left"] ul.website-menu a.website-menu-item {
+		border-bottom: none;
+		border-left: 2px solid transparent;
+		padding-left: 0.6rem;
+	}
+
+	body[data-position="left"] ul.website-menu a.website-menu-item.selected {
+		border-left-color: var(--primaryInk);
+		color: var(--primaryInk);
+	}
+
+	body[data-position="left"] .website-name {
+		font-size: 1.3rem;
+		align-self: flex-start;
+	}
+
+	body[data-position="left"] li.website-menu-list-news div.website-menu-news-wrapper h4 {
+		width: fit-content;
+	}
+
+}
+
+@media (min-width: 768px) {
+
+	li.website-menu-list-news div.website-menu-news-wrapper h4 {
+		margin: 0;
+		padding: 0.6rem 0.9rem;
+		cursor: default;
+	}
+
+	body[data-position="top"] li.website-menu-list-parent ul.website-menu-sub {
+		background-color: var(--website-sheet);
+		color: var(--textColor);
+		border: 1px solid var(--website-rule);
+		border-radius: var(--radius);
+		padding: 0.25rem;
+	}
+
+	body[data-position="top"] ul.website-menu-sub a.website-menu-item {
+		color: var(--textColor);
+		border-bottom: none;
+		padding: 0.8rem 0.75rem;
+	}
+
+	body[data-position="top"] ul.website-menu-sub a.website-menu-item:hover {
+		background-color: var(--website-tint);
+		color: var(--textColor);
+	}
+
+	body[data-position="top"] ul.website-menu-sub a.website-menu-item.selected {
+		background-color: var(--primary);
+		color: var(--primaryText);
+	}
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	h1:after {
+		animation: none;
+	}
+
+}

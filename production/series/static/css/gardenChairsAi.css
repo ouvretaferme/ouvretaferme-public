@@ -1,0 +1,155 @@
+/* La rotation par jardin. Toutes les règles sont bornées par une classe garden-chairs-* : la feuille
+   reste chargée après une navigation ajax vers un autre écran. */
+
+.garden-chairs-strip {
+	display: grid;
+	grid-template-columns: repeat(var(--beds), 2.75rem);
+	gap: .25rem;
+}
+
+.garden-chairs-bed {
+	display: flex;
+	flex-direction: column;
+	background-color: var(--background-surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	overflow: hidden;
+}
+
+.garden-chairs-bed-name {
+	max-width: 6ch;
+	margin: 0 auto;
+	overflow: hidden;
+	white-space: nowrap;
+	font-size: .75rem;
+	line-height: 1.4;
+	color: var(--muted);
+}
+
+.garden-chairs-bed-plants {
+	flex: 1;
+	display: grid;
+	grid-template-columns: repeat(2, 1.1rem);
+	grid-template-rows: repeat(2, 1.1rem);
+	gap: 1px;
+	place-content: center;
+	padding: 2px;
+	background-color: var(--background-light);
+}
+
+/* Une espèce seule se centre dans la case au lieu d'occuper le coin d'un carré vide. */
+.garden-chairs-bed-plants > :only-child {
+	grid-area: 1 / 1 / -1 / -1;
+	place-self: center;
+}
+
+.garden-chairs-plant {
+	display: flex;
+	border-radius: 50%;
+}
+
+/* La famille de cette espèce revient trop tôt sur la planche d'arrivée. */
+.garden-chairs-plant.is-returning {
+	box-shadow: 0 0 0 2px var(--warning);
+}
+
+.garden-chairs-bed-count {
+	font-size: .65rem;
+	font-weight: bold;
+	line-height: 1.1rem;
+	text-align: center;
+}
+
+.garden-chairs-draft {
+	margin-top: 1.5rem;
+}
+
+.garden-chairs-form .garden-chairs-footer {
+	display: flex;
+	gap: .5rem;
+	margin-top: 1rem;
+	margin-bottom: 2rem;
+}
+
+.garden-chairs-group {
+	margin-bottom: 1.5rem;
+}
+
+.garden-chairs-zone {
+	margin-top: 1.5rem;
+}
+
+.garden-chairs-zone h3 {
+	margin-bottom: 0;
+}
+
+.garden-chairs-list {
+	display: grid;
+	gap: .75rem;
+}
+
+.garden-chairs-deck-head {
+	padding-block: .75rem;
+}
+
+.garden-chairs-deck-name {
+	flex: none;
+	width: 6rem;
+}
+
+.garden-chairs-deck-head > .garden-chairs-deck-to {
+	max-width: none;
+}
+
+/* input-group étire le menu sur la place restante : sa largeur se fixe sur le menu lui-même. */
+.garden-chairs-deck-to .input-group > select {
+	flex: none;
+	width: 14rem;
+}
+
+.garden-chairs-shift {
+	white-space: nowrap;
+}
+
+/* util-deck-band passe à la ligne : une phrase longue quitterait son icône au lieu de s'enrouler à côté. */
+.garden-chairs-list .util-deck-band-state > span {
+	flex: 1;
+	min-width: 0;
+}
+
+/* La bande centre ses enfants : sur plusieurs lignes, l'icône se poserait au milieu du texte. */
+.garden-chairs-list .util-deck-band-state {
+	align-items: first baseline;
+}
+
+@media (max-width: 575px) {
+
+	.garden-chairs-deck-head {
+		flex-wrap: wrap;
+		gap: .5rem 1rem;
+	}
+
+	.garden-chairs-deck-head > .util-deck-body {
+		order: 3;
+		flex-basis: 100%;
+	}
+
+	.garden-chairs-deck-head > .garden-chairs-deck-to {
+		flex: 1;
+	}
+
+	.garden-chairs-deck-to .input-group > select {
+		flex: 1;
+		width: auto;
+	}
+
+	.garden-chairs-group .util-deck-aside {
+		max-width: none;
+	}
+
+	.garden-chairs-strip {
+		grid-template-columns: repeat(var(--beds), minmax(0, 2.75rem));
+		gap: 2px;
+	}
+
+}

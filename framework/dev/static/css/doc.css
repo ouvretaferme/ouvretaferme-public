@@ -1,0 +1,101 @@
+#swagger-ui code {
+	display: inline;
+}
+
+#swagger-ui .swagger-ui .renderedMarkdown code {
+	color: var(--dark);
+	padding: 1px 10px;
+}
+
+.swagger-ui .topbar { display: none; }
+
+#app-tabs {
+	background-color: #fafafa;
+	display: flex;
+	gap: 2px;
+	padding: 0.75rem;
+	overflow-x: auto;
+	border-bottom: 1px solid #f0f0f0;
+	margin-bottom: 1rem;
+}
+.app-tab {
+	padding: 6px 14px;
+	cursor: pointer;
+	color: #555;
+	border: 1px solid transparent;
+	border-bottom: none;
+	background: #f5f5f5;
+	border-radius: var(--radius);
+	white-space: nowrap;
+}
+.app-tab:hover { background-color: var(--secondary); color: white;}
+.app-tab.active { background-color: var(--secondary); color: white;}
+.app-tab .count {
+	font-size: 90%;
+	line-height: 1;
+	display: inline-block;
+	padding: calc(0.375rem / 2) 0.375rem;
+	border-radius: calc(var(--radius) / 2);
+	margin-left: 4px;
+}
+.app-tab.active .count { background-color: white; color: var(--secondary); }
+#doc-status { font-size: 12px; color: #888; padding: 4px 8px; }
+
+#pkg-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px;
+	padding: 0.75rem;
+	overflow-x: auto;
+	border-bottom: 1px solid #f0f0f0;
+	margin-bottom: 6px;
+	min-height: 0;
+}
+#pkg-tabs:empty { display: none; }
+.pkg-tab {
+	padding: 3px 10px;
+	cursor: pointer;
+	color: #777;
+	border: 1px solid transparent;
+	border-bottom: none;
+	background: #fafafa;
+	border-radius: var(--radius);
+	white-space: nowrap;
+}
+.pkg-tab:hover { background: #f0f0f0; }
+.pkg-tab.active { background: #fff; border-color: #f0f0f0; color: var(--secondary); font-weight: bold; }
+.pkg-tab .count {
+	font-size: 85%;
+	background: #eee;
+	border-radius: 6px;
+	padding: 1px 4px;
+	margin-left: 3px;
+	color: #888;
+}
+.pkg-tab.active .count { background-color: white; color: var(--secondary); }
+
+/* Headers de section dans la liste des routes */
+.doc-section-header {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: #999;
+	padding: 1.5rem 0 0.4rem 0.25rem;
+	border-top: 1px solid #f0f0f0;
+	margin-top: 0.5rem;
+}
+.doc-section-header:first-child {
+	border-top: none;
+	margin-top: 0;
+	padding-top: 0.5rem;
+}
+
+/* Masquer le cadenas et le bouton try-it-out */
+.swagger-ui .auth-wrapper,
+.swagger-ui .try-out { display: none !important; }
+
+.authorization__btn,
+.scheme-container {
+	display: none;
+}

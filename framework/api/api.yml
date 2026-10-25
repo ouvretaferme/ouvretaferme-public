@@ -1,0 +1,117 @@
+Access:
+  reference: int32(0, null)
+  counter: int(0, null) = 0
+  date: datetime
+  UNIQUE: [
+    ["reference", "date"]
+  ]
+
+# OAuth2 Authorization Server / Resource Server (league/oauth2-server)
+# cf. doc wiki "API publique et OAuth2"
+
+AccessToken:
+  id: serial32
+  tokenId: text8(128, 128) @charset(ascii)
+  client: api\Client
+  user: user\User
+  reference: int32(0, null) # id de la ferme (structure) pour laquelle le token a été délivré (pas de type élément : structure n'est pas connu de framework/api)
+  name: ?text8(1, null) # label choisi par l'utilisateur, uniquement pour les clés API personnelles (client.isPersonal)
+  scopes: json = PHP([])
+  expiryDateTime: datetime
+  revoked: bool = FALSE
+  revokedAt: ?datetime # date de la révocation, vide pour les clés révoquées avant son ajout
+  createdAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["tokenId"]
+  ]
+  INDEX: [
+    ["user"],
+    ["reference"],
+    ["client"]
+  ]
+
+AuthCode:
+  id: serial32
+  code: text8(128, 128) @charset(ascii)
+  client: api\Client
+  user: user\User
+  reference: int32(0, null) # id de la ferme (structure), portée jusqu'à l'AccessToken au moment de l'échange /api/oauth/token, cf. AuthCodeRepositoryLib
+  scopes: json = PHP([])
+  redirectUri: text8(1, null)
+  expiryDateTime: datetime
+  revoked: bool = FALSE
+  createdAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["code"]
+  ]
+
+Client:
+  id: serial32
+  clientId: text8(1, null) @charset(ascii)
+  name: text8(1, null)
+  secret: ?text8(1, null) @charset(ascii) # hash, uniquement pour un futur client confidentiel (tout est en PKCE pour l'instant)
+  redirectUris: json = PHP([])
+  isConfidential: bool = FALSE
+  isPersonal: bool = FALSE # TRUE uniquement pour le client réservé qui porte les clés API personnelles (hors flux OAuth authorize/PKCE)
+  status: enum(ACTIVE, DISABLED) = ACTIVE
+  createdAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["clientId"]
+  ]
+
+ClientScope:
+  id: serial32
+  client: api\Client
+  scope: api\Scope
+  UNIQUE: [
+    ["client", "scope"]
+  ]
+
+Log:
+  id: serial32
+  token: ?api\AccessToken
+  reference: ?int32(0, null)
+  requestMethod: enum(GET, POST, PUT, DELETE, PATCH)
+  requestUrl: text8
+  requestHeaders: ?json
+  route: text8
+  responseBody: ?json
+  responseStatusCode: ?int16(0, null)
+  time: ?float32
+  createdAt: datetime = SPECIAL(now)
+  status: enum(CREATED, SUCCESS, ERROR, RATE_LIMIT) = CREATED
+  INDEX: [
+    ["token"],
+    # reference seule, et non (reference, status) : InnoDB y ajoute la clé primaire, donc l'index
+    # ordonne par (reference, id) et sert le ORDER BY id DESC du journal sans tri. Une colonne
+    # intercalée entre les deux rend l'ordre au filesort, qui met requestUrl dans le tampon de tri
+    # et épuise sort_buffer_size.
+    ["reference"]
+  ]
+
+RateLimit:
+  id: serial32
+  reference: int32(0, null)
+  calls: int(0, null) = 1
+  timestamp: int64
+  UNIQUE: [
+    ["reference", "timestamp"]
+  ]
+
+RefreshToken:
+  id: serial32
+  tokenId: text8(128, 128) @charset(ascii)
+  accessToken: api\AccessToken
+  expiryDateTime: datetime
+  revoked: bool = FALSE
+  createdAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["tokenId"]
+  ]
+
+Scope:
+  id: serial32
+  name: text8(1, null) @charset(ascii)
+  UNIQUE: [
+    ["name"]
+  ]

@@ -1,0 +1,61 @@
+/* Gabarit « Futur » des pages de formations d'un réseau : capitales espacées en graisse légère, lignes
+   horizontales fines de la couleur sur la page, bandeau ouvert sur le fond, fermé d'un filet de la
+   couleur ; étapes numérotées sur deux chiffres, encadrés éclairés depuis leur bord gauche.
+
+   La page et les surfaces sont celles du fond choisi : Futur n'est pas dans
+   `LearningSetting::DESIGN_MATTERS`, et les encres se calculent sur ce fond adouci et le blanc. Les
+   lignes de la page sont une trame translucide de la couleur, que `DesignContrastSentinel` mesure
+   sous le texte atténué et les boutons contour. */
+
+.learning-public[data-learning-design="futur"],
+.learning-doc[data-learning-design="futur"] {
+	--radius: .75rem;
+	--radius-lg: 1rem;
+	--border: color-mix(in srgb, var(--primary) 16%, white);
+	--shadow-v2: 0 0 0 1px color-mix(in srgb, var(--primary) 16%, white);
+	--heading-case: uppercase;
+	--heading-tracking: .18em;
+	--heading-weight: 300;
+	--button-case: uppercase;
+	--figure-background: color-mix(in srgb, var(--primary) 6%, white);
+	--callout-background: linear-gradient(90deg, color-mix(in srgb, var(--primary) 16%, transparent), transparent 70%), white;
+	--callout-accent-width: 3px;
+	--callout-radius: 0 .75rem .75rem 0;
+	--callout-title-case: uppercase;
+	--marker-background: var(--primary);
+	--marker-color: var(--primary-ink);
+	--marker-radius: .25rem;
+	--marker-counter: decimal-leading-zero;
+	--marker-ring: 0 0 .6rem color-mix(in srgb, var(--primary) 45%, transparent);
+	--step-line: color-mix(in srgb, var(--primary) 40%, transparent);
+	--table-head-background: color-mix(in srgb, var(--primary) 10%, white);
+	--table-head-border: none;
+	--tab-active-background: var(--learning-tint);
+	--tab-active-color: var(--text);
+	--tab-radius: .5rem;
+	--tab-bar-height: 0;
+	--quote-background: linear-gradient(var(--primary), var(--primary)) no-repeat left / 3px 100%, color-mix(in srgb, var(--primary) 5%, white);
+	--quote-padding: .75rem 1rem .75rem 1.25rem;
+}
+
+/* Le gris de la page se juge sur la trame : chaque ligne mêle moins de la couleur au fond que la
+   teinte (`CommunityLib::TINT_PART`), et un gris tenu sur la teinte et sur le fond tient sur tout
+   ce qui passe entre eux, ce que `DesignContrastSentinel` mesure. Une couleur pleine, parce qu'une
+   transparence de l'encre suivrait celle dont hérite l'élément atténué, et atténuerait sous le
+   seuil l'encre du réseau, arrêtée à 4,5:1. */
+.learning-public[data-learning-design="futur"] {
+	--muted: var(--learning-tint-muted);
+	--button-outline-background: var(--background-surface);
+	background-image: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--primary) 10%, transparent) 0 1px, transparent 1px 3rem);
+}
+
+.learning-public[data-learning-design="futur"] .community-header {
+	background: transparent;
+	border-bottom: 1px solid var(--primary);
+}
+
+.learning-public[data-learning-design="futur"] .community-header h1 {
+	text-transform: uppercase;
+	letter-spacing: .12em;
+	font-weight: 300;
+}

@@ -1,0 +1,9 @@
+{
+    "name": "ouvretaferme/api",
+    "type": "library",
+    "require": {
+        "league/oauth2-server": "^9.0",
+        "nyholm/psr7": "^1.8",
+        "nyholm/psr7-server": "^1.1"
+    }
+}

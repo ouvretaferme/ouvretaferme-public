@@ -1,0 +1,122 @@
+Category:
+  id: serial32
+  name: text8(1, null) @collate(general)
+  icon: ?text8(1, 50) @charset(ascii)
+  structure: ?structure\Structure
+  position: int8(0, null)
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["structure"]
+  ]
+
+Configuration:
+  id: serial32
+  structure: structure\Structure
+  stockNotes: ?text16 # NULL tant que les notes de la page des stocks sont désactivées, '' quand elles sont actives et vides
+  stockNotesUpdatedAt: ?datetime
+  stockNotesUpdatedBy: ?user\User
+  UNIQUE: [
+    ["structure"]
+  ]
+
+Product:
+  id: serial32
+  name: text8(1, null) @collate(general)
+  additional: ?text16(1, null) @collate(general)
+  description: ?editor24
+  vignette: ?textFixed(30, 30) @charset(ascii)
+  profile: enum(COMPOSITION, PLANT, ANIMAL, FOOD, PRODUCT, OTHER, SERVICE, SHIPPING)
+  distribution: ?enum(PRODUCTION, RESALE)
+  category: ?product\Category
+  variantOf: ?product\Product
+  variantPosition: int8(0, null) = 0
+  variants: int16(0, null) = 0
+  reference: ?text8(1, null) @charset(ascii)
+  plant: ?plant\Plant
+  variety: ?text8(1, null) @collate(general)
+  frozen: ?bool
+  packaging: ?text8(1, null)
+  allergens: ?text8(1, null)
+  ingredients: ?text16(1, null)
+  compositionVisibility: ?enum(PUBLIC, PRIVATE)
+  origin: ?text8(1, null) @collate(general)
+  preparationDays: ?int8(0, null)
+  preparationTime: ?time
+  structure: structure\Structure
+  unit: ?product\Unit = PHP(\product\ProductSetting::UNIT_DEFAULT_ID)
+  private: bool = TRUE
+  privatePrice: ?decimal(10, 4)
+  privatePriceInitial: ?decimal(10, 4)
+  privateStep: ?decimal(8, 4, 0.0001, null)
+  privatePriceSteps: json = PHP([])
+  pro: bool = TRUE
+  proPrice: ?decimal(10, 4)
+  proPriceInitial: ?decimal(10, 4)
+  proPackaging: ?float32(0.01, null)
+  proStep: ?decimal(8, 4, 0.0001, null)
+  proPriceSteps: json = PHP([])
+  vat: int16(1, null)
+  organic: enum(NO, YES, CONVERSION)
+  qualities: set(DEMETER, NATURE_PROGRES, BIO_COHERENCE, IGP, AOP, STG, LABEL_ROUGE)
+  discountable: bool = TRUE
+  priceMode: enum(SHARED, VARIANT) = VARIANT
+  stock: ?decimal(10, 4, 0.0, null)
+  stockStatus: enum(ACTIVE, INACTIVE) = INACTIVE
+  stockLast: ?product\Stock
+  stockUpdatedAt: ?datetime
+  duplicateOf: ?product\Product
+  createdAt: datetime = SPECIAL(now)
+  privateAccountNumber: ?text32
+  proAccountNumber: ?text32
+  status: enum(ACTIVE, INACTIVE, SPECIAL, DELETED) = ACTIVE
+  INDEX: [
+    ["structure"],
+    ["plant"],
+    ["variantOf", "variantPosition"]
+  ]
+  UNIQUE: [
+    ["structure", "reference"]
+  ]
+  SEARCH: [
+    ["name", "origin", "variety"]
+  ]
+
+Stock:
+  id: serial32
+  product: product\Product
+  structure: structure\Structure
+  balance: ?decimal(10, 4, 0.0, null)
+  quantity: ?decimal(10, 4, 0.0, null)
+  comment: ?text8(1, null)
+  createdAt: datetime = SPECIAL(now)
+  createdBy: ?user\User = SPECIAL(user)
+  INDEX: [
+    ["product"]
+  ]
+
+StockBookmark:
+  id: serial32
+  structure: structure\Structure
+  product: product\Product
+  plant: plant\Plant
+  unit: enum(KG, UNIT, BUNCH)
+  variety: ?plant\Variety
+  createdAt: datetime = SPECIAL(now)
+  createdBy: ?user\User = SPECIAL(user)
+  INDEX: [
+    ["structure", "product"],
+    ["plant", "unit", "variety"]
+  ]
+
+Unit:
+  id: serial32
+  singular: text8(1, 15) @collate(general)
+  plural: text8(1, 15) @collate(general)
+  short: text8(1, 8) @collate(general)
+  structure: ?structure\Structure
+  fqn: ?fqn
+  approximate: bool = false
+  type: enum(INTEGER, DECIMAL)
+  UNIQUE: [
+    ["structure", "singular"]
+  ]

@@ -1,0 +1,136 @@
+html {
+	font-size: 15px;
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+
+	html {
+		font-size: 16px;
+	}
+
+}
+
+@media (min-width: 1200px) and (max-width: 1999px) {
+
+	html {
+		font-size: 17px;
+	}
+
+}
+
+@media (min-width: 2000px) {
+
+	html {
+		font-size: 19px;
+	}
+
+}
+
+nav {
+	grid-area: nav;
+}
+
+body {
+	color: var(--textColor);
+}
+
+header {
+	grid-area: header;
+	position: relative;
+}
+
+main {
+	grid-area: main;
+}
+
+footer {
+	grid-area: footer;
+}
+
+.website-logo {
+	display: inline-block;
+}
+
+a,
+a:hover {
+	text-decoration: underline;
+	color: var(--linkColor);
+}
+
+main a:hover {
+	opacity: 0.8;
+}
+
+div.website-admin {
+	position: absolute;
+	top: 1rem;
+	right: 1rem;
+}
+
+.website-banner div.website-admin a {
+	border: 1px solid white;
+}
+
+div.website-menu-news-wrapper a.website-menu-news:hover {
+	text-decoration: underline;
+}
+
+div.website-news:not(:first-child) {
+	margin-top: 2rem;
+}
+
+div.website-news:not(:last-child) {
+	padding-bottom: 2rem;
+}
+
+div.website-news h2 {
+	display: inline-block;
+	border-bottom: 2px solid var(--textColor);
+	padding-bottom: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+
+div.website-news div.website-news-anchor {
+	transform: translate(0, -10rem);
+}
+
+div.website-news div.website-news-date {
+	color: var(--muted);
+	margin-bottom: 1rem;
+}
+
+div.website-wrapper div.website-widget-shop {
+	margin-bottom: 1rem;
+}
+
+
+div.website-wrapper div.website-widget-shop,
+div.website-wrapper div.website-widget-shop-order a,
+div.website-widget div.website-widget-header-block {
+	border-radius: var(--radius);
+}
+
+div.website-wrapper div.website-widget-shop div.shop-header-block {
+	background-color: var(--transparent);
+}
+
+div.website-wrapper div.website-widget-header-block,
+div.website-wrapper div.website-widget-shop-order a {
+	border: 2px solid var(--border);
+}
+
+div.website-wrapper div.website-widget-header-block,
+div.website-wrapper div.website-widget-shop-order a {
+	background-color: var(--transparent);
+}
+
+div.website-footer {
+	border-top: 1px solid var(--border);
+	padding: 2rem;
+}
+
+div.website-ad {
+	border-top: 1px solid var(--border);
+	padding-top: 1rem;
+	text-align: center;
+}

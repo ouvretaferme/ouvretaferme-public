@@ -1,0 +1,1432 @@
+
+div.input-group {
+	/*position: relative; inutile ?*/
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	width: 100%;
+}
+
+div.input-group-sm .form-control,
+div.input-group-sm .input-group-addon {
+	line-height: 1.2 !important;
+}
+
+div.input-group-lg .form-control,
+div.input-group-lg .input-group-addon {
+	line-height: 2 !important;
+}
+
+div.form-control-field div.input-group {
+	width: 100%;
+}
+
+div.form-control-field h3 {
+	margin-bottom: .5rem;
+}
+
+div.input-group > * {
+	border-radius: 0;
+}
+
+div.input-group > *:first-child,
+div.input-group > .first-child {
+	border-top-left-radius: var(--radius) !important;
+	border-bottom-left-radius: var(--radius) !important;
+}
+
+div.input-group > *:last-child {
+	border-top-right-radius: var(--radius) !important;
+	border-bottom-right-radius: var(--radius) !important;
+}
+
+div.input-group > *:not(:first-child) {
+	margin-left: -1px;
+}
+
+div.input-group > .form-control {
+	flex: 1;
+	min-width: 0;
+}
+
+div.input-group > .btn:hover {
+	z-index: 1;
+}
+
+div.input-group > .form-control:focus {
+	z-index: 2;
+}
+
+div.input-group > input:placeholder-shown + .input-group-clear,
+div.input-group > select:has(> option[value=""]:checked) + .input-group-clear {
+	display: none;
+}
+
+div.input-group > input:placeholder-shown:has(+ .input-group-clear:last-child),
+div.input-group > select:has(> option[value=""]:checked):has(+ .input-group-clear:last-child) {
+	border-top-right-radius: var(--radius);
+	border-bottom-right-radius: var(--radius);
+}
+
+div.input-group > .input-group-element,
+div.input-group > .input-group-addon,
+div.input-group > .field-checkbox {
+	padding: 0.375rem 0.5rem;
+	font-size: 1rem;
+	font-weight: normal;
+	line-height: 1.5;
+}
+
+div.input-group > .input-group-element,
+div.input-group > .field-checkbox {
+	display: flex;
+	align-items: center;
+}
+
+div.input-group > .field-checkbox {
+	gap: 0;
+}
+
+div.input-group > .input-group-addon,
+div.input-group > .field-checkbox {
+	color: var(--text);
+	text-align: center;
+	white-space: nowrap;
+	background-color: var(--background);
+	border: 1px solid #0002;
+}
+
+div.input-group > .input-group-addon.input-group-addon-for-input {
+	background-color: white;
+	border-left: 0;
+}
+
+@media (max-width: 575px) {
+
+	div.input-group > .input-group-addon,
+	div.input-group > .field-checkbox {
+		padding: 0.375rem 0.5rem;
+		font-size: 0.9rem;
+	}
+
+}
+
+.form-calculation {
+	padding: 0.375rem 0.75rem;
+	font-size: 1rem;
+	font-weight: normal;
+	line-height: 1.5;
+	color: var(--text);
+	background-color: var(--background);
+	background-clip: padding-box;
+	border: 1px solid #0002;
+	appearance: none;
+	vertical-align: middle;
+	transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.form-control,
+.form-control-block {
+	display: block;
+	width: 100%;
+	padding: 0.375rem 0.75rem;
+	font-size: 1rem;
+	font-weight: normal;
+	line-height: 1.5;
+	color: var(--text);
+	background-color: #fff;
+	background-clip: padding-box;
+	border: 1px solid #0002;
+	appearance: none;
+	vertical-align: middle;
+	border-radius: var(--radius);
+	transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.form-control-xl {
+	line-height: 2.5;
+}
+
+.form-control-lg {
+	line-height: 2;
+}
+
+.form-control-block {
+	padding: 1rem;
+}
+
+.form-control:focus {
+	color: var(--text);
+	background-color: #fff;
+	border-color: #0005;
+	outline: 0;
+	box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+.form-control.disabled,
+.form-control[disabled],
+.form-control:disabled {
+	pointer-events: none;
+	background-color: #CCC2;
+}
+
+.form-control.disabled:not(select),
+.form-control[disabled]:not(select),
+.form-control:disabled:not(select) {
+	color: #000B;
+}
+
+select.form-control {
+	padding-right: 1.75rem;
+	background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+	background-repeat: no-repeat;
+	background-position: right 0.75rem center;
+	background-size: 16px 12px;
+}
+
+textarea.form-control {
+	height: 10em;
+}
+
+.form-control[type="color"] {
+	padding: 0.25rem;
+}
+
+
+fieldset {
+	border-radius: var(--radius);
+	border-width: 0;
+	padding-block: 0.25em 0.5em;
+	padding-inline: 0rem;
+}
+
+fieldset legend {
+	padding: 0.125rem 0.5rem;
+	border-radius: calc(var(--radius) / 2);
+	font-weight: bold;
+	font-size: 0.9rem;
+	text-transform: uppercase;
+}
+
+/* Un groupe de champs encadré : plusieurs champs qui forment une notion dans un formulaire plus
+   large. La légende est sortie du flux par le navigateur, qui la pose à cheval sur la bordure :
+   `float` la remet dans le flux, au-dessus des champs, et le `clear` rend sa ligne au premier
+   d'entre eux. */
+fieldset.form-fieldset {
+	border: 1px solid var(--border);
+	padding: 0.75rem 1rem 0.25rem;
+	margin-block: 0.5rem 1rem;
+}
+
+fieldset.form-fieldset > legend {
+	float: left;
+	width: 100%;
+	padding: 0;
+	margin-bottom: 0.25rem;
+	font-size: 0.8125rem;
+	letter-spacing: 0.03em;
+	color: var(--color-neutral);
+}
+
+fieldset.form-fieldset > legend + * {
+	clear: both;
+}
+
+/* Le cadre d'un bloc qui chapeaute la suite du formulaire : la légende reste à cheval sur la
+   bordure, où le navigateur la pose. Le `>` épargne les légendes des fieldsets intérieurs. */
+fieldset.form-fieldset-notched > legend {
+	float: none;
+	width: auto;
+	padding-inline: 0.5rem;
+	margin-inline-start: -0.5rem;
+}
+
+input[type="number"] {
+	width: 5rem;
+}
+
+input[type="file"] {
+	display: none;
+}
+
+input[type="range"] {
+	-webkit-appearance: none;
+	width: 100%;
+	height: 0.75rem;
+	margin-top: 0.375rem;
+	margin-bottom: 0.375rem;
+	padding: 0;
+	border: 1px solid var(--primary);
+	border-radius: 5px;
+	background: white;
+	outline: none;
+	opacity: 0.8;
+	transition: opacity .5s;
+}
+
+input[type="range"]:hover {
+	opacity: 1;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	background: var(--primary);
+	cursor: pointer;
+	width: 1.5rem;
+	height: 1.5rem;
+	border-radius: 50%;
+}
+
+input[type="range"]::-moz-range-thumb {
+	background: var(--primary);
+	cursor: pointer;
+	width: 1.5rem;
+	height: 1.5rem;
+	border-radius: 50%;
+}
+
+input[type="checkbox"] {
+	width: 1.1rem;
+	height: 1.1rem;
+}
+
+.form-warning [type="submit"] {
+	box-shadow: 0 0 15px var(--warning);
+}
+
+[data-wrapper].form-warning-wrapper > label.form-control-label {
+	color: var(--warning) !important;
+	font-weight: bold;
+}
+
+[data-wrapper].form-warning-wrapper input {
+	color: var(--warning);
+}
+
+[data-wrapper].form-warning-wrapper [data-wrapper].form-warning-wrapper input {
+	color: var(--warning);
+}
+
+.form-columns [data-wrapper].form-warning-wrapper > label.form-control-label {
+	padding-right: 0.25rem;
+	border-right: 2px solid var(--warning);
+}
+
+.form-warning-message {
+	font-size: 0.875rem;
+	color: var(--warning) !important;
+	font-weight: normal !important;
+	border-radius: var(--radius);
+	margin: 0.25rem 0.25rem 0 0;
+	line-height: 1.3;
+}
+
+.form-warning-field div.input-group label.btn,
+.form-warning-field div.btn,
+.form-warning-field .input-group label,
+.form-warning-field input,
+.form-warning-field textarea,
+.form-warning-field .form-warning-field-component,
+.form-warning-field,
+.form-warning-field select {
+	border-color: var(--warning) !important;
+}
+.form-warning-field input[type="radio"] {
+	outline: 1px solid var(--warning) !important;
+}
+.form-warning-field input[type="text"],
+.form-warning-field input[type="time"],
+.form-warning-field input[type="date"],
+.form-warning-field input[type="email"],
+.form-warning-field input[type="url"] {
+	background: linear-gradient(to right, rgba(194, 120, 10, 0.2) 0, transparent 3rem);
+	background-color: white;
+}
+
+.form-error-field .input-group-addon {
+	color: var(--warning);
+}
+
+.form-error [type="submit"] {
+	box-shadow: 0 0 15px var(--danger);
+}
+
+[data-wrapper].form-error-wrapper > label.form-control-label {
+	color: var(--danger) !important;
+	font-weight: bold;
+}
+
+[data-wrapper].form-error-wrapper select,
+[data-wrapper].form-error-wrapper input {
+	color: var(--danger);
+	border-color: var(--danger);
+}
+
+[data-wrapper].form-warning-wrapper [data-wrapper]  input,
+[data-wrapper].form-error-wrapper [data-wrapper]  input {
+	color: inherit;
+}
+
+[data-wrapper].form-error-wrapper [data-wrapper].form-error-wrapper input {
+	color: var(--danger);
+}
+
+.form-columns [data-wrapper].form-error-wrapper > label.form-control-label {
+	padding-right: 0.25rem;
+	border-right: 2px solid var(--danger);
+}
+
+.form-error-message {
+	font-size: 0.875rem;
+	color: var(--danger) !important;
+	font-weight: normal !important;
+	border-radius: var(--radius);
+	margin: 0.25rem 0.25rem 0 0;
+	line-height: 1.3;
+}
+
+.form-error-field div.input-group label.btn,
+.form-error-field div.btn,
+.form-error-field .input-group label,
+.form-error-field input,
+.form-error-field textarea,
+.form-error-field .form-error-field-component,
+.form-error-field,
+.form-error-field select {
+	border-color: var(--danger) !important;
+}
+.form-error-field input[type="radio"] {
+	outline: 1px solid var(--danger) !important;
+}
+.form-error-field input[type="text"],
+.form-error-field input[type="time"],
+.form-error-field input[type="date"],
+.form-error-field input[type="email"],
+.form-error-field input[type="url"] {
+	background: linear-gradient(to right, rgba(217, 83, 111, 0.2) 0, transparent 3rem);
+	background-color: white;
+}
+.form-error-field .input-group-addon {
+	color: rgb(217, 83, 111);
+}
+
+.form-character-count-wrapper {
+	display: flex;
+}
+
+.form-character-count-wrapper.for-textarea {
+	flex-direction: column;
+}
+
+.form-character-count {
+	color: var(--muted);
+	display: none;
+	align-items: center;
+	font-size: 0.9rem;
+}
+
+.form-character-count-wrapper.for-input input {
+	padding-right: 3rem;
+}
+
+.for-input .form-character-count {
+	margin-left: -2.5rem;
+	width: 2.5rem;
+	justify-content: center;
+	border-left: 1px solid;
+}
+
+.for-textarea .form-character-count {
+	justify-content: flex-end;
+	padding-top: 0.25rem;
+}
+
+.form-character-count.error,
+.form-character-count.error.focus {
+	border-color: var(--danger);
+}
+
+.form-character-count.error {
+	color: var(--danger);
+}
+
+.form-info {
+	font-size: .9rem;
+	font-weight: normal;
+	color: var(--muted);
+	margin-top: .25rem;
+}
+
+.field-action {
+	font-size: .9rem;
+	padding: 0.25rem 0;
+}
+
+.util-quick-form .field-action a {
+	color: white;
+}
+
+.field-action.columns-2 {
+	display: flex;
+	justify-content: space-between;
+}
+
+.form-control + .form-info,
+.form-info-ancestor + .form-info,
+.editor + .form-info,
+.editor + script + .form-info,
+.input-group + .form-info {
+	margin-top: 0;
+	padding: 0.25rem 0.5rem;
+	border-left: 2px solid var(--border);
+	margin-left: 1rem;
+}
+
+.form-info a {
+	text-decoration: underline;
+	color: var(--muted);
+}
+
+.form-info > :last-child {
+	margin-bottom: 0;
+}
+
+input.form-color {
+	max-width: 6rem;
+}
+
+div.form-range {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	grid-column-gap: .5rem;
+	align-items: center;
+	width: 100%;
+}
+
+div.form-postcode-city {
+	display: grid;
+	grid-template-columns: 10rem 1fr;
+	column-gap: 1rem;
+}
+
+
+@media (min-width: 767px) {
+
+	div.form-e-invoicing-identifier-address {
+		display: grid;
+		grid-template-columns: auto 8rem 1fr;
+		align-items: center;
+		column-gap: 1rem;
+	}
+
+}
+.form-dropdown-toggle:hover {
+	text-decoration: none;
+}
+
+.form-dropdown-title {
+	display: flex;
+	column-gap: 0.5rem;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.form-dropdown-list {
+	background: white !important;
+	border: 1px solid #0002;
+	border-radius: var(--radius);
+}
+
+.form-dropdown-list input {
+	display: none;
+}
+
+.form-dropdown-list .dropdown-item {
+	color: var(--text);
+}
+
+.form-dropdown-list .dropdown-item.selected {
+	background-color: var(--background) !important;
+}
+
+.form-dropdown-list .dropdown-item:hover {
+	background-color: var(--secondary) !important;
+	color: white;
+	cursor: pointer;
+}
+
+.form-dropdown-list .dropdown-item.disabled {
+	pointer-events: none;
+	opacity: 0.5;
+}
+
+.form-dropdown-placeholder {
+	color: var(--border);
+}
+
+div.form-asterisk {
+	display: inline-block;
+	font-size: 0.8em;
+	transform: translate(0, -0.5em);
+	margin-left: 0.25rem;
+}
+
+div.form-asterisk svg {
+	color: var(--secondary-on-light, var(--secondary));
+}
+
+div.form-asterisk-info {
+	margin-bottom: 1rem;
+	font-size: 0.9rem;
+	color: var(--muted);
+	width: max-content;
+	background-color: #0000000a;
+	border-radius: var(--radius);
+	padding: 0.25rem 0.75rem;
+}
+
+/* Form fieldset */
+@media (min-width: 576px) {
+
+	div.form-fieldsets {
+		display: flex;
+		gap: 1rem;
+		flex-wrap: wrap;
+	}
+
+}
+
+@media (max-width: 575px) {
+
+	div.form-fieldsets {
+		display: grid;
+		gap: 0.5rem;
+		grid-template-columns: 1fr;
+	}
+
+}
+
+/* Form group */
+div.form-group {
+	padding: 0.5rem 0;
+}
+
+/* ⚠️ Le libellé au-dessus du champ n'était séparé de lui par rien : `label` vaut
+   `margin-bottom: 0` (`reboot.css:296`) et `FormUi::group()` n'écrit qu'une espace entre les deux
+   quand le formulaire est sur une colonne. La valeur reprend la gouttière que la forme à deux
+   colonnes pose déjà entre eux, à l'horizontale.
+
+   Annulée juste après pour cette forme-là : le libellé y est **à côté** du champ, dans une grille
+   qui tient l'écart, et une marge basse l'y décalerait de sa ligne. */
+div.form-group > label.form-control-label {
+	margin-bottom: 0.25rem;
+}
+
+.form-columns div.form-group > .form-control-label {
+	margin-bottom: 0;
+}
+
+.form-columns div.form-group:not(.form-group-nested) {
+	display: grid;
+	grid-column-gap: 1rem;
+}
+
+div.form-group-highlight {
+	background-color: var(--background);
+	padding: 1rem;
+	border-radius: var(--radius);
+}
+
+div.form-group-highlight.bg-primary,
+div.form-group-highlight.bg-secondary {
+	color: white;
+}
+
+div.form-group-highlight .form-control-label {
+	font-weight: bold;
+}
+
+.form-columns div.form-group.form-group-highlight {
+	align-items: center;
+}
+
+.form-columns-25 div.form-group {
+	grid-template-columns: 1fr 3fr;
+}
+
+.form-columns-33 div.form-group {
+	grid-template-columns: 1fr 2fr;
+}
+
+.form-columns-40 div.form-group {
+	grid-template-columns: 2fr 3fr;
+}
+
+.form-columns-50 div.form-group {
+	grid-template-columns: 1fr 1fr;
+}
+
+div.form-group.form-group-nested > .form-control-label {
+	margin-bottom: 0.125rem;
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+/* Un élément de grille garde min-width: auto, donc la largeur de son contenu : sans min-width: 0, un cadre défilant qu'il contient ne défile jamais */
+@media (max-width: 991px) {
+
+	.form-columns-md div.form-group:not(.form-group-nested) {
+		grid-template-columns: 1fr !important;
+	}
+
+	.form-columns-md div.form-group:not(.form-group-nested) > * {
+		min-width: 0;
+	}
+
+	.form-columns-md div.form-group:not(.form-group-nested) > .form-control-label {
+		margin: 0.5rem 0;
+		font-weight: bold;
+	}
+
+}
+
+@media (max-width: 767px) {
+
+	.form-columns-sm div.form-group:not(.form-group-nested) {
+		grid-template-columns: 1fr !important;
+	}
+
+	.form-columns-sm div.form-group:not(.form-group-nested) > * {
+		min-width: 0;
+	}
+
+	.form-columns-sm div.form-group:not(.form-group-nested) > .form-control-label {
+		margin: 0.5rem 0;
+		font-weight: bold;
+	}
+
+}
+
+@media (max-width: 575px) {
+
+	.form-columns-xs div.form-group:not(.form-group-nested) {
+		grid-template-columns: 1fr !important;
+	}
+
+	.form-columns-xs div.form-group:not(.form-group-nested) > * {
+		min-width: 0;
+	}
+
+	.form-columns-xs div.form-group:not(.form-group-nested) > .form-control-label:not(:empty) {
+		margin: 0.5rem 0;
+		font-weight: bold;
+	}
+
+	.form-columns-xs div.form-group:not(.form-group-nested) > .form-control-label:empty {
+		display: none;
+	}
+
+}
+
+.form-buttons {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	grid-column-gap: .5rem;
+	align-items: center;
+}
+
+/* La case et son libellé sont deux blocs côte à côte, et non un flux inline. En inline, la seconde
+   ligne d'un libellé long revenait sous la case au lieu de rester en retrait : mesuré sur les
+   paramètres d'un groupe, 42 px de haut pour un libellé de deux lignes dont la seconde décalée à
+   gauche sous la case.
+
+   ⚠️ Dans un `input-group` la case est seule et déjà posée en flex centré, avec une spécificité
+   supérieure : ces règles-là continuent de gagner et rien n'y bouge.
+
+   ⚠️ Si la règle manquait depuis si longtemps, c'est que ce champ est presque inemployé : balayage
+   de quatorze écrans du produit le 2026-09-07, aucun `label.field-checkbox` en dehors du
+   paramétrage d'un groupe. Les cases multiples passent par `checkboxes()`, qui rend une autre
+   classe (`field-radio-group-item`), et aucun appelant n'invoque `checkbox()` en direct. */
+.field-checkbox {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.375rem;
+}
+
+.field-checkbox > input {
+	flex: 0 0 auto;
+	margin-top: 0.1875rem;
+}
+
+.field-checkbox-label {
+	padding: 0 0.75rem;
+	margin: 0;
+	min-height: 3rem;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+}
+
+/* Radio group */
+.field-radio-group {
+	display: grid;
+	border: 1px solid #0002;
+	border-radius: var(--radius);
+	background-color: white;
+	line-height: 1.4;
+	padding: 0.5rem;
+}
+
+.field-radio-group-2 {
+	grid-template-columns: repeat(2, 1fr);
+}
+
+.field-radio-group-3 {
+	grid-template-columns: repeat(3, 1fr);
+}
+
+.field-radio-group-4 {
+	grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 575px) {
+
+	.field-radio-group-3,
+	.field-radio-group-4 {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+}
+
+.field-radio-group-item {
+	padding: 0.5rem;
+	cursor: pointer;
+	transition: background-color 0.5s;
+}
+
+.field-radio-group.field-radio-group-1 > .field-radio-group-item:not(:last-child) {
+	border-bottom: 1px dashed var(--border);
+}
+
+.field-radio-group-item:hover {
+	background-color: #ccc2;
+}
+
+.field-radio-group-item {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	grid-column-gap: 0.5rem;
+	align-items: baseline;
+}
+
+.field-radio-group-item h4 {
+	font-size: 1.2rem;
+}
+
+.field-radio-group-item > input[type="radio"] {
+	transform: translate(0, 1px);
+}
+
+/* Une case est plus haute que le texte, et sa ligne de base est son bord bas : alignée sur la
+   ligne de base, elle monte de 3 px au-dessus du libellé. Elle se centre sur la première ligne,
+   par un décalage qui lit sa propre hauteur et non une taille recopiée. */
+.field-radio-group-item > input[type="checkbox"] {
+	align-self: start;
+	margin-top: 0;
+	transform: translateY(calc(0.5lh - 50%));
+}
+
+.field-radio-group-item:has( > input[type="radio"]:checked:not(:disabled)):not(:has(h4)) {
+	font-weight: bold;
+}
+
+.field-radio-group-item:has( > input[type="radio"]:checked:not(:disabled)):has(h4) h4 {
+	font-weight: bold;
+}
+
+.field-radio-group-item > input:disabled,
+.field-radio-group-item > input:disabled + span {
+	opacity: 0.5;
+}
+
+/* La règle ci-dessus ne vise qu'un <span> frère du bouton, que radios() ne rend jamais : il rend un
+   <div>. L'atténuation ne porte donc que sur le libellé, et le bloc reste à pleine intensité — sans
+   quoi la raison hériterait du cumul et deviendrait le texte le moins lisible de l'écran. Même
+   mise en œuvre que l'entrée de menu désactivée qui porte sa raison, component.css .dropdown-item.
+   Le sélecteur ne vise que les options qui portent une raison : les autres gardent le rendu qu'elles
+   ont aujourd'hui. */
+.field-radio-group-item > input:disabled ~ div:has(.field-radio-group-reason) .field-radio-group-label {
+	opacity: 0.5;
+}
+
+.field-radio-group-reason {
+	margin-top: 0.25rem;
+	font-size: 90%;
+	font-weight: normal;
+	color: var(--muted);
+}
+
+.field-radio-group-action {
+	grid-column: 1 / -1;
+	padding: 0.25rem 0.5rem;
+	font-size: 0.9rem;
+	text-align: right;
+}
+
+.field-radio-select {
+	color: var(--primary);
+}
+
+.field-radio-separator {
+	color: var(--muted);
+}
+
+/* Switch */
+.field-switch {
+	border-radius: calc(var(--radius) * 2);
+	transition: all 0.5s;
+	display: inline-block;
+	vertical-align: middle;
+	font-size: 0.9rem;
+}
+
+.field-switch.field-switch-sm {
+	font-size: 0.8rem;
+}
+
+.field-switch {
+	/* La hauteur d'un .btn (1rem de texte, 0.5rem de marge de chaque côté, 1px de bordure), pour s'aligner sur les boutons voisins */
+	height: calc(2rem + 2px);
+	width: 4rem;
+	min-width: max-content;
+	border: 1px solid white;
+	position: relative;
+	cursor: pointer;
+	overflow: hidden;
+}
+
+.field-switch.field-switch-sm {
+	height: 1.5rem;
+	width: 2.4rem;
+}
+
+.field-switch.disabled {
+	/* Un switch désactivé garde la forme d'un interrupteur et ne se distingue que par son retrait :
+	   réduit à une pastille, il ne se lisait plus comme un état on/off. Le pointeur reste vivant,
+	   sans quoi le `title` qui dit pourquoi c'est verrouillé ne s'afficherait jamais ; c'est
+	   `TextUi::switch()` qui retire les attributs d'action, le curseur ne suffirait pas. */
+	cursor: default;
+	opacity: 0.5;
+}
+
+.field-switch.disabled:hover {
+	box-shadow: none;
+}
+
+.field-switch:hover {
+	box-shadow: 0 0 0.5rem var(--border);
+	text-decoration: none !important;
+}
+
+.field-switch input {
+	display: none;
+}
+
+.field-switch-on {
+	background-color: var(--success);
+}
+
+.field-switch-off {
+	background-color: var(--muted);
+}
+
+.field-switch .field-switch-text {
+	padding: 0 0.5rem;
+}
+
+.field-switch-on .field-switch-text {
+	margin-right: 1.3rem;
+}
+
+.field-switch-on.field-switch-sm .field-switch-text {
+	margin-right: 0.9rem;
+}
+
+.field-switch-off .field-switch-text {
+	margin-left: 1.3rem;
+}
+
+.field-switch-off.field-switch-sm .field-switch-text {
+	margin-left: 0.9rem;
+}
+
+.field-switch-off .field-switch-text {
+	transform: translate(0, -2rem);
+}
+
+.field-switch-off.field-switch-sm .field-switch-text {
+	transform: translate(0, calc(-1.5rem + 2px));
+}
+
+.field-switch .field-switch-text > div {
+	height: 2rem;
+	display: flex;
+	align-items: center;
+	line-height: 1;
+	color: white;
+}
+
+.field-switch.field-switch-sm .field-switch-text > div {
+	height: calc(1.5rem - 2px);
+}
+
+.field-switch-text > div:last-child {
+	padding-right: 0.3rem;
+}
+
+.field-switch-circle {
+	height: calc(1.2rem - 2px);
+	width: calc(1.2rem - 2px);
+	border-radius: 50%;
+	background-color: white;
+	position: absolute;
+	transition: left 0.25s;
+	margin: calc(0.4rem + 1px) 0;
+}
+
+.field-switch-sm .field-switch-circle {
+	height: calc(0.9rem - 2px);
+	width: calc(0.9rem - 2px);
+	margin: 0.4rem 0;
+}
+
+.field-switch-on .field-switch-circle {
+	left: calc(100% - 1.3rem + 2px - 0.3rem);
+}
+
+.field-switch-on.field-switch-sm .field-switch-circle {
+	left: calc(100% - 0.8rem + 2px - 0.3rem);
+}
+
+.field-switch-off .field-switch-circle {
+	left: 0.4rem;
+}
+
+/* Weeks */
+div.input-group > .input-group-addon.field-week-preview {
+	border-left: 0;
+	background-color: white;
+	text-align: right;
+	min-width: 75px;
+	font-size: 0.9rem;
+	user-select: none;
+}
+
+div.input-group > .input-group-addon.field-week-preview:empty {
+	display: none;
+}
+
+div.input-group > input:disabled + .input-group-addon.field-week-preview {
+	color: var(--muted);
+	background-color: var(--background-light);
+}
+
+.field-week-selector {
+	width: calc(100vw - 2rem);
+	max-width: 300px;
+	background: linear-gradient(to bottom, var(--background) 0%, #fff 50%, #fff 100%);
+	border-radius: var(--radius);
+	padding: 1rem;
+	user-select: none;
+}
+
+.field-week-selector-title h4 {
+	text-align: center;
+	margin-bottom: 0;
+}
+
+.field-week-selector-year {
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	text-align: center;
+	margin-bottom: 1rem;
+}
+
+.field-week-selector-year a.field-week-selector-navigation {
+	font-size: 1.2rem;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	line-height: 1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	text-decoration: none;
+	transition: font-size 0.25s;
+}
+
+.field-week-selector-year a.field-week-selector-navigation:hover {
+	font-size: 1.7rem;
+}
+
+.field-week-selector-year h4 {
+	text-align: center;
+	font-weight: bold;
+	margin: 0;
+}
+
+.field-week-selector-weeks {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	grid-column-gap: 0.25rem;
+	grid-row-gap: 0.25rem;
+	align-items: center;
+	overflow: hidden;
+}
+
+.field-week-selector-ticks {
+	display: grid;
+	grid-template-columns: repeat(38, 1fr);
+	position: relative;
+	text-align: center;
+}
+
+.field-week-selector-ticks > .field-week-selector-label {
+	line-height: 1;
+	padding-bottom: 1rem;
+	font-size: 0.9rem;
+}
+
+.field-week-selector-ticks > .field-week-selector-tick {
+	justify-content: center;
+	border-right: 1px solid #0002;
+	position: absolute;
+	top: 1.5rem;
+	height: 1000px;
+}
+
+.field-week-selector-month {
+	font-weight: bold;
+	line-height: 1.2;
+	text-transform: capitalize;
+	text-align: center;
+	border-radius: var(--radius);
+}
+
+a.field-week-selector-month {
+	background-color: rgba(0, 0, 0, 0.05);
+	color: var(--text);
+	text-decoration: none;
+	padding: 0.5rem 0.75rem;
+}
+
+a.field-week-selector-month:hover {
+	background-color: var(--primary);
+	color: white;
+}
+
+.field-week-selector-bubbles {
+	display: grid;
+	grid-template-columns: repeat(38, 1fr);
+	position: relative;
+}
+
+.field-week-selector-bubble {
+	text-align: center;
+	margin: 0 1px;
+}
+
+/* Une semaine se lit comme une case qui occupe sa place : l'arrondi en pilule de `.btn` en ferait un rond
+   dès que la semaine est presque aussi large que haute. Ses sept colonnes sur trente-huit sont plus étroites
+   que le carré minimal d'un bouton, et la grille déborderait alors sous `overflow: hidden`, coupant la
+   dernière semaine des mois qui finissent à droite. */
+.field-week-selector-bubble.btn.btn-sm {
+	min-width: 0;
+	padding-left: 0;
+	padding-right: 0;
+	border-radius: calc(var(--radius) / 2);
+}
+
+.field-week-selector-bubble-current {
+	background-color: white;
+	font-weight: bold;
+}
+
+/* Month */
+.field-month-native {
+	display: block;
+}
+
+.field-month-fallback {
+	display: flex;
+}
+
+/* Color field */
+.field-color {
+	display: inline-grid;
+	grid-template-columns: auto auto;
+	grid-column-gap: 1rem;
+	align-items: center;
+}
+.field-color input[type="color"] {
+	width: 5rem;
+	height: 3rem;
+}
+.field-color label {
+	color: var(--muted);
+	transition: color 0.5s;
+}
+.field-color label:hover {
+	color: inherit;
+}
+
+/* Autocomplete features */
+body.autocomplete-fullscreen-open {
+	overflow: hidden;
+	width: 100vw;
+}
+
+body.autocomplete-fullscreen-open[data-touch="no"] {
+	padding-right: 15px;
+}
+
+
+.autocomplete-placeholder {
+	display: none;
+}
+
+body[data-touch="yes"] .autocomplete-wrapper {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: white;
+}
+
+body[data-touch="no"] .autocomplete-dropdown {
+	position: absolute;
+}
+
+body[data-touch="no"] .autocomplete-dropdown.autocomplete-dropdown-textual:has(.autocomplete-list-empty) {
+	display: none;
+}
+
+body[data-touch="no"] .autocomplete-dropdown:empty {
+	display: none;
+}
+
+/* L'apparence de la liste est commune avec l'omnibox, dans ouvretaferme/main/static/css/component.css. */
+ul.autocomplete-list {
+	position: absolute;
+	list-style: none;
+	margin: 0;
+}
+
+body[data-touch="yes"] ul.autocomplete-list {
+	max-height: 80vh;
+}
+
+ul.autocomplete-list li {
+	font-weight: normal;
+	text-decoration: none;
+}
+
+body[data-touch="yes"] ul.autocomplete-list li:last-child {
+	padding-bottom: 60vh;
+}
+
+ul.autocomplete-list li a {
+	color: white;
+	display: flex;
+	align-items: center;
+	width: 100%;
+	text-decoration: none;
+	padding: 0.5rem 0.75rem;
+	margin: -0.5rem -0.75rem;
+}
+
+ul.autocomplete-list li.autocomplete-not-selectable {
+	background-color: #444;
+	cursor: auto;
+}
+ul.autocomplete-list li.autocomplete-not-selectable.disabled {
+	background-color: transparent;
+	color: #888;
+	cursor: default;
+}
+/* !important pour battre ul.autocomplete-list .color-muted, qui en porte un */
+ul.autocomplete-list li.autocomplete-not-selectable.disabled .color-muted {
+	color: inherit !important;
+}
+/* La rangée de tête reste en haut quand la liste défile, comme .util-omnibox-group, sur le fond de la liste, opaque pour
+cacher les lignes qui passent dessous. Pleine largeur, elle ne prend pas l'arrondi d'une ligne. La liste qui la porte perd son remplissage haut : collée sous un remplissage, la rangée
+laisse voir un filet des lignes au-dessus d'elle quand la liste tombe sur une demi-position de pixel. Son retrait de
+côté est celui du texte d'une ligne (sa marge plus son remplissage, component.css), pour que son libellé s'aligne sur
+les titres. La liste prend la largeur du champ, qui peut être plus étroit que la rangée : ses boutons passent alors à
+la ligne. */
+ul.autocomplete-list:has(> li.autocomplete-head:not(.autocomplete-head-placed)) {
+	padding-top: 0;
+}
+ul.autocomplete-list li.autocomplete-head {
+	flex-wrap: wrap;
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	margin: 0 0 var(--space-xxs);
+	padding: var(--space-sm) calc(var(--space-xs) + var(--space-sm)) var(--space-xs);
+	border-radius: 0;
+	background-color: inherit;
+}
+/* Posée par la réponse sous l'intitulé d'une section (form.js, `source()`), la rangée ne règle que cette section : elle
+défile avec elle, et ne vient pas couvrir les sections suivantes. */
+ul.autocomplete-list li.autocomplete-head-placed {
+	position: static;
+}
+ul.autocomplete-list li.autocomplete-head > span {
+	margin-right: var(--space-xxs);
+	opacity: 0.8;
+}
+ul.autocomplete-list li.autocomplete-link {
+	background-color: #444;
+	cursor: pointer;
+}
+
+ul.autocomplete-list li.autocomplete-link svg {
+	font-size: 1.5rem;
+	margin: 0.5rem;
+}
+
+ul.autocomplete-list li.autocomplete-list-empty {
+	padding-top: 1rem;
+	padding-bottom: 1rem;
+	font-style: italic;
+	color: #bbb !important;
+}
+
+ul.autocomplete-list .color-muted {
+	color: #bbb !important;
+}
+
+.autocomplete-dropdown div.autocomplete-place > div:first-child {
+	margin-bottom: 0.25rem;
+}
+
+.autocomplete-dropdown div.autocomplete-place > div:last-child {
+	font-size: 0.85rem;
+	color: #ddd;
+}
+
+/* Form field */
+body[data-touch="yes"] input.autocomplete-open {
+	font-size: 1.2rem;
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+	width: 80vw;
+	margin: 2rem auto 0;
+}
+
+a.autocomplete-empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.5rem;
+	background-color: rgba(0, 0, 0, 0.5);
+	color: white;
+}
+
+input[data-autocomplete-items] {
+	border-right: 0;
+}
+
+input[data-autocomplete-items]:placeholder-shown + a.autocomplete-empty:not(:focus) {
+	background-color: white;
+	border-top: 1px solid #0002;
+	border-right: 1px solid #0002;
+	border-bottom: 1px solid #0002;
+	pointer-events: none;
+}
+
+input[data-autocomplete-items]:disabled {
+	border-right: 1px solid #0002;
+	border-top-right-radius: var(--radius);
+	border-bottom-right-radius: var(--radius);
+}
+
+input[data-autocomplete-items]:disabled + a.autocomplete-empty {
+	display: none;
+}
+
+/* Results */
+.autocomplete-items:empty {
+	display: none;
+}
+
+.autocomplete-items-multiple:not(:empty) {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+	margin: 0.5rem 0;
+}
+
+.autocomplete-items-multiple .autocomplete-item {
+	display: flex;
+	column-gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.5rem 0.75rem;
+	border-radius: calc(var(--radius) / 2);
+	background-color: #00000008;
+	font-weight: bold;
+	line-height: 1.4;
+}
+
+.autocomplete-items-multiple .autocomplete-item-actions {
+	display: flex;
+	column-gap: 0.5rem;
+}
+
+.autocomplete-items.autocomplete-items-multiple.autocomplete-items-reorder .autocomplete-item {
+	width: 100%;
+}
+
+.autocomplete-items:not(.autocomplete-items-reorder) .autocomplete-reorder-up,
+.autocomplete-items:not(.autocomplete-items-reorder) .autocomplete-reorder-down {
+	display: none;
+}
+
+.autocomplete-items-multiple .autocomplete-item:first-child .autocomplete-reorder-up {
+	visibility: hidden;
+}
+
+.autocomplete-items-multiple .autocomplete-item:last-child .autocomplete-reorder-down {
+	visibility: hidden;
+}
+
+@media (max-width: 575px) {
+
+	.autocomplete-items-multiple .autocomplete-item {
+		width: 100%;
+		line-height: 1.3;
+		justify-content: space-between;
+	}
+
+}
+
+.form-password-toggle[data-visible="0"] .form-password-visible {
+	display: none;
+}
+
+.form-password-toggle[data-visible="1"] .form-password-hidden {
+	display: none;
+}
+
+.autocomplete-hint {
+	font-style: italic;
+	font-weight: normal;
+	opacity: 0.75;
+	white-space: normal;
+}

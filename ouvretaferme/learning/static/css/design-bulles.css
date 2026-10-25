@@ -1,0 +1,44 @@
+/* Gabarit « Bulles » des pages de formations d'un réseau : bandeau en dégradé clair de la teinte de
+   la couleur vers le fond, bas en ellipse. Cartes sans filet à ombre teintée, angles de 1,75 rem,
+   encadrés semés de deux bulles blanches.
+   Le fond de la page est un dégradé du fond choisi vers la couleur éclaircie, entre le fond adouci
+   et le blanc : Bulles n'est pas dans `LearningSetting::DESIGN_MATTERS`, les encres se calculent sur
+   ces deux bouts. Le bandeau lit la teinte que `CommunityLib::getTint()` tire du fond, sous l'encre
+   du texte. */
+
+.learning-public[data-learning-design="bulles"],
+.learning-doc[data-learning-design="bulles"] {
+	--radius: 1.75rem;
+	--radius-lg: 2.5rem;
+	--border: transparent;
+	--shadow-v2: 0 10px 30px color-mix(in srgb, var(--primary) 18%, transparent);
+	--heading-weight: 700;
+	--figure-background: color-mix(in srgb, var(--primary) 12%, white);
+	--table-head-background: color-mix(in srgb, var(--primary) 8%, white);
+	--table-head-case: none;
+	--callout-background: radial-gradient(circle at 93% 22%, rgb(255 255 255 / 70%) 0 1.4rem, transparent 1.45rem), radial-gradient(circle at 84% 78%, rgb(255 255 255 / 55%) 0 .7rem, transparent .75rem), color-mix(in srgb, var(--primary) 14%, white);
+	--callout-border: color-mix(in srgb, var(--primary-on-light) 45%, white);
+	--callout-radius: 1.75rem;
+	--marker-background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--primary) 35%, white), var(--primary) 70%);
+	--marker-ring: 0 4px 10px color-mix(in srgb, var(--primary) 35%, transparent);
+	--table-head-border: none;
+	--background-even: color-mix(in srgb, var(--primary) 5%, white);
+	--tab-active-background: var(--learning-tint);
+	--tab-active-color: var(--text);
+	--tab-radius: 999px;
+	--tab-bar-height: 0;
+	--quote-background: color-mix(in srgb, var(--primary) 5%, white);
+	--quote-radius: 1.75rem 1.75rem 1.75rem .25rem;
+	--quote-padding: 1rem 1.25rem;
+}
+
+.learning-public[data-learning-design="bulles"] {
+	background-image: linear-gradient(165deg, var(--learning-background) 10%, color-mix(in srgb, var(--primary) 22%, white));
+}
+
+.learning-public[data-learning-design="bulles"] .community-header {
+	background: linear-gradient(135deg, var(--learning-tint), var(--learning-background));
+	--muted: var(--learning-tint-muted);
+	border-radius: 0 0 50% 50% / 0 0 3rem 3rem;
+	padding-bottom: var(--space-xxl);
+}

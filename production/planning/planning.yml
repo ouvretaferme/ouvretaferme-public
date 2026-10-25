@@ -1,0 +1,28 @@
+Due:
+  id: serial32
+  structure: structure\Structure
+  source: text8(1, 30) @charset(ascii)
+  type: text8(1, 50) @charset(ascii)
+  reference: ?int32(0, null)
+  dueDate: ?date
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["structure", "dueDate"]
+  ]
+
+Reminder:
+  id: serial32
+  structure: structure\Structure
+  week: week
+  date: ?date
+  text: text8(1, 250)
+  status: enum(TODO, DONE) = TODO
+  doneAt: ?datetime
+  doneBy: ?user\User
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  updatedAt: ?datetime
+  INDEX: [
+    ["structure", "status", "week"],
+    ["structure", "status", "doneAt"]
+  ]

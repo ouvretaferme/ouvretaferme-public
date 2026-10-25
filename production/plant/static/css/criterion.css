@@ -1,0 +1,203 @@
+#plant-criterion {
+	scroll-margin-top: calc(var(--mainSticky) + 1rem);
+}
+
+.plant-criterion-matrix {
+	table-layout: fixed;
+	min-width: 1100px;
+}
+
+.plant-criterion-col-species {
+	width: 15rem;
+}
+
+.plant-criterion-col-spacer {
+	width: 10rem;
+}
+
+.plant-criterion-matrix thead th {
+	position: relative;
+}
+
+.plant-criterion-family {
+	padding-bottom: 0.25rem;
+	border-bottom: 2px solid var(--border-light);
+	color: var(--criterion-color, var(--color-neutral));
+	white-space: nowrap;
+}
+
+.plant-criterion-head {
+	height: 10rem;
+	padding: 0;
+}
+
+.plant-criterion-matrix td.text-center {
+	border-left: 1px solid var(--border-light);
+}
+
+.plant-criterion-head::before {
+	content: "";
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 14.14rem;
+	height: 1px;
+	background-color: var(--border-light);
+	transform-origin: 0 50%;
+	transform: rotate(-45deg);
+}
+
+.plant-criterion-head span {
+	position: absolute;
+	bottom: 0;
+	left: 50%;
+	transform-origin: 0 50%;
+	transform: rotate(-45deg);
+	white-space: nowrap;
+	text-transform: none;
+	font-weight: normal;
+}
+
+.plant-criterion-corner,
+.plant-criterion-species {
+	position: sticky;
+	left: 0;
+	background-color: white;
+}
+
+.plant-criterion-corner {
+	z-index: 60;
+}
+
+.plant-criterion-species {
+	z-index: 1;
+	white-space: nowrap;
+}
+
+.plant-criterion-species > span {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.plant-criterion-head.plant-criterion-column span {
+	color: var(--criterion-color);
+	font-weight: bold;
+}
+
+.plant-criterion-name {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.plant-criterion-count {
+	margin-left: auto;
+	padding-left: 0.75rem;
+	color: var(--muted);
+}
+
+.plant-criterion-todo {
+	color: var(--secondary);
+}
+
+.plant-criterion-species.is-none {
+	font-weight: bold;
+}
+
+.plant-criterion-matrix tbody tr:hover > *,
+.plant-criterion-matrix tbody .plant-criterion-column {
+	box-shadow: inset 0 0 0 100vmax color-mix(in srgb, var(--secondary) 4%, transparent);
+}
+
+.plant-criterion-matrix tbody tr:hover > .plant-criterion-column {
+	box-shadow: inset 0 0 0 100vmax color-mix(in srgb, var(--secondary) 8%, transparent);
+}
+
+.plant-criterion-head.plant-criterion-column::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background-color: color-mix(in srgb, var(--secondary) 4%, transparent);
+	transform-origin: bottom left;
+	transform: skewX(-45deg);
+}
+
+.plant-criterion-cell {
+	display: grid;
+	place-items: center;
+	min-height: var(--touch-target);
+	margin: -0.25rem -0.5rem;
+	cursor: pointer;
+}
+
+.plant-criterion-mark {
+	width: 1.25rem;
+	height: 1.25rem;
+	display: block;
+}
+
+.plant-criterion-ring {
+	fill: none;
+	stroke: color-mix(in srgb, var(--criterion-color, var(--secondary)) 55%, white);
+	stroke-width: 1.5;
+	opacity: 0;
+}
+
+.plant-criterion-square {
+	fill: var(--criterion-color, var(--secondary));
+	opacity: 0;
+}
+
+.plant-criterion-cell.is-community .plant-criterion-ring {
+	opacity: 0.65;
+}
+
+.plant-criterion-cell.is-mine .plant-criterion-square {
+	opacity: 1;
+}
+
+.plant-criterion-cell:not(.is-full):not(.is-mine):hover .plant-criterion-square {
+	opacity: 0.3;
+}
+
+.plant-criterion-cell.is-full {
+	cursor: not-allowed;
+}
+
+.plant-criterion-legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem 1.5rem;
+	color: var(--muted);
+}
+
+.plant-criterion-legend > span {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.plant-criterion-legend .is-community .plant-criterion-ring {
+	opacity: 0.65;
+}
+
+.plant-criterion-legend .is-mine .plant-criterion-square {
+	opacity: 1;
+}
+
+#plant-criterion .is-production { --criterion-color: var(--criterion-production); }
+#plant-criterion .is-resistance { --criterion-color: var(--criterion-resistance); }
+#plant-criterion .is-work { --criterion-color: var(--criterion-work); }
+#plant-criterion .is-quality { --criterion-color: var(--criterion-quality); }
+
+.plant-criterion-group {
+	margin-top: 1.5rem;
+}
+
+.plant-criterion-group-title {
+	margin: 0 0 0.5rem 0;
+	color: var(--muted);
+	font-weight: normal;
+}

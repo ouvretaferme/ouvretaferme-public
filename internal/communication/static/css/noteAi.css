@@ -1,0 +1,23 @@
+/* Les types de structure, une liste de cases par famille (N19). */
+.communication-note-family + .communication-note-family {
+	margin-top: 0.75rem;
+}
+
+/* Les chiffres sont dans un champ du formulaire, qui porte déjà sa marge. */
+.util-figures.communication-note-recipients {
+	margin-bottom: 0;
+}
+
+/* R3-B : la marque de l'équipe face au titre de l'envoi, pas au milieu d'une carte qui porte tout
+   le texte de la note. */
+.communication-note-card > .util-deck-head {
+	align-items: flex-start;
+}
+
+.communication-note-content {
+	margin-top: 0.125rem;
+}
+
+.communication-note-content p:last-child {
+	margin-bottom: 0;
+}

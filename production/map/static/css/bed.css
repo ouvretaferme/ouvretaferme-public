@@ -1,0 +1,534 @@
+/* Liste de planches avec leurs cultures */
+div.bed-item-wrapper {
+	position: relative;
+}
+
+div.bed-item-grid {
+	display: grid;
+	align-items: baseline;
+	background-color: white;
+	break-inside: avoid;
+}
+
+div.bed-item-grid.selected,
+div.bed-item-grid.selected .bed-item-bed {
+	background-color: var(--info) !important;
+}
+
+div.bed-item-fill {
+	display: none;
+}
+
+@media print {
+
+	div.plot-wrapper.plot-wrapper-preserve {
+		break-inside: avoid;
+	}
+
+}
+
+div.zone-wrapper:has(input.zone-title-fill:checked) .bed-item-fill-zone,
+div.plot-wrapper:has(input.plot-title-fill:checked) .bed-item-fill-plot {
+	display: grid;
+	padding: 0.5rem 0;
+}
+
+body:not(.bed-updating):not(.panel-open) div.zone-wrapper:has(.place-grid-series-timeline) .bed-item-fill-zone,
+body:not(.bed-updating):not(.panel-open) div.plot-wrapper:has(.place-grid-series-timeline) .bed-item-fill-plot {
+	display: grid;
+}
+
+body.bed-updating div.zone-wrapper .bed-item-fill-zone,
+body.bed-updating div.plot-wrapper .bed-item-fill-plot,
+body.panel-open div.zone-wrapper .bed-item-fill-zone,
+body.panel-open div.plot-wrapper .bed-item-fill-plot {
+	display: grid;
+	padding: 0.5rem 0;
+}
+
+div.bed-item-grid-plan:not(.bed-item-grid-header):nth-child(even),
+div.bed-item-grid-plan:not(.bed-item-grid-header):nth-child(even) .bed-item-bed {
+	background-color: white;
+}
+
+div.bed-item-grid-plan:not(.bed-item-grid-header):nth-child(odd),
+div.bed-item-grid-plan:not(.bed-item-grid-header):nth-child(odd) .bed-item-bed {
+	background-color: var(--background-odd);
+}
+
+div.bed-item-grid-plan:not(.bed-item-grid-header):hover,
+div.bed-item-grid-plan:not(.bed-item-grid-header):hover .bed-item-bed,
+div.bed-item-grid-rotation:not(.bed-item-grid-header):hover {
+	background-color: var(--background);
+	transition: background-color 0.25s;
+}
+
+div.bed-item-grid-plan:not(.bed-item-grid-header),
+div.bed-item-grid-rotation:not(.bed-item-grid-header) {
+	border-bottom: 1px solid var(--border);
+}
+
+div.bed-item-grid-plan {
+	grid-template-columns: 12rem 1fr;
+	align-items: center;
+}
+
+@media print {
+
+	div.bed-item-grid-plan {
+		grid-template-columns: 16rem 1fr !important;
+	}
+
+}
+
+div.bed-item-grid-plan.bed-item-grid-header {
+	align-items: end;
+}
+
+div.zone-update div.bed-item-grid-plan {
+	grid-template-columns: 16rem 1fr;
+}
+
+div.series-grid {
+	left: 12rem;
+}
+
+div.zone-update div.zone-wrapper div.series-grid {
+	left: 16rem;
+}
+
+@media print {
+
+	div.series-grid {
+		left: 16rem !important;
+	}
+
+}
+
+div.bed-item-grid-rotation-5 {
+	grid-template-columns: 1fr repeat(5, 1fr);
+}
+
+div.bed-item-grid-rotation-4 {
+	grid-template-columns: 1fr repeat(4, 1fr);
+}
+
+div.bed-item-grid-rotation-3 {
+	grid-template-columns: 1fr repeat(3, 1fr);
+}
+
+div.bed-item-grid-rotation-2 {
+	grid-template-columns: 1fr repeat(2, 1fr);
+}
+
+@media (max-width: 1199px) {
+
+	div.bed-item-grid-plan {
+		grid-template-columns: 9rem 1fr;
+	}
+
+	div.zone-update div.bed-item-grid-plan {
+		grid-template-columns: 12rem 1fr;
+	}
+
+	div.zone-wrapper div.series-grid {
+		left: 9rem;
+	}
+
+	div.zone-update div.zone-wrapper div.series-grid {
+		left: 12rem;
+	}
+
+}
+
+@media (max-width: 768px) {
+
+	div.bed-item-grid-rotation-5 {
+		grid-template-columns: 8rem repeat(5, 1fr);
+	}
+
+	div.bed-item-grid-rotation-4 {
+		grid-template-columns: 8rem repeat(4, 1fr);
+	}
+
+	div.bed-item-grid-rotation-3 {
+		grid-template-columns: 8rem repeat(3, 1fr);
+	}
+
+	div.bed-item-grid-rotation-2 {
+		grid-template-columns: 8rem repeat(2, 1fr);
+	}
+
+	div.zone-update div.bed-item-grid-plan {
+		grid-template-columns: 10rem 1fr;
+	}
+
+	div.zone-update div.zone-wrapper div.series-grid {
+		left: 10rem;
+	}
+
+}
+
+div.bed-item-grid .bed-item-bed {
+	align-self: stretch;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+}
+
+@media screen {
+
+	div.bed-item-grid .bed-item-bed {
+		position: sticky;
+	}
+
+	body[data-touch="no"] main div.bed-item-grid .bed-item-bed {
+		left: calc(var(--nav-width) + var(--container-padding));
+	}
+
+	body[data-touch="yes"] main div.bed-item-grid .bed-item-bed {
+		left: 0;
+	}
+
+	.panel div.bed-item-grid .bed-item-bed {
+		left: 0;
+	}
+
+	body main div.plot-card div.bed-item-grid .bed-item-bed {
+		left: 0;
+	}
+
+}
+
+.bed-item-select {
+	align-self: stretch;
+	color: white;
+	margin: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	width: 3rem;
+	min-width: 3rem;
+}
+
+@media (max-width: 991px) {
+
+	.bed-item-select {
+		width: 2.5rem;
+		min-width: 2.5rem;
+	}
+
+}
+
+div.bed-item-grid .bed-item-select {
+	background-color: #0001;
+}
+
+div.zone-title .bed-item-select,
+div.plot-title .bed-item-select {
+	margin-right: 0.75rem;
+}
+
+
+div.bed-item-grid:has(input[name^="beds"]:checked) .bed-item-select {
+	background-color: var(--info);
+}
+
+div.bed-item-grid .bed-item-content {
+	line-height: 1.2;
+	display: flex;
+	width: 100%;
+}
+
+@media screen {
+
+	div.bed-item-grid .bed-item-content {
+		flex-direction: column;
+		justify-content: center;
+		padding-left: 0.75rem;
+		padding-top: 0.25rem;
+		padding-bottom: 0.25rem;
+	}
+
+}
+
+@media print {
+
+	div.bed-item-grid .bed-item-content {
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.25rem 0.75rem;
+	}
+
+}
+
+body.bed-updating div.bed-item-grid:has(input[name^="beds"]:checked) .bed-item-content {
+	min-height: 5rem;
+}
+
+div.bed-item-grid div.bed-item-name {
+	letter-spacing: -0.1px;
+	display: flex;
+	justify-content: space-between;
+}
+
+div.bed-item-grid div.bed-item-name a,
+div.bed-item-grid div.bed-item-name-fill {
+	color: black;
+}
+
+div.bed-item-grid div.bed-item-name-fill {
+	display: none;
+}
+
+div.bed-item-grid div.bed-item-size {
+	font-size: 0.7rem;
+	color: #999;
+}
+
+div.bed-item-grid div.bed-item-size-read {
+	margin-top: 0.125rem;
+}
+
+div.bed-item-grid div.bed-item-size-write,
+div.bed-item-grid div.bed-item-size-fill {
+	width: 12rem;
+	margin-top: 0.25rem;
+}
+
+
+div.bed-item-grid div.bed-item-size-write input,
+div.bed-item-grid div.bed-item-size-fill input {
+	text-align: center;
+}
+
+div.bed-item-grid div.bed-item-size-write .input-group-addon,
+div.bed-item-grid div.bed-item-size-fill .input-group-addon {
+	background-color: var(--background) !important;
+	font-size: 0.8rem !important;
+}
+
+div.bed-item-grid:has(input[name^="beds"]:checked) div.bed-item-size-read {
+	display: none;
+}
+
+div.bed-item-grid:not(:has(input[name^="beds"]:checked)) div.bed-item-size-write {
+	display: none;
+}
+
+div.bed-item-grid .bed-item-rotation {
+	font-size: 0.9rem;
+	color: var(--secondary);
+	white-space: nowrap;
+	padding-right: 0.5rem;
+}
+
+@media (max-width: 991px) {
+
+	div.bed-item-grid .bed-item-rotation {
+		display: none;
+	}
+
+}
+
+/* Pas de clip-path : il rogne l'affichage mais laisse le débordement dans la zone de défilement */
+div.bed-item-grid div.bed-item-places {
+	overflow-x: clip;
+}
+
+div.bed-item-grid div.bed-item-cultivation {
+	padding: 0.5rem;
+	height: 100%;
+}
+
+div.bed-item-grid-rotation div.bed-item-cultivation {
+	height: calc(100% - 1px);
+	margin-bottom: 1px;
+}
+
+div.bed-item-grid div.series-timeline-season:not(:empty) {
+	overflow: hidden;
+}
+
+div.bed-item-grid div.bed-item-cultivation-muted {
+	opacity: 0.5;
+}
+
+div.bed-item-grid div.bed-item-followup,
+div.bed-item-grid div.bed-item-followup + div,
+div.bed-item-grid div.bed-item-followup + div + div {
+	border-top: 1px solid var(--border);
+}
+
+div.bed-item-grid div.bed-item-cultivation-family {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+div.bed-item-grid div.bed-item-cultivation-family > * {
+	margin-right: -0.33rem;
+	margin-bottom: 0.25rem;
+}
+
+div.bed-item-grid div.bed-item-cultivation-family > .bed-item-cultivation-gap {
+	margin-right: 0;
+	margin-left: 0.75rem;
+}
+
+div.bed-item-grid div.bed-item-cultivation-plant {
+	font-size: 0.9rem;
+	line-height: 1;
+}
+
+/* Grid */
+/* Create */
+#bed-create-names {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	grid-gap: 1rem;
+}
+
+#bed-create-names:not(:empty) {
+	margin-top: 1rem;
+}
+
+
+.bed-create-one h5 {
+	margin-bottom: 0.25rem;
+}
+
+.bed-create-fill {
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-gap: 0.5rem;
+}
+
+@media (max-width: 991px) {
+
+	.bed-create-fill {
+		grid-template-columns: auto;
+	}
+
+}
+
+/* Write */
+
+div.bed-write-size-form {
+	display: grid;
+	grid-template-columns: 4fr 3fr;
+	align-items: center;
+	grid-column-gap: 0.5rem;
+	margin-top: 0.5rem;
+}
+
+@media (max-width: 575px) {
+
+	div.bed-write-size-form {
+		grid-template-columns: 1fr;
+		grid-row-gap: 0.5rem;
+	}
+
+}
+
+div.bed-write-size-area {
+	font-weight: bold;
+	margin-top: 0.5rem;
+	text-align: right;
+}
+
+div.bed-write-size-area[data-area="0"] {
+	display: none;
+}
+
+div.plot-card div[class*="bed-item-grid-rotation"]:not(.bed-item-grid-header) {
+	min-height: 2.75rem;
+	align-items: center;
+}
+
+div.plot-card div.bed-item-cultivation {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-width: 0;
+	height: calc(100% - 0.375rem);
+	margin: 0.1875rem 0.25rem;
+	padding: 0.25rem 0.5rem;
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.plot-card div.bed-item-cultivation-family {
+	flex: none;
+	align-items: center;
+	gap: 0.125rem;
+	flex-wrap: nowrap;
+}
+
+div.plot-card div.bed-item-cultivation-family > * {
+	margin: 0;
+}
+
+.plot-card div.bed-item-cultivation-plant {
+	min-width: 0;
+	color: var(--muted);
+	font-size: 0.8125rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.plot-card div.bed-item-cultivation-plant a {
+	color: inherit;
+}
+
+.bed-item-cultivation-empty {
+	color: var(--muted);
+}
+
+.bed-item-cultivation-gap {
+	margin-left: 0.25rem;
+	font-size: 0.6875rem;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.bed-item-cultivation-return-close {
+	box-shadow: inset 0 0 0 2px var(--danger);
+}
+
+.bed-item-cultivation-return-close .bed-item-cultivation-gap {
+	color: var(--danger);
+}
+
+.bed-item-cultivation-return-near {
+	box-shadow: inset 0 0 0 2px var(--warning);
+}
+
+.bed-item-cultivation-return-near .bed-item-cultivation-gap {
+	color: var(--warning);
+}
+
+.bed-item-cultivation-family-return {
+	position: relative;
+	z-index: 1;
+}
+
+.bed-item-cultivation-family-return .family-vignette-letter {
+	box-shadow: 0 0 0 2px white, 0 0 0 4px var(--warning);
+}
+
+.bed-item-cultivation-return-close .bed-item-cultivation-family-return .family-vignette-letter {
+	box-shadow: 0 0 0 2px white, 0 0 0 4px var(--danger);
+}
+
+.plot-title-watch {
+	color: var(--danger);
+	font-size: 0.8125rem;
+	font-weight: 600;
+}
+
+.plot-card div.bed-item-rotation-fill,
+.plot-card div.bed-item-rotation-fill .bed-item-bed {
+	background-color: var(--background-odd);
+}

@@ -1,0 +1,1632 @@
+[
+	{
+		"plant": "Abricot",
+		"slug": "abricot",
+		"family": "tree",
+		"d": 3.5,
+		"color": "#f59a1c",
+		"leaf": "#6fb52e",
+		"accent": "#5a2f24"
+	},
+	{
+		"plant": "Achillée",
+		"slug": "achillee",
+		"fqn": "achillee-millefeuille",
+		"family": "upright",
+		"color": "#f1ecd9",
+		"leaf": "#46623a",
+		"accent": "#d4587e",
+		"parterre": true
+	},
+	{
+		"plant": "Agastache",
+		"slug": "agastache",
+		"family": "upright",
+		"color": "#8f84dc",
+		"leaf": "#5fa544",
+		"accent": "#6a50b4",
+		"parterre": true
+	},
+	{
+		"plant": "Ail",
+		"slug": "ail",
+		"family": "stalks",
+		"color": "#b4ae87",
+		"leaf": "#799f66",
+		"accent": "#f1ede0",
+		"size": 1.7,
+		"sink": 0.25
+	},
+	{
+		"plant": "Amarante",
+		"slug": "amarante",
+		"family": "tall",
+		"color": "#c4163f",
+		"leaf": "#6fa046",
+		"accent": "#8f1440",
+		"parterre": true
+	},
+	{
+		"plant": "Ammi",
+		"slug": "ammi",
+		"family": "tall",
+		"color": "#f4f3e6",
+		"leaf": "#7fb24c",
+		"accent": "#dfe8c8",
+		"parterre": true
+	},
+	{
+		"plant": "Ancolie",
+		"slug": "ancolie",
+		"family": "upright",
+		"color": "#6a4fc0",
+		"leaf": "#6f9a78",
+		"accent": "#ece6f8",
+		"parterre": true
+	},
+	{
+		"plant": "Anémone",
+		"slug": "anemone",
+		"family": "upright",
+		"color": "#5a2fa6",
+		"leaf": "#5f9a45",
+		"accent": "#f3f0f4",
+		"parterre": true
+	},
+	{
+		"plant": "Aneth",
+		"slug": "aneth",
+		"family": "tall",
+		"color": "#e2cf3a",
+		"leaf": "#7aa08a",
+		"accent": "#4f7a52",
+		"standing": true
+	},
+	{
+		"plant": "Arroche",
+		"slug": "arroche",
+		"family": "upright",
+		"color": "#66213f",
+		"leaf": "#43112b",
+		"accent": "#3a0f24",
+		"standing": true
+	},
+	{
+		"plant": "Artichaut",
+		"slug": "artichaut",
+		"family": "upright",
+		"color": "#5f8d4d",
+		"leaf": "#6ab14f",
+		"accent": "#8a6aa0"
+	},
+	{
+		"plant": "Asperge",
+		"slug": "asperge",
+		"family": "tall",
+		"color": "#5f9440",
+		"leaf": "#74a94a",
+		"accent": "#c3d48f"
+	},
+	{
+		"plant": "Aubergine",
+		"slug": "aubergine",
+		"family": "staked",
+		"color": "#573a79",
+		"leaf": "#518c4f",
+		"accent": "#8a6a45"
+	},
+	{
+		"plant": "Avoine",
+		"slug": "avoine",
+		"family": "upright",
+		"color": "#6fa046",
+		"leaf": "#4c7a36",
+		"accent": "#efe1ac",
+		"parterre": true
+	},
+	{
+		"plant": "Basilic",
+		"slug": "basilic",
+		"family": "rosette",
+		"color": "#3a7337",
+		"leaf": "#71b554",
+		"accent": "#8a6a45",
+		"standing": true
+	},
+	{
+		"plant": "Betterave",
+		"slug": "betterave",
+		"family": "fanes",
+		"color": "#b82761",
+		"leaf": "#7a9c4c",
+		"accent": "#8e1f3f",
+		"sink": 0.33,
+		"pitch": 1.39,
+		"size": 1.5
+	},
+	{
+		"plant": "Blé",
+		"slug": "ble",
+		"family": "upright",
+		"color": "#dba63a",
+		"leaf": "#e3cc85",
+		"accent": "#b57f24",
+		"parterre": true
+	},
+	{
+		"plant": "Blette",
+		"slug": "blette",
+		"family": "upright",
+		"color": "#72a352",
+		"leaf": "#6eb550",
+		"accent": "#e04a3a",
+		"standing": true
+	},
+	{
+		"plant": "Bleuet",
+		"slug": "bleuet",
+		"family": "upright",
+		"color": "#5b93f7",
+		"leaf": "#9db497",
+		"accent": "#2a2f86",
+		"parterre": true
+	},
+	{
+		"plant": "Bourrache",
+		"slug": "bourrache",
+		"family": "bush",
+		"color": "#9fcaf6",
+		"leaf": "#86a07a",
+		"accent": "#1d1b24",
+		"parterre": true
+	},
+	{
+		"plant": "Souci",
+		"slug": "calendula",
+		"family": "bush",
+		"color": "#ee7613",
+		"leaf": "#93bb58",
+		"accent": "#9a4416",
+		"parterre": true
+	},
+	{
+		"plant": "Camomille",
+		"slug": "camomille",
+		"family": "bush",
+		"color": "#f7f5ea",
+		"leaf": "#93c046",
+		"accent": "#f0b81a",
+		"parterre": true
+	},
+	{
+		"plant": "Campanule",
+		"slug": "campanule",
+		"family": "upright",
+		"color": "#6d4fc6",
+		"leaf": "#6f9655",
+		"accent": "#cfc2f2",
+		"parterre": true
+	},
+	{
+		"plant": "Capucine",
+		"slug": "capucine",
+		"family": "bush",
+		"color": "#f07418",
+		"leaf": "#79ad4a",
+		"accent": "#c42a1c",
+		"parterre": true
+	},
+	{
+		"plant": "Cardon",
+		"slug": "cardon",
+		"family": "upright",
+		"color": "#c3cfc6",
+		"leaf": "#8a9e90",
+		"accent": "#c4a64e"
+	},
+	{
+		"plant": "Carotte",
+		"slug": "carotte",
+		"family": "fanes",
+		"color": "#e78404",
+		"leaf": "#8da63d",
+		"accent": "#f08a24",
+		"sink": 0.33,
+		"pitch": 1.39,
+		"size": 1.5
+	},
+	{
+		"plant": "Cassis",
+		"slug": "cassis",
+		"family": "berry",
+		"d": 1.2,
+		"color": "#141a3a",
+		"leaf": "#5f9140",
+		"accent": "#9a7d62"
+	},
+	{
+		"plant": "Céleri branche",
+		"slug": "celeri-branche",
+		"family": "upright",
+		"color": "#70a434",
+		"leaf": "#6eb54a",
+		"accent": "#bcd99a",
+		"standing": true
+	},
+	{
+		"plant": "Céleri à couper",
+		"slug": "celeri-couper",
+		"family": "stalks",
+		"color": "#a3c763",
+		"leaf": "#358c2b",
+		"accent": "#d0e49c",
+		"standing": true
+	},
+	{
+		"plant": "Céleri-rave",
+		"slug": "celeri-rave",
+		"family": "fanes",
+		"color": "#b1987a",
+		"leaf": "#77a954",
+		"accent": "#ece0bf",
+		"sink": 0.33,
+		"pitch": 1.39
+	},
+	{
+		"plant": "Célosie",
+		"slug": "celosie",
+		"family": "upright",
+		"color": "#d4202a",
+		"leaf": "#5a9636",
+		"accent": "#f2bf26",
+		"parterre": true
+	},
+	{
+		"plant": "Cerfeuil",
+		"slug": "cerfeuil",
+		"family": "rosette",
+		"color": "#a2d04e",
+		"leaf": "#c4e46e",
+		"accent": "#4f8a2c",
+		"standing": true
+	},
+	{
+		"plant": "Cerise",
+		"slug": "cerise",
+		"family": "tree",
+		"d": 4,
+		"color": "#4f9a35",
+		"leaf": "#2f6e2c",
+		"accent": "#8a3f2e"
+	},
+	{
+		"plant": "Champignon de Paris",
+		"slug": "champignon-de-paris",
+		"family": "rosette",
+		"color": "#f4eedf",
+		"leaf": "#33241c",
+		"accent": "#a98478"
+	},
+	{
+		"plant": "Chanvre",
+		"slug": "chanvre",
+		"family": "tall",
+		"color": "#7f8f4c",
+		"leaf": "#2f5a26",
+		"accent": "#c2d67a"
+	},
+	{
+		"plant": "Chicorée frisée",
+		"slug": "chicoree-frisee",
+		"family": "rosette",
+		"color": "#5fae32",
+		"leaf": "#3a7a24",
+		"accent": "#efeaa6"
+	},
+	{
+		"plant": "Chicorée sauvage",
+		"slug": "chicoree-sauvage",
+		"family": "rosette",
+		"color": "#2e7a2c",
+		"leaf": "#5aa83a",
+		"accent": "#5aa83a"
+	},
+	{
+		"plant": "Chicorée scarole",
+		"slug": "chicoree-scarole",
+		"family": "rosette",
+		"color": "#5cae3c",
+		"leaf": "#2f7a2a",
+		"accent": "#f4ec9f"
+	},
+	{
+		"plant": "Chou blanc",
+		"slug": "chou-blanc",
+		"family": "cabbage",
+		"color": "#9ea689",
+		"leaf": "#82a872",
+		"accent": "#c9df9e"
+	},
+	{
+		"plant": "Chou brocoli",
+		"slug": "chou-brocoli",
+		"family": "cabbage",
+		"color": "#4f9541",
+		"leaf": "#71a463",
+		"accent": "#2f5d34"
+	},
+	{
+		"plant": "Chou de Bruxelles",
+		"slug": "chou-de-bruxelles",
+		"family": "tall",
+		"color": "#c3da8a",
+		"leaf": "#476f68",
+		"accent": "#6f9174",
+		"standing": true
+	},
+	{
+		"plant": "Chou de Milan",
+		"slug": "chou-de-milan",
+		"family": "cabbage",
+		"color": "#539753",
+		"leaf": "#72a465",
+		"accent": "#c9df9e"
+	},
+	{
+		"plant": "Chou fleur",
+		"slug": "chou-fleur",
+		"family": "cabbage",
+		"color": "#747874",
+		"leaf": "#789f6c",
+		"accent": "#f4ecd6"
+	},
+	{
+		"plant": "Chou kale",
+		"slug": "chou-kale",
+		"family": "upright",
+		"color": "#3e6560",
+		"leaf": "#6a9289",
+		"accent": "#a3b39c",
+		"standing": true
+	},
+	{
+		"plant": "Chou pak choï",
+		"slug": "chou-pak-choi",
+		"family": "upright",
+		"module": "pak-choi",
+		"color": "#eef1df",
+		"leaf": "#2d5a29",
+		"accent": "#4a7d35",
+		"size": 1.5
+	},
+	{
+		"plant": "Chou pë-tsaï",
+		"slug": "chou-pe-tsai",
+		"family": "upright",
+		"module": "pe-tsai",
+		"color": "#94a44d",
+		"leaf": "#77b54f",
+		"accent": "#eef2dc"
+	},
+	{
+		"plant": "Chou pointu",
+		"slug": "chou-pointu",
+		"family": "cabbage",
+		"color": "#d6eaa0",
+		"leaf": "#5c8a48",
+		"accent": "#97bb68"
+	},
+	{
+		"plant": "Chou rave",
+		"slug": "chou-rave",
+		"family": "cabbage",
+		"color": "#c9dc94",
+		"leaf": "#46776d",
+		"accent": "#a9c977",
+		"size": 1.3
+	},
+	{
+		"plant": "Chou romanesco",
+		"slug": "chou-romanesco",
+		"family": "cabbage",
+		"color": "#5c7a5a",
+		"leaf": "#7da39a",
+		"accent": "#cfe04e"
+	},
+	{
+		"plant": "Chou rouge",
+		"slug": "chou-rouge",
+		"family": "cabbage",
+		"color": "#ae518b",
+		"leaf": "#879a72",
+		"accent": "#7b3f7a"
+	},
+	{
+		"plant": "Chrysanthème",
+		"slug": "chrysantheme",
+		"family": "bush",
+		"color": "#d877c6",
+		"leaf": "#2a5527",
+		"accent": "#f6cb35",
+		"parterre": true
+	},
+	{
+		"plant": "Ciboule",
+		"slug": "ciboule-de-chine",
+		"family": "stalks",
+		"color": "#5c9a42",
+		"leaf": "#386d31",
+		"accent": "#ecead8",
+		"size": 1.3,
+		"standing": true
+	},
+	{
+		"plant": "Ciboulette",
+		"slug": "ciboulette",
+		"family": "stalks",
+		"color": "#b98fd0",
+		"leaf": "#4f8f3e",
+		"accent": "#2f6232",
+		"size": 1.5,
+		"standing": true
+	},
+	{
+		"plant": "Claytone de Cuba",
+		"slug": "claytone-cuba",
+		"family": "rosette",
+		"color": "#5f9f3c",
+		"leaf": "#80bf50",
+		"accent": "#f4f2e6",
+		"standing": true
+	},
+	{
+		"plant": "Coing",
+		"slug": "coing",
+		"family": "tree",
+		"d": 3.5,
+		"color": "#e8b81a",
+		"leaf": "#7a9c52",
+		"accent": "#5e4b3d"
+	},
+	{
+		"plant": "Concombre",
+		"slug": "concombre",
+		"family": "staked",
+		"color": "#416b39",
+		"leaf": "#4c913b",
+		"accent": "#f2c230"
+	},
+	{
+		"plant": "Consoude",
+		"slug": "consoude",
+		"family": "bush",
+		"color": "#2f5426",
+		"leaf": "#4e7633",
+		"accent": "#93608f",
+		"standing": true
+	},
+	{
+		"plant": "Coquelicot",
+		"slug": "coquelicot",
+		"family": "upright",
+		"color": "#d8281e",
+		"leaf": "#6f8a4c",
+		"accent": "#231c22",
+		"parterre": true
+	},
+	{
+		"plant": "Coriandre",
+		"slug": "coriandre",
+		"family": "upright",
+		"color": "#3f9a3a",
+		"leaf": "#62b548",
+		"accent": "#f6f4e8",
+		"standing": true
+	},
+	{
+		"plant": "Cornichon",
+		"slug": "cornichon",
+		"family": "staked",
+		"module": "concombre",
+		"d": 0.5,
+		"color": "#416b39",
+		"leaf": "#4c913b",
+		"accent": "#f2c230"
+	},
+	{
+		"plant": "Cosmos",
+		"slug": "cosmos",
+		"family": "tall",
+		"color": "#e8679f",
+		"leaf": "#6d9f3e",
+		"accent": "#f2be2c",
+		"parterre": true
+	},
+	{
+		"plant": "Courge",
+		"slug": "courge",
+		"family": "vine",
+		"color": "#bf3f0e",
+		"leaf": "#748739",
+		"accent": "#f2c230"
+	},
+	{
+		"plant": "Courgette",
+		"slug": "courgette",
+		"fruitModule": "courgette.fruits",
+		"family": "vine",
+		"color": "#165226",
+		"leaf": "#46893b",
+		"accent": "#f2c230"
+	},
+	{
+		"plant": "Cresson",
+		"slug": "cresson",
+		"family": "rosette",
+		"color": "#8cc63c",
+		"leaf": "#b6dc5c",
+		"accent": "#5e9c30",
+		"standing": true
+	},
+	{
+		"plant": "Curcuma",
+		"slug": "curcuma",
+		"family": "upright",
+		"color": "#33782c",
+		"leaf": "#5aa83a",
+		"accent": "#a9c873"
+	},
+	{
+		"plant": "Dahlia",
+		"slug": "dahlia",
+		"family": "upright",
+		"color": "#ef7f3a",
+		"leaf": "#3e6a2c",
+		"accent": "#a8401f",
+		"standing": true
+	},
+	{
+		"plant": "Daikon",
+		"slug": "daikon",
+		"family": "fanes",
+		"color": "#f5f3ea",
+		"leaf": "#5f9a3e",
+		"accent": "#c9dc9a",
+		"sink": 0.33,
+		"pitch": 1.39,
+		"size": 1.5
+	},
+	{
+		"plant": "Delphinium",
+		"slug": "delphinium",
+		"family": "tall",
+		"color": "#2846c8",
+		"leaf": "#4a8436",
+		"accent": "#f2efe4",
+		"standing": true
+	},
+	{
+		"plant": "Didiscus",
+		"slug": "didiscus",
+		"family": "upright",
+		"color": "#9db8ea",
+		"leaf": "#6fa85a",
+		"accent": "#cbd9f6",
+		"parterre": true
+	},
+	{
+		"plant": "Digitale",
+		"slug": "digitale",
+		"family": "tall",
+		"color": "#d0609f",
+		"leaf": "#4a6a3e",
+		"accent": "#7c2a63",
+		"standing": true
+	},
+	{
+		"plant": "Échalote",
+		"slug": "echalote",
+		"family": "stalks",
+		"color": "#a8623a",
+		"leaf": "#4f7a6a",
+		"accent": "#d99a7e",
+		"size": 1.5
+	},
+	{
+		"plant": "Endive",
+		"slug": "endive",
+		"family": "rosette",
+		"color": "#bfb20d",
+		"leaf": "#8ebf50",
+		"accent": "#8a6a45",
+		"size": 1.6
+	},
+	{
+		"plant": "Engrais vert",
+		"slug": "engrais-vert",
+		"family": "rosette",
+		"module": "couvert",
+		"d": 0.34,
+		"color": "#6fa043",
+		"leaf": "#6fa043",
+		"accent": "#f4e4e6"
+	},
+	{
+		"plant": "Épinard",
+		"slug": "epinard",
+		"family": "rosette",
+		"color": "#1f6e30",
+		"leaf": "#6fb553",
+		"accent": "#8a6a45",
+		"parterre": true,
+		"standing": true
+	},
+	{
+		"plant": "Estragon",
+		"slug": "estragon",
+		"family": "upright",
+		"color": "#5ea63a",
+		"leaf": "#3c7a2c",
+		"accent": "#93cc58",
+		"standing": true
+	},
+	{
+		"plant": "Eucalyptus",
+		"slug": "eucalyptus",
+		"family": "tree",
+		"d": 1.5,
+		"color": "#84a6ae",
+		"leaf": "#84a6ae",
+		"accent": "#9a5546"
+	},
+	{
+		"plant": "Fenouil",
+		"slug": "fenouil",
+		"family": "upright",
+		"color": "#83936a",
+		"leaf": "#72b256",
+		"accent": "#eef2dc",
+		"pitch": 0.85,
+		"size": 0.8
+	},
+	{
+		"plant": "Fève",
+		"slug": "feve",
+		"family": "climbing",
+		"color": "#8db745",
+		"leaf": "#67ab43",
+		"accent": "#8a6a45"
+	},
+	{
+		"plant": "Féverole",
+		"slug": "feverole",
+		"family": "upright",
+		"color": "#8fa49a",
+		"leaf": "#8fa49a",
+		"accent": "#f6f5ec"
+	},
+	{
+		"plant": "Figue",
+		"slug": "figue",
+		"family": "tree",
+		"d": 3.5,
+		"color": "#2f5a2c",
+		"leaf": "#477a36",
+		"accent": "#c9c5ba"
+	},
+	{
+		"plant": "Fraise",
+		"slug": "fraise",
+		"family": "berry",
+		"color": "#e63233",
+		"leaf": "#858b3a",
+		"accent": "#fbf6ee"
+	},
+	{
+		"plant": "Framboise",
+		"slug": "framboise",
+		"family": "berry",
+		"d": 0.7,
+		"color": "#c8213e",
+		"leaf": "#5f9640",
+		"accent": "#8a4636"
+	},
+	{
+		"plant": "Gingembre",
+		"slug": "gingembre",
+		"family": "upright",
+		"color": "#6f9e3c",
+		"leaf": "#2f7a2c",
+		"accent": "#68b43c"
+	},
+	{
+		"plant": "Gombo",
+		"slug": "gombo",
+		"family": "tall",
+		"color": "#7aa83e",
+		"leaf": "#3d7a2e",
+		"accent": "#f2e69a"
+	},
+	{
+		"plant": "Groseille",
+		"slug": "groseille",
+		"family": "berry",
+		"d": 1.0,
+		"color": "#d42a2e",
+		"leaf": "#7fb043",
+		"accent": "#6b5a48"
+	},
+	{
+		"plant": "Haricot",
+		"slug": "haricot",
+		"family": "climbing",
+		"color": "#577a3c",
+		"leaf": "#589f42",
+		"accent": "#8a6a45"
+	},
+	{
+		"plant": "Hibiscus",
+		"slug": "hibiscus",
+		"family": "tall",
+		"d": 0.8,
+		"color": "#c4122f",
+		"leaf": "#3f7d34",
+		"accent": "#8a1f2b"
+	},
+	{
+		"plant": "Hysope",
+		"slug": "hysope",
+		"family": "bush",
+		"color": "#5142d6",
+		"leaf": "#3b7a35",
+		"accent": "#8d84f7",
+		"standing": true
+	},
+	{
+		"plant": "Immortelle",
+		"slug": "immortelle",
+		"family": "upright",
+		"color": "#e23e7d",
+		"leaf": "#6f9a48",
+		"accent": "#ffe14a",
+		"parterre": true
+	},
+	{
+		"plant": "Kiwano",
+		"slug": "kiwano",
+		"family": "vine",
+		"color": "#2d5a24",
+		"leaf": "#4f8c34",
+		"accent": "#f08a1c",
+		"standing": true
+	},
+	{
+		"plant": "Kiwi",
+		"slug": "kiwi",
+		"family": "tree",
+		"d": 3,
+		"color": "#8a6a3c",
+		"leaf": "#2c5a30",
+		"accent": "#bdb6a4"
+	},
+	{
+		"plant": "Laitue",
+		"slug": "laitue",
+		"family": "rosette",
+		"color": "#52ac35",
+		"leaf": "#74be54",
+		"accent": "#8a6a45"
+	},
+	{
+		"plant": "Lavande",
+		"slug": "lavande",
+		"family": "bush",
+		"color": "#5b3f8f",
+		"leaf": "#aab4a0",
+		"accent": "#8f74c4",
+		"standing": true
+	},
+	{
+		"plant": "lentille rouge cora",
+		"slug": "lentille",
+		"family": "rosette",
+		"module": "couvert",
+		"d": 0.34,
+		"color": "#6fa043",
+		"leaf": "#6fa043",
+		"accent": "#f4e4e6"
+	},
+	{
+		"plant": "Lin",
+		"slug": "lin",
+		"family": "upright",
+		"color": "#a9cff5",
+		"leaf": "#a9c770",
+		"accent": "#e0ad3c",
+		"parterre": true
+	},
+	{
+		"plant": "Lisianthus",
+		"slug": "lisianthus",
+		"family": "upright",
+		"color": "#7d4fb8",
+		"leaf": "#8aa88c",
+		"accent": "#f1ebf6",
+		"parterre": true
+	},
+	{
+		"plant": "Livèche",
+		"slug": "liveche",
+		"family": "tall",
+		"color": "#2c5a26",
+		"leaf": "#3f7530",
+		"accent": "#cfc24a",
+		"standing": true
+	},
+	{
+		"plant": "Lupin",
+		"slug": "lupin",
+		"family": "upright",
+		"color": "#7a52c2",
+		"leaf": "#5c9440",
+		"accent": "#f6f0fc",
+		"standing": true
+	},
+	{
+		"plant": "Luzerne",
+		"slug": "luzerne",
+		"family": "bush",
+		"color": "#58a83c",
+		"leaf": "#2f6b2a",
+		"accent": "#9a55d6",
+		"parterre": true
+	},
+	{
+		"plant": "Mâche",
+		"slug": "mache",
+		"family": "rosette",
+		"color": "#1f6e30",
+		"leaf": "#6fb553",
+		"accent": "#8a6a45",
+		"rows": 3,
+		"pitch": 0.55
+	},
+	{
+		"plant": "Maïs",
+		"slug": "mais",
+		"family": "tall",
+		"color": "#cead25",
+		"leaf": "#92b144",
+		"accent": "#c9c27a",
+		"standing": true
+	},
+	{
+		"plant": "Marguerite",
+		"slug": "marguerite",
+		"family": "upright",
+		"color": "#fbfaf3",
+		"leaf": "#3f7a2c",
+		"accent": "#f3be1c",
+		"parterre": true
+	},
+	{
+		"plant": "Marjolaine",
+		"slug": "marjolaine",
+		"family": "bush",
+		"color": "#7f9170",
+		"leaf": "#a4b394",
+		"accent": "#ece6d2",
+		"standing": true
+	},
+	{
+		"plant": "Mélisse",
+		"slug": "melisse",
+		"family": "upright",
+		"color": "#9cc24c",
+		"leaf": "#5e8a33",
+		"accent": "#d2e47c",
+		"standing": true
+	},
+	{
+		"plant": "Melon",
+		"slug": "melon",
+		"family": "vine",
+		"color": "#d47f3b",
+		"leaf": "#7d903f",
+		"accent": "#f2c230"
+	},
+	{
+		"plant": "Menthe",
+		"slug": "menthe",
+		"family": "bush",
+		"color": "#58a03f",
+		"leaf": "#3f8236",
+		"accent": "#86c25a",
+		"standing": true
+	},
+	{
+		"plant": "Mesclun",
+		"slug": "mesclun",
+		"family": "rosette",
+		"module": "laitue",
+		"color": "#52ac35",
+		"leaf": "#74be54",
+		"accent": "#8a6a45",
+		"standing": true
+	},
+	{
+		"plant": "Millet",
+		"slug": "millet",
+		"family": "upright",
+		"color": "#e9bd3c",
+		"leaf": "#6aae3e",
+		"accent": "#b9801f"
+	},
+	{
+		"plant": "Mirabelle",
+		"slug": "mirabelle",
+		"family": "tree",
+		"d": 3.5,
+		"color": "#f5c518",
+		"leaf": "#86b44c",
+		"accent": "#4a3d36"
+	},
+	{
+		"plant": "Mizuna",
+		"slug": "mizuna",
+		"family": "rosette",
+		"color": "#74c23e",
+		"leaf": "#479a2f",
+		"accent": "#f6f7ea",
+		"standing": true
+	},
+	{
+		"plant": "Monarde",
+		"slug": "monarde",
+		"family": "upright",
+		"color": "#e066d6",
+		"leaf": "#58a23e",
+		"accent": "#5e2450",
+		"parterre": true
+	},
+	{
+		"plant": "Moutarde",
+		"slug": "moutarde",
+		"family": "upright",
+		"color": "#f3e11f",
+		"leaf": "#4f9a35",
+		"accent": "#a9c95c",
+		"parterre": true
+	},
+	{
+		"plant": "Muflier",
+		"slug": "muflier",
+		"family": "upright",
+		"color": "#e5709c",
+		"leaf": "#36602b",
+		"accent": "#f2e2a0",
+		"parterre": true
+	},
+	{
+		"plant": "Mûre",
+		"slug": "mure",
+		"family": "berry",
+		"d": 1.5,
+		"color": "#264a1f",
+		"leaf": "#4a8636",
+		"accent": "#1d1422"
+	},
+	{
+		"plant": "Myrtille",
+		"slug": "myrtille",
+		"family": "berry",
+		"d": 1.2,
+		"color": "#6f82b8",
+		"leaf": "#2e5440",
+		"accent": "#6f5f52"
+	},
+	{
+		"plant": "Narcisse",
+		"slug": "narcisse",
+		"family": "upright",
+		"color": "#f7e47c",
+		"leaf": "#6f9a82",
+		"accent": "#f0951a",
+		"parterre": true
+	},
+	{
+		"plant": "Navet",
+		"slug": "navet",
+		"family": "fanes",
+		"color": "#984a81",
+		"leaf": "#6f9f57",
+		"accent": "#ece2f2",
+		"sink": 0.33,
+		"pitch": 1.3,
+		"size": 1.28
+	},
+	{
+		"plant": "Nigelle",
+		"slug": "nigelle",
+		"family": "upright",
+		"color": "#aac8f0",
+		"leaf": "#8cc65a",
+		"accent": "#4f8f86",
+		"parterre": true
+	},
+	{
+		"plant": "Noix",
+		"slug": "noix",
+		"family": "tree",
+		"color": "#94670c",
+		"leaf": "#6c9137",
+		"accent": "#8a6a45"
+	},
+	{
+		"plant": "Oca du Pérou",
+		"slug": "oca-du-perou",
+		"family": "bush",
+		"color": "#56a03c",
+		"leaf": "#78bd4c",
+		"accent": "#a8343e"
+	},
+	{
+		"plant": "Oignon",
+		"slug": "oignon",
+		"family": "stalks",
+		"color": "#c4936f",
+		"leaf": "#7f985f",
+		"accent": "#d9a24b",
+		"size": 1.5
+	},
+	{
+		"plant": "Orge",
+		"slug": "orge",
+		"family": "upright",
+		"color": "#e8c257",
+		"leaf": "#dccd96",
+		"accent": "#c4912f",
+		"parterre": true
+	},
+	{
+		"plant": "Origan",
+		"slug": "origan",
+		"family": "bush",
+		"color": "#e08ec3",
+		"leaf": "#6e9a46",
+		"accent": "#7c2c48",
+		"standing": true
+	},
+	{
+		"plant": "Oseille",
+		"slug": "oseille",
+		"family": "rosette",
+		"color": "#58a13a",
+		"leaf": "#3c7b2b",
+		"accent": "#b3d27a",
+		"standing": true
+	},
+	{
+		"plant": "Panais",
+		"slug": "panais",
+		"family": "fanes",
+		"color": "#a8a158",
+		"leaf": "#74ab4a",
+		"accent": "#ece0bf",
+		"sink": 0.33,
+		"pitch": 1.39
+	},
+	{
+		"plant": "Pastèque",
+		"slug": "pasteque",
+		"family": "vine",
+		"color": "#f24444",
+		"leaf": "#8a8741",
+		"accent": "#f2c230"
+	},
+	{
+		"plant": "Patate douce",
+		"slug": "patate-douce",
+		"family": "vine",
+		"color": "#bf6f53",
+		"leaf": "#748d45",
+		"accent": "#8a6a45",
+		"pitch": 0.85,
+		"size": 0.69
+	},
+	{
+		"plant": "Pâtisson",
+		"slug": "patisson",
+		"family": "bush",
+		"color": "#efe6c4",
+		"leaf": "#3f7f2f",
+		"accent": "#f2b01e",
+		"standing": true
+	},
+	{
+		"plant": "Pavot",
+		"slug": "pavot",
+		"family": "upright",
+		"color": "#c96aa8",
+		"leaf": "#8fae96",
+		"accent": "#e9b6d6",
+		"parterre": true
+	},
+	{
+		"plant": "Pavot de Californie",
+		"slug": "pavot-californie",
+		"family": "upright",
+		"color": "#f08a1c",
+		"leaf": "#8fb0a0",
+		"accent": "#f7b733",
+		"parterre": true
+	},
+	{
+		"plant": "Pêche",
+		"slug": "peche",
+		"family": "tree",
+		"d": 3,
+		"color": "#f2a13a",
+		"leaf": "#9cc653",
+		"accent": "#a24a3c"
+	},
+	{
+		"plant": "Périlla",
+		"slug": "perilla",
+		"family": "upright",
+		"color": "#6c2f62",
+		"leaf": "#4f2149",
+		"accent": "#a5508e",
+		"standing": true
+	},
+	{
+		"plant": "Persil",
+		"slug": "persil",
+		"family": "rosette",
+		"color": "#006833",
+		"leaf": "#6eb453",
+		"accent": "#8a6a45",
+		"pitch": 0.65,
+		"size": 0.65,
+		"standing": true
+	},
+	{
+		"plant": "Phacélie",
+		"slug": "phacelie",
+		"family": "upright",
+		"color": "#a69fe2",
+		"leaf": "#62a03c",
+		"accent": "#e6e2fb",
+		"parterre": true
+	},
+	{
+		"plant": "Phlox",
+		"slug": "phlox",
+		"family": "upright",
+		"color": "#e2559c",
+		"leaf": "#4f8f3a",
+		"accent": "#f6c9e0",
+		"parterre": true
+	},
+	{
+		"plant": "Physalis",
+		"slug": "physalis",
+		"family": "bush",
+		"color": "#e0a65a",
+		"leaf": "#6b8f3a",
+		"accent": "#7fa043"
+	},
+	{
+		"plant": "Piment",
+		"slug": "piment",
+		"family": "bush",
+		"color": "#c81e1a",
+		"leaf": "#2b7a30",
+		"accent": "#5f7f35"
+	},
+	{
+		"plant": "Pivoine",
+		"slug": "pivoine",
+		"family": "bush",
+		"color": "#f19ab8",
+		"leaf": "#2c5527",
+		"accent": "#a8385f",
+		"standing": true
+	},
+	{
+		"plant": "Pleurote",
+		"slug": "pleurote",
+		"family": "rosette",
+		"color": "#81766e",
+		"leaf": "#dcb85c",
+		"accent": "#fff8e8"
+	},
+	{
+		"plant": "Poire",
+		"slug": "poire",
+		"family": "tree",
+		"d": 2.5,
+		"color": "#c3cf52",
+		"leaf": "#3f7a36",
+		"accent": "#6e5a48"
+	},
+	{
+		"plant": "Poire de terre",
+		"slug": "poire-de-terre",
+		"family": "tall",
+		"color": "#704c3e",
+		"leaf": "#78a248",
+		"accent": "#8a6a45"
+	},
+	{
+		"plant": "Poireau",
+		"slug": "poireau",
+		"family": "stalks",
+		"color": "#006633",
+		"leaf": "#549153",
+		"accent": "#f1ede0",
+		"pitch": 0.625
+	},
+	{
+		"plant": "Pois",
+		"slug": "pois",
+		"family": "climbing",
+		"color": "#82b162",
+		"leaf": "#63aa4b",
+		"accent": "#8a6a45"
+	},
+	{
+		"plant": "Pois de senteur",
+		"slug": "pois-de-senteur",
+		"family": "climbing",
+		"color": "#ef6aa6",
+		"leaf": "#5f8f58",
+		"accent": "#7a3594",
+		"standing": true
+	},
+	{
+		"plant": "Poivron",
+		"slug": "poivron",
+		"family": "staked",
+		"color": "#ab2426",
+		"leaf": "#6c8a38",
+		"accent": "#8a6a45"
+	},
+	{
+		"plant": "Pomme",
+		"slug": "pomme",
+		"family": "tree",
+		"d": 3,
+		"color": "#d42a22",
+		"leaf": "#5e9a3a",
+		"accent": "#84705c"
+	},
+	{
+		"plant": "Pomme de terre",
+		"slug": "pomme-de-terre",
+		"family": "bush",
+		"color": "#bfa550",
+		"leaf": "#7ca04a",
+		"accent": "#fbf6ee"
+	},
+	{
+		"plant": "Pourpier",
+		"slug": "pourpier",
+		"family": "rosette",
+		"color": "#f4d23a",
+		"leaf": "#6faa3c",
+		"accent": "#b0523c",
+		"parterre": true
+	},
+	{
+		"plant": "Prune",
+		"slug": "prune",
+		"family": "tree",
+		"d": 3.5,
+		"color": "#5a5fae",
+		"leaf": "#2f5a2e",
+		"accent": "#2b2422"
+	},
+	{
+		"plant": "Quinoa",
+		"slug": "quinoa",
+		"family": "rosette",
+		"module": "couvert",
+		"d": 0.34,
+		"color": "#6fa043",
+		"leaf": "#6fa043",
+		"accent": "#f4e4e6"
+	},
+	{
+		"plant": "Radis botte",
+		"slug": "radis-botte",
+		"family": "fanes",
+		"color": "#e33f63",
+		"leaf": "#8b9e4d",
+		"accent": "#e0457b",
+		"sink": 0.33,
+		"rows": 3,
+		"pitch": 1.39
+	},
+	{
+		"plant": "Radis rave",
+		"slug": "radis-rave",
+		"family": "fanes",
+		"color": "#11161c",
+		"leaf": "#559c3f",
+		"accent": "#e0457b",
+		"sink": 0.33,
+		"pitch": 1.39,
+		"size": 1.5
+	},
+	{
+		"plant": "Raifort",
+		"slug": "raifort",
+		"family": "upright",
+		"color": "#4b6a35",
+		"leaf": "#34502a",
+		"accent": "#7e9c45",
+		"pitch": 1.39
+	},
+	{
+		"plant": "Reine-marguerite",
+		"slug": "reine-marguerite",
+		"family": "bush",
+		"color": "#6c38a8",
+		"leaf": "#467f33",
+		"accent": "#e0619f",
+		"parterre": true
+	},
+	{
+		"plant": "Renoncule",
+		"slug": "renoncule",
+		"family": "upright",
+		"color": "#e63e7c",
+		"leaf": "#4f8f36",
+		"accent": "#f8c930",
+		"parterre": true
+	},
+	{
+		"plant": "Rhubarbe",
+		"slug": "rhubarbe",
+		"family": "upright",
+		"color": "#b57c37",
+		"leaf": "#81af4a",
+		"accent": "#c4374a",
+		"pickedModule": "rhubarbe-cueillie"
+	},
+	{
+		"plant": "Romarin",
+		"slug": "romarin",
+		"family": "bush",
+		"color": "#34502f",
+		"leaf": "#8a9c88",
+		"accent": "#a9c0e6",
+		"standing": true
+	},
+	{
+		"plant": "Roquette",
+		"slug": "roquette",
+		"family": "rosette",
+		"color": "#358631",
+		"leaf": "#71b853",
+		"accent": "#8a6a45",
+		"standing": true
+	},
+	{
+		"plant": "Roquette cultivée",
+		"slug": "roquette-cultivee",
+		"family": "rosette",
+		"module": "roquette",
+		"color": "#358631",
+		"leaf": "#71b853",
+		"accent": "#8a6a45",
+		"standing": true
+	},
+	{
+		"plant": "Rudbeckia",
+		"slug": "rudbeckia",
+		"family": "upright",
+		"color": "#f6c823",
+		"leaf": "#4c6a2c",
+		"accent": "#2b1810",
+		"parterre": true
+	},
+	{
+		"plant": "Rutabaga",
+		"slug": "rutabaga",
+		"family": "fanes",
+		"color": "#51333c",
+		"leaf": "#5c9d43",
+		"accent": "#c9a46a",
+		"sink": 0.33,
+		"pitch": 1.39,
+		"size": 1.7
+	},
+	{
+		"plant": "Safran",
+		"slug": "safran",
+		"family": "rosette",
+		"color": "#b18ad9",
+		"leaf": "#3d6b35",
+		"accent": "#d6301c",
+		"size": 1.5
+	},
+	{
+		"plant": "Sarrasin",
+		"slug": "sarrasin",
+		"family": "upright",
+		"d": 0.34,
+		"color": "#c63f3c",
+		"leaf": "#86bd52",
+		"accent": "#fbf1ee",
+		"parterre": true
+	},
+	{
+		"plant": "Sarriette",
+		"slug": "sarriette",
+		"family": "bush",
+		"color": "#8faa74",
+		"leaf": "#5c7a4c",
+		"accent": "#eedcec",
+		"standing": true
+	},
+	{
+		"plant": "Sauge officinale",
+		"slug": "sauge",
+		"family": "bush",
+		"color": "#bcc6b2",
+		"leaf": "#8d9c85",
+		"accent": "#9b82c4",
+		"standing": true
+	},
+	{
+		"plant": "Scabieuse",
+		"slug": "scabieuse",
+		"family": "upright",
+		"color": "#7b1d43",
+		"leaf": "#739a58",
+		"accent": "#a77fc4",
+		"parterre": true
+	},
+	{
+		"plant": "Seigle",
+		"slug": "seigle",
+		"family": "upright",
+		"color": "#7ba7a6",
+		"leaf": "#4f8580",
+		"accent": "#d7dcae",
+		"parterre": true
+	},
+	{
+		"plant": "Shiitake",
+		"slug": "shiitake",
+		"family": "rosette",
+		"color": "#9a5a2c",
+		"leaf": "#75614f",
+		"accent": "#ecdcb8"
+	},
+	{
+		"plant": "Soja",
+		"slug": "soja",
+		"family": "bush",
+		"d": 0.34,
+		"color": "#2f7d32",
+		"leaf": "#5fa83a",
+		"accent": "#dfdb50"
+	},
+	{
+		"plant": "Sorgho",
+		"slug": "sorgho",
+		"family": "tall",
+		"color": "#ad4b2a",
+		"leaf": "#4a8431",
+		"accent": "#93b552"
+	},
+	{
+		"plant": "Statice",
+		"slug": "statice",
+		"family": "upright",
+		"color": "#6f3fc4",
+		"leaf": "#47753a",
+		"accent": "#f6f2f8",
+		"parterre": true
+	},
+	{
+		"plant": "Sureau noir",
+		"slug": "sureau",
+		"family": "tree",
+		"d": 2.6,
+		"color": "#2b1f33",
+		"leaf": "#6b9442",
+		"accent": "#a8916d"
+	},
+	{
+		"plant": "Tagète",
+		"slug": "tagete",
+		"family": "bush",
+		"color": "#9c2f1a",
+		"leaf": "#2f6a2c",
+		"accent": "#f6c626",
+		"parterre": true
+	},
+	{
+		"plant": "Thym",
+		"slug": "thym",
+		"family": "bush",
+		"color": "#a9b79a",
+		"leaf": "#7c8e6c",
+		"accent": "#7a6246",
+		"standing": true
+	},
+	{
+		"plant": "Tomate",
+		"slug": "tomate",
+		"family": "staked",
+		"color": "#e42e13",
+		"leaf": "#848b36",
+		"accent": "#8a6a45"
+	},
+	{
+		"plant": "Topinambour",
+		"slug": "topinambour",
+		"family": "tall",
+		"color": "#f4c418",
+		"leaf": "#466f2b",
+		"accent": "#7c8a3c"
+	},
+	{
+		"plant": "Tournesol",
+		"slug": "tournesol",
+		"family": "tall",
+		"color": "#f6c21c",
+		"leaf": "#5d8f2e",
+		"accent": "#4a2a12",
+		"standing": true
+	},
+	{
+		"plant": "Tulipe",
+		"slug": "tulipe",
+		"family": "stalks",
+		"color": "#ef5b93",
+		"leaf": "#6f9483",
+		"accent": "#b3285f",
+		"parterre": true
+	},
+	{
+		"plant": "Verveine officinale",
+		"slug": "verveine-officinale",
+		"family": "bush",
+		"color": "#76553a",
+		"leaf": "#94c94a",
+		"accent": "#f1ebf6",
+		"standing": true
+	},
+	{
+		"plant": "Vesce",
+		"slug": "vesce",
+		"family": "bush",
+		"color": "#a4dc62",
+		"leaf": "#a4dc62",
+		"accent": "#a43cb4",
+		"parterre": true
+	},
+	{
+		"plant": "Vigne",
+		"slug": "vigne",
+		"family": "tree",
+		"d": 1.5,
+		"color": "#2a1a3a",
+		"leaf": "#6aa838",
+		"accent": "#3a2a22"
+	},
+	{
+		"plant": "Zinnia",
+		"slug": "zinnia",
+		"family": "upright",
+		"color": "#e3237e",
+		"leaf": "#64a040",
+		"accent": "#d9a020",
+		"parterre": true
+	}
+]

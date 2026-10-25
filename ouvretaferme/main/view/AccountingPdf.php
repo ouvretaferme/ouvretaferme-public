@@ -1,0 +1,21 @@
+<?php
+/**
+ * Template pour PDF
+ */
+class AccountingPdfTemplate extends \PdfTemplate {
+
+	public function __construct() {
+
+		parent::__construct();
+		
+		\Asset::css('util', 'font-open-sans.css');
+		\Asset::css('util', 'font-roboto-mono.css');
+		\Asset::css('main', 'font-bricolage-grotesque.css');
+		\Asset::css('main', 'root.css');
+		\Asset::css('main', 'pdf.css');
+
+	}
+
+}
+
+?>

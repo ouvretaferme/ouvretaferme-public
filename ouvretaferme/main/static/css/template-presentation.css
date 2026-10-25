@@ -1,0 +1,111 @@
+/* Les pages publiques, celles dont le gabarit porte `presentation` : ce qui leur reste propre une fois
+   les composants pris au design system, c'est-à-dire des règles de texte, pas des composants. Chaque
+   sélecteur est borné par le gabarit : la feuille reste chargée après une navigation ajax vers un
+   écran qui ne le porte pas. BaseTemplate la charge au rendu de toute page dont le gabarit porte le
+   mot, sans qu'une vue ait à la demander.
+
+   `:where()` garde au sélecteur le poids de ses seules classes, pour que la borne ne fasse gagner
+   aucune règle de la page sur le design system. Trois règles gardent la borne en clair, parce
+   qu'elles remplacent une déclaration d'un composant à poids égal ou supérieur et que l'ordre des
+   feuilles ne doit pas en décider : l'écart de `.presentation-start` (celui d'util-action), la marge
+   de son titre (celle de `.util-band h2`) et l'encre de `.presentation-tutorial-question` (celle de
+   `.util-deck-head p`). */
+
+/* La FAQ publiée (`learning\FaqUi`), sur `/faq` et `/reseau/{fqn}/faq`. Une question choisie dans la
+   recherche vient en vue sous le menu collé des pages publiques (`#root-nav`, `template-base.css`),
+   haut de `--nav-main`, et un module des tutoriels de la même façon, cible des liens `#module-{id}`
+   de la FAQ. */
+:where(body[data-template~="presentation"]) .presentation-faq-item,
+:where(body[data-template~="presentation"]) .presentation-tutorial-module {
+	scroll-margin-top: calc(var(--nav-main) + var(--space-md));
+}
+
+:where(body[data-template~="presentation"]) .presentation-faq-lead {
+	color: var(--color-encre);
+	font-size: 1rem;
+	font-weight: 500;
+	line-height: 1.55;
+}
+
+:where(body[data-template~="presentation"]) .presentation-faq-lead p:last-child,
+:where(body[data-template~="presentation"]) .presentation-faq-list-text p:last-child,
+:where(body[data-template~="presentation"]) .presentation-faq-symptoms p:last-child {
+	margin-bottom: 0;
+}
+
+:where(body[data-template~="presentation"]) .presentation-faq-list-text :is(ol, ul) {
+	display: grid;
+	gap: var(--space-xs);
+	margin: 0;
+	padding-left: var(--space-md);
+	line-height: 1.5;
+}
+
+/* Le fond doux de `util-block-inside` passe par le jeton qu'il lit, au menthe des pages publiques. */
+:where(body[data-template~="presentation"]) .presentation-faq-symptoms {
+	--background-light: var(--color-bg-blanc-menthe);
+}
+
+:where(body[data-template~="presentation"]) .presentation-faq-symptoms > .util-label {
+	--color-neutral: var(--primary-on-light, var(--color-brand));
+}
+
+:where(body[data-template~="presentation"]) .presentation-faq-symptoms :is(ul, p) {
+	margin: 0;
+	font-style: italic;
+}
+
+:where(body[data-template~="presentation"]) .presentation-faq-symptoms ul {
+	display: grid;
+	gap: var(--space-xxs);
+	padding-left: var(--space-md);
+}
+
+/* Un symptôme est ce que l'utilisateur dit voir, d'où ses guillemets : l'éditeur ne les porte pas. */
+:where(body[data-template~="presentation"]) .presentation-faq-symptoms li::before {
+	content: "« ";
+}
+
+:where(body[data-template~="presentation"]) .presentation-faq-symptoms li::after {
+	content: " »";
+}
+
+:where(body[data-template~="presentation"]) .presentation-faq-links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-sm) var(--space-xl);
+	padding-top: var(--space-md);
+	border-top: 1px dashed var(--border-brand);
+}
+
+/* L'appel en fin de page, un bloc sombre en util-action : le propos et le geste s'écartent plus que
+   les éléments d'une ligne d'action, et le geste qui passe dessous garde de l'air au-dessus de lui. */
+body[data-template~="presentation"] .presentation-start {
+	gap: var(--space-md) var(--space-xl);
+}
+
+body[data-template~="presentation"] .presentation-start h2 {
+	margin: var(--space-xxs) 0 var(--space-xs);
+}
+
+:where(body[data-template~="presentation"]) .presentation-start p {
+	max-width: var(--reading-width);
+	margin: 0;
+	opacity: 0.85;
+}
+
+/* Le sommaire des tutoriels (`learning\TutorialUi`) : la question à laquelle répond un module, sous
+   son nom, à l'encre de la marque, lue comme celle de la FAQ. */
+body[data-template~="presentation"] .presentation-tutorial-question {
+	margin: var(--space-xxs) 0 0;
+	color: var(--primary-on-light, var(--color-brand));
+	font-size: 1rem;
+	font-weight: 600;
+}
+
+/* Le surtitre de l'appel en fin de page, sur le fond sombre que seuls le blanc et la marque
+   habillent. */
+:where(body[data-template~="presentation"]) .presentation-start .util-label {
+	--color-neutral: white;
+	opacity: 0.75;
+}

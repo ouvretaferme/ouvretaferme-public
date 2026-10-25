@@ -1,0 +1,47 @@
+/*
+ * Les plans d'une culture (DensityPlanAiUi::getFigures()), un par format de planche, chacun en
+ * perspective (densityViewAi.css) et légendé de son format, sous la ligne « Plan » de l'intervention.
+ * Un format par ligne (« Une taille de planche = 1 ligne », le 29/09), sur toute la place
+ * jusqu'à 36rem : à 20rem, les cotes ne se lisaient pas (« il faut agrandir l'élément sur cette
+ * page »). Ils partagent la même longueur dessinée et la même largeur, donc la même échelle.
+ */
+.density-plan-figures {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.density-plan-figure {
+	width: 36rem;
+	max-width: 100%;
+}
+
+/*
+ * Le menu ouvert par la densité d'une série (`CropUi::getPresentationPlans()`), à la largeur d'un
+ * plan. Il est clair (`dropdown-list-light`), le fond sombre des menus renverserait les teintes du
+ * dessin.
+ */
+.density-plan-dropdown {
+	width: 24rem;
+	max-width: calc(100vw - 2rem);
+}
+
+.density-plan-dropdown .density-plan-figures {
+	padding: 0 1rem 0.75rem;
+}
+
+.density-plan-figure .density-view-svg {
+	margin-bottom: 0.25rem;
+}
+
+.density-plan-figure .density-view-svg + .density-view-svg {
+	margin-top: 1rem;
+}
+
+.density-plan-caption {
+	font-size: 0.875rem;
+}
+
+.density-plan-caption span {
+	color: var(--muted);
+}

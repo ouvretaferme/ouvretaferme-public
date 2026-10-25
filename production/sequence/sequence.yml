@@ -1,0 +1,92 @@
+Crop:
+  id: serial32
+  plant: plant\Plant
+  startWeek: ?int16
+  startAction: ?enum(SOWING, PLANTING)
+  sequence: sequence\Sequence
+  structure: structure\Structure
+  distance: enum(SPACING, DENSITY) = SPACING
+  rows: ?int8(1, null)
+  rowSpacing: ?decimal(8, 2, 0.01, null)
+  plantSpacing: ?decimal(8, 2, 0.01, null)
+  density: ?decimal(10, 2, 0.01, null)
+  mainUnit: enum(KG, UNIT, BUNCH) = KG
+  seedling: ?enum(SOWING, YOUNG_PLANT, YOUNG_PLANT_BOUGHT)
+  seedlingSeeds: ?int8(1, null)
+  yieldExpected: ?float32(0.0, null)
+  INDEX: [
+    ["structure"],
+    ["plant", "structure"]
+  ]
+  UNIQUE: [
+    ["sequence", "plant"]
+  ]
+
+Flow:
+  id: serial32
+  crop: ?sequence\Crop
+  plant: ?plant\Plant
+  sequence: sequence\Sequence
+  structure: structure\Structure
+  action: work\Action
+  methods: json = PHP([])
+  tools: json = PHP([])
+  products: json = PHP([])
+  description: ?text16(1, null)
+  fertilizer: ?json
+  weekOnly: ?int8(1, 52)
+  weekStart: ?int8(1, 52)
+  weekStop: ?int8(1, 52)
+  yearOnly: ?int8(-1, 1)
+  yearStart: ?int8(-1, 1)
+  yearStop: ?int8(-1, 1)
+  seasonOnly: ?int8(1, 100)
+  seasonStart: ?int8(1, 100)
+  seasonStop: ?int8(1, 100)
+  positionOnly: ?int16(0, null)
+  positionStart: ?int16(0, null)
+  positionStop: ?int16(0, null)
+  frequency: ?enum(W1, W2, W3, W4, M1)
+  INDEX: [
+    ["plant"],
+    ["crop"],
+    ["sequence"],
+    ["structure"]
+  ]
+
+Sequence:
+  id: serial32
+  name: text8(1, null) @collate(general)
+  description: ?editor16
+  cycle: enum(ANNUAL, PERENNIAL)
+  perennialLifetime: ?int8(2, null)
+  structure: structure\Structure
+  author: user\User = SPECIAL(user)
+  duplicateOf: ?sequence\Sequence
+  plants: int8(1, null)
+  use: enum(BED, BLOCK)
+  bedWidth: ?int16(1, null)
+  alleyWidth: ?int16(1, null)
+  mode: enum(GREENHOUSE, OPEN_FIELD, MIX) = OPEN_FIELD
+  comment: ?editor16
+  visibility: enum(PRIVATE, PUBLIC) = PRIVATE
+  createdAt: datetime = SPECIAL(now)
+  status: enum(ACTIVE, CLOSED) = ACTIVE
+  INDEX: [
+    ["structure"]
+  ]
+
+Slice:
+  id: serial32
+  structure: structure\Structure
+  sequence: sequence\Sequence
+  crop: sequence\Crop
+  plant: plant\Plant
+  variety: plant\Variety
+  partPercent: ?float32(0.0, 100.0)
+  INDEX: [
+    ["sequence"]
+  ]
+  UNIQUE: [
+    ["crop", "variety"]
+  ]

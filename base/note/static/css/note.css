@@ -1,0 +1,57 @@
+/* Les marques d'une note à la suite, sur plusieurs rangs s'il le faut. */
+.note-marks {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-xxs);
+}
+
+/* Le pied d'une note s'écarte plus de l'extrait que celui du design system : ses pastilles, collées
+   au texte, se liraient comme sa dernière ligne. */
+.note-card > .note-marks {
+	padding-top: var(--space-xl);
+}
+
+/* La première photo d'une note en tête de sa carte : une hauteur fixe, pour que les cartes d'un même
+   rang commencent leur titre à la même ligne quelle que soit la proportion des photos. */
+.note-cover {
+	height: 9rem;
+	margin-bottom: var(--space-md);
+}
+
+.note-cover img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* Les gestes d'une rangée réunis en un seul enfant, pour qu'elle les place d'un bloc à l'opposé de ce
+   qui leur fait face : la recherche sous les onglets. */
+.note-list-actions {
+	display: flex;
+	align-items: center;
+	gap: var(--space-xs);
+}
+
+/* ------------------------------------------------------------------------------------------------
+   La note ouverte par qui peut la modifier (`NoteUi::getUpdate()`) garde l'allure de sa lecture : le
+   titre et le texte s'écrivent à leur place, sans cadre (util-inplace-field, component.css). Le titre
+   est dans une enveloppe util-quick qui le souligne au survol. Il prend la largeur de ce qu'il porte,
+   comme le titre lu (util-inplace-field-fit, et sous Firefox `size`, posé par
+   `NoteUpdate.sizeTitle()`), et l'enveloppe la sienne : `width: 100%` s'y résoudrait sur la largeur
+   propre d'un champ. */
+.util-quick > input.note-update-title {
+	max-width: 100%;
+}
+
+/* Un titre lu passe à la ligne, un champ jamais : sa largeur propre deviendrait la largeur minimale
+   de la fiche, qui pousserait ses gestes hors de l'écran. L'enveloppe se borne donc à sa ligne, et le
+   champ fait défiler ce qui dépasse. */
+.util-quick:has(> input.note-update-title) {
+	max-width: 100%;
+}
+
+/* La note ouverte, en fiche (`NoteUi::getRecord()`). */
+.note-record {
+	margin-bottom: var(--space-lg);
+}

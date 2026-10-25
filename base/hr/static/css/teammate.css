@@ -1,0 +1,54 @@
+/* Une absence se pose par-dessus la période, qu'elle ne coupe pas (décidé le 17/10). La période la
+   rogne à ses bouts arrondis, et la hachure d'absence du produit (`--absent-hatch`, reboot.css) laisse voir
+   entre ses traits la couleur de la période. */
+.hr-teammate-range {
+	overflow: hidden;
+}
+
+.hr-teammate-absence {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	background: var(--absent-hatch);
+}
+
+/* La période ouvre sa modification depuis la frise de l'onglet Personnes (`TeammateUi::getRail()`), et chaque
+   absence la sienne, par un lien posé sur sa propre étendue au-dessus de la période. La bande hachurée laisse
+   passer le clic : une bande réunit des absences voisines, et c'est le lien de chacune qui doit le recevoir. */
+.hr-teammate-range-link,
+.hr-teammate-absence-link {
+	position: absolute;
+}
+
+.hr-teammate-range-link {
+	inset: 0;
+}
+
+.hr-teammate-absence-link {
+	top: 0;
+	bottom: 0;
+}
+
+.hr-teammate-range-link ~ .hr-teammate-absence {
+	pointer-events: none;
+}
+
+/* Le trait d'aujourd'hui couvre 2 px d'une absence d'un jour, qui en fait 4 à 1199 px : il laisse passer le clic. */
+.util-rail-track:has(.hr-teammate-range-link) > .util-rail-marker {
+	pointer-events: none;
+}
+
+/* Le survol fait ressortir ce qu'il ouvre, sans rien griser : la période fonce sous un voile de l'encre du texte,
+   par le même geste que le survol d'un bouton plein mais plus franc sur sa couleur, et l'absence prend un contour
+   de la teinte de sa hachure, qui reste visible dessous. */
+@media (hover: hover) {
+
+	.hr-teammate-range-link:hover {
+		box-shadow: inset 0 0 0 100px color-mix(in srgb, var(--text) 20%, transparent);
+	}
+
+	.hr-teammate-absence-link:hover {
+		box-shadow: inset 0 0 0 2px var(--danger);
+	}
+
+}

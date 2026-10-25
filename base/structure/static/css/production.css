@@ -1,0 +1,61 @@
+div.production-items {
+	display: grid;
+	grid-row-gap: 0.5rem;
+}
+
+div.production-spare {
+	display: none;
+}
+
+div.production-item {
+	align-items: center;
+}
+
+div.production-item div.production-item-fqn {
+	display: flex;
+}
+
+div.production-item a.production-item-remove {
+	grid-area: remove;
+}
+
+div.production-items:not(:has(> .production-item:nth-child(2))) a.production-item-remove {
+	display: none;
+}
+
+.production-item-options {
+	margin-top: 1rem;
+}
+
+div.production-item:has(select[name^="fqn"] option[value=""]:checked) .production-item-options {
+	display: none;
+}
+
+div.production-item:only-child span.production-item-numbering {
+	display: none;
+}
+.production-item-toggle {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	cursor: pointer;
+}
+
+.production-item-toggle-chevron {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	border: 1px solid var(--accent);
+	border-radius: 50%;
+	color: var(--accent);
+	transition: transform 0.25s, background-color 0.25s;
+}
+
+.production-item-toggle.selected .production-item-toggle-chevron {
+	background-color: color-mix(in srgb, white 85%, var(--accent));
+	transform: rotate(180deg);
+}

@@ -1,0 +1,417 @@
+#zone-header {
+	background-color: var(--background-body);
+	position: sticky;
+	z-index: 50;
+	top: 0;
+}
+
+@media (min-width: 1100px) and (min-height: 600px) {
+
+	main #zone-header {
+		height: 6rem;
+	}
+
+}
+
+@media (max-width: 1099px), (max-height: 599px) {
+
+	body[data-touch="no"] main #zone-content #zone-header {
+		top: calc(var(--nav-height) + 2.25rem);
+	}
+
+}
+
+.panel #zone-header {
+	background-color: white;
+}
+
+.zone-button {
+	text-align: left;
+	width: calc(100% - 1rem);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.zone-dropdown {
+	display: inline-block;
+	max-width: 9rem;
+	overflow: hidden;
+	vertical-align: middle;
+	text-align: left;
+	line-height: 1.2;
+}
+
+@media (min-width: 1200px) {
+
+	.zone-dropdown {
+		max-width: 12rem;
+	}
+
+}
+
+body.bed-updating .bed-read,
+body.panel-open .bed-read {
+	display: none;
+}
+
+body:not(.bed-updating):not(.panel-open) .bed-write {
+	display: none;
+}
+
+.zone-corner {
+	position: sticky;
+	top: 0;
+	background-color: var(--background-body);
+	align-self: stretch;
+	z-index: 1;
+	display: flex;
+	align-items: end;
+	padding: 1rem 0 0 0 !important;
+	margin-bottom: 0.5rem;
+}
+
+.panel .zone-corner {
+	background-color: white;
+	left: 0;
+}
+
+.soil-views {
+	position: sticky;
+	top: var(--mainSticky);
+	z-index: 450;
+	background-color: var(--background-body);
+}
+
+.panel .soil-views {
+	top: var(--soil-views-top, 0px);
+	background-color: white;
+}
+
+.panel .zone-wrapper {
+	scroll-margin-top: calc(var(--soil-views-top, 0px) + var(--soil-views-height, 0px));
+}
+
+.soil-views-aside {
+	padding-right: 0;
+}
+
+/* Sur l'écran de l'assolement, le choix de la parcelle ne passe pas sous les onglets, il s'abrège
+   (`.zone-dropdown`) : la rangée collante garde ainsi la hauteur que le bandeau de parcelle lit pour se
+   poser dessous. La rangée est une grille et non un flex sans retour à la ligne : la piste
+   `minmax(0, 1fr)` ne compte pas dans la largeur minimale de la rangée, alors qu'un nom de parcelle long
+   y entrerait en flex et élargirait la page. */
+.soil-views > .tabs-page-head {
+	display: grid;
+	grid-template-columns: max-content minmax(0, 1fr);
+}
+
+/* La rangée du panneau d'assolement d'une série (`series/ui/Place.u.php`), qui n'a pas de feuille où monter. */
+.tabs.soil-views div.tabs-item-wrapper {
+	grid-template-columns: max-content minmax(0, 1fr);
+	grid-row-gap: 0;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+
+.tabs.soil-views div.tabs-item {
+	margin-bottom: 0;
+}
+
+.soil-views-aside .zone-corner {
+	position: static;
+	align-self: auto;
+	justify-content: flex-end;
+	padding: 0 !important;
+	margin-bottom: 0;
+	background-color: transparent;
+}
+
+.soil-views-aside .zone-button {
+	flex: none;
+	width: max-content;
+	max-width: 100%;
+}
+
+.soil-views-aside .zone-dropdown {
+	flex: 0 1 auto;
+	min-width: 0;
+	max-width: none;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+body[data-touch="no"] main .zone-corner {
+	left: calc(var(--nav-width) + var(--container-padding));
+}
+
+body[data-touch="yes"] main .zone-corner {
+	left: 0;
+}
+
+div.zone-header-season {
+	overflow: hidden;
+}
+
+.zone-count,
+.plot-count {
+	margin-left: .5rem;
+}
+
+.plot-count:empty,
+.zone-count:empty {
+	display: none;
+}
+
+#zone-selector [data-plot] {
+	padding-top: 0.375rem;
+	padding-bottom: 0.375rem;
+}
+
+/* Cartographie */
+div.zone-map {
+	width: 100%;
+	height: 100%;
+}
+
+/* Items */
+@media screen {
+
+	body[data-touch="yes"] main #zone-content {
+		width: calc(var(--screen-width) - var(--container-padding) * 2 - var(--nav-width));
+		overflow-x: auto;
+	}
+
+	main #zone-content > *:not(:has(.plot-card-scroll)) {
+		min-width: calc(var(--zone-content-months) * 4.5rem + 10rem);
+	}
+
+	#zone-content [data-hide="1"]:not(.selected) {
+		display: none;
+	}
+
+}
+
+div.zone-wrapper {
+	position: relative;
+}
+
+div.zone-printing div.zone-wrapper {
+	margin-bottom: 2rem;
+	display: grid;
+	grid-template-columns: 4.5cm 1fr;
+}
+
+@media screen {
+
+	div.zone-title {
+		z-index: 45;
+	}
+
+}
+
+div.zone-printing div.zone-title {
+	display: flex;
+	align-items: baseline;
+	gap: 0.5rem;
+	padding: 0 0 0.5rem 0;
+	width: auto;
+}
+
+div.zone-printing div.zone-title h2 {
+	margin: 0;
+	font-size: 1.5rem;
+	font-weight: 700;
+}
+
+div.zone-printing .plot-card,
+div.zone-printing .util-card {
+	box-shadow: none;
+}
+
+@media screen {
+
+	div.zone-title {
+		padding: 1.25rem 0.75rem;
+		background: var(--secondary);
+		border-top-left-radius: var(--radius);
+		border-top-right-radius: var(--radius);
+		color: white;
+	}
+
+	#zone-header + .zone-wrapper div.zone-title {
+		border-top-left-radius: var(--radius);
+		border-top-right-radius: var(--radius);
+	}
+
+}
+
+@media print {
+
+	div.zone-title h2 {
+		font-size: 2rem;
+		font-weight: bold;
+	}
+
+}
+
+div.zone-title a {
+	color: white;
+}
+
+body.bed-updating div.zone-title,
+body.panel-open div.zone-title {
+	padding-left: 0;
+}
+
+.zone-title-area {
+	margin-left: 1rem;
+}
+
+@media screen {
+
+	.zone-title-area {
+		font-size: 1rem;
+		opacity: 0.8;
+	}
+
+	main .zone-sticky-left {
+		position: sticky;
+		width: calc(var(--screen-width) - var(--nav-width) - var(--container-padding) * 2);
+	}
+
+	@media (min-width: 1100px) and (min-height: 600px) {
+
+		main div.zone-title {
+			top: 6rem;
+		}
+
+	}
+
+	body[data-touch="no"] {
+
+		main .zone-sticky-overlay-left,
+		main .zone-sticky-overlay-right {
+			display: block;
+			width: var(--container-padding);
+			background-color: var(--background-body);
+			top: 0;
+			height: 100vh;
+			position: fixed;
+			z-index: 98;
+		}
+
+		.zone-sticky-overlay-left {
+			left: var(--nav-width);
+		}
+
+		.zone-sticky-overlay-right {
+			right: 0;
+		}
+
+		main .zone-sticky-left {
+			left: calc(var(--nav-width) + var(--container-padding));
+		}
+
+	}
+
+	body[data-touch="yes"] {
+
+		main .zone-sticky-left {
+			left: 0;
+		}
+
+	}
+
+}
+
+@media print {
+
+	.zone-title-area {
+		font-size: 1.5rem;
+	}
+
+}
+
+div.zone-printing .zone-table {
+	margin: 0 !important;
+}
+
+div.zone-printing .zone-table tbody {
+	position: relative;
+	z-index: 0;
+}
+
+div.zone-printing .zone-table td {
+	padding: 0 !important;
+}
+
+div.zone-printing .zone-table thead {
+	position: relative;
+	z-index: 1;
+}
+
+div.zone-printing .zone-table th {
+	padding: 0 0 0 16rem !important;
+}
+
+div.zone-printing .zone-plots .series-season {
+	display: none;
+}
+
+#zone-content .zone-title {
+	position: static;
+}
+
+#zone-content #zone-header {
+	top: 2.25rem;
+}
+
+body[data-touch="no"] main #zone-content #zone-header {
+	top: 2.25rem;
+}
+
+.place-zone-bar {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	background-color: var(--production);
+	color: white;
+	border-radius: var(--radius);
+	padding: 0.5rem 0.875rem;
+	margin: 0.875rem 0 0.625rem;
+}
+
+.place-zone-bar b {
+	font-size: 1rem;
+}
+
+.zone-wrapper > .place-zone-bar {
+	position: sticky;
+	top: var(--soil-views-height, 4.625rem);
+	z-index: 430;
+}
+
+
+.place-zone-bar-info {
+	opacity: 0.8;
+	font-size: 0.75rem;
+}
+
+.place-zone-bar-outside {
+	margin-left: auto;
+}
+
+.place-zone-bar-rule {
+	margin-left: auto;
+	color: rgba(255, 255, 255, 0.85);
+	font-size: 0.8125rem;
+	font-weight: 400;
+}
+
+.garden-plots {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	align-items: flex-start;
+}

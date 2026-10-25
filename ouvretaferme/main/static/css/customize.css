@@ -1,0 +1,479 @@
+
+.customize-bar {
+	--customize-ink: #f4f4f6;
+	--customize-ground: #26262e;
+	--customize-line: #ffffff2e;
+	position: fixed;
+	right: 0;
+	left: 0;
+	z-index: 900;
+	display: flex;
+	align-items: stretch;
+	background-color: var(--customize-ground);
+	color: var(--customize-ink);
+	font-family: system-ui, sans-serif;
+	font-size-adjust: none;
+	font-size: 0.875rem;
+	line-height: 1.2;
+}
+
+.customize-bar-top {
+	top: 0;
+	box-shadow: 0 0.25rem 1.5rem rgba(0, 0, 0, 0.35);
+}
+
+.customize-bar-bottom {
+	bottom: 0;
+	box-shadow: 0 -0.25rem 1.5rem rgba(0, 0, 0, 0.35);
+}
+
+.customize-bar a {
+	text-decoration: none;
+}
+
+body:has(.customize-bar) {
+	--customize-height: 3.25rem;
+}
+
+body:has(.customize-bar-top) {
+	padding-top: var(--customize-height);
+}
+
+body:has(.customize-bar-bottom) {
+	padding-bottom: var(--customize-height);
+}
+
+.customize-panel {
+	display: flex;
+	align-items: center;
+	flex: 1 1 auto;
+	min-width: 0;
+	gap: 1rem;
+	padding: 0.625rem 2.75rem 0.625rem 0.75rem;
+}
+
+.customize-bar-folded {
+	right: auto;
+	left: 0;
+}
+
+.customize-bar-top.customize-bar-folded {
+	border-bottom-right-radius: 0.5rem;
+}
+
+.customize-bar-bottom.customize-bar-folded {
+	border-top-right-radius: 0.5rem;
+}
+
+.customize-bar-folded .customize-panel {
+	display: none;
+}
+
+.customize-unfold {
+	display: none;
+	align-items: center;
+	justify-content: center;
+	height: var(--customize-height, 3.25rem);
+	padding: 0 1rem;
+	color: inherit;
+	cursor: pointer;
+	font-size: 1.125rem;
+}
+
+.customize-bar-folded .customize-unfold {
+	display: flex;
+}
+
+.customize-options {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	flex: 1 1 auto;
+	min-width: 0;
+	gap: 0.625rem 1rem;
+}
+
+.customize-group {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding-right: 1rem;
+	border-right: 1px solid var(--customize-line);
+}
+
+.customize-group:last-child {
+	border-right: none;
+	padding-right: 0;
+}
+
+.customize-group-wrap .customize-choices {
+	flex-wrap: wrap;
+}
+
+.customize-label {
+	flex: none;
+	opacity: 0.6;
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.customize-choices {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+.customize-choice {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 0.3125rem 0.5rem;
+	border: 1px solid transparent;
+	border-radius: 0.3125rem;
+	color: inherit;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.customize-choice:hover {
+	background-color: #ffffff1a;
+}
+
+.customize-choice.selected {
+	background-color: var(--customize-ink);
+	color: var(--customize-ground);
+	font-weight: 600;
+}
+
+.customize-color input {
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border: 1px solid var(--customize-line);
+	border-radius: 0.3125rem;
+	background: none;
+	cursor: pointer;
+}
+
+.customize-backgrounds {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.customize-backgrounds .customize-choices {
+	gap: 0.25rem;
+}
+
+.customize-background {
+	display: block;
+	width: 1.5rem;
+	height: 1.5rem;
+	border: 1px solid var(--customize-line);
+	border-radius: 0.25rem;
+	background-color: var(--customize-swatch);
+	cursor: pointer;
+}
+
+.customize-background:hover {
+	border-color: var(--customize-ink);
+}
+
+.customize-background.selected {
+	outline: 2px solid var(--customize-ink);
+	outline-offset: 1px;
+	border-color: transparent;
+}
+
+.customize-background.selected::after {
+	content: '';
+	display: block;
+	width: 0.3125rem;
+	height: 0.625rem;
+	margin: 0 auto;
+	border: solid var(--customize-ground);
+	border-width: 0 2px 2px 0;
+	transform: translateY(2px) rotate(45deg);
+}
+
+.customize-reset {
+	color: inherit;
+	cursor: pointer;
+	opacity: 0.6;
+	padding: 0.25rem;
+	align-self: flex-start;
+}
+
+.customize-reset:hover {
+	opacity: 1;
+}
+
+.customize-lock {
+	font-size: 0.75em;
+	opacity: 0.7;
+}
+
+.customize-wand {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	border: 1px solid var(--customize-line);
+	border-radius: 0.3125rem;
+	color: inherit;
+	cursor: pointer;
+	font-size: 1rem;
+}
+
+.customize-wand:hover {
+	background-color: #ffffff1a;
+	color: var(--customize-ink);
+}
+
+.customize-field {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-width: 0;
+}
+
+.customize-field + .customize-field {
+	margin-left: 0.5rem;
+}
+
+.customize-field > span {
+	flex: none;
+	opacity: 0.6;
+	font-size: 0.75rem;
+}
+
+@media (max-width: 575px) {
+
+	.customize-fonts {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.customize-fonts > .customize-label {
+		display: none;
+	}
+
+	.customize-fonts > .customize-choices {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.customize-field {
+		flex: 1 1 0;
+	}
+
+	.customize-field > .customize-select {
+		flex: 1 1 auto;
+		min-width: 0;
+		max-width: none;
+	}
+
+}
+
+.customize-select {
+	max-width: 9rem;
+	padding: 0.3125rem 0.5rem;
+	border: 1px solid var(--customize-line);
+	border-radius: 0.3125rem;
+	background-color: #ffffff14;
+	color: inherit;
+	font: inherit;
+}
+
+.customize-choice:hover,
+.customize-close:hover {
+	color: var(--customize-ink);
+}
+
+.customize-choice.selected:hover {
+	color: var(--customize-ground);
+}
+
+.customize-select option {
+	color: #26262e;
+}
+
+.customize-group-wrap > .customize-select {
+	display: none;
+}
+
+.customize-colors,
+.customize-colors > .customize-popover {
+	display: contents;
+}
+
+.customize-colors-toggle {
+	display: none;
+}
+
+.customize-popover > .customize-group:last-child {
+	padding-right: 1rem;
+	border-right: 1px solid var(--customize-line);
+}
+
+@media (max-width: 767px) {
+
+	.customize-group-wrap > .customize-choices {
+		display: none;
+	}
+
+	.customize-group-wrap > .customize-select {
+		display: block;
+		max-width: 11rem;
+	}
+
+	.customize-colors {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding-right: 1rem;
+		border-right: 1px solid var(--customize-line);
+	}
+
+	.customize-colors-toggle {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.3125rem 0.5rem;
+		border: 1px solid var(--customize-line);
+		border-radius: 0.3125rem;
+		color: inherit;
+		cursor: pointer;
+		white-space: nowrap;
+	}
+
+	.customize-colors-toggle:hover {
+		background-color: #ffffff1a;
+	}
+
+	.customize-colors-preview {
+		display: flex;
+		gap: 0.1875rem;
+	}
+
+	.customize-colors-preview > span {
+		width: 0.875rem;
+		height: 0.875rem;
+		border: 1px solid var(--customize-line);
+		border-radius: 0.1875rem;
+	}
+
+	.customize-colors > .customize-popover {
+		position: fixed;
+		right: 0.75rem;
+		bottom: calc(var(--customize-height, 3.25rem) + 0.5rem);
+		left: 0.75rem;
+		z-index: 901;
+		display: none;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.75rem;
+		padding: 0.75rem;
+		border-radius: 0.5rem;
+		background-color: var(--customize-ground);
+		box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.45);
+	}
+
+	.customize-colors.open > .customize-popover {
+		display: flex;
+	}
+
+	.customize-colors > .customize-popover > .customize-group {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.375rem;
+		padding-right: 0;
+		border-right: none;
+	}
+
+	.customize-colors > .customize-popover .customize-choices {
+		flex-wrap: wrap;
+	}
+
+}
+
+.customize-close {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	color: white;
+	cursor: pointer;
+	font-size: 1.25rem;
+	line-height: 1;
+}
+
+.customize-bar-folded .customize-close {
+	display: none;
+}
+
+.customize-actions {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	flex: none;
+	gap: 0.35rem;
+}
+
+.customize-bar .customize-cancel,
+.customize-bar .customize-cancel:hover {
+	color: var(--customize-ink);
+}
+
+.customize-bar .customize-cancel {
+	opacity: 0.75;
+}
+
+.customize-bar .customize-cancel:hover {
+	opacity: 1;
+}
+
+/* La barre occupe le bas de l'écran, où le bloc se colle par défaut. */
+body:has(.customize-bar-bottom) .util-block-sticked {
+	bottom: calc(var(--customize-height, 3.25rem) + 1rem);
+}
+
+@media (max-width: 991px) {
+
+	.customize-bar {
+		flex-wrap: wrap;
+		max-height: 60vh;
+		overflow-y: auto;
+	}
+
+	.customize-panel {
+		flex-wrap: wrap;
+		gap: 0.625rem;
+	}
+
+	.customize-options {
+		order: 0;
+		width: 100%;
+	}
+
+	.customize-actions {
+		order: 1;
+		flex-direction: row;
+		align-items: center;
+		width: 100%;
+		gap: 0.75rem;
+	}
+
+	.btn.customize-save {
+		padding: 0.5rem 1rem;
+		font-size: 1rem;
+	}
+
+}

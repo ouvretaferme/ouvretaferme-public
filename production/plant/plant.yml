@@ -1,0 +1,153 @@
+Criterion:
+  id: serial32
+  name: text8(1, 50) @collate(general)
+  type: enum(PRODUCTION, RESISTANCE, WORK, QUALITY)
+  status: enum(ACTIVE, INACTIVE) = ACTIVE
+  createdAt: date = SPECIAL(now)
+  UNIQUE: [
+    ["name"]
+  ]
+
+Family:
+  id: serial32
+  name: text8(1, null) @collate(general)
+  fqn: fqn
+  color: color = PHP('#000000')
+  UNIQUE: [
+    ["fqn"]
+  ]
+
+Forecast:
+  id: serial32
+  structure: structure\Structure
+  season: int16(0, null)
+  plant: plant\Plant
+  unit: enum(KG, UNIT, BUNCH)
+  quantity: ?int(0, null)
+  proPart: int8(0, 100) = 0
+  proPrice: ?decimal(8, 2)
+  privatePart: int8(0, 100) = 100
+  privatePrice: ?decimal(8, 2)
+  INDEX: [
+    ["plant"]
+  ]
+  UNIQUE: [
+    ["structure", "season", "plant", "unit"]
+  ]
+
+Plant:
+  id: serial32
+  name: text8(1, null) @collate(general)
+  fqn: ?text8
+  reference: ?plant\Plant
+  aliases: ?text8(0, null)
+  tagsAccepted: json = PHP([])
+  color: color = PHP('#373737')
+  structure: ?structure\Structure
+  family: ?plant\Family
+  vignette: ?text8(30, 30)
+  plantsSafetyMargin: ?int8(1, 100)
+  seedsSafetyMargin: ?int8(1, 100)
+  # Les semaines pendant lesquelles une récolte reste vendable. Toujours renseignée sur le référentiel
+  # partagé ; sur la copie d'une structure, NULL suit l'espèce de référence.
+  storage: ?int8(0, 52)
+  crateWeight: ?decimal(5, 2, 0.1, 100)
+  cycle: enum(ANNUAL, PERENNIAL)
+  # L'organe consommé, que ni family ni les usage* ne donnent. NULL = hors équilibre du panier :
+  # l'espèce reste proposable et ne compte ni au plancher ni au plafond d'aucun organe.
+  organ: ?enum(LEAF, ROOT, FRUIT)
+  usageVegetable: bool = FALSE
+  usageFruit: bool = FALSE
+  usageSmallFruit: bool = FALSE
+  usageFlower: bool = FALSE
+  usageAromatic: bool = FALSE
+  usageMushroom: bool = FALSE
+  usageField: bool = FALSE
+  status: enum(ACTIVE, INACTIVE) = ACTIVE
+  criteria: json = PHP([])
+  createdAt: date = SPECIAL(now)
+  INDEX: [
+    ["fqn"],
+    ["family"]
+  ]
+  UNIQUE: [
+    ["structure", "name"]
+  ]
+
+Size:
+  id: serial32
+  name: text8(1, 50) @collate(general)
+  comment: ?editor16(1, null)
+  plant: ?plant\Plant
+  structure: ?structure\Structure
+  yield: bool
+  createdAt: date = SPECIAL(now)
+  INDEX: [
+    ["plant"]
+  ]
+  UNIQUE: [
+    ["structure", "plant", "name"]
+  ]
+
+Tag:
+  id: serial32
+  fqn: fqn
+  usage: enum(VEGETABLE, FRUIT, SMALL_FRUIT, FLOWER, AROMATIC, MUSHROOM, FIELD)
+  name: text8(1, null)
+
+Variety:
+  id: serial32
+  name: text8(1, 50) @collate(general)
+  fqn: ?fqn
+  reference: ?plant\Variety
+  plant: ?plant\Plant
+  structure: ?structure\Structure
+  supplierSeed: ?work\Supplier
+  supplierPlant: ?work\Supplier
+  weightSeed1000: ?float32(0.01, null)
+  numberPlantKilogram: ?int32(1, null)
+  stock: ?int32(0, null)
+  tags: json = PHP([])
+  ratingStatus: enum(WAITING, SKIPPED, RATED) = WAITING
+  ratingOverall: ?int32(1, 5)
+  ratingComment: ?text16(0, 500)
+  createdAt: date = SPECIAL(now)
+  INDEX: [
+    ["fqn"],
+    ["fqn", "structure"],
+    ["reference"],
+    ["plant"]
+  ]
+  UNIQUE: [
+    ["structure", "plant", "name"]
+  ]
+
+VarietyName:
+  id: serial32
+  variety: plant\Variety
+  plant: plant\Plant
+  name: text8(1, 50) @collate(general)
+  searchKey: text8(1, 50)
+  sortKey: text8(1, 50)
+  INDEX: [
+    ["variety"],
+    ["plant", "searchKey"],
+    ["plant", "sortKey"]
+  ]
+  LIB: VarietyNameAiLib
+
+VarietyRating:
+  id: serial32
+  structure: structure\Structure
+  variety: plant\Variety
+  criterion: plant\Criterion
+  value: int32(1, 5)
+  INDEX: [
+    ["criterion"],
+    ["variety"]
+  ]
+  UNIQUE: [
+    ["structure", "variety", "criterion"]
+  ]
+  LIB: VarietyRatingAiLib
+

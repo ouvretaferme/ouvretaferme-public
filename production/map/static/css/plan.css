@@ -1,0 +1,1302 @@
+.plan-column-title {
+	padding: 0.75rem 1rem;
+	border-bottom: 1px solid var(--border-light);
+	font-size: 0.8rem;
+	font-weight: bold;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+	color: var(--muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Un élément de liste est un lien, ou un div quand il porte lui-même des liens (les calques de la scène, avec leur interrupteur) */
+.plan-item {
+	display: block;
+	text-align: left;
+	line-height: inherit;
+}
+
+@media (hover: hover) {
+
+	.plan-item:hover {
+		background-color: var(--background-light);
+	}
+
+}
+
+.plan-item-title {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.plan-item-name {
+	font-weight: bold;
+}
+
+/* Un nom qui porte un second rang sous lui, le type ou le détail */
+.plan-item-text {
+	display: grid;
+	flex: 1;
+	min-width: 0;
+	line-height: 1.25;
+}
+
+.plan-item-value {
+	margin-left: auto;
+	color: var(--muted);
+	white-space: nowrap;
+}
+
+.plan-tag {
+	flex-shrink: 0;
+	white-space: nowrap;
+}
+
+.plan-group-form {
+	display: none;
+}
+
+.plan-schema {
+	--plan-scale: 0.02rem;
+	display: flex;
+	flex-direction: column;
+	gap: 2.5rem;
+	padding-bottom: 5rem;
+}
+
+.plan-schema-zone {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.plan-schema-zone-header {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.25rem 0.75rem;
+	padding: 0.75rem 1rem;
+	border-radius: var(--radius);
+	background-color: var(--production);
+	color: white;
+}
+
+.plan-schema-zone-name {
+	font-size: 1.15rem;
+	font-weight: bold;
+}
+
+.plan-schema-zone-summary {
+	font-size: 0.9rem;
+	opacity: 0.85;
+}
+
+.plan-schema-zone-actions {
+	display: flex;
+	gap: 0.375rem;
+	margin-left: auto;
+}
+
+.plan-schema-plots {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.125rem;
+}
+
+.plan-schema-plot {
+	display: flex;
+	flex-direction: column;
+	flex: 0 1 auto;
+	min-width: 16rem;
+	max-width: 100%;
+	gap: 0.5rem;
+	padding: 0.625rem 0.75rem;
+}
+
+.plan-schema-plot.selected,
+.plan-schema-plot.has-selection {
+	border-color: var(--production);
+}
+
+.plan-schema-plot-header {
+	flex-wrap: wrap;
+	gap: 0.25rem 0.5rem;
+	min-height: 2rem;
+	margin-bottom: 0;
+}
+
+.plan-schema-plot-header .util-card-info,
+.plan-schema-plot-header .badge {
+	font-weight: normal;
+}
+
+.plan-schema-plot-menu {
+	margin-left: auto;
+}
+
+.plan-schema-plot-handle {
+	cursor: grab;
+}
+
+.plan-schema-plot-handle svg {
+	color: var(--muted);
+	font-size: 0.8rem;
+}
+
+.plan-schema-plot.is-dragging {
+	opacity: 0.4;
+}
+
+.plan-schema-plot-body {
+	display: flex;
+	align-items: stretch;
+	gap: 0.375rem;
+	min-width: 0;
+}
+
+.plan-schema-count {
+	flex-shrink: 0;
+	writing-mode: vertical-rl;
+	transform: rotate(180deg);
+	text-align: center;
+	font-size: 0.75rem;
+	color: var(--muted);
+	white-space: nowrap;
+}
+
+.plan-schema-beds {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+	gap: 0.5rem 2px;
+	min-height: 7rem;
+	padding: 0.5rem;
+	border-radius: var(--radius);
+	background-color: #f3f5f2;
+}
+
+.plan-schema-plot-greenhouse .plan-schema-beds {
+	background-color: #fbf4e6;
+	padding-left: 1.5rem;
+	padding-right: 1.5rem;
+}
+
+.plan-schema-beds-empty {
+	align-items: center;
+	align-content: center;
+	justify-content: center;
+	background: repeating-linear-gradient(135deg, #e6efe9 0 6px, var(--background-even) 6px 12px);
+	color: var(--muted);
+	font-size: 0.8rem;
+}
+
+.plan-schema-plot-greenhouse .plan-schema-beds-empty {
+	background: repeating-linear-gradient(135deg, #f7ead3 0 6px, var(--background-even) 6px 12px);
+}
+
+.plan-schema-bed {
+	flex-shrink: 0;
+	max-width: 7rem;
+	height: 6rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 3px;
+	border-radius: 2px;
+	overflow: hidden;
+	writing-mode: vertical-rl;
+	font-size: 0.8rem;
+	color: var(--open-field);
+	box-shadow: 0 0 0 0 transparent;
+	transition: box-shadow 0.15s;
+}
+
+/* La planche fictive qui ouvre la saisie : même gabarit qu'une planche, en
+   pointillé, pour qu'on voie où les nouvelles vont se poser. Sans aucune
+   planche, elle devient un bouton posé au milieu du jardin. */
+.plan-schema-bed-add {
+	width: 2.25rem;
+	max-width: none;
+	border: 1px dashed var(--production);
+	border-radius: 2px;
+	color: var(--production);
+	background-color: #ffffffcc;
+	text-decoration: none;
+	gap: 0.35rem;
+	font-size: 0.75rem;
+	letter-spacing: 0.3px;
+}
+
+.plan-schema-bed-add svg {
+	width: 0.85rem;
+	height: 0.85rem;
+	flex: 0 0 auto;
+}
+
+/* Le libellé est écrit à l'horizontale puis tourné d'un quart de tour : l'icône
+   et le texte restent sur une même ligne, et se lisent de bas en haut comme les
+   noms de planche. Posé en absolu, il reste centré quelle que soit la largeur. */
+.plan-schema-bed-add {
+	position: relative;
+	overflow: visible;
+}
+
+.plan-schema-bed-add > span {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	writing-mode: horizontal-tb;
+	white-space: nowrap;
+	width: max-content;
+	line-height: 1;
+	transform: translate(-50%, -50%) rotate(-90deg);
+}
+
+.plan-schema-bed-add svg {
+	display: block;
+}
+
+.plan-schema-bed-add:hover {
+	background-color: var(--production);
+	color: white;
+	border-style: solid;
+}
+
+/* Sans aucune planche, ce n'est plus une planche : un bouton horizontal, au
+   milieu du jardin — donc ni texte tourné, ni icône retournée. */
+.plan-schema-beds-empty .plan-schema-bed-add > span {
+	position: static;
+	gap: 0.5rem;
+	transform: none;
+}
+
+.plan-schema-beds-empty .plan-schema-bed-add {
+	width: auto;
+	height: auto;
+	min-width: 0;
+	writing-mode: horizontal-tb;
+	padding: 0.5rem 1.1rem;
+	border-radius: var(--radius);
+	background-color: white;
+	font-size: 0.85rem;
+	font-weight: 500;
+	white-space: nowrap;
+}
+
+/* Le survol du bouton du jardin vide : sans ça, sa règle de fond blanc, plus
+   bas dans la feuille, l'emportait et le texte passait blanc sur blanc. */
+.plan-schema-beds-empty .plan-schema-bed-add:hover {
+	background-color: var(--production);
+	color: white;
+}
+
+.plan-schema-plot-greenhouse .plan-schema-bed-add {
+	border-color: var(--greenhouse);
+	color: var(--greenhouse);
+}
+
+.plan-schema-plot-greenhouse .plan-schema-bed-add:hover,
+.plan-schema-plot-greenhouse .plan-schema-beds-empty .plan-schema-bed-add:hover {
+	background-color: var(--greenhouse);
+	color: white;
+}
+
+/* Les noms de planche se lisent de bas en haut (pas la planche fictive, dont le
+   libellé est traité plus bas). */
+.plan-schema-bed:not(.plan-schema-bed-add) > span {
+	transform: rotate(180deg);
+}
+
+.plan-schema-bed[onclick] {
+	cursor: pointer;
+	user-select: none;
+	-webkit-touch-callout: none;
+}
+
+.plan-schema-bed.selected {
+	box-shadow: 0 0 0 2px var(--production), inset 0 0 0 100px color-mix(in srgb, var(--production) 20%, transparent);
+}
+
+@media (hover: hover) {
+
+	.plan-schema-bed[onclick]:hover {
+		box-shadow: 0 0 0 2px var(--production);
+	}
+
+	.plan-schema-bed[onclick].selected:hover {
+		box-shadow: 0 0 0 2px var(--production), inset 0 0 0 100px color-mix(in srgb, var(--production) 35%, transparent);
+	}
+
+}
+
+.plan-schema-plot-greenhouse .plan-schema-bed {
+	color: var(--greenhouse);
+}
+
+.plan-schema-bed:not(.plan-schema-bed-add) span {
+	display: block;
+	max-height: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	line-height: 1;
+	padding: 0.25rem 0;
+}
+
+.plan-schema-bed-add > span {
+	max-height: 100%;
+	overflow: hidden;
+	white-space: nowrap;
+	padding: 0.25rem 0;
+}
+
+.plan-schema-bed small {
+	display: block;
+	opacity: 0.75;
+	font-size: 0.6rem;
+	margin-left: 0.125rem;
+}
+
+.plan-schema-plot-footer {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.375rem 1rem;
+	padding-top: 0.375rem;
+	font-size: 0.8rem;
+}
+
+.plan-schema-formats {
+	display: grid;
+	grid-auto-flow: column;
+	grid-template-rows: repeat(2, auto);
+	gap: 0.125rem 0.875rem;
+	margin-left: auto;
+
+	@media (max-width: 575px) {
+		grid-auto-flow: row;
+		grid-template-rows: none;
+	}
+
+}
+
+.plan-schema-format {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	white-space: nowrap;
+}
+
+.plan-schema-format i {
+	width: 0.75rem;
+	height: 0.75rem;
+	border-radius: 2px;
+}
+
+.plan-schema-format .util-counter {
+	font-size: 0.7rem;
+	padding: 0.1rem 0.3rem;
+}
+
+.plan-schema-plot-buttons {
+	gap: 0.375rem;
+	order: -1;
+}
+
+.plan-schema-print {
+	padding-bottom: 0;
+	gap: 1.25rem;
+}
+
+.plan-schema-print .plan-schema-zone {
+	gap: 0.5rem;
+}
+
+.plan-schema-print .plan-schema-zone-header {
+	break-after: avoid;
+}
+
+.plan-schema-print .plan-schema-zone-header {
+	padding: 0.375rem 0.75rem;
+}
+
+.plan-schema-print .plan-schema-plots {
+	gap: 0.5rem;
+}
+
+.plan-schema-print .plan-schema-plot {
+	gap: 0.375rem;
+	padding: 0.5rem 0.625rem;
+	box-shadow: none;
+	break-inside: avoid;
+}
+
+.plan-schema-print .plan-schema-plot-header {
+	min-height: 0;
+}
+
+.plan-schema-print .plan-schema-beds {
+	min-height: 5rem;
+	padding: 0.375rem;
+}
+
+.plan-schema-print .plan-schema-bed {
+	height: 4.5rem;
+}
+
+.plan-schema-print .plan-schema-plot-footer {
+	padding-top: 0.25rem;
+}
+
+/* La page de la carte de la structure, en A4 paysage (PlanUi::getPlanPrinting()) : la carte prend la hauteur que laissent
+   l'en-tête et le pied. La page a la taille du papier dès l'écran, où la carte est rendue avant l'impression : l'image
+   garde ainsi les proportions de la boite qui l'imprime */
+.plan-print-page {
+	page: plan-print;
+	break-after: page;
+	display: flex;
+	flex-direction: column;
+	gap: 3mm;
+	width: 28.2cm;
+	height: 19.4cm;
+}
+
+.plan-print-page .pdf-footer {
+	margin-top: 0;
+}
+
+.plan-print-head {
+	display: flex;
+	align-items: flex-end;
+	gap: 1rem;
+}
+
+.plan-print-title {
+	flex: 1;
+	min-width: 0;
+}
+
+.plan-print-title .pdf-structure-heading {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.plan-print-legend {
+	color: var(--text);
+	font-size: 1rem;
+}
+
+.plan-print-legend .util-legend-mark {
+	width: 18px;
+	height: 12px;
+	border: 2px solid;
+}
+
+.plan-print-drawing .plan-print-legend-zone {
+	border-color: var(--text-intermediate);
+	background-color: var(--background);
+}
+
+.plan-print-drawing .plan-print-legend-open-field {
+	border-color: var(--open-field);
+}
+
+.plan-print-drawing .plan-print-legend-greenhouse {
+	border-color: var(--greenhouse);
+}
+
+.plan-print-drawing .plan-print-legend-bed {
+	border: 1px solid var(--text);
+	background-color: var(--soil);
+	opacity: .8;
+}
+
+.plan-print-satellite .plan-print-legend-zone {
+	border-color: var(--text-intermediate);
+	background-color: var(--background-surface);
+}
+
+.plan-print-satellite .plan-print-legend-open-field {
+	border-color: var(--map-plot-line-open-field);
+	background-color: var(--text-intermediate);
+}
+
+.plan-print-satellite .plan-print-legend-greenhouse {
+	border-color: var(--map-plot-line-greenhouse);
+	background-color: var(--text-intermediate);
+}
+
+.plan-print-satellite .plan-print-legend-bed {
+	border: 1px solid var(--text);
+	background-color: var(--open-field-background);
+}
+
+.plan-print-map {
+	position: relative;
+	flex: 1;
+	min-height: 0;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	overflow: hidden;
+}
+
+/* La carte d'une parcelle, sous sa barre dans le plan en liste : elle a la largeur de la page portrait dès l'écran, où la page
+   de la structure élargit le document au paysage, pour que l'image rendue garde ses proportions à l'impression. Sa hauteur est
+   celle que MapCartography.printMaps() calcule sur son cadre, bornée pour que deux parcelles aux listes courtes tiennent sur une
+   page. La barre et le premier jardin ne s'en séparent pas */
+.plan-print-zone {
+	flex: none;
+	width: 19.5cm;
+	height: 8.5cm;
+	min-height: 5cm;
+	max-height: 8.5cm;
+	break-inside: avoid;
+	break-after: avoid;
+}
+
+.plan-print-zone .plan-print-legend {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	padding: 3px 8px;
+	border-radius: 2px;
+	background-color: var(--background-surface);
+	font-size: 0.9rem;
+}
+
+/* La carte qui rend les images, sous celle qu'elle rend : elle en prend la taille sans s'imprimer à part. Le sélecteur
+   double passe devant .mapboxgl-map, qui la remettrait en position relative */
+.plan-print-map .plan-print-live {
+	position: absolute;
+	inset: 0;
+}
+
+/* Le crédit de la carte de rendu se recopie sur chaque image : le sien resterait visible sous la dernière */
+.plan-print-live .mapboxgl-control-container {
+	visibility: hidden;
+}
+
+.plan-print-map img {
+	position: relative;
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.plan-print-north {
+	position: absolute;
+	top: 10px;
+	right: 12px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	font-weight: bold;
+	line-height: 1;
+	color: var(--text);
+	text-shadow: 0 0 3px var(--background-surface), 0 0 3px var(--background-surface);
+}
+
+.plan-print-north svg {
+	width: 14px;
+	height: 16px;
+}
+
+/* Le liseré de la flèche, que le text-shadow du N n'atteint pas : elle se lit aussi sur le satellite */
+.plan-print-north path {
+	stroke: var(--background-surface);
+	stroke-width: 1;
+}
+
+.plan-print-logo {
+	position: absolute;
+	left: 10px;
+	bottom: 10px;
+}
+
+.plan-print-credit {
+	position: absolute;
+	right: 10px;
+	bottom: 46px;
+	padding: 0 4px;
+	border-radius: 2px;
+	background-color: rgba(255, 255, 255, .75);
+	color: var(--text);
+	font-size: 0.75rem;
+}
+
+.plan-print-credit a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.plan-print-logo .mapboxgl-ctrl-logo {
+	display: block;
+	margin: 0;
+}
+
+.plan-print-scale {
+	position: absolute;
+	right: 10px;
+	bottom: 10px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
+	padding: 3px 8px 4px;
+	border-radius: 2px;
+	background-color: var(--background-surface);
+	font-size: 0.9rem;
+}
+
+.plan-print-scale-bar {
+	height: 6px;
+	border: 2px solid var(--text);
+	border-top: 0;
+}
+
+/* Le tableau des planches prend la place disponible, sans dépasser 50 rem : au-delà
+   la parcelle occuperait toute la largeur du plan et ses voisines passeraient à
+   la ligne. */
+.plan-schema-plot-sheet {
+	border-top: 1px solid var(--border-light);
+	padding-top: 1rem;
+	width: 50rem;
+	max-width: 100%;
+}
+
+.plan-schema-plot.plan-schema-plot-table {
+	flex-basis: 100%;
+}
+
+table.plan-table {
+	width: 100%;
+	margin: 0;
+}
+
+table.plan-table td.plan-table-select,
+table.plan-table th.plan-table-select {
+	width: 2rem;
+	text-align: center;
+}
+
+.plan-table-name {
+	font-weight: bold;
+}
+
+.plan-table-actions {
+	white-space: nowrap;
+}
+
+.plan-table-selection {
+	padding: 0.75rem 0;
+}
+
+.plan-mapview {
+	position: relative;
+	height: calc(100vh - 16rem);
+	min-height: 28rem;
+	border-radius: var(--radius);
+	overflow: hidden;
+	box-shadow: 0 1px 3px #0000001f;
+}
+
+#plan-mapview-map {
+	width: 100%;
+	height: 100%;
+}
+
+/* Le bloc d'une structure sans parcelle, centré sur la carte sans transformation pour garder un texte net */
+.plan-mapview-empty {
+	position: absolute;
+	inset: 0;
+	margin: auto;
+	height: fit-content;
+	width: calc(100% - 2 * var(--space-lg));
+	max-width: 30rem;
+	z-index: 2;
+}
+
+/* Un titre de colonne qui porte le geste d'ajout, à droite : le bouton garde la casse et la graisse d'un bouton */
+.plan-column-title-action {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-sm);
+}
+
+.plan-column-title-action .btn {
+	font-weight: normal;
+	letter-spacing: 0;
+	text-transform: none;
+}
+
+/* La carte des calques de la vue 3D (DecorLayer.u.php) flotte sur sa scène : la vue Carte, elle, pose ses lignes dans le bloc de .plan-console */
+.plan-mapview-zones {
+	position: absolute;
+	top: 1rem;
+	left: 1rem;
+	width: 16rem;
+	max-height: calc(100% - 6rem);
+	overflow: auto;
+	padding: 0;
+	z-index: 1;
+}
+
+.plan-mapview-zones .plan-item,
+.plan-console-list .plan-item {
+	cursor: pointer;
+}
+
+/* Les lignes du bloc sont plates à toutes les largeurs : sous la carte d'un téléphone, il reste une liste et non une pile de boutons */
+.plan-console-list .plan-item {
+	border-width: 0;
+	border-radius: 0;
+}
+
+.plan-console-list .plan-item.selected {
+	box-shadow: inset 3px 0 0 var(--secondary);
+}
+
+@media (min-width: 768px) {
+
+	.plan-mapview-zones .plan-item {
+		border-width: 0;
+		border-radius: 0;
+	}
+
+	.plan-mapview-zones .plan-item.selected {
+		box-shadow: inset 3px 0 0 var(--secondary);
+	}
+
+}
+
+/* La nature d'un jardin prend moins de place que son nom dans la liste du bloc */
+.plan-console-list .plan-item-title > .plan-tag {
+	font-size: 0.75rem;
+	letter-spacing: -0.1px;
+}
+
+.plan-mapview-zones .plan-item-name,
+.plan-console-list .plan-item-name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.plan-mapview-zones .plan-item-value,
+.plan-console-list .plan-item-value {
+	flex-shrink: 0;
+}
+
+/* Un nom suivi d'un second rang va à la ligne plutôt que de se couper : deux éléments du même type ne se distinguent que par lui */
+.plan-mapview-zones .plan-item-text .plan-item-name,
+.plan-console-list .plan-item-text .plan-item-name {
+	overflow: visible;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+
+/* Le nom garde la largeur que la surface ou la nature lui laissent : un badge plus long que lui déborde sous elles au lieu d'élargir la colonne */
+.plan-console-list .plan-item-text {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+/* Le second rang d'une ligne : son badge, à sa largeur et non à celle de la ligne, plus près de son nom que du nom suivant */
+.plan-console-list .plan-item-text .plan-tag {
+	justify-self: start;
+	margin: var(--space-xxs) 0 var(--space-xs);
+}
+
+/* La surface d'une parcelle et la nature d'un jardin restent sur le rang du nom */
+.plan-console-list .plan-item-text + .plan-item-value,
+.plan-console-list .plan-item-text + .plan-tag {
+	align-self: flex-start;
+}
+
+/* Le chevron dit que la ligne s'ouvre : il reste au milieu de la ligne quand la surface et la nature montent sur le rang du nom */
+.plan-console-list .plan-item-chevron {
+	flex-shrink: 0;
+	align-self: center;
+	color: var(--muted);
+}
+
+.plan-console-list .plan-item.selected .plan-item-chevron {
+	color: inherit;
+}
+
+/* Le compte des planches à dessiner d'un jardin, sous son nom sur la carte : un clic dessus est un clic sur le jardin */
+.plan-mapview .plan-mapview-counter {
+	pointer-events: none;
+}
+
+/* Les actions d'un jardin, et la fiche d'un geste qui prend leur place, se posent sur la carte au-dessus d'un contour : une carte réduite à ses boutons */
+.plan-mapview-actions.util-card {
+	display: flex;
+	align-items: center;
+	gap: var(--space-xs);
+	padding: var(--space-xs);
+	white-space: nowrap;
+}
+
+/* Un jardin dessiné a ses gestes en rangée, qui fait elle-même le fond et l'ombre : la carte qui la porte s'efface */
+.plan-mapview-actions:is(:has(> .util-mapbar), :has(> .plan-mapview-actions-face:not(.hide) > .util-mapbar)) {
+	padding: 0;
+	background: none;
+	box-shadow: none;
+	border: 0;
+}
+
+.plan-mapview-actions-face {
+	display: contents;
+}
+
+/* La rangée tient entre le bord de la carte et la colonne de ses boutons (MapPlan.refreshMapPadding()) : le nom de ce
+   qu'elle désigne s'y coupe (util-mapbar-name), les gestes restent entiers */
+.plan-mapview-marker .plan-mapview-actions.util-card {
+	max-width: var(--plan-mapview-actions-width, none);
+}
+
+.plan-mapview-actions .btn {
+	flex-shrink: 0;
+}
+
+/* Ce que dit le geste, à mesure : rien quand il n'a rien à dire */
+.plan-mapview-actions.util-card:has(> .plan-mapview-actions-say) {
+	flex-direction: column;
+	align-items: stretch;
+	max-width: 20rem;
+}
+
+.plan-mapview-actions-say {
+	white-space: normal;
+}
+
+/* Qui on dessine, au-dessus de ce que le geste en dit */
+[data-drawing-card] [data-drawing-name] {
+	display: block;
+}
+
+.plan-mapview-actions-say:not(:has(> :not(:empty):not(.hide))) {
+	display: none;
+}
+
+/* Une fiche de geste qui n'a rien à montrer ne laisse pas de pastille vide. Posée sur la carte, elle n'a que son nom et ses messages ;
+   sous la carte d'un téléphone, elle porte aussi les issues d'une modification, celles d'une forme qu'on crée étant sous son nom */
+.mapboxgl-marker.plan-mapview-actions[data-drawing-card]:not(:has(.plan-mapview-actions-say > :not(:empty):not(.hide))),
+.plan-mapview-actions[data-drawing-card]:not(:has(.plan-mapview-actions-say > :not(:empty):not(.hide), > .plan-mapview-actions-issues:not(.hide))) {
+	display: none;
+}
+
+/* La rangée du tracé tient le haut de la carte, à la hauteur de ses boutons et à leur gauche, à la marge de 10 px que Mapbox
+   leur donne. La colonne se mesure (MapPlan.refreshMapPadding()). Posée après la carte, elle passe au-dessus de ce qui s'y pose */
+.plan-mapview-bar {
+	position: absolute;
+	top: 10px;
+	right: calc(var(--plan-mapview-controls-width) + var(--space-sm));
+}
+
+/* Une forme qu'on crée n'a pas de contour à désigner : sa fiche entre en tête de la rangée du tracé, qui part alors de la droite du
+   bloc (MapDrawing.placeBar()). Les formes d'un contour restent contre la fiche, et les modes, qui paraissent au premier point,
+   viennent après elles : ce sont eux qui passent dessous quand la largeur manque */
+.plan-mapview-bar.plan-mapview-bar-card {
+	left: var(--plan-mapview-actions-left, 10px);
+}
+
+.plan-mapview-bar-card > .plan-mapview-actions {
+	pointer-events: auto;
+}
+
+.plan-mapview-bar-card > .util-mapbar:has([data-drawing-mode]) {
+	order: 1;
+}
+
+/* Pendant un geste, sa fiche remplace les actions qui l'ont ouvert */
+.plan-mapview.is-drawing .plan-mapview-marker {
+	display: none;
+}
+
+/* Pendant un tracé, les touches frappées sur la carte vont au geste : le cerne de focus que le navigateur pose
+   sur elle au premier appui dirait qu'elles la déplacent */
+.plan-mapview.is-drawing .mapboxgl-canvas:focus-visible {
+	outline: none;
+}
+
+/* La carte en plein écran laisserait la fiche du geste dehors, avec ce qu'elle dit et ce qui refuse le geste */
+.plan-mapview.is-drawing .mapboxgl-ctrl-group:has(.mapboxgl-ctrl-fullscreen) {
+	display: none;
+}
+
+/* Sous le doigt, les gestes d'une fiche ont la taille des poignées du tracé qu'ils ouvrent ou qu'ils closent */
+@media (max-width: 767px) {
+
+	.plan-mapview-actions .btn {
+		min-height: var(--touch-target);
+		display: inline-flex;
+		align-items: center;
+	}
+
+	/* Le bloc sous la carte porte déjà le nom, et la carte n'a que 220 px de haut : une ligne de plus au-dessus de la forme en
+	   couvrirait le quart. La rangée ne garde que le rappel des planches cochées, les gestes et la roue */
+	.plan-mapview-marker .util-mapbar-name:not([data-console-names]) {
+		display: none;
+	}
+
+	/* La fiche du geste vit sous la carte : MapDrawing la fait venir au-dessus de la barre fixe du bas */
+	.plan-mapview-actions[data-drawing-card] {
+		scroll-margin-bottom: calc(var(--nav-structure) + var(--space-md));
+	}
+
+	/* Elle s'y colle, de toute sa largeur, comme le bas du cadre de la carte dont elle prend les arrondis : le rappel à gauche, les issues à droite */
+	.plan-mapview-actions.util-card[data-drawing-card] {
+		flex-direction: row;
+		align-items: center;
+		max-width: none;
+		padding: var(--space-sm) var(--space-md);
+		border-radius: 0;
+		box-shadow: none;
+		border-top: 1px solid var(--border-light);
+	}
+
+	.plan-mapview-actions[data-drawing-card] .plan-mapview-actions-say {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.plan-mapview-actions-issues {
+		display: flex;
+		align-items: center;
+		gap: var(--space-xs);
+		margin-left: auto;
+		flex-shrink: 0;
+	}
+
+	/* La rangée, réduite à ses icônes, part du bord gauche de la carte et s'arrête avant la colonne de ses boutons : à sa
+	   largeur, elle ne lit plus son bord droit que comme une limite */
+	.plan-mapview-bar {
+		left: var(--space-xs);
+		right: calc(var(--plan-mapview-controls-width) + var(--space-xs));
+		width: fit-content;
+	}
+
+}
+
+/* La mention de Mapbox, une fois dépliée, passe à la ligne avant la vignette du fond et sa marge */
+.plan-mapview:has(.util-basemap) .mapboxgl-ctrl-bottom-left {
+	right: calc(10px + 5rem + 10px);
+}
+
+@media (max-width: 767px) {
+
+	.plan-mapview:has(.util-basemap) .mapboxgl-ctrl-bottom-left {
+		right: calc(10px + 4.5rem + 10px);
+	}
+
+}
+
+@media (max-width: 767px) {
+
+	.plan-schema {
+		padding-bottom: 7rem;
+	}
+
+	.plan-schema-bed[onclick] {
+		min-width: 2.75rem;
+	}
+
+	.plan-mapview-zones {
+		flex-wrap: wrap;
+	}
+
+	.plan-mapview {
+		height: auto;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+	}
+
+	#plan-mapview-map {
+		height: 50vh;
+	}
+
+	/* Sans parcelle, la carte et son bloc partagent une case : la carte grandit avec le bloc au lieu de le laisser déborder d'un écran bas */
+	.plan-mapview:has(.plan-mapview-empty) {
+		display: grid;
+	}
+
+	.plan-mapview:has(.plan-mapview-empty) #plan-mapview-map {
+		grid-area: 1 / 1;
+		height: auto;
+		min-height: 50vh;
+	}
+
+	/* Les boutons de zoom gardent le bord droit ; la vignette du fond, son nom et sa marge gardent le bas */
+	.plan-mapview-empty {
+		grid-area: 1 / 1;
+		position: relative;
+		inset: auto;
+		align-self: center;
+		width: calc(100% - 7.5rem);
+		margin: var(--space-lg) auto calc(2 * var(--space-xxl) + var(--space-sm));
+	}
+
+	.plan-mapview-zones {
+		position: static;
+		width: auto;
+		max-height: none;
+		border-radius: 0;
+		box-shadow: none;
+		display: flex;
+		gap: 0.375rem;
+		padding: 0.5rem 0.75rem;
+		overflow-x: auto;
+	}
+
+	.plan-mapview-zones .plan-column-title {
+		display: none;
+	}
+
+	.plan-mapview-zones .plan-item {
+		flex-shrink: 0;
+	}
+
+}
+
+/* Le bloc de la vue Carte, posé sur la carte en haut à gauche : il y descend de la structure à la parcelle, puis aux planches d'un jardin.
+   La carte et le bloc partagent une case de grille, qui garde leur ordre de lecture et laisse le bloc passer sous la carte sur un téléphone */
+.plan-console {
+	container-type: inline-size;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	height: calc(100vh - 16rem);
+	min-height: 28rem;
+}
+
+.plan-console .plan-mapview {
+	grid-area: 1 / 1;
+	height: auto;
+	min-height: 0;
+}
+
+/* Le bas garde la hauteur d'une rangée de boutons au-dessus de la mention de Mapbox, et un rem de part et d'autre */
+.plan-console-side {
+	grid-area: 1 / 1;
+	align-self: start;
+	justify-self: start;
+	z-index: 1;
+	width: 17rem;
+	max-height: calc(100% - 6rem);
+	margin: 1rem;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	padding: 0;
+	overflow: hidden;
+}
+
+/* Une carte large laisse au bloc la place des noms longs et de leur nature sur un seul rang */
+@container (min-width: 1100px) {
+
+	.plan-console-side {
+		width: 20rem;
+	}
+
+}
+
+.plan-console-plot {
+	display: flex;
+	align-items: center;
+	gap: var(--space-sm);
+	padding: var(--space-md) var(--space-sm) var(--space-sm);
+	border-bottom: 1px solid var(--border-light);
+}
+
+.plan-console-plot-name {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Le titre suit celui d'un bloc de la fiche d'une série (« Assolement »), à la taille que la colonne laisse */
+.plan-console-plot-title {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0 var(--space-xs);
+	font-size: 1.25rem;
+	line-height: 1.2;
+	overflow-wrap: anywhere;
+}
+
+.plan-console-plot-title .plan-tag {
+	font-size: 0.9rem;
+}
+
+.plan-console-plot-summary {
+	color: var(--muted);
+	font-size: 0.9rem;
+	text-transform: uppercase;
+	line-height: 1.4;
+}
+
+.plan-console-plot-summary > span {
+	white-space: nowrap;
+}
+
+/* Un nom long se replie à côté du disque, qui garde sa taille */
+.plan-console-up {
+	flex-shrink: 0;
+}
+
+.plan-console-level {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+/* Un formulaire du bloc défile aussi : ses messages d'erreur l'allongent sous le bouton qui l'enregistre */
+.plan-console-list,
+.plan-console-beds,
+.plan-console-form {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding-bottom: var(--space-sm);
+}
+
+.plan-console-bed {
+	display: flex;
+	align-items: center;
+	gap: var(--space-sm);
+	padding: var(--space-xs) var(--space-sm);
+	margin: 0;
+	cursor: pointer;
+}
+
+.plan-console-bed b {
+	min-width: 3.5rem;
+}
+
+/* L'ajout se tient sur le bord des planches qu'il complète */
+.plan-console-beds-add {
+	padding: var(--space-sm) var(--space-sm) 0;
+}
+
+/* Deux classes et non une : form.css pose .field-checkbox en bloc aligné en haut et charge après cette feuille. La case
+   du titre se tient dans la colonne des cases des planches */
+.plan-column-title.plan-console-all {
+	display: flex;
+	align-items: center;
+	gap: var(--space-sm);
+	padding-left: var(--space-sm);
+	padding-right: var(--space-sm);
+	margin: 0;
+	cursor: pointer;
+}
+
+.plan-console-bed:has(input:checked) {
+	background-color: var(--background-even);
+}
+
+/* Pendant un geste, le bloc garde les planches d'un jardin, où l'on coche celles du rang, le nom d'une forme qu'on crée, et la tête
+   d'une parcelle, dont on trace le contour ou celui d'un jardin. Leur retour enregistre une modification avant de remonter, et quitte
+   une création sans rien écrire (drawing.js) */
+.plan-console:has(.plan-mapview.is-drawing) .plan-console-level:not([data-level="plot"], [data-level="create"], [data-level="zone"]),
+.plan-console:has(.plan-mapview.is-drawing) .plan-console-level[data-level="zone"] > :not(.plan-console-plot) {
+	display: none;
+}
+
+/* Sans rien de cela, le bloc n'a plus rien à montrer : son cadre vide resterait sur la carte en un trait. Hors geste, c'est le cas
+   d'une structure sans parcelle, dont le bloc attend la première */
+.plan-console:has(.plan-mapview.is-drawing) .plan-console-side:not(:has(.plan-console-level:is([data-level="plot"], [data-level="create"], [data-level="zone"]):not(.hide))),
+.plan-console-side:not(:has(.plan-console-level:not(.hide))) {
+	display: none;
+}
+
+/* Le nom d'une forme qu'on crée, sous la tête de son niveau */
+.plan-console-form {
+	padding: var(--space-sm);
+}
+
+.plan-console-form .form-group {
+	margin-bottom: 0;
+}
+
+/* Les issues d'une forme qu'on crée quittent la rangée et la fiche pour le dessous de son nom, comme les boutons d'un formulaire (MapDrawing, issues) */
+.plan-console-buttons {
+	display: flex;
+	gap: var(--space-xs);
+	margin-top: var(--space-sm);
+}
+
+@media (max-width: 767px) {
+
+	.plan-console {
+		height: auto;
+		min-height: 0;
+	}
+
+	.plan-console-side {
+		grid-area: auto;
+		justify-self: stretch;
+		width: auto;
+		max-height: none;
+		margin: var(--space-sm) 0 0;
+	}
+
+	/* La carte passe au-dessus de la liste et reste en vue pendant qu'on la parcourt, sous la barre fixe du haut */
+	.plan-console .plan-mapview {
+		order: -1;
+		position: sticky;
+		top: var(--mainSticky);
+		z-index: 2;
+	}
+
+	.plan-console #plan-mapview-map {
+		height: 20rem;
+	}
+
+	.plan-console-side,
+	.plan-console-list,
+	.plan-console-beds,
+	.plan-console-form {
+		overflow: visible;
+	}
+
+	/* La marge de défilement est la barre fixe du bas : MapPlan.showConsoleBed() y lit où la page cesse de montrer la liste */
+	.plan-console-bed {
+		min-height: var(--touch-target);
+		scroll-margin-bottom: var(--nav-structure);
+	}
+
+	.plan-console-close {
+		min-width: var(--touch-target);
+		min-height: var(--touch-target);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		/* En boite flexible, l'espace écrit entre l'icône et le texte disparait */
+		gap: var(--space-xs);
+	}
+
+}
+
+/* Les dimensions d'un abri, en sous-titre de son menu. */
+.plan-plot-dimensions {
+	display: block;
+	margin-top: 0.15rem;
+	font-family: "Open Sans", sans-serif;
+	font-size: 0.85rem;
+	font-weight: 400;
+	opacity: 0.75;
+}

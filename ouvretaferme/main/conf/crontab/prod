@@ -1,0 +1,105 @@
+############################
+# www.dev-ouvretaferme.org #
+############################
+
+* * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme shop/cron/delivery:open
+* * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme website/cron/certbot:ping
+* * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme website/cron/certbot:rewrite
+*/10 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme security/cron/access:report
+*/10 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme security/cron/access:events
+0 9 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme security/cron/softwareAi
+*/5 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme session/cron/sessionClean
+0 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme amap/cron/sale:create
+0 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme amap/cron/sale:deliver
+0 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme association/cron/document
+0 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme queue/cron/run action=notification.shop-sale,notification.shop-sale-updated,notification.shop-sale-canceled,notification.shop-date-end,notification.shop-share,notification.payment-sale,notification.payment-invoice,notification.payment-wallet,notification.payment-express,notification.payment-stripe,notification.selling-customer,notification.selling-invoice-due,notification.selling-market-device-set-aside,notification.selling-market-device-card,notification.quotation-prices,subscription.welcome,payment.stripe-reversal,subscription.invoice
+0 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme queue/cron/run action=notification.structure-member-joined,notification.structure-member-left,notification.structure-producer-joined,notification.structure-producer-left,notification.structure-producer-excluded,notification.hr-absence-requested,notification.invoicing-received,notification.preaccounting-suggestion,notification.bank-access-expired,notification.edi-transmission,notification.learning-comment,notification.learning-enrollment,notification.learning-completed,notification.learning-review,notification.subscription-end,notification.toolbox-maintenance,notification.toolbox-reading,notification.toolbox-water-reading,notification.help-message,notification.help-status,invoicing.notify
+0 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme queue/cron/run action=invoicing.event-retry,invoicing.synchronize,pdp.initialize
+0 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme queue/cron/run action=financialYear.document,preaccounting.reconciliate,financialYear.fec-import
+0 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme queue/cron/run action=help.check,help.import,training.farm
+0 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme queue/cron/run action=external.read,proof.read,proof.match,proof.third-parties,bank.read
+0 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme queue/cron/run action=company.dictionary-item-classify
+0 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme mail/cron/send
+0 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme selling/cron/invoice
+0 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme selling/cron/campaign
+0 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme shop/cron/delivery:finish
+0 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme storage/cron/buffer
+0 */6 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme pdp/cron/synchronize
+0 0 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme amap/cron/membership:expire
+0 0 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme game/cron/update:update
+0 0 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme selling/cron/sale:auto
+0 0 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme user/cron/seniority
+0 0 1 * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme website/cron/clean:clean
+0 0 1 1 * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme selling/cron/configuration:newYear
+0 0 1 10 * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme structure/cron/newSeason
+0 12 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme mail/cron/clean
+0 2 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme media/cron/clean
+0 2 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme notification/cron/clean
+30 2 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme map/cron/relief
+0 3 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme queue/cron/clean
+0 3 1,15 * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme plant/cron/plantCriteriaAi
+0 4 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme plant/cron/communityAi
+0 4 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme structure/cron/demo
+0 5 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme financialYear/cron/pdf:clean
+0 5 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme pdp/cron/fetch
+0 5 * * 1 php /var/www/otf/framework/lime.php -e prod -a ouvretaferme planning/cron/due
+0 6 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme bank/cron/enableBanking
+0 6 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme cron/sitemap
+0 6 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme user/cron/close
+0 6 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme user/cron/log
+0 6 * * 1 php /var/www/otf/framework/lime.php -e prod -a ouvretaferme toolbox/cron/maintenance
+0 6 5 * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme toolbox/cron/reading
+15 6 10 * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme subscription/cron/statementAi
+0 7 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme cash/cron/stripe
+0 7 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme selling/cron/invoiceDueAi
+0 8 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme amap/cron/membership:remind
+0 8 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme subscription/cron/remindAi
+30 8 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme subscription/cron/discordAi
+0 8 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme cash/cron/sumupAi
+0 9 1 * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme vat/cron/cerfa
+0 9 * * 1 php /var/www/otf/framework/lime.php -e prod -a ouvretaferme company/cron/articleReviewAi
+0 9 1,15 * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme pdp/cron/publicSchemeAi
+0 9 * * 1 php /var/www/otf/framework/lime.php -e prod -a ouvretaferme law/cron/watch
+30 1 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme aid/cron/watch
+0 9 * * 1 php /var/www/otf/framework/lime.php -e prod -a ouvretaferme help/cron/blank
+0 8 1 * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme security/cron/access:review
+15 5 * * 3 php /var/www/otf/framework/lime.php -e prod -a ouvretaferme work/cron/phytoAi
+7 */3 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme structure/cron/weatherAi:refresh
+45 3 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme structure/cron/placeCodesAi
+13 0 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme data/cron/calculate
+15 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme shop/cron/clean:expired
+15 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme shop/cron/delivery:email
+16 0 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme structure/cron/invite:clean
+15 4 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme main/cron/backup
+17 4 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme securing/cron/clean
+40 4 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme proof/cron/clean
+17 7 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme dev/cron/minifyClean
+20 1 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme quotation/cron/attach
+20 2 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme quotation/cron/catalog
+20 3 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme quotation/cron/tracking
+20 4 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme quotation/cron/reference
+25 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme payment/cron/stripeRefundAi
+28 4 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme website/cron/certbot:clean
+37 2 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme website/cron/certbot:certificate
+29 0 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme api/cron/clean
+29 0 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme dev/cron/integrity
+30 3 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme training/cron/farm:close
+30 6 1 * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme quotation/cron/alert
+30 7 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme amap/cron/duty:remind
+30 7 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme learning/cron/dateEnrollment:remind
+0 9 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme learning/cron/dateEnrollment:invite
+5 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme learning/cron/course:type
+0 8 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme learning/cron/share:announce
+30 8 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme amap/cron/duty:alert
+15 7-21 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme amap/cron/remind:content
+37 3 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme data/cron/pdpHistoryClean
+40 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme payment/cron/sumupRefundAi
+40 7 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme payment/cron/stripeAliveAi
+5 0 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme payment/cron/linkExpireAi
+15 0 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme admin/cron/statisticAi
+47 5 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme dev/cron/error
+5 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme admin/cron/accountingStructureAi
+35 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme company/cron/proofRegisterAi
+45 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme company/cron/transmissionRegister
+20 * * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme company/cron/dictionaryItem
+5 0 * * * php /var/www/otf/framework/lime.php -e prod -a ouvretaferme quotation/cron/collectAi

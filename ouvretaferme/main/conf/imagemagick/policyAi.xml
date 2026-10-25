@@ -1,0 +1,30 @@
+<!--
+	Durcissement d'ImageMagick pour OTF.
+
+	À insérer juste avant </policymap> dans /etc/ImageMagick-6/policy.xml, sur le dev
+	comme en prod. ImageMagick 6 ne lit qu'un seul policy.xml, il n'y a pas de mécanisme
+	de fragment : ces lignes s'ajoutent au fichier de la distribution.
+
+	Pourquoi : le rendu SVG interne d'ImageMagick suit les ressources externes d'un SVG
+	(<image xlink:href>, en http comme en file) et incruste le résultat dans l'image
+	produite. Un utilisateur qui téléverse un SVG forgé récupère donc, dans « son » logo,
+	le contenu d'une URL que seul le serveur peut atteindre, ou d'un fichier local.
+	Mesuré, avec incrustation effective.
+
+	Les SVG déposés sur OTF sont rastérisés par librsvg (media\SvgLib), jamais par
+	ImageMagick. Cette règle est le filet : la détection des SVG côté PHP est une
+	heuristique sur les premiers kilo-octets, et un fichier qui la contournerait
+	retomberait sur Imagick.
+
+	Vérifié : c'est bien le coder SVG qui compte. Bloquer les coders réseau (URL, HTTP,
+	HTTPS) ne suffit pas — le rendu interne récupère le href par un autre chemin. MSVG
+	seul ne suffit pas non plus, le fichier entrant par le coder SVG.
+
+	Vérifié aussi : aucune régression sur le pipeline média (lecture, redimensionnement,
+	conversion, extraction de couleur) en JPEG, PNG, GIF et WEBP. Aucun code d'OTF ne
+	confie de SVG à Imagick.
+-->
+
+  <policy domain="coder" rights="none" pattern="SVG" />
+  <policy domain="coder" rights="none" pattern="MSVG" />
+  <policy domain="coder" rights="none" pattern="MHTML" />

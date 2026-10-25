@@ -1,0 +1,326 @@
+<?php
+namespace work;
+
+abstract class ActionElement extends \Element {
+
+	use \FilterElement;
+
+	private static ?ActionModel $model = NULL;
+
+	const BY_HARVEST = 'by-harvest';
+	const BY_AREA = 'by-area';
+	const BY_PLANT = 'by-plant';
+
+	const ACTIVE = 'active';
+	const INACTIVE = 'inactive';
+
+	public static function getSelection(): array {
+		return Action::model()->getProperties();
+	}
+
+	public static function resetModel(): void {
+		self::$model = NULL;
+	}
+
+	public static function model(): ActionModel {
+		if(self::$model === NULL) {
+			self::$model = new ActionModel();
+		}
+		return self::$model;
+	}
+
+	public static function fail(string|\FailException $failName, array $arguments = [], ?string $wrapper = NULL): bool {
+		return \Fail::log('Action::'.$failName, $arguments, $wrapper);
+	}
+
+	public static function getValidator(string $property): \PropertyValidator {
+		return new \PropertyValidator(
+			self::model(),
+			$property,
+		);
+	}
+
+}
+
+
+class ActionModel extends \ModuleModel {
+
+	protected string $module = 'work\Action';
+	protected string $package = 'work';
+	protected string $table = 'workAction';
+
+	public function __construct() {
+
+		parent::__construct();
+
+		$this->properties = array_merge($this->properties, [
+			'id' => ['serial32', 'cast' => 'int'],
+			'name' => ['text8', 'min' => 1, 'max' => NULL, 'collate' => 'general', 'cast' => 'string'],
+			'favorite' => ['bool', 'cast' => 'bool'],
+			'fqn' => ['text8', 'charset' => 'ascii', 'null' => TRUE, 'cast' => 'string'],
+			'short' => ['text8', 'min' => 1, 'max' => 1, 'null' => TRUE, 'cast' => 'string'],
+			'structure' => ['element32', 'structure\Structure', 'null' => TRUE, 'cast' => 'element'],
+			'color' => ['color', 'cast' => 'string'],
+			'pace' => ['enum', [\work\Action::BY_HARVEST, \work\Action::BY_AREA, \work\Action::BY_PLANT], 'null' => TRUE, 'cast' => 'enum'],
+			'soil' => ['bool', 'cast' => 'bool'],
+			'categories' => ['json', 'cast' => 'array'],
+			'series' => ['bool', 'cast' => 'bool'],
+			'status' => ['enum', [\work\Action::ACTIVE, \work\Action::INACTIVE], 'cast' => 'enum'],
+		]);
+
+		$this->propertiesList = array_merge($this->propertiesList, [
+			'id', 'name', 'favorite', 'fqn', 'short', 'structure', 'color', 'pace', 'soil', 'categories', 'series', 'status'
+		]);
+
+		$this->propertiesToModule += [
+			'structure' => 'structure\Structure',
+		];
+
+		$this->indexConstraints = array_merge($this->indexConstraints, [
+			['structure']
+		]);
+
+	}
+
+	public function getDefaultValue(string $property) {
+
+		switch($property) {
+
+			case 'favorite' :
+				return FALSE;
+
+			case 'color' :
+				return '#AAAAAA';
+
+			case 'soil' :
+				return FALSE;
+
+			case 'categories' :
+				return [];
+
+			case 'series' :
+				return TRUE;
+
+			case 'status' :
+				return Action::ACTIVE;
+
+			default :
+				return parent::getDefaultValue($property);
+
+		}
+
+	}
+
+	public function encode(string $property, $value) {
+
+		switch($property) {
+
+			case 'pace' :
+				return ($value === NULL) ? NULL : (string)$value;
+
+			case 'categories' :
+				return $value === NULL ? NULL : json_encode($value, JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
+
+			case 'status' :
+				return ($value === NULL) ? NULL : (string)$value;
+
+			default :
+				return parent::encode($property, $value);
+
+		}
+
+	}
+
+	public function decode(string $property, $value) {
+
+		switch($property) {
+
+			case 'categories' :
+				return $value === NULL ? NULL : json_decode($value, TRUE);
+
+			default :
+				return parent::decode($property, $value);
+
+		}
+
+	}
+
+	public function select(...$fields): ActionModel {
+		return parent::select(...$fields);
+	}
+
+	public function where(...$data): ActionModel {
+		return parent::where(...$data);
+	}
+
+	public function whereId(...$data): ActionModel {
+		return $this->where('id', ...$data);
+	}
+
+	public function whereName(...$data): ActionModel {
+		return $this->where('name', ...$data);
+	}
+
+	public function whereFavorite(...$data): ActionModel {
+		return $this->where('favorite', ...$data);
+	}
+
+	public function whereFqn(...$data): ActionModel {
+		return $this->where('fqn', ...$data);
+	}
+
+	public function whereShort(...$data): ActionModel {
+		return $this->where('short', ...$data);
+	}
+
+	public function whereStructure(...$data): ActionModel {
+		return $this->where('structure', ...$data);
+	}
+
+	public function whereColor(...$data): ActionModel {
+		return $this->where('color', ...$data);
+	}
+
+	public function wherePace(...$data): ActionModel {
+		return $this->where('pace', ...$data);
+	}
+
+	public function whereSoil(...$data): ActionModel {
+		return $this->where('soil', ...$data);
+	}
+
+	public function whereCategories(...$data): ActionModel {
+		return $this->where('categories', ...$data);
+	}
+
+	public function whereSeries(...$data): ActionModel {
+		return $this->where('series', ...$data);
+	}
+
+	public function whereStatus(...$data): ActionModel {
+		return $this->where('status', ...$data);
+	}
+
+
+}
+
+
+abstract class ActionCrud extends \ModuleCrud {
+
+ private static array $cache = [];
+ private static ?int $affected = NULL;
+
+	public static function getById(mixed $id, array $properties = []): Action {
+
+		$e = new Action();
+
+		if(empty($id)) {
+			Action::model()->reset();
+			return $e;
+		}
+
+		if($properties === []) {
+			$properties = Action::getSelection();
+		}
+
+		if(Action::model()
+			->select($properties)
+			->whereId($id)
+			->get($e) === FALSE) {
+				$e->setGhost($id);
+		}
+
+		return $e;
+
+	}
+
+	public static function getByIds(mixed $ids, array $properties = [], mixed $sort = NULL, mixed $index = NULL): \Collection {
+
+		if(empty($ids)) {
+			return new \Collection();
+		}
+
+		if($properties === []) {
+			$properties = Action::getSelection();
+		}
+
+		if($sort !== NULL) {
+			Action::model()->sort($sort);
+		}
+
+		return Action::model()
+			->select($properties)
+			->whereId('IN', $ids)
+			->getCollection(NULL, NULL, $index);
+
+	}
+
+	public static function getCache(mixed $key, \Closure $callback): mixed {
+		self::$cache[$key] ??= $callback();
+		return self::$cache[$key];
+	}
+
+	public static function getAffected(): ?int {
+		return self::$affected;
+	}
+
+	public static function getNewElement(array $properties = []): Action {
+
+		return new Action($properties);
+
+	}
+
+	public static function create(Action $e): void {
+
+		Action::model()->insert($e);
+
+	}
+
+	public static function update(Action $e, array $properties): void {
+
+		$e->expects(['id']);
+
+		self::$affected = Action::model()
+			->select($properties)
+			->update($e);
+
+	}
+
+	public static function updateCollection(\Collection $c, Action $e, array $properties): void {
+
+		self::$affected = Action::model()
+			->select($properties)
+			->whereId('IN', $c)
+			->update($e->extracts($properties));
+
+	}
+
+	public static function delete(Action $e): void {
+
+		$e->expects(['id']);
+
+		self::$affected = Action::model()->delete($e);
+
+	}
+
+}
+
+
+class ActionPage extends \ModulePage {
+
+	protected string $module = 'work\Action';
+
+	public function __construct(
+	   ?\Closure $start = NULL,
+	   \Closure|array|null $propertiesCreate = NULL,
+	   \Closure|array|null $propertiesUpdate = NULL
+	) {
+		parent::__construct(
+		   $start,
+		   $propertiesCreate ?? ActionLib::getPropertiesCreate(),
+		   $propertiesUpdate ?? ActionLib::getPropertiesUpdate()
+		);
+	}
+
+}
+?>

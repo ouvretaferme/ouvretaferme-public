@@ -1,0 +1,219 @@
+<?php
+new Page()
+	->get('/public/:404', function($data) {
+
+		$data->notFound = dev\ErrorPhpLib::notFound();
+
+		if(Route::getRequestedWith() === 'http') {
+
+			$action = new ViewAction($data, ':nothing');
+			$action->setStatusCode(404);
+
+		} else {
+
+			$action = new DataAction($data->notFound);
+
+		}
+
+		throw $action;
+
+	})
+	->get([[
+		'/public/robots.txt',
+		'@priority' => 1
+	]], function() {
+
+		$data = 'User-agent: *'."\n";
+		$data .= 'Disallow:'."\n";
+
+		throw new DataAction($data, 'text/txt');
+
+	});
+
+(new Page(function($data) {
+
+		\session\SessionLib::init();
+
+		$data->origin = GET('origin', ['internal', 'external'], function() {
+			throw new NotExpectedAction('Invalid origin');
+		});
+		$domain = GET('domain');
+
+		$data->eWebsite = match($data->origin) {
+			'internal' => \website\WebsiteLib::getByInternalDomain($domain),
+			'external' => \website\WebsiteLib::getByDomain($domain)
+		};
+
+		if(
+			$data->eWebsite->empty() or
+			$data->eWebsite->canRead() === FALSE
+		) {
+			throw new ViewAction($data, ':nothing');
+		}
+
+		$data->url = \website\WebsiteUi::url($data->eWebsite);
+
+		if($data->eWebsite->canWrite()) {
+
+			$eDesignCustom = \website\DesignLib::getById(GET('customDesign', default: $data->eWebsite['customDesign']['id']));
+
+			if($eDesignCustom->empty() === FALSE) {
+				$data->eWebsite['customDesign'] = $eDesignCustom;
+			}
+
+		}
+
+		\website\WebsiteLib::applyDesign($data->eWebsite);
+
+		$data->cMenu = \website\MenuLib::getByWebsite($data->eWebsite);
+
+	}))
+	->post([[
+		'/public/{domain}/customize',
+		'@priority' => 1
+	]], function($data) {
+
+		$data->eWebsite->validate('canWrite');
+
+		\structure\StructureLib::validateFeature(\structure\StructureLib::getById($data->eWebsite['structure']), \structure\Structure::FEATURE_DESIGN);
+
+		$properties = \website\WebsiteLib::getPropertiesCustomize();
+
+		$fw = new FailWatch();
+
+		$data->eWebsite->build($properties, $_POST);
+
+		$fw->validate();
+
+		\website\WebsiteLib::update($data->eWebsite, $properties);
+
+		throw new ReloadAction('website', 'Website::customized');
+
+	})
+	->get([[
+		'/public/{domain}/robots.txt',
+		'@priority' => 1
+	]], function() {
+
+		$data = 'User-agent: *'."\n";
+		$data .= 'Disallow:'."\n";
+
+		throw new DataAction($data, 'text/txt');
+
+	})
+	->get([[
+		'/public/{domain}/sitemap.xml',
+		'@priority' => 1
+	]], function($data) {
+
+		$sitemap = \website\WebsiteLib::getSitemap($data->eWebsite);
+
+		throw new DataAction($sitemap, 'text/xml');
+
+	})
+	->get('/public/{domain}', function($data) {
+		throw new PermanentRedirectAction(LIME_REQUEST_PATH.'/'.LIME_REQUEST_ARGS);
+	})
+	->get('/public/{domain}/:test', function($data) {
+
+		if(in_array($data->eWebsite['domainStatus'], [\website\Website::CONFIGURED_UNSECURED, \website\Website::FAILURE_UNSECURED, \website\Website::CONFIGURED_SECURED, \website\Website::FAILURE_SECURED])) {
+			throw new DataAction('***OK***');
+		} else {
+			throw new ViewAction($data, ':nothing');
+		}
+
+	})
+	->post('/public/{domain}/:doContact', function($data) {
+
+		$fw = new \FailWatch();
+
+		$e = new \website\Contact([
+			'website' => $data->eWebsite,
+			'structure' => $data->eWebsite['structure']
+		]);
+		$e->build(['name', 'email', 'title', 'content'], $_POST, new \PropertyList('create'));
+
+		$fw->validate();
+
+		\website\ContactLib::checkThrottle();
+
+		$fw->validate();
+
+		\website\ContactLib::create($e);
+
+		throw new ViewAction($data, ':doContact');
+
+	})
+	->post('/public/{domain}/:doNewsletter', function($data) {
+
+		if(\structure\StructureSetting::hasMailPackage() === FALSE) {
+			throw new NotExistsAction();
+		}
+
+		$fw = new \FailWatch();
+
+		$eContact = \website\NewsletterLib::build($data->eWebsite['structure'], $_POST);
+
+		$fw->validate();
+
+		\website\ContactLib::checkThrottle();
+
+		$fw->validate();
+
+		\website\NewsletterLib::register($eContact);
+
+		throw new ViewAction($data, ':doNewsletter');
+
+	})
+	->get(['/public/{domain}/', '/public/{domain}/{destination}'], function($data) {
+
+		if(
+			$data->eWebsite->canWrite() === FALSE or
+			get_exists('customize') === FALSE
+		) {
+
+			if(
+				LIME_ENV === 'prod' and (
+					($data->eWebsite['domainStatus'] === \website\Website::PINGED_SECURED and $data->origin === 'internal') or
+					($data->eWebsite['domainStatus'] !== \website\Website::PINGED_SECURED and $data->origin === 'external')
+				)
+			) {
+				throw new PermanentRedirectAction($data->url.'/'.GET('destination').LIME_REQUEST_ARGS);
+			}
+
+		}
+
+		$data->eWebpage = \website\WebpageLib::getByUrl($data->eWebsite, GET('destination'));
+		\website\WidgetLib::fill($data->eWebsite, $data->eWebpage);
+
+		$data->eWebpageNews = \website\WebpageLib::getNewsByWebsite($data->eWebsite);
+		$data->eWebpageNews['inMenu'] = \website\MenuLib::containsWebpage($data->cMenu, $data->eWebpageNews);
+
+		if(
+			$data->eWebpage->notEmpty() and
+			$data->eWebpage['template']['fqn'] === 'news'
+		) {
+			$data->newsPage = GET('page', 'int');
+			$data->newsLimit = 20;
+			[$data->cNews, $data->nNews] = \website\NewsLib::getByWebsite($data->eWebsite, page: $data->newsPage, limit: $data->newsLimit);
+		} else {
+
+			if($data->eWebpageNews['status'] === \website\Webpage::ACTIVE) {
+				[$data->cNews] = \website\NewsLib::getByWebsite($data->eWebsite, limit: 3);
+			}
+
+		}
+
+		if(
+			$data->eWebpage->empty() or
+			$data->eWebpage->canRead() === FALSE
+		) {
+			$action = new ViewAction($data, ':404');
+			$action->setStatusCode(404);
+			throw $action;
+		}
+
+		throw new ViewAction($data, ':public');
+
+	});
+?>

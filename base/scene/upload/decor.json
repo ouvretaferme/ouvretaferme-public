@@ -1,0 +1,53 @@
+{
+	"profile": "decor",
+	"version": 2,
+	"maxBytes": 1048576,
+	"maxNodes": 256,
+	"maxDepth": 16,
+	"maxPrimitives": 64,
+	"maxColors": 8,
+	"ground": 0.02,
+	"smoothAngle": 0,
+	"refusals": [
+		"format",
+		"weight",
+		"external",
+		"texture",
+		"rig",
+		"nodes",
+		"piece",
+		"missing",
+		"triangles",
+		"colors",
+		"bounds",
+		"ground",
+		"anchor"
+	],
+	"families": {
+		"building": {
+			"maxTriangles": 2500,
+			"bounds": {
+				"length": 32,
+				"width": 18,
+				"height": 20
+			},
+			"pieces": [
+				"batiment",
+				"vitre",
+				"vantailGauche",
+				"vantailDroit"
+			],
+			"required": [
+				"batiment"
+			],
+			"body": "batiment",
+			"anchors": [
+				"porte",
+				"porteCoin",
+				"enseigne",
+				"faitage"
+			],
+			"top": "faitage"
+		}
+	}
+}

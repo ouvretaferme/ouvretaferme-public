@@ -1,0 +1,99 @@
+.member-structures {
+	margin: 2rem 0;
+}
+
+div.structure-financial-year-menu {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 1rem;
+}
+
+@media (max-width: 649px) {
+
+	div.structure-financial-year-menu {
+		display: block;
+	}
+
+}
+
+/* Structure update */
+#structure-update .media-image-upload[data-type="structure-logo"] {
+	border-radius: var(--radius);
+}
+
+.structure-settings-subtitle {
+	line-height: 1.7;
+	opacity: 0.7;
+}
+
+/* Legal form */
+
+form.structure-legal-form:has(select[name="legalCountry"] option[value="75"]:not(:checked)) [data-wrapper="siret"] {
+	display: none;
+}
+
+.structure-marks-other {
+	display: none;
+}
+
+.structure-marks:has(input[type="radio"]:checked) .structure-marks-other,
+.structure-marks:has(.structure-marks-other input[type="checkbox"]:checked) .structure-marks-other {
+	display: block;
+}
+
+.structure-marks:has(input[type="radio"]:checked) .structure-marks-more,
+.structure-marks:has(.structure-marks-other input[type="checkbox"]:checked) .structure-marks-more {
+	display: none;
+}
+
+.structure-marks-organic {
+
+	display: flex;
+	align-items: baseline;
+	gap: 1rem;
+
+}
+
+
+/* « En conversion » est la seule marque de qualité qui soit du texte et non un
+   logo. Les boutiques la posent sur la photo du produit, en blanc : elle
+   disparaissait dès que la photo était claire. */
+
+.structure-organic-conversion {
+	display: inline-block;
+	padding: 0.125rem 0.375rem;
+	border-radius: var(--radius);
+	background-color: #000a;
+	color: white;
+	font-size: 0.8rem;
+	line-height: 1.2;
+	white-space: nowrap;
+}
+
+div.community-map {
+	height: 26rem;
+}
+
+@media (max-width: 575px) {
+
+	div.community-map {
+		height: 18rem;
+	}
+
+}
+
+/* Le temps de travail et la RH dépendent de la production : leurs cartes se décalent sous la sienne de la largeur
+ * de son icône (`.util-icon`, 2.5rem) et de l'écart qui la suit (`.util-deck-head`, 1rem), si bien que leur icône
+ * s'aligne sur le titre de Production et qu'elles se lisent comme ses filles. L'échelle n'a pas de pas à 2.5rem :
+ * les 3.5rem s'écrivent en deux de ses pas. */
+.structure-features-dependent {
+	padding-left: calc(var(--space-xl) + var(--space-lg));
+}
+
+@media (max-width: 575px) {
+
+	.structure-features-dependent {
+		padding-left: var(--space-md);
+	}
+
+}

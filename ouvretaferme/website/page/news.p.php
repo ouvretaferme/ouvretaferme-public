@@ -1,0 +1,47 @@
+<?php
+new \website\NewsPage(function($data) {
+
+		$data->eWebsite = \website\WebsiteLib::getById(INPUT('website'));
+
+	})
+	->create(function($data) {
+
+		$data->eStructure = \structure\StructureLib::getById($data->eWebsite['structure']);
+
+
+		throw new DynamicAction($data);
+	})
+	->getCreateElement(function($data) {
+		return new \website\News([
+			'website' => $data->eWebsite,
+			'structure' => $data->eWebsite['structure'],
+			'publishedAt' => \Clock::format('Y-m-d H:00:00')
+		]);
+	})
+	->doCreate(function($data) {
+		throw new RedirectAction('/website/manage?id='.$data->eWebsite['structure']['id'].'&success=website\\News::created');
+	});
+
+new \website\NewsPage()
+	->applyElement(function($data, \website\News $e) {
+
+		$e['website'] = \website\WebsiteLib::getById($e['website']);
+
+		$e->validate('canWrite');
+
+	})
+	->quick(['title', 'publishedAt'])
+	->update(function($data) {
+
+		$data->eStructure = \structure\StructureLib::getById($data->e['structure']);
+
+		throw new DynamicAction($data);
+	})
+	->doUpdate(function($data) {
+		throw new ReloadAction('website', 'News::updated');
+	})
+	->doUpdateProperties('doUpdateStatus', ['status'], fn() => throw new ReloadAction())
+	->doDelete(function($data) {
+		throw new ReloadAction('website', 'News::deleted');
+	});
+?>

@@ -1,0 +1,195 @@
+Bed:
+  id: serial32
+  name: ?text8(1, 20) @collate(general)
+  structure: structure\Structure
+  zone: map\Zone
+  zoneFill: bool = FALSE
+  plot: map\Plot
+  plotFill: bool = FALSE
+  length: ?int16(1, null)
+  width: ?int16(1, null)
+  alleyWidth: ?int16(1, null)
+  area: float32(0.01, null) = SQL(length * width / 100)
+  seasonFirst: ?int16(0, null)
+  seasonLast: ?int16(0, null)
+  status: enum(ACTIVE, DELETED) = ACTIVE
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  updatedAt: ?datetime
+  INDEX: [
+    ["structure"],
+    ["zone"],
+    ["plot"]
+  ]
+
+Configuration:
+  id: serial32
+  structure: structure\Structure
+  seasonFirst: int16(0, null)
+  seasonLast: int16(0, null)
+  rotationYears: int8(2, 5) = 4
+  rotationExclude: json = PHP([])
+  defaultBedLength: ?int16(1, null)
+  defaultBedWidth: ?int16(1, null)
+  defaultAlleyWidth: ?int16(1, null)
+  calendarMonthStart: ?int8(7, 12) = 10
+  calendarMonthStop: ?int8(1, 6) = 3
+  planningDelayedMax: ?int8(1, 6) = 2
+  decorGrass: enum(TENDER, PALE, CLEAR, DRY, LUSH, GRAZED) = TENDER # verte tendre, verte pâle, presque blanche, sèche d'été, foncée humide, rase pâturée
+  decorSoil: enum(LOAM, CLAY, SAND, HUMUS, CHALK, OCHRE, SANDSTONE, SCHIST, BROWN) = LOAM # limon, argile, sable, terre noire, calcaire, ocre, grès rose, schiste, terre brune
+  decorAdopted: bool = FALSE # la structure a son propre décor : un plan vidé reste vide, le décor par défaut ne revient plus
+  UNIQUE: [
+    ["structure"]
+  ]
+
+Decor:
+  id: serial32
+  structure: structure\Structure
+  layer: ?map\DecorLayer # NULL : le calque de base « Décor »
+  kit: text8(1, 40) # clé du catalogue, jamais confrontée à lui : un kit inconnu se garde
+  building: ?map\DecorBuilding # le bâtiment de la structure que pose le kit « batiment », NULL pour tous les autres kits
+  coordinates: point # [lng, lat] du centre de l'élément
+  angle: float32(0, 6.2832) = 0 # en radians
+  size: float32(0.1, 10) = 1
+  seed: ?int32(0, null) # graine du tirage : reprise du décor par défaut, ou tirée à la pose d'une haie et gardée quand un retrait est annulé ; NULL : sa forme suit son id
+  width: ?int8(1, 3) # largeur d'un chemin ou d'un cours d'eau
+  model: ?enum(SHEEP, PALING, PANEL, ELECTRIC) # modèle de clôture : grillage à mouton, ganivelle, panneaux rigides, ruban électrique
+  trace: ?json # [[lng, lat], …] d'un tracé, 2 à 500 points
+  diameter: ?int16(10, 400) # diamètre extérieur d'un tuyau, en mm
+  laying: ?enum(SURFACE, BURIED) # tuyau posé au sol ou enterré
+  zone: ?map\Zone # emprise clôturée, l'une ou l'autre
+  plot: ?map\Plot
+  hedge: bool = FALSE
+  gate: ?float32(0, 1) # portail en fraction du tour ; le tour se recalcule depuis l'emprise
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  updatedAt: ?datetime
+  INDEX: [
+    ["structure"],
+    ["layer"],
+    ["building"]
+  ]
+
+DecorBuilding:
+  id: serial32
+  structure: structure\Structure
+  type: enum(BUILDING, HANGAR, HOUSE) # bâtiment composé, hangar du catalogue retouché, maison d'habitation
+  name: text8(1, 40) @collate(general)
+  length: float32(3, 30) # en mètres ; bornes de chaque type, plus étroites, dans choices.json
+  width: ?float32(3, 16) # NULL pour un hangar, qui garde la largeur du hangar du catalogue
+  height: ?float32(2.5, 7) # hauteur des murs ; NULL pour une maison, que ses niveaux font
+  settings: json # les choix de l'éditeur (toit, couverture, mur, teintes, porte, fenêtres…), confrontés à choices.json par build()
+  upload: ?map\DecorUpload # le modèle téléversé montré à la place de la composition ; NULL, on montre la composition
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  updatedAt: ?datetime
+  INDEX: [
+    ["structure"]
+  ]
+
+DecorLayer:
+  id: serial32
+  structure: structure\Structure
+  name: text8(1, 60) @collate(general)
+  type: enum(IRRIGATION)
+  position: int8(0, null)
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  INDEX: [
+    ["structure"]
+  ]
+
+DecorUpload:
+  id: serial32
+  structure: structure\Structure
+  building: map\DecorBuilding # le bâtiment qui montre ce modèle à la place de sa composition, posé par le Lib
+  hash: ?textFixed(20, 20) @charset(ascii) # média `map-decor-upload`, le binaire converti ; NULL une fois retiré ou remplacé
+  bakedIndex: ?json # l'index du modèle converti, lu tel quel par sceneBuildModel() ; NULL une fois retiré ou remplacé
+  rules: int16(1, null) # version de base/scene/upload/decor.json, qui versionne aussi le texte de l'engagement coché
+  sharedAt: ?datetime # quand qui a téléversé a accepté que Ouvretaferme reprenne ce modèle et le propose aux autres utilisateurs, posé par le Lib depuis la case de l'envoi, jamais pré-cochée ; NULL sans accord, y compris pour un envoi qui en remplace un accordé
+  status: enum(NEW, KEPT, WITHDRAWN) = NEW # visible dès l'envoi ; KEPT, vu et gardé par un admin ; WITHDRAWN, retiré
+  reason: ?enum(PERSON, BRAND, OFFENSIVE, OTHER) # motif d'un retrait, pris dans une liste fermée et envoyé à qui a téléversé
+  reasonText: ?text16(1, 500) # ce que l'admin ajoute au motif
+  moderatedBy: ?user\User
+  moderatedAt: ?datetime
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  INDEX: [
+    ["structure"],
+    ["building"],
+    ["status"]
+  ]
+
+Draw:
+  id: serial32
+  structure: structure\Structure
+  zone: map\Zone
+  plot: map\Plot
+  season: int16(0, null)
+  # Sans planche, la ligne marque une saison effacée, et n'a ni coin ni angle
+  bed: ?map\Bed
+  corner: ?point # [lng, lat] du coin d'où partent la largeur et la longueur de la planche
+  angle: ?float32(0, 3.1416) # en radians, sens horaire depuis le nord : la largeur part à angle, la longueur à angle + π/2
+  INDEX: [
+    ["structure"],
+    ["plot", "season"]
+  ]
+  UNIQUE: [
+    ["bed", "season"]
+  ]
+
+Plot:
+  id: serial32
+  name: ?text8(1, null) @collate(general)
+  structure: structure\Structure
+  zone: map\Zone
+  zoneFill: bool = FALSE
+  mode: enum(GREENHOUSE, OPEN_FIELD) = OPEN_FIELD
+  decorGreenhouse: ?enum(ROUND, STRAIGHT, GOTHIC, CHAPEL_2, CHAPEL_3, CHAPEL_4)
+  length: ?float32(1, null)
+  width: ?float32(1, null)
+  # Contrairement à Bed.area, pas de SQL(length * width) : la surface est saisie en plein champ et dérivée sous abri, cf. Plot::build()
+  area: int32(1, null)
+  coordinates: ?polygon
+  position: ?int16(0, null)
+  seasonFirst: ?int16(0, null)
+  seasonLast: ?int16(0, null)
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  updatedAt: ?datetime
+  INDEX: [
+    ["structure"],
+    ["zone"]
+  ]
+
+Relief:
+  id: serial32
+  structure: structure\Structure
+  tileX: int32
+  tileY: int32
+  # 4 096 int16 en décimètres, NULL tant que l'IGN n'a pas répondu
+  altitudes: ?binary32
+  # Un échec passager du service, retenté après RELIEF_RETRY
+  failedAt: ?datetime
+  # Une réponse entière dont une altitude est invraisemblable, hors du territoire du RGE ALTI, redemandée après RELIEF_UNCOVERED_RETRY
+  uncoveredAt: ?datetime
+  createdAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["structure", "tileX", "tileY"]
+  ]
+
+Zone:
+  id: serial32
+  name: text8(1, null) @collate(general)
+  structure: structure\Structure
+  area: int32(1, null)
+  coordinates: ?polygon
+  seasonFirst: ?int16(0, null)
+  seasonLast: ?int16(0, null)
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  updatedAt: ?datetime
+  INDEX: [
+    ["structure"]
+  ]
+

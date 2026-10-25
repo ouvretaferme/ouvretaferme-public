@@ -1,0 +1,15 @@
+Notification:
+  id: serial32
+  user: user\User
+  type: text8(1, 50) @charset(ascii)
+  reference: ?int32(0, null)
+  group: ?int32(0, null)
+  content: json = PHP([])
+  seenAt: ?datetime
+  readAt: ?datetime
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["user", "createdAt"],
+    ["user", "seenAt"],
+    ["createdAt"]
+  ]

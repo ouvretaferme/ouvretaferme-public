@@ -1,0 +1,98 @@
+/* Les choix prennent les deux tiers du panneau, l'aperçu d'un personnage debout se contentant d'une colonne étroite, pour
+   que les vignettes tiennent à dix par rangée. La règle part de 1 200 px, palier de l'échelle le plus proche en dessous
+   de la largeur où dix vignettes tiennent, et la rangée y gagne déjà une vignette */
+@media (min-width: 1200px) {
+
+	#panel-user-avatar {
+		--util-composer-columns: minmax(0, 1fr) minmax(0, 2fr);
+	}
+
+}
+
+/* Un curseur du produit sur un fond en dégradé, posé en --user-avatar-ramp : la couleur y est une donnée */
+.user-avatar-ramp input[type="range"],
+.user-avatar-tune input[type="range"] {
+	background: var(--user-avatar-ramp);
+}
+
+/* La peau : un cran par teinte, sous la place que le centre du curseur y prend, à un demi-curseur de chaque bord */
+.user-avatar-ramp {
+	max-width: 28rem;
+}
+
+.user-avatar-ramp-ticks {
+	display: flex;
+	justify-content: space-between;
+	padding: 0 var(--space-sm);
+}
+
+.user-avatar-ramp-ticks span {
+	width: 2px;
+	height: var(--space-xs);
+	background-color: var(--muted);
+}
+
+/* La pastille de la couleur libre : au repos, le cercle des teintes autour d'un « + », qui est une donnée et non une
+   couleur du thème. Une couleur choisie la remplit, sous une pipette sombre, ou claire quand la couleur est foncée (`UserAvatarEditor.isDark()`) */
+.util-composer-tints > .util-choices > .user-avatar-free > span {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background:
+		radial-gradient(circle, var(--background-surface) 0 52%, transparent 55%),
+		conic-gradient(hsl(0 65% 55%), hsl(60 65% 50%), hsl(120 45% 45%), hsl(190 55% 45%), hsl(240 55% 60%), hsl(300 40% 50%), hsl(360 65% 55%));
+	color: var(--text);
+	font-size: 0.75rem;
+}
+
+.util-composer-tints > .util-choices > .user-avatar-free-filled > span {
+	background: var(--choice-color);
+}
+
+.util-composer-tints > .util-choices > .user-avatar-free-dark > span {
+	color: var(--background-surface);
+}
+
+.user-avatar-free:not(.user-avatar-free-filled) .asset-icon-eyedropper,
+.user-avatar-free-filled .asset-icon-plus-lg {
+	display: none;
+}
+
+/* Sans couleur libre, la pastille prend elle-même le clavier, et le marque comme une pastille qui porte un choix */
+.user-avatar-free:focus-visible {
+	outline: 2px solid var(--primary);
+}
+
+/* Les deux curseurs de la couleur libre, dans un menu clair du cadriciel, dont les règles pèsent trois classes */
+.dropdown-list.dropdown-list-light.user-avatar-tune {
+	width: 17rem;
+	padding: var(--space-sm) var(--space-md);
+}
+
+.dropdown-list.dropdown-list-open.user-avatar-tune {
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: center;
+	gap: var(--space-xs) var(--space-sm);
+}
+
+.user-avatar-tune label {
+	color: var(--muted);
+}
+
+.user-avatar-tune [data-avatar-hue] {
+	--user-avatar-ramp: linear-gradient(to right, hsl(0 50% 50%), hsl(60 50% 50%), hsl(120 50% 50%), hsl(180 50% 50%), hsl(240 50% 50%), hsl(300 50% 50%), hsl(360 50% 50%));
+}
+
+.user-avatar-tune [data-avatar-lightness] {
+	--user-avatar-ramp: linear-gradient(to right, hsl(var(--user-avatar-hue) 50% 4%), hsl(var(--user-avatar-hue) 50% 50%), hsl(var(--user-avatar-hue) 50% 95%));
+}
+
+/* Sans avatar composé, l'onglet du modèle n'a rien à porter au pied, qui se retire */
+#panel-user-avatar .panel-footer:not(:has(.btn:not(.hide))) {
+	display: none;
+}
+
+/* La suppression garde sa place à droite quand le bouton de l'onglet attend un fichier */
+.user-avatar-delete {
+	margin-left: auto;
+}

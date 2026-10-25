@@ -1,0 +1,37 @@
+Note:
+  id: serial32
+  structure: structure\Structure
+  notebook: ?note\Notebook # NULL range la note dans « Non classé »
+  title: text8(1, 100)
+  content: ?editor24
+  readers: enum(ADMIN, TEAM) = ADMIN
+  pinned: bool = FALSE
+  createdAt: datetime = SPECIAL(now)
+  createdBy: user\User = SPECIAL(user)
+  updatedAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["structure", "notebook"]
+  ]
+
+Notebook:
+  id: serial32
+  structure: structure\Structure
+  name: text8(1, 50)
+  position: int8(0, null)
+  createdAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["structure", "name"]
+  ]
+
+Target:
+  id: serial32
+  note: note\Note
+  structure: structure\Structure
+  targetType: text8(1, 30) @charset(ascii)
+  targetId: int32(0, null)
+  UNIQUE: [
+    ["note", "targetType", "targetId"]
+  ]
+  INDEX: [
+    ["structure", "targetType", "targetId"]
+  ]

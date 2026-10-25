@@ -1,0 +1,23 @@
+div.mapbox-polygon-container {
+	position: relative;
+}
+
+div.mapbox-polygon-container > .mapbox-polygon-map {
+	width: 100%;
+	height: 500px;
+}
+
+/* Les commandes de la carte se superposent par z-index : isolées dans la carte, elles restent sous ce qui s'ouvre par-dessus */
+div.mapbox-polygon-container > .mapboxgl-map {
+	isolation: isolate;
+}
+
+/* La rangée du tracé, en haut à gauche de la carte, dont le coin droit tient les boutons : centrée, elle déplacerait ses cases
+   à chaque changement de largeur. Quand les rangées passent sur deux lignes, sa boite s'étend jusqu'au bord droit, par-dessus les
+   boutons : seules les rangées prennent le clic (util-mapbars) */
+div.mapbox-polygon-actions {
+	position: absolute;
+	top: 1rem;
+	left: 1rem;
+	pointer-events: none;
+}

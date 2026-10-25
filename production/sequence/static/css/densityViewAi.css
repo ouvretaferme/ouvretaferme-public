@@ -1,0 +1,119 @@
+/*
+ * Une planche ou une surface libre en croquis (DensityViewAiUi) : en perspective, ou en coupe.
+ * Papier kraft et encre, des couleurs de matière et non d'état : elles ne sont pas des tokens du
+ * socle et restent ici.
+ *
+ * Les textes sont en unités du dessin, qui suit la largeur de son conteneur. Leur taille se
+ * multiplie donc par `--density-view-unit`, les unités de dessin par pixel, que tient
+ * `SequenceDensityView.fit` : 14 px à l'écran restent 14 px sur un téléphone comme dans le
+ * calculateur.
+ */
+.density-view-svg {
+	--density-view-unit: 1;
+	--density-view-straw: #ecdcbc;
+	--density-view-soil: #e6d3ad;
+	--density-view-soil-dark: #d6bf93;
+	--density-view-edge: #4a3b2a;
+	--density-view-row: #b39a70;
+	--density-view-leaf: #6aa84f;
+	display: block;
+	width: 100%;
+	max-width: 48rem;
+	height: auto;
+	margin: 0 auto;
+}
+
+.density-view-alley {
+	fill: var(--density-view-straw);
+}
+
+.density-view-top {
+	fill: var(--density-view-soil);
+}
+
+.density-view-subsoil {
+	fill: var(--density-view-soil-dark);
+}
+
+.density-view-grain {
+	fill: rgba(74, 59, 42, 0.22);
+}
+
+.density-view-leaf {
+	fill: var(--density-view-leaf);
+	stroke: var(--density-view-edge);
+	stroke-width: 0.8;
+}
+
+/* Le groupe extérieur place la plantule, celui-ci l'agrandit autour de son pied (densityViewAi.js). */
+.density-view-seedling {
+	transform: scale(var(--density-view-seedling-scale, 1));
+}
+
+.density-view-stem {
+	stroke: var(--density-view-edge);
+	stroke-width: 1.6;
+	fill: none;
+}
+
+.density-view-axis,
+.density-view-tick {
+	stroke: var(--muted);
+	stroke-width: 1;
+}
+
+.density-view-cote {
+	fill: var(--muted);
+	font-size: calc(14px * var(--density-view-unit));
+}
+
+.density-view-cote-edge {
+	font-size: calc(12px * var(--density-view-unit) * var(--density-view-edge-scale, 1));
+}
+
+.density-view-cote-strong {
+	fill: var(--text);
+	font-weight: bold;
+}
+
+.density-view-row {
+	stroke: var(--density-view-row);
+	stroke-width: 1;
+	stroke-dasharray: 2 4;
+}
+
+.density-view-row-full {
+	stroke: var(--density-view-leaf);
+	stroke-width: 3;
+	stroke-linecap: round;
+}
+
+.density-view-grid {
+	stroke: #c9b28a;
+	stroke-width: 0.8;
+}
+
+.density-view-grid-major {
+	stroke: #8a7456;
+}
+
+.density-view-border {
+	stroke: var(--density-view-edge);
+	stroke-width: 0.5;
+}
+
+.density-view-svg polygon,
+.density-view-ground {
+	stroke: var(--density-view-edge);
+	stroke-width: 1.2;
+	stroke-linejoin: round;
+}
+
+.density-view-ground {
+	fill: none;
+}
+
+/* La planche se cerne de sa propre teinte : à plat, un trait sombre à son bord se lisait comme une arête. */
+.density-view-svg .density-view-top {
+	stroke: var(--density-view-soil);
+}

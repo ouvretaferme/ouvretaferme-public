@@ -1,0 +1,127 @@
+.community-share-allow {
+	margin-top: 0.5rem;
+}
+
+.community-share-rules {
+	margin-bottom: 0.5rem;
+}
+
+.community-share .production-item-collapsible {
+	--accent: var(--muted);
+}
+
+.community-share .production-item-toggle {
+	padding: 0.5rem 0.75rem;
+	border-radius: 0.5rem;
+}
+
+.community-share .production-item-toggle:hover {
+	background-color: var(--background);
+}
+
+.community-share .production-item-collapsed .production-item-detail {
+	display: none;
+}
+
+
+.community-share-scope {
+	flex: 1;
+	min-width: 0;
+}
+
+.community-share-scope .util-action {
+	gap: 1rem;
+}
+
+
+/* Le tableau droit × public : un nom de droit qui prend la place restante, puis
+   une colonne par public. Le nombre de publics arrive du balisage, qui seul le
+   connaît.
+
+   11rem parce que l'en-tête dit le geste et non le public : « Permettre l'accès
+   aux producteurs du réseau » tient alors en trois rangs au lieu de cinq. */
+.community-rights {
+	grid-template-columns: minmax(0, 1fr) repeat(var(--community-rights-audiences), 11rem);
+}
+
+/* L'en-tête de cette grille porte le geste — « Permettre l'accès à l'équipe du réseau » — et non
+   l'étiquette d'une colonne. Les petites capitales que `reboot.css:1354` pose sur toute cellule
+   d'en-tête sont le dessin de l'étiquette : elles se défont ici par une classe (0,2,0 contre
+   0,1,0), et la règle qui sert partout ailleurs ne se touche pas. Le centrage suit les cellules
+   du corps, que le balisage rend toutes en `text-center`. */
+.community-rights .util-table-head > * {
+	text-transform: none;
+	text-align: center;
+	font-weight: normal;
+	color: var(--text);
+}
+
+/* La première cellule de l'en-tête est vide : sans cette exception le centrage porterait aussi sur
+   elle, sans effet visible aujourd'hui et faux le jour où elle porterait un mot. */
+.community-rights .util-table-head > *:first-child {
+	text-align: left;
+}
+
+/* ⚠️ **Dans le parcours, le resserrement ne dépend pas de la fenêtre.** Le palier ci-dessous est
+   une media query : elle répond à la largeur de l'écran, jamais à celle du conteneur. Or l'étape
+   du partage vit dans un panneau borné à 38 rem que la fenêtre soit large ou non, et le calcul y
+   est serré : 38 rem moins 4,5 de padding (`onboarding-steps`) moins 22 de colonnes de publics
+   laissent **11,5 rem** à une colonne qui porte un nom et une phrase de plus de cent caractères.
+   Sur une fenêtre large, le palier ne se déclenchait donc jamais là où il servait.
+
+   La condition est ici le conteneur et non l'écran, et le parcours le dit par sa propre classe :
+   7 rem rendent 19,5 rem au libellé. Une container query dirait la même chose, le dépôt n'en
+   emploie aucune.
+
+   ⚠️ Cette règle pèse (0,2,0) et bat donc aussi celle du palier ci-dessous, qui vaut (0,1,0) même
+   dans sa media query. Les deux disent 7 rem aujourd'hui, pour la même raison ; changer l'une sans
+   l'autre laisserait le parcours sur l'ancienne valeur sans que rien ne le signale. */
+.onboarding .community-rights {
+	grid-template-columns: minmax(0, 1fr) repeat(var(--community-rights-audiences), 7rem);
+}
+
+/* Sous 768px, la colonne d'un public se resserre pour rendre sa place au nom du
+   droit, dont l'en-tête porte une phrase qui se replie. Le plancher est le mot le
+   plus long du libellé : « producteurs » mesure 5,12rem, et 7rem laisse la phrase
+   se replier sans l'atteindre.
+
+   ⚠️ En rem et sans racine : l'en-tête est en 0,9rem et la colonne en rem, les deux
+   suivent donc la même racine et leur rapport est constant — mesuré identique à
+   chacune des racines que `reboot.css` pose. Un plancher écrit en pixels ne vaut qu'à
+   celle où il a été mesuré, et le commentaire d'origine en tirait un débordement qui
+   n'existe à aucune. */
+@media (max-width: 767px) {
+
+	.community-rights {
+		grid-template-columns: minmax(0, 1fr) repeat(var(--community-rights-audiences), 7rem);
+	}
+
+}
+
+
+/* Un choix par rang dans la bande d'un deck. Mesuré : `util-deck-band` sépare ses enfants de
+   0,5 rem quand un interrupteur et son libellé le sont de 0,75 rem — côte à côte, deux décisions
+   indépendantes se lient donc plus fort entre elles qu'à l'intérieur d'elles-mêmes, et les deux
+   phrases se lisent comme une seule. La largeur pleine rompt ce lien ici, sans toucher au gap du
+   composant, qui sert tous les decks du produit. */
+.util-deck-band > .community-rights-choice {
+	flex: 1 0 100%;
+}
+
+/* Le libellé vit à côté de son geste et non au-dessus d'une colonne : c'est ce qui retire
+   l'en-tête, donc les capitales et les rangs. `align-items: center` et non `baseline` : un
+   interrupteur n'a pas de ligne de base, et un libellé qui passe sur deux lignes le décollerait. */
+.community-rights-choice {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+/* La case du cadriciel porte déjà son `<label>` : c'est elle qui aligne l'entrée et son texte,
+   et le rang n'a qu'à la laisser prendre la largeur qu'il lui faut. */
+.community-rights-choice > .field-checkbox {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	cursor: pointer;
+}

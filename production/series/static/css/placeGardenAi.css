@@ -1,0 +1,685 @@
+#zone-content-garden {
+	padding-bottom: 2rem;
+
+	/* La largeur d'une planche, la même pour toutes quel que soit le nombre de
+	   séries qu'elle porte. Réglage unique du jardin. */
+	--garden-col-width: 6rem;
+
+	/* La colonne de gauche, qui porte l'échelle des mois. Le PHP la pose dans la
+	   grille par cette variable : la valeur ne vit qu'ici. */
+	--garden-gutter-width: 3.5rem;
+
+	/* Hauteur d'une ligne de mois : elle fixe celle des colonnes et du cadre
+	   d'arrivée, qui doivent rester alignés au pixel. */
+	--garden-month-height: 2.535rem;
+}
+
+.garden-plot {
+	/* Nommé parce que la largeur minimale du jardin doit compter ce châssis :
+	   la carte est en border-box, sa marge intérieure entre dans le calcul. */
+	--garden-plot-padding: 0.75rem;
+
+	max-width: 100%;
+	padding: 0.625rem var(--garden-plot-padding);
+}
+
+.zone-wrapper:not(.zone-wrapper-outside) .garden-plot-outside {
+	display: none;
+}
+
+.garden-plot-title {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-weight: 700;
+	margin-bottom: 0.5rem;
+}
+
+/* Le défilement horizontal du jardin ne remonte pas au navigateur : arrivé au
+   bord, un balayage vers la droite déclenchait le retour de l'historique sur
+   téléphone, et la page se rechargeait au milieu d'un geste. */
+.garden-scroll {
+	overflow-x: auto;
+	overflow-y: hidden;
+	max-width: 100%;
+	scrollbar-width: thin;
+	overscroll-behavior-x: contain;
+}
+
+/* Deux rangées partagées par toutes les colonnes : le nom d'une planche qui se
+   replie sur deux lignes grandissait son en-tête seul, et les mois du rail ne
+   tombaient plus en face des lignes du corps. La sous-grille aligne les en-têtes
+   sur le plus haut. */
+.garden-grid {
+	position: relative;
+	display: grid;
+	grid-template-rows: auto auto;
+	min-width: min-content;
+}
+
+.garden-rail,
+.garden-col {
+	display: grid;
+	grid-template-rows: subgrid;
+	grid-row: 1 / span 2;
+}
+
+/* En-tête d'une colonne : la planche, sa largeur, son état */
+/* La largeur vient de --col-width, posée par le rendu sur chaque colonne, et non
+   d'un style en ligne : la règle de repli d'une planche écartée par un filtre
+   doit pouvoir la surcharger, ce qu'un style en ligne lui interdirait. */
+.garden-col {
+	border-left: 1px solid var(--border);
+	min-width: 0;
+	width: var(--col-width, var(--garden-col-width));
+}
+
+.garden-col-head {
+	min-height: 2.75rem;
+	padding: 0.125rem 0.375rem 0.25rem;
+	font-size: 0.75rem;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	gap: 0.0625rem;
+}
+
+.garden-col-name {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.25rem;
+	font-weight: 600;
+}
+
+.garden-col-name a {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 0.0625rem 0.375rem;
+	border-radius: 999px;
+	color: inherit;
+	text-decoration: none;
+}
+
+.garden-col-name a:hover {
+	background-color: var(--background-odd);
+	color: var(--secondary);
+}
+
+.garden-col-name .place-bed-panel::after {
+	content: '';
+	flex: none;
+	width: 0.75rem;
+	height: 0.75rem;
+	background-color: var(--secondary);
+	opacity: 0.9;
+	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708'/%3E%3C/svg%3E") center / contain no-repeat;
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.garden-col-width {
+	color: var(--muted);
+	font-size: 0.625rem;
+}
+
+.garden-col-width-alert {
+	color: var(--warning);
+	font-weight: 600;
+}
+
+.garden-rail-body,
+.garden-col-body {
+	position: relative;
+	height: calc(var(--garden-months) * var(--garden-month-height));
+}
+
+.garden-col-body {
+	background-image: linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+	background-size: 100% calc(100% / var(--garden-months));
+	border-top: 1px solid var(--border);
+	border-bottom: 1px solid var(--border);
+}
+
+.garden-month {
+	position: absolute;
+	left: 0;
+	right: 0.375rem;
+	text-align: right;
+	font-size: 0.625rem;
+	color: var(--muted);
+	line-height: 1;
+	transform: translateY(-0.5em);
+}
+
+.garden-month-first {
+	color: var(--text);
+	font-weight: 600;
+}
+
+.garden-month-past {
+	opacity: 0.55;
+}
+
+.garden-col:has(input[name^="beds"]:checked),
+.garden-col.selected {
+	background-color: var(--info);
+}
+
+#zone-content-garden .garden-col[data-hide="1"]:not(.selected):not(.place-hidden-unfolded) {
+	min-width: 0;
+	width: 0.875rem;
+	flex: none;
+	border-left: 1px dashed #c8c8cc;
+	background: repeating-linear-gradient(135deg, #f7f7f8 0 4px, #efeff1 4px 8px);
+	cursor: pointer;
+	overflow: hidden;
+}
+
+#zone-content-garden .garden-col[data-hide="1"]:not(.selected):not(.place-hidden-unfolded) .garden-col-head {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	writing-mode: vertical-rl;
+	transform: rotate(180deg);
+	color: #9a9aa0;
+	font-size: 0.5625rem;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+#zone-content-garden .garden-col[data-hide="1"]:not(.selected):not(.place-hidden-unfolded) .garden-col-width,
+#zone-content-garden .garden-col[data-hide="1"]:not(.selected):not(.place-hidden-unfolded) .garden-col-body > *,
+#zone-content-garden .garden-col[data-hide="1"]:not(.selected):not(.place-hidden-unfolded) .garden-col-head > *:not(.garden-col-name) {
+	display: none;
+}
+
+#zone-content-garden .garden-col[data-hide="1"]:not(.selected):not(.place-hidden-unfolded) .garden-col-body {
+	background: none;
+	border-color: transparent;
+}
+
+#zone-content-garden [data-hide="1"]:not(.selected):not(.garden-col) {
+	display: none;
+}
+
+
+/* Un bloc de culture : aplat de la couleur de sa famille */
+.place-garden-block {
+	position: absolute;
+	left: 2px;
+	right: 2px;
+	border-radius: 5px;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	padding: 0.5rem 0.375rem 0.25rem;
+	font-size: 0.65rem;
+	line-height: 1.25;
+	/* clip plutôt que hidden : la marge laisse sortir les pastilles centrées sur
+	   les coins, le texte reste rogné au-delà. */
+	overflow: clip;
+	overflow-clip-margin: 12px;
+	text-align: center;
+	text-decoration: none;
+	color: white;
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+	z-index: 2;
+}
+
+/* Un nom plus long que la planche s'y coupe au lieu d'en sortir : la surface
+   libre étant toujours la dernière colonne, un mot qui déborde de la sienne
+   élargit toute la grille et fait apparaître une barre de défilement. */
+.place-garden-block b {
+	font-weight: 600;
+	overflow-wrap: break-word;
+	min-width: 0;
+}
+
+.place-garden-block-not-season {
+	z-index: 1;
+}
+
+.place-garden-block-not-season:not(:hover) {
+	opacity: 0.8;
+}
+
+/* Survolé, un bloc d'une autre saison passe devant ceux de sa saison sans
+   atteindre ceux de la saison affichée, à 10 au moins (getGardenDepth()) : il
+   leur prendrait le clic. */
+.place-garden-block-not-season:not(.place-hidden):hover {
+	z-index: 5 !important;
+}
+
+/* Le survol ne doit pas toucher à la couleur du texte : les liens du framework
+   la reprennent à leur compte, et le libellé devient illisible sur l'aplat. */
+.place-garden-block:hover,
+.place-garden-block:focus,
+.place-garden-block:hover b {
+	color: white;
+}
+
+/* Le survol remonte le bloc au premier plan — sauf s'il est à l'arrière-plan,
+   où ce serait exactement le contraire de ce qu'on lui a demandé : il repassait
+   devant et captait le clic destiné au bloc qu'il recouvre.
+   Même exclusion pour une autre saison : elle est là pour situer, pas pour être
+   manipulée, et le va-et-vient entre son z-index de repos et 300 la faisait
+   apparaître puis disparaître au passage de la souris. */
+.place-garden-block:not(.place-hidden):not(.place-garden-block-not-season):hover,
+.place-garden-block:not(.place-hidden):not(.place-garden-block-not-season).place-hovered {
+	box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7), 0 2px 8px rgba(0, 0, 0, 0.25);
+	text-decoration: none;
+}
+
+/* La planche que le survol a retenue passe devant les autres. Elle seule : la
+   classe est posée par la machine à état du survol, pas par :hover, qui
+   désignerait aussi les blocs qu'on ne fait que traverser. */
+/* L'etiquette est a 340, mais elle vit DANS le bloc : au repos celui-ci est a 2,
+   donc tout son contenu passait sous le bouton Poser, a 320. C'est le bloc qu'il
+   faut monter, pas l'etiquette. */
+.place-garden-block.place-selected {
+	z-index: 330;
+}
+
+.place-garden-block.place-hover-front:not(.place-hidden) {
+	z-index: 300 !important;
+}
+
+/* !important contre la profondeur que le PHP pose en ligne ; sous le survol, pour
+   qu'un voisin survolé remonte encore. */
+.place-garden-block.place-front:not(.place-hidden) {
+	z-index: 299 !important;
+}
+
+/* Ce qui recouvre le bloc survolé s'efface au lieu que le survolé remonte : il
+   garde sa profondeur, donc les blocs posés devant restent cliquables. Poser un
+   z-index ici rendrait injoignable le bloc qu'on voit pourtant par-dessus. */
+.place-garden-block.place-covering {
+	opacity: 0.85;
+}
+
+.place-garden-block .place-handle {
+	right: -10px;
+	top: 50%;
+	width: 18px;
+	height: 52px;
+	margin-top: -26px;
+}
+
+.place-garden-block .place-handle-start {
+	right: auto;
+	left: -10px;
+}
+
+.place-garden-block:hover ~ .place-nodate-block {
+	opacity: 0.35;
+}
+
+/* Le hachurage d'une pérenne est translucide : la couleur d'espèce posée en
+   ligne se voit au travers. Le gris ne sert plus que de fond quand la vue
+   n'attribue aucune couleur. Deux bandes, une claire une sombre, pour que le
+   motif se lise aussi bien sur un fond pâle que sur un fond foncé. */
+.place-garden-block-perennial {
+	background-color: #8a8a8f;
+	background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0 8px, transparent 8px 16px);
+}
+
+/* Le fantôme de la série qu'on place : cible de dépôt */
+/* Le fantôme est un repère, pas une cible : il est posé en 400, au-dessus du
+   bouton Poser qui vit en 320, et lui prenait donc le clic. */
+.place-garden-block-placeholder {
+	justify-content: center;
+	border: 2px dashed var(--target-paint, var(--production));
+	background-color: #fffa;
+	color: var(--target-paint, var(--production));
+	box-shadow: none;
+	opacity: 1;
+	z-index: 400;
+}
+
+.garden-plot.place-fold-search,
+.garden-plot.place-fold-user {
+	padding: 0;
+	flex: 1 1 100%;
+}
+
+.garden-plot .plot-folded {
+	border-bottom: 0;
+	border-radius: var(--radius);
+}
+
+@media (max-width: 767px) {
+
+	.garden-plot {
+		flex: 1 1 100%;
+	}
+
+}
+
+
+/* Un emplacement plein, réduit à son bandeau */
+.garden-plot .plot-folded {
+	cursor: pointer;
+	gap: 0.625rem;
+}
+
+.plot-folded-chevron,
+.garden-plot-chevron {
+	color: var(--muted);
+	display: flex;
+	margin-left: auto;
+}
+
+/* Une série posée sur des planches voisines se lit comme un seul bloc */
+.place-garden-block-merged {
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+	right: auto;
+	left: calc(2px + min(var(--lane, 0) * 12px, var(--garden-col-width) * 0.6));
+	width: calc(var(--span, 1) * var(--garden-col-width) - (2px + min(var(--lane, 0) * 12px, var(--garden-col-width) * 0.6)) - 4px);
+}
+
+.place-garden-block-offset {
+	left: calc(2px + min(var(--lane, 0) * 12px, var(--garden-col-width) * 0.6));
+}
+
+.place-garden-block-lane {
+	right: auto;
+	left: calc(var(--lane, 0) * var(--garden-col-width) + 2px);
+	width: calc(var(--garden-col-width) - 6px);
+}
+
+
+/* Sélection de la planche seule dans un groupe fusionné */
+.place-selected-bed {
+	outline-style: solid;
+}
+
+/* Les quatre styles de couleur du menu palette valent aussi dans le jardin.
+   Clair et sombre sont portés par le CSS ; espèce et famille viennent de la
+   donnée, posées en style sur le bloc. */
+
+[data-soil-color="white"] .place-garden-block-season,
+[data-soil-color="white"] .place-garden-block-not-season {
+	background-color: white;
+	border: 2px solid var(--block-color, var(--muted));
+	color: var(--text);
+	box-shadow: none;
+}
+
+[data-soil-color="white"] .place-garden-block-season b,
+[data-soil-color="white"] .place-garden-block-season:hover,
+[data-soil-color="white"] .place-garden-block-season:hover b {
+	color: var(--text);
+}
+
+[data-soil-color="white"] .place-garden-block-season:not(.place-hidden):hover {
+	box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.35);
+}
+
+[data-soil-color="white"] .place-bed-part {
+	border-right-color: rgba(0, 0, 0, 0.25);
+}
+
+/* Sur fond clair, l'assombrissement ne se voit pas : on éclaircit et on
+   renforce le liseré, même logique inversée. */
+[data-soil-color="white"] .place-bed-part:hover {
+	background-color: rgba(0, 0, 0, 0.10);
+	box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.4);
+}
+
+[data-soil-color="black"] .place-garden-block-season,
+[data-soil-color="black"] .place-garden-block-not-season {
+	background-color: var(--primary);
+	border: 2px solid var(--block-color, white);
+	color: white;
+}
+
+/* La surface libre : une colonne à part, en fin d'emplacement */
+.garden-col-fill {
+	background-color: var(--background-odd);
+	border-left: 2px solid var(--border);
+}
+
+.garden-col-fill .garden-col-name b {
+	font-size: 0.7rem;
+	font-weight: 600;
+	color: var(--muted);
+}
+
+
+/* Les repères de semis, plantation et récolte : le temps descend, ils se
+   posent donc le long du bord droit du bloc plutôt qu'en pied. */
+.place-garden-block div.place-grid-series-timeline-week {
+	position: absolute;
+	right: -0.1rem;
+	left: auto;
+	bottom: auto;
+	width: calc(0.3rem + 2px);
+	min-height: 0.2rem;
+	border: 1px solid white;
+	border-radius: var(--radius);
+	transform: none;
+}
+
+/* La mini-carte de l'emplacement : une barre par planche, celles à l'écran en
+   clair. Posée dans la carte du jardin et non dans la grille, sinon elle
+   défilerait avec ce qu'elle est censée situer. */
+.garden-plot {
+	position: relative;
+}
+
+/* La vignette de l'espèce, quand la couleur du bloc ne la porte pas. */
+.place-garden-block-head {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.25rem;
+	min-width: 0;
+}
+
+.place-garden-block-images {
+	display: flex;
+	justify-content: center;
+	gap: 0.125rem;
+	flex-wrap: wrap;
+	flex: none;
+}
+
+
+/* Ce que la surface libre ne peut pas dessiner : un compte, pas un défilement. */
+.garden-col-scroll .garden-col-body {
+	overflow-x: auto;
+}
+
+/* La jauge tient sur une planche, jamais sur le bloc : pendant un
+   agrandissement le bloc s'étire, elle doit rester sur la sienne. Le plafond
+   la retient quand le bloc est plus étroit qu'une colonne pleine, sans quoi
+   elle en sort de 3 px et fait défiler la grille. */
+.place-garden-block .place-fill {
+	right: auto;
+	width: calc(var(--garden-col-width) - 0.75rem);
+	max-width: calc(100% - 0.75rem);
+}
+
+.place-garden-block .place-bed-part {
+	left: calc(var(--part, 0) * var(--garden-col-width) - 2px);
+	width: var(--garden-col-width);
+	top: 0;
+	bottom: 0;
+}
+
+.place-garden-block .place-fill-part {
+	left: calc(var(--part, 0) * var(--garden-col-width) + 5px);
+	width: calc(var(--garden-col-width) - 17px);
+}
+
+/* Une seule ligne dans l'en-tête d'une surface libre : le repli du texte
+   n'existait que pour un récapitulatif qui n'y est plus. */
+.garden-col-fill .garden-col-width {
+	font-size: 0.625rem;
+	line-height: 1.25;
+}
+
+/* Le récapitulatif d'une surface libre vide, dans son corps inoccupé. */
+.garden-fill-summary {
+	position: absolute;
+	top: 0.5rem;
+	left: 0.25rem;
+	right: 0.25rem;
+	color: var(--muted);
+	font-size: 0.625rem;
+	line-height: 1.3;
+	text-align: center;
+}
+
+/* Un mode de culture différent se signale par le fond, il ne retire plus la
+   cible : on peut poser partout, quitte à assumer le mode. */
+#zone-content-garden .garden-col[data-mismatch="1"] .garden-col-body {
+	background-color: var(--background-odd);
+}
+
+#zone-content-garden .garden-col[data-mismatch="1"] .garden-col-head {
+	opacity: 0.55;
+}
+
+.place-garden-block.place-selected {
+	box-shadow: inset 0 0 0 3px white, 0 0 0 2px var(--color-brand);
+}
+
+.place-garden-block.place-selected.place-selected-bed {
+	box-shadow: inset 0 0 0 3px white, 0 0 0 2px var(--color-brand), 0 0 0 4px white;
+}
+
+[data-soil-color="white"] .place-garden-block-season.place-locked,
+[data-soil-color="white"] .place-garden-block-not-season.place-locked {
+	filter: none;
+	background-color: var(--background-odd);
+	border-color: color-mix(in srgb, var(--block-color, var(--muted)) 50%, white);
+}
+
+.garden-printing #zone-content-garden {
+	--garden-col-width: 5rem;
+	--garden-month-height: 1.5rem;
+}
+
+.garden-plot-part {
+	font-weight: 400;
+	color: var(--muted);
+}
+
+.garden-printing .garden-scroll {
+	overflow: visible;
+}
+
+.garden-printing .garden-grid {
+	width: min-content;
+}
+
+.garden-printing .garden-plots {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	gap: 0.75rem;
+}
+
+.garden-printing .place-garden-block {
+	box-shadow: none;
+}
+
+.garden-printing .garden-col-body {
+	background-image: linear-gradient(to bottom, color-mix(in srgb, var(--border) 45%, transparent) 1px, transparent 1px);
+	background-size: 100% calc(100% * 7 / var(--garden-days));
+}
+
+.garden-printing .zone-wrapper {
+	margin-bottom: 1rem;
+}
+
+.garden-printing .garden-plot {
+	break-inside: avoid;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	box-shadow: none;
+	margin-bottom: 0;
+}
+
+.garden-printing .place-garden-block {
+	font-size: 0.85rem;
+	padding-bottom: 1.25rem;
+}
+
+.garden-printing .place-fill {
+	height: 1rem;
+	bottom: 2px;
+	font-size: 0.7rem;
+}
+
+.garden-printing .place-lock-badge {
+	width: 0.875rem;
+	height: 0.875rem;
+	top: -0.4375rem;
+	left: -0.4375rem;
+	font-size: 0.5rem;
+}
+
+.garden-printing .place-lock-badge svg {
+	width: 0.5rem;
+	height: 0.5rem;
+}
+
+.garden-printing-zone {
+	display: flex;
+	align-items: baseline;
+	gap: 0.5rem;
+	margin-bottom: 0.5rem;
+	break-after: avoid;
+}
+
+.garden-printing-zone h2 {
+	margin: 0;
+	font-size: 1.5rem;
+	font-weight: 700;
+}
+
+.garden-printing .garden-col-name .place-bed-panel::after,
+.garden-printing .plot-folded-chevron,
+.garden-printing .garden-plot-chevron {
+	display: none;
+}
+
+.place-garden-block.place-garden-block-task {
+	z-index: 300;
+	min-height: 1.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	border: 1px dashed var(--dark);
+	border-radius: 0.25rem;
+	background-color: var(--background);
+	color: var(--dark);
+	font-size: 0.7rem;
+	font-weight: 700;
+	box-shadow: none;
+}
+
+.place-garden-block.place-garden-block-task .place-garden-block-name {
+	padding: 0 0.25rem;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+#zone-container:not(.garden-printing) #zone-content-garden .garden-plots > .garden-plot:not(.place-fold-search):not(.place-fold-user) {
+	flex: 0 1 auto;
+	min-width: min(calc(
+		var(--garden-gutter-width)
+		+ var(--plot-columns, 1) * var(--garden-col-width)
+		+ 2 * var(--garden-plot-padding) + 2px
+	), 100%);
+}
+
+#zone-container:not(.garden-printing) #zone-content-garden .garden-grid {
+	justify-content: start;
+}

@@ -1,0 +1,88 @@
+/* Gabarit « Diplôme » des pages de formations d'un réseau : une attestation. Bandeau centré sur le
+   fond de la page, fermé d'un filet doré, titres de section centrés en capitales espacées, dates
+   en sceau rond, chiffres romains aux étapes, cartes blanches.
+
+   Le doré et l'encre brune sont des traits et des encres, pas des fonds : la page est celle du
+   fond choisi et les surfaces sont blanches, Diplôme n'est donc pas dans
+   `LearningSetting::DESIGN_MATTERS`. La citation finit sur le blanc et non sur `transparent`, pour
+   que `DesignContrastSentinel` mesure son auteur sur une couleur opaque. Les polices viennent de
+   `LearningSetting::DESIGN_FONTS`.
+   Les boutons gardent leur casse : en capitales de Lora, les deux gestes du gérant posés à droite du
+   titre de la fiche (« Gérer la formation », « Personnaliser l'apparence ») ne tiennent plus à
+   360 px, et leur rangée ne passe pas à la ligne. */
+
+.learning-public[data-learning-design="diplome"],
+.learning-doc[data-learning-design="diplome"] {
+	--radius: .25rem;
+	--radius-lg: .5rem;
+	--text: #2b2618;
+	--border: #b9a46c;
+	--border-width: 1px;
+	--shadow-v2: none;
+	--heading-case: uppercase;
+	--heading-tracking: .16em;
+	--heading-weight: 400;
+	--heading-justify: center;
+	--heading-border: 3px double #b9a46c;
+	--heading-padding: 0 1.5rem .5rem;
+	--button-weight: 600;
+	--figure-background: color-mix(in srgb, var(--learning-background-chosen) 60%, white);
+	--callout-background: white;
+	--callout-border: #b9a46c;
+	--callout-radius: .25rem;
+	--callout-shadow: inset 0 0 0 4px white, inset 0 0 0 5px #b9a46c;
+	--callout-title-case: uppercase;
+	--marker-counter: upper-roman;
+	--marker-background: white;
+	--marker-color: var(--primary-on-light);
+	--marker-ring: inset 0 0 0 1px #b9a46c, 0 0 0 3px white, 0 0 0 4px #b9a46c;
+	--step-line: linear-gradient(#b9a46c, #b9a46c) no-repeat center / 1px 100%;
+	--table-head-background: transparent;
+	--table-head-border: 3px double #b9a46c;
+	--table-head-case: none;
+	--table-row-border: 1px solid #e6dcc0;
+	--background-odd: white;
+	--background-even: white;
+	--tab-active-color: var(--primary-on-light);
+	--tab-bar-height: 1px;
+	--quote-background: white;
+	--quote-border: 3px double #b9a46c;
+	--quote-padding: 1rem 1.5rem;
+	--quote-font-style: italic;
+	--quote-icon-color: #9a8550;
+	--calendar-size: 3.25rem;
+	--calendar-radius: 50%;
+	--calendar-background: white;
+	--calendar-color: var(--primary-on-light);
+	--calendar-ring: 0 0 0 3px white, 0 0 0 4px #b9a46c;
+	color: var(--text);
+}
+
+/* Kurale n'a qu'une face, en 400 : un titre en gras y serait un gras synthétisé. Les titres que le
+   socle écrit dans la police de titre (`h1`, `h2`, `h3`, `learning.css` et `root.css`) sont donc
+   bornés à 400 ici, une fois pour tous, plutôt que bandeau par bandeau ; le `h1` de la fiche
+   reçoit sinon 700 de `template-base.css`. `DesignSentinel::testTitleWeights()` le vérifie. */
+.learning-public[data-learning-design="diplome"] h1,
+.learning-public[data-learning-design="diplome"] h2,
+.learning-public[data-learning-design="diplome"] h3,
+.learning-doc[data-learning-design="diplome"] h1,
+.learning-doc[data-learning-design="diplome"] h2,
+.learning-doc[data-learning-design="diplome"] h3 {
+	font-weight: 400;
+}
+
+.learning-public[data-learning-design="diplome"] .community-header {
+	padding-bottom: var(--space-lg);
+	background: transparent;
+	text-align: center;
+	border-bottom: 1px solid #b9a46c;
+}
+
+.learning-public[data-learning-design="diplome"] .community-header .community-main-back {
+	justify-content: center;
+	--scope-line-title-tracking: .2em;
+}
+
+.learning-public[data-learning-design="diplome"] .community-header h1 {
+	letter-spacing: .06em;
+}

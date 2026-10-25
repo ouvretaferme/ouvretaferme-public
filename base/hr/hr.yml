@@ -1,0 +1,64 @@
+Absence:
+  id: serial32
+  structure: structure\Structure
+  user: user\User
+  from: datetime
+  to: datetime
+  duration: float32(0.0, null)
+  type: enum(VACATION, RTT, RECOVERY, OTHER, SICKNESS, WORK_ACCIDENT, PARENTAL, FAMILY_EVENT, UNPAID)
+  unit: enum(DAY, HOUR) = DAY # Une absence DAY ne lit une demi-journée que d'une borne à 12:00, toute autre vaut la journée
+  status: enum(PENDING, VALIDATED, REFUSED) # Posé par l'appelant, page ou API, jamais posté
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["structure", "user"]
+  ]
+
+Contract:
+  id: serial32
+  structure: structure\Structure
+  presence: hr\Presence
+  type: enum(CDI, CDD, SEASONAL, APPRENTICESHIP, INTERNSHIP, OTHER, PROFESSIONALIZATION, TEMPORARY, EMPLOYER_GROUP)
+  weeklyHours: ?float32(0.0, 48.0) # Horaire du contrat, sous 35 h le seuil des heures complémentaires
+  annualHours: ?float32(0.0, 2300.0) # Volume d'un contrat annualisé sur sa période de référence, NULL à la semaine
+  hoursPeriod: enum(WEEK, YEAR) = WEEK # YEAR : un solde sur la période de référence, rien à la semaine
+  days: ?set(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY)
+  hasVariableDays: bool = FALSE
+  INDEX: [
+    ["structure"]
+  ]
+  UNIQUE: [
+    ["presence"]
+  ]
+
+Presence:
+  id: serial32
+  structure: structure\Structure
+  user: user\User
+  from: date
+  to: ?date
+  INDEX: [
+    ["structure", "user"]
+  ]
+
+Teammate:
+  id: serial32
+  structure: structure\Structure
+  user: user\User
+  createdAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["structure", "user"]
+  ]
+
+WorkingTime:
+  id: serial32
+  structure: structure\Structure
+  user: user\User
+  date: date(null, PHP(\Clock::date()))
+  time: float32(0.0, null)
+  start: ?time # NULL pour une journée saisie en durée
+  end: ?time
+  pause: ?float32(0.0, 24.0) # Heures
+  createdAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["structure", "user", "date"]
+  ]

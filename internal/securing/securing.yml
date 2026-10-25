@@ -1,0 +1,39 @@
+Log:
+  id: serial32
+  module: enum(PRODUCTION, SELLING, ACCOUNTING, SETTINGS)
+  event: text8
+  data: ?json
+  comment: ?text24
+  level: enum(USER, SYSTEM, TECHNICAL)
+  channel: enum(WEB, API, CRON)
+  apiLog: ?int32(0, null)
+  doneBy: ?user\User = SPECIAL(user)
+  doneAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["level", "doneAt"],
+    ["event", "doneAt"]
+  ]
+
+Signature:
+  id: serial32
+  source: enum(SALE, CASH, MARKET_DEVICE, MARKET_DEVICE_SET_ASIDE, CASH_ARCHIVE, SELLING_ARCHIVE)
+  key: int16(0, null)
+  hmac: text8(64, 64) @charset(ascii)
+  hmacChained: ?text8(64, 64) @charset(ascii)
+  reference: int32(0, null)
+  data: text24
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["hmac"],
+    ["source", "reference"]
+  ]
+
+SignatureTail:
+  id: serial32
+  source: enum(SALE, CASH, MARKET_DEVICE, MARKET_DEVICE_SET_ASIDE, CASH_ARCHIVE, SELLING_ARCHIVE)
+  key: int16(0, null)
+  hmac: text8(64, 64) @charset(ascii)
+  updatedAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["source"]
+  ]

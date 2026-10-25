@@ -1,0 +1,138 @@
+/* La météo du groupe Bureau du menu (contribution `structure-weather`, L52 ; dans la tête de l'accueil
+   depuis L15).
+
+   Tout sélecteur est borné par `.structure-weather`, la classe que seule cette pièce pose : une feuille de
+   package reste chargée après qu'on a quitté l'écran qui l'a demandée, la navigation ajax ne retirant
+   pas la `<link>`. */
+
+/* Le moment à la taille d'un chiffre de tuile (`util-tile-figure`). La plage et la pluie du jour, trop
+   longues (des températures négatives à deux chiffres), passent sous l'icône et la température plutôt
+   que de les serrer dans la colonne du menu. */
+.structure-weather .structure-weather-now {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-xxs) var(--space-sm);
+}
+
+.structure-weather .structure-weather-now > .asset-icon {
+	width: var(--space-xxl);
+	height: var(--space-xxl);
+	flex: none;
+}
+
+.structure-weather .structure-weather-temperature {
+	font-family: var(--font-text);
+	font-size: 2.25rem;
+	font-weight: 500;
+	line-height: 1;
+}
+
+/* Le minimum, le maximum et la pluie du jour au bout de la ligne du moment, le chiffre en grand restant
+   celui de l'heure. La pluie s'empile sous les températures pour ne pas allonger la ligne. */
+.structure-weather .structure-weather-today {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: var(--space-xxs);
+	margin-left: auto;
+}
+
+/* Une flèche et son chiffre ne se séparent jamais : la colonne du menu n'a que 200 px. */
+.structure-weather .structure-weather-range {
+	display: inline-flex;
+	white-space: nowrap;
+	gap: var(--space-xs);
+	font-variant-numeric: tabular-nums;
+}
+
+/* La flèche dit lequel des deux on lit, sans prendre le poids du chiffre. */
+.structure-weather .structure-weather-range .asset-icon {
+	font-size: 0.8em;
+	color: var(--muted);
+}
+
+/* La marque du modèle au bout de la phrase du ciel : elle nomme la source de ce qui est au-dessus. */
+.structure-weather .structure-weather-sky {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: var(--space-xs);
+	margin-top: var(--space-xxs);
+}
+
+/* Équilibrée, la phrase se coupe en deux moitiés au lieu de laisser l'unité du vent seule sur sa ligne,
+   la marque du modèle prenant le bout de la rangée. */
+.structure-weather .structure-weather-sky > .util-annotation {
+	text-wrap: balance;
+}
+
+/* Une tuile par jour, côte à côte et de même largeur (planche L81, piste A) : la rangée ne passe pas à
+   la ligne, trois tuiles tenant dans la colonne du menu comme dans la feuille du bas. La tuile n'est pas
+   un util-figure, dessiné pour un chiffre clé d'au moins 10 rem. Le fond est un gris neutre plutôt que la
+   teinte des chiffres clés, trop vive pour un menu (« une teinte moins flashy ») : le plus clair
+   qui se détache encore de la feuille blanche du bas comme du gris du menu au bureau. */
+.structure-weather .structure-weather-days {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: var(--space-xs);
+	margin-top: var(--space-md);
+}
+
+.structure-weather .structure-weather-day {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--space-xxs);
+	padding: var(--space-xs);
+	border-radius: var(--radius);
+	background-color: var(--background-even);
+	text-align: center;
+}
+
+.structure-weather .structure-weather-day-name {
+	font-weight: bold;
+}
+
+.structure-weather .structure-weather-day > .asset-icon {
+	font-size: 1.75rem; /* le ciel se lit avant le chiffre */
+}
+
+/* Le minimum au poids du maximum, dans les tuiles comme dans l'en-tête : le gel décide du travail du
+   lendemain autant que la chaleur (L83 et L85). Faute de jeton du froid, le bleu part de la
+   lavande, foncée jusqu'à tenir 4,5:1 sur le fond le plus sombre où il paraît, le gris du menu au
+   bureau ; la lavande foncée des jetons s'y arrête à 4,35:1. */
+.structure-weather :is(.structure-weather-max, .structure-weather-min) {
+	font-size: 1.35rem; /* une prévision se lit d'un coup d'œil, au-dessus du texte courant du menu */
+	font-weight: 500;
+	line-height: 1.1;
+}
+
+.structure-weather .structure-weather-min {
+	color: color-mix(in srgb, var(--color-lavande) 60%, black);
+}
+
+/* Un cran sous les températures, que la pluie suit à la lecture. */
+.structure-weather .structure-weather-rain {
+	font-size: 0.9em;
+	color: var(--muted);
+	font-variant-numeric: tabular-nums;
+}
+
+.structure-weather .structure-weather-days .structure-weather-rain {
+	margin-top: var(--space-xxs);
+	line-height: 1.25;
+}
+
+.structure-weather .structure-weather-rain > .asset-icon {
+	margin-right: var(--space-xxs);
+	vertical-align: -0.1em;
+}
+
+/* La source, sous les jours, pour le visiteur qui n'a pas de menu où la lire. */
+.structure-weather .structure-weather-source {
+	display: inline-block;
+	margin-top: var(--space-xs);
+	font-size: 0.9rem; /* le plancher de lecture (skill ui) : la source se lit après la météo qu'elle cite */
+	color: var(--muted);
+}

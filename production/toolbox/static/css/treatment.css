@@ -1,0 +1,221 @@
+/* La ligne sous les onglets : « Nouveau traitement » à gauche, la loupe et « Télécharger » à droite.
+   `util-action` la replie sous 575px sans rien masquer ; l'écart entre les deux groupes, qu'il ne
+   règle qu'à 0.25rem, est porté à celui des boutons. */
+.treatment-tools {
+	gap: 0.5rem;
+	margin-bottom: 1rem;
+}
+
+.treatment-tools-aside {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.treatment-decks {
+	display: grid;
+	gap: 1rem;
+	margin-top: 1.5rem;
+}
+
+.treatment-reprise-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 0.5rem;
+}
+
+/*
+ * Les colonnes d'un traitement s'alignent d'une ligne à l'autre et d'un produit à l'autre, comme un
+ * tableau : le produit, puis la quantité et la surface alignées à droite. Les deux classes passent
+ * devant le `display: flex` de `.util-deck-row`, dont la feuille peut se charger après celle-ci en
+ * navigation ajax.
+ */
+.util-deck-row.treatment-row {
+	display: grid;
+	grid-template-columns: auto 8.5rem minmax(0, 1fr) 10rem 6rem 5rem auto;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+/* Sans le droit d'écrire, la ligne n'a pas de case : sa colonne sort de la grille, sinon le jour y
+   serait placé par le placement automatique. */
+.util-deck-row.treatment-row.treatment-row-read {
+	grid-template-columns: 8.5rem minmax(0, 1fr) 10rem 6rem 5rem auto;
+}
+
+/* Toute la hauteur de la ligne coche : la case seule ferait une cible de 1 rem au doigt. */
+.treatment-row-select {
+	align-self: stretch;
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+}
+
+.treatment-row-date,
+.treatment-row-area,
+.treatment-row-quantity {
+	white-space: nowrap;
+}
+
+.treatment-row-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.treatment-culture {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-width: 0;
+}
+
+.treatment-culture > div:last-child {
+	min-width: 0;
+}
+
+/* La description tient sur une ligne : elle sert à reconnaître le traitement, son texte entier est sur l'intervention. */
+.treatment-row-description {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.treatment-row-tools {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.125rem 0.75rem;
+	margin-top: 0.25rem;
+	font-size: 90%;
+	color: var(--muted);
+}
+
+.treatment-row-tool {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	min-width: 0;
+}
+
+/* Le menu s'ouvre depuis la cellule du jour, qui ne passe pas à la ligne : il n'en hérite pas. */
+.treatment-days,
+.treatment-days-reason {
+	white-space: normal;
+}
+
+.treatment-days {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(var(--touch-target), 1fr));
+	gap: 0.25rem;
+}
+
+.treatment-days .btn {
+	min-height: var(--touch-target);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding-inline: 0;
+	line-height: 1.2;
+}
+
+.treatment-days-reason {
+	font-size: 90%;
+	opacity: 0.8;
+}
+
+/* Sur un téléphone, la surface s'efface : la quantité, qui en découle, reste. */
+@media (max-width: 767px) {
+
+	/* Le jour garde une largeur fixe pour que les cultures s'alignent d'un rang à l'autre : il passe à la ligne plutôt que de pousser la colonne. */
+	.util-deck-row.treatment-row {
+		grid-template-columns: auto 5.5rem minmax(0, 1fr) auto auto auto;
+		padding-inline: 1rem;
+	}
+
+	.util-deck-row.treatment-row.treatment-row-read {
+		grid-template-columns: 5.5rem minmax(0, 1fr) auto auto auto;
+	}
+
+	.treatment-row-date {
+		white-space: normal;
+	}
+
+	.treatment-row-area {
+		display: none;
+	}
+
+	/* Au doigt, les deux gestes de la ligne prennent la cible tactile du dépôt. */
+	.treatment-row-select,
+	.treatment-row-add,
+	.treatment-row-actions > .btn,
+	.treatment-tools .btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: var(--touch-target);
+		min-height: var(--touch-target);
+	}
+
+	/* La semaine qui ouvre le choix du jour est un lien de texte : sa hauteur, pas sa largeur, lui
+	   manque pour faire une cible. */
+	.treatment-row-week {
+		display: inline-flex;
+		align-items: center;
+		min-height: var(--touch-target);
+	}
+
+}
+
+/* Sur un petit écran, le produit et sa quantité passent sous la culture : à côté d'elle, le bouton « + Produit » à la taille du doigt ne lui laissait que quelques lettres. */
+@media (max-width: 575px) {
+
+	.util-deck-row.treatment-row {
+		grid-template-columns: auto 5.5rem minmax(0, 1fr) auto auto;
+		grid-template-areas:
+			"select date culture culture actions"
+			"select date product quantity actions";
+		row-gap: 0.25rem;
+	}
+
+	.util-deck-row.treatment-row.treatment-row-read {
+		grid-template-columns: 5.5rem minmax(0, 1fr) auto auto;
+		grid-template-areas:
+			"date culture culture actions"
+			"date product quantity actions";
+	}
+
+	.treatment-row-select {
+		grid-area: select;
+	}
+
+	.treatment-row-date {
+		grid-area: date;
+	}
+
+	.treatment-row-culture {
+		grid-area: culture;
+	}
+
+	.treatment-row-product {
+		grid-area: product;
+	}
+
+	.treatment-row-quantity {
+		grid-area: quantity;
+	}
+
+	.treatment-row-actions {
+		grid-area: actions;
+	}
+
+}
+
+/* Sept jours à la taille du doigt ne tiennent pas sur une ligne d'un téléphone étroit. */
+@media (max-width: 449px) {
+
+	.treatment-days {
+		grid-template-columns: repeat(4, minmax(var(--touch-target), 1fr));
+	}
+
+}

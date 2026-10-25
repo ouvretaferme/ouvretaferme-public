@@ -1,0 +1,43 @@
+/* Gabarit « Bucolique » des pages de formations d'un réseau : bandeau clair aux coins très ronds,
+   surfaces crème, citations en italique.
+   La crème est le fond choisi mêlé au blanc : Bucolique n'a pas de papier à lui et n'est pas dans
+   `LearningSetting::DESIGN_MATTERS`, les encres se calculent sur le fond adouci et le blanc, entre
+   lesquels toute crème se situe. Le mélange lit le fond choisi sous `--learning-background-chosen`,
+   que `CustomizeUi::getStyles()` pose à côté de `--learning-background`.
+   Le bandeau prend la teinte que `CommunityLib::getTint()` tire de ce fond, sous l'encre du texte. */
+
+.learning-public[data-learning-design="bucolique"],
+.learning-doc[data-learning-design="bucolique"] {
+	--radius: 1.25rem;
+	--radius-lg: 1.75rem;
+	--border: color-mix(in srgb, var(--primary) 14%, var(--learning-background-chosen));
+	--background-surface: color-mix(in srgb, var(--learning-background-chosen) 30%, white);
+	--shadow-v2: 0 6px 18px rgb(90 70 30 / 10%);
+	--heading-weight: 600;
+	--figure-background: color-mix(in srgb, var(--primary) 8%, var(--learning-background-chosen));
+	--table-head-background: var(--learning-tint);
+	--table-head-case: none;
+	--callout-background: color-mix(in srgb, var(--primary) 6%, var(--learning-background-chosen));
+	--callout-border: transparent;
+	--callout-radius: 1.75rem;
+	--callout-shadow: none;
+	--marker-background: color-mix(in srgb, var(--primary) 20%, var(--learning-background-chosen));
+	--marker-color: var(--primary-on-light);
+	--step-line: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--primary) 45%, white) 0 .3rem, transparent .3rem .6rem);
+	--table-head-border: none;
+	--background-odd: color-mix(in srgb, var(--learning-background-chosen) 30%, white);
+	--background-even: var(--learning-background-chosen);
+	--tab-active-background: var(--learning-tint);
+	--tab-active-color: var(--text);
+	--tab-radius: 1rem;
+	--quote-background: var(--learning-background-chosen);
+	--quote-radius: 1.5rem;
+	--quote-padding: .75rem 1rem;
+	--quote-font-style: italic;
+	--quote-icon-color: var(--primary);
+}
+
+.learning-public[data-learning-design="bucolique"] .community-header {
+	background: var(--learning-tint);
+	border-radius: 0 0 2.5rem 2.5rem;
+}

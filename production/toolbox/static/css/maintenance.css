@@ -1,0 +1,266 @@
+/* Ce qui est dû, sous l'en-tête du carnet : une rangée par entretien, le badge, l'entretien et son
+   matériel, puis « Fait ». Les rangées partagent les colonnes du bloc (`subgrid`) pour que les badges
+   et les boutons s'alignent d'une ligne à l'autre. L'observateur n'a pas la colonne de « Fait »
+   (`-read`, arbitrage Q8 A de la planche pf-t4-v2) : ce qui disparaît ne laisse pas sa place vide. */
+.maintenance-due {
+	margin-bottom: 1.5rem;
+}
+
+/* Déplié, le bandeau liste chaque retard : la bande rouge qui les résume redirait le premier. */
+.maintenance-due.util-deck-open > .util-deck-band {
+	display: none;
+}
+
+.maintenance-due-rows {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.maintenance-due-rows.maintenance-due-rows-read {
+	grid-template-columns: auto minmax(0, 1fr);
+}
+
+.maintenance-due-rows > .util-deck-row {
+	display: grid;
+	grid-template-columns: subgrid;
+	grid-column: 1 / -1;
+}
+
+/* La colonne du geste prend la largeur du plus large, « Relever » à côté de « Fait » au planning
+   (alertes lot 2) : chaque bouton se cale à droite plutôt que de flotter sous le précédent. */
+.maintenance-due-rows:not(.maintenance-due-rows-read) > .util-deck-row > :last-child {
+	justify-self: end;
+}
+
+.maintenance-due-rows > .util-deck-row + .util-deck-row {
+	border-top: 1px solid var(--border);
+}
+
+/* Au téléphone, les trois gestes du planning ne laissent au nom que quelques lettres par ligne : ils
+   passent sous lui. */
+@media (max-width: 575px) {
+
+	.maintenance-planning > .maintenance-due-rows:not(.maintenance-due-rows-read) {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+
+	.maintenance-planning > .maintenance-due-rows:not(.maintenance-due-rows-read) > .util-deck-row > :last-child {
+		grid-column: 2;
+		justify-self: start;
+	}
+
+}
+
+/* Au planning de la semaine, les entretiens se tiennent sous leur titre comme un groupe
+   d'interventions de la même colonne (`div.tasks-planning-items`, `series/static/css/task.css`) :
+   fond blanc collé à la bande, qui porte seule les coins du haut, coins du bas arrondis de moitié,
+   même marge avant le groupe suivant. */
+.maintenance-planning {
+	margin-bottom: 1rem;
+	border-bottom-left-radius: calc(var(--radius) / 2);
+	border-bottom-right-radius: calc(var(--radius) / 2);
+	background-color: white;
+}
+
+/* Les rangées du bloc d'un matériel (planche pf-t4-v3, Q1 A) partagent leurs colonnes comme celles
+   du bandeau : l'entretien, le prochain, puis « Fait » et la roue. Au téléphone, le prochain passe
+   sous le nom (`hide-xs-down`) : la colonne qu'il laisse disparaît avec lui, sans quoi « Fait » se
+   rangerait dans la colonne du prochain. */
+.maintenance-rows {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.maintenance-rows > .util-deck-row {
+	display: grid;
+	grid-template-columns: subgrid;
+	grid-column: 1 / -1;
+}
+
+.maintenance-rows > .util-deck-row + .util-deck-row {
+	border-top: 1px solid var(--border-light);
+}
+
+.maintenance-rows.maintenance-rows-read {
+	grid-template-columns: minmax(0, 1fr) auto;
+}
+
+@media (max-width: 575px) {
+
+	.maintenance-rows {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+
+	.maintenance-rows.maintenance-rows-read {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+}
+
+/* « Fait » et la roue d'un entretien restent côte à côte, même quand la colonne se resserre. */
+.maintenance-actions {
+	white-space: nowrap;
+}
+
+/* Le champ du cadriciel prend toute la largeur de son groupe, d'où la largeur posée sur la date et
+   sur le compteur de la bande de relevé. */
+.maintenance-quick > input[type="date"] {
+	width: auto;
+}
+
+.maintenance-quick > .input-group {
+	width: 8rem;
+}
+
+/* « toutes les [400] h ou tous les [12] mois » : une phrase à trous, qui passe à la ligne entre ses
+   deux moitiés et jamais au milieu. Le champ du cadriciel prend toute la largeur de son groupe,
+   d'où la largeur posée sur celui qui est dans la phrase. */
+.maintenance-every {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+div.form-control-field .maintenance-every div.input-group {
+	width: 10rem;
+}
+
+.maintenance-every-part {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	white-space: nowrap;
+}
+
+.maintenance-every > input[type="date"] {
+	width: auto;
+}
+
+/* Le refus d'un relevé prend toute la largeur sous la bande. Vide, la case sortirait quand même une
+   rangée de plus, avec l'espace du `gap` de la bande. */
+.maintenance-quick-error {
+	flex-basis: 100%;
+}
+
+.maintenance-quick-error:empty {
+	display: none;
+}
+
+.maintenance-quick-error > .form-error-message {
+	margin: 0;
+}
+
+/* L'historique d'un matériel : la date, l'entretien, le compteur quand le matériel en a un, le coût,
+   puis la roue, que l'observateur n'a pas. Au téléphone, la ligne passe sur deux rangs sans
+   intitulés : la date au-dessus de l'entretien, le compteur au-dessus du coût, la roue à droite des
+   deux. Les unités disent ce que sont les nombres. */
+.maintenance-history {
+	grid-template-columns: auto minmax(0, 1fr) auto auto;
+}
+
+.maintenance-history.maintenance-history-meter {
+	grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+}
+
+.maintenance-history.maintenance-history-read {
+	grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.maintenance-history.maintenance-history-meter.maintenance-history-read {
+	grid-template-columns: auto minmax(0, 1fr) auto auto;
+}
+
+@media (max-width: 575px) {
+
+	/* Les sélecteurs reprennent ceux des grilles de bureau, sans quoi ces dernières l'emportent par leur poids. */
+	.maintenance-history,
+	.maintenance-history.maintenance-history-meter {
+		grid-template-columns: minmax(0, 1fr) auto auto;
+	}
+
+	.maintenance-history.maintenance-history-read,
+	.maintenance-history.maintenance-history-meter.maintenance-history-read {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+
+	.maintenance-history > .util-table-head {
+		display: none;
+	}
+
+	.maintenance-history > .util-table-row > :nth-child(1) {
+		grid-column: 1;
+		grid-row: 1;
+		padding-bottom: 0;
+	}
+
+	/* L'entretien passe dans la première colonne : il prend le retrait que `util-table` réserve au premier enfant. */
+	.maintenance-history > .util-table-row > :nth-child(2) {
+		grid-column: 1;
+		grid-row: 2;
+		padding-top: 0;
+		padding-left: 1rem;
+	}
+
+	/* Sans compteur, le coût occupe seul la deuxième colonne, sur les deux rangs. */
+	.maintenance-history:not(.maintenance-history-meter) > .util-table-row > :nth-child(3) {
+		grid-column: 2;
+		grid-row: 1 / 3;
+	}
+
+	.maintenance-history-meter > .util-table-row > :nth-child(3) {
+		grid-column: 2;
+		grid-row: 1;
+		padding-bottom: 0;
+	}
+
+	.maintenance-history-meter > .util-table-row > :nth-child(4) {
+		grid-column: 2;
+		grid-row: 2;
+		padding-top: 0;
+	}
+
+	.maintenance-history:not(.maintenance-history-read) > .util-table-row > :last-child {
+		grid-column: 3;
+		grid-row: 1 / 3;
+		align-self: center;
+	}
+
+}
+
+/* Le serveur écrit l'immatriculation en capitales (`Equipment::properties()`) : le champ montre dès
+   la saisie ce qui sera enregistré. */
+.maintenance-registration input {
+	text-transform: uppercase;
+}
+
+/* En tête du carnet, l'immatriculation situe le matériel et le compteur se lit : elle quitte le gras
+   de `util-deck-title` et prend le gris de la ligne du dessous (`.util-deck-head p`). */
+.maintenance-head-registration {
+	color: var(--text-intermediate);
+	font-weight: normal;
+}
+
+/* Le lien se borne à la photo : un bloc prendrait la largeur de la cellule, et un clic dans le vide
+   à droite ouvrirait le panneau. */
+.maintenance-history-photo-link {
+	display: block;
+	width: fit-content;
+}
+
+/* La photo d'un entretien fait, sous sa note : 7rem de côté (planche pf-t4-photo, Q2 C). */
+.maintenance-history-photo {
+	display: block;
+	width: 7rem;
+	height: 7rem;
+	border-radius: var(--radius);
+	object-fit: cover;
+}
+
+.maintenance-photo {
+	display: block;
+	max-width: 100%;
+	max-height: 80vh;
+	margin: 0 auto;
+	border-radius: var(--radius);
+}

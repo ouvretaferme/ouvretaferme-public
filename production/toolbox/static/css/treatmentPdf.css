@@ -1,0 +1,20 @@
+/* Le corps du carnet de traitement en PDF, entre les morceaux de la charte (`pdf.css` de main). Neuf
+   colonnes : le document est en paysage. Le bas de page n'est pas posé, `pdf.js` le règle dès qu'un
+   gabarit de pied porte la pagination (même raison que `pdf.css` de l'outil). */
+@page {
+	size: A4 landscape;
+	margin-top: 1cm;
+	margin-left: 1cm;
+	margin-right: 1cm;
+}
+
+/* Les largeurs des neuf colonnes ; le tableau lui-même est celui de `pdfTable.css`. */
+table.toolbox-pdf-treatments th:nth-child(1) { width: 7%; }
+table.toolbox-pdf-treatments th:nth-child(2) { width: 20%; }
+table.toolbox-pdf-treatments th:nth-child(3) { width: 15%; }
+table.toolbox-pdf-treatments th:nth-child(4) { width: 7%; }
+table.toolbox-pdf-treatments th:nth-child(5) { width: 7%; }
+table.toolbox-pdf-treatments th:nth-child(6) { width: 7%; }
+table.toolbox-pdf-treatments th:nth-child(7) { width: 7%; }
+table.toolbox-pdf-treatments th:nth-child(8) { width: 12%; }
+table.toolbox-pdf-treatments th:nth-child(9) { width: 18%; }

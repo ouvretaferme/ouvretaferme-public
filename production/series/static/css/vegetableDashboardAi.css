@@ -1,0 +1,48 @@
+/*
+ * Les espèces : nom, piste, nombre. Chaque ligne est une sous-grille de la liste, pour que les
+ * pistes de toutes les espèces démarrent au même endroit et se comparent. Sous 576 px, la piste
+ * passe sous le nom sur toute la largeur, comme les natures de travail : en colonne, elle tombait
+ * à 33 px à 360 px.
+ */
+.vegetable-dashboard-species {
+	display: grid;
+	grid-template-columns: minmax(10rem, max-content) 1fr auto;
+	gap: 0.5rem 1rem;
+}
+
+.vegetable-dashboard-species-line {
+	display: grid;
+	grid-column: 1 / -1;
+	grid-template-columns: subgrid;
+	grid-template-areas: "name progress farms";
+	align-items: center;
+}
+
+.vegetable-dashboard-species-name {
+	grid-area: name;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.vegetable-dashboard-species-line > .util-progress {
+	grid-area: progress;
+}
+
+.vegetable-dashboard-species-farms {
+	grid-area: farms;
+	text-align: right;
+}
+
+@media (max-width: 575px) {
+
+	.vegetable-dashboard-species {
+		grid-template-columns: 1fr auto;
+	}
+
+	.vegetable-dashboard-species-line {
+		grid-template-areas: "name farms" "progress progress";
+		row-gap: 0.25rem;
+	}
+
+}

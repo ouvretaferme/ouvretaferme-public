@@ -1,0 +1,66 @@
+/* Gabarit « Kraft » des pages de formations d'un réseau : page hachurée de la couleur, encre brune,
+   filets de 2 px et ombre nette, capitales sur pointillés. Le bandeau est d'une teinte de la
+   couleur, sans trame.
+   Le papier est celui que le réseau choisit : un fond chaud (Sable, Paille) donne le kraft, un autre
+   fond le même gabarit dans sa couleur. Les surfaces sont ce fond mêlé de blanc, et Kraft n'est pas
+   dans `LearningSetting::DESIGN_MATTERS` : les encres se calculent sur le fond adouci et le blanc,
+   entre lesquels se situent toutes ses surfaces. Les hachures sont une trame translucide de la
+   couleur et du blanc, que `DesignContrastSentinel` mesure sous le texte atténué, les boutons
+   contour et le menu. */
+
+.learning-public[data-learning-design="kraft"],
+.learning-doc[data-learning-design="kraft"] {
+	--radius: .125rem;
+	--radius-lg: .25rem;
+	--text: #3d3024;
+	--border: #4a3b2a;
+	--border-width: 2px;
+	--background-surface: color-mix(in srgb, var(--learning-background-chosen) 30%, white);
+	--shadow-v2: 3px 3px 0 #4a3b2a;
+	--heading-case: uppercase;
+	--heading-tracking: .18em;
+	--heading-weight: 700;
+	--heading-border: 2px dashed #4a3b2a;
+	--heading-padding: 0 0 .35rem;
+	--button-case: uppercase;
+	--button-weight: 700;
+	--marker-radius: 0;
+	--figure-background: var(--learning-background-chosen);
+	--callout-background: repeating-linear-gradient(58deg, color-mix(in srgb, var(--primary) 8%, transparent) 0 1px, transparent 1px 7px), var(--learning-tint);
+	--callout-accent-width: .75rem;
+	--callout-title-case: uppercase;
+	--marker-background: var(--primary);
+	--marker-color: var(--primary-ink);
+	--step-line: repeating-linear-gradient(to bottom, #4a3b2a 0 .35rem, transparent .35rem .6rem);
+	--table-head-background: var(--learning-tint);
+	--table-head-border: 2px solid #4a3b2a;
+	--background-odd: color-mix(in srgb, var(--learning-background-chosen) 30%, white);
+	--background-even: var(--learning-background-chosen);
+	--tab-active-background: var(--learning-tint);
+	--tab-active-color: var(--text);
+	--quote-background: var(--learning-tint);
+	--quote-border: 2px dashed #4a3b2a;
+	--quote-padding: .75rem 1rem;
+	--quote-author-color: color-mix(in srgb, var(--text) 85%, transparent);
+	color: var(--text);
+}
+
+/* Le gris de la page, du bandeau compris, se juge sur la trame : les hachures de la couleur en
+   mêlent moins au fond que la teinte (`CommunityLib::TINT_PART`), et celles du blanc éclaircissent ;
+   un gris tenu sur la teinte et sur le fond tient sur chaque croisement, ce que
+   `DesignContrastSentinel` mesure. Une couleur pleine, parce qu'une transparence de l'encre
+   suivrait celle dont hérite l'élément atténué, et atténuerait sous le seuil l'encre du réseau,
+   arrêtée à 4,5:1. */
+.learning-public[data-learning-design="kraft"] {
+	--muted: var(--learning-tint-muted);
+	--button-outline-background: var(--background-surface);
+	background-image: repeating-linear-gradient(58deg, color-mix(in srgb, var(--primary) 10%, transparent) 0 1px, transparent 1px 7px), repeating-linear-gradient(-62deg, rgb(255 255 255 / 9%) 0 1px, transparent 1px 5px);
+}
+
+.learning-public[data-learning-design="kraft"] .community-header {
+	background: var(--learning-tint);
+}
+
+.learning-public[data-learning-design="kraft"] .community-header h1 {
+	letter-spacing: .08em;
+}

@@ -1,0 +1,136 @@
+/* Deux colonnes ici, quatre sur le plan de culture : le nom de la culture puis la frise. Les
+   variables de largeur, de gouttière et la barre de saison restent celles de `series.css` — c'est
+   ce qui fait que les deux écrans se superposent à largeur de colonne égale. */
+.compare-plan.series-item-planning-wrapper {
+	--series-check: 0px;
+	--series-area: 0px;
+}
+
+.compare-plan .series-item-planning {
+	grid-template-columns: var(--series-details) 1fr;
+}
+
+/* Le décalage de la grille se recalcule sur nos deux colonnes : la règle partagée compte quatre
+   cellules et trois gouttières, nous en avons deux et une. */
+.compare-plan.series-item-planning-wrapper div.series-grid {
+	left: calc(var(--series-details) + var(--series-gap) + var(--series-timeline-gap));
+}
+
+/* Tout se pose en absolu sur la bande, dans l'ordre où la vue l'écrit : le ruban de fond, celui de
+   la récolte, puis les pastilles. La bande porte `series-item-timeline`, dont le `overflow: hidden`
+   coupe ce qui sort de la fenêtre. */
+.compare-events > * {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.compare-event {
+	color: white;
+	z-index: 3;
+}
+
+.compare-event-frame {
+	z-index: 0;
+}
+
+/* La récolte prévue prend la forme de celle du plan de culture : un contour de la couleur de
+   récolte, la lettre au milieu, sur le fond blanc que `util-timeline-event-expected` pose. */
+.compare-event-harvest {
+	color: var(--harvest);
+	border-color: var(--harvest);
+	z-index: 1;
+}
+
+.compare-event-harvest-done {
+	color: white;
+	background-color: var(--harvest);
+	z-index: 2;
+}
+
+/* ⚠️ La ligne de ferme est **peinte**, les lignes de culture ne le sont pas, et c'est mécanique :
+   la grille est une couche posée derrière tout le tableau, donc ce qui est peint la cache. Peindre
+   le titre arrête la grille sur la bande qui sépare deux fermes ; laisser la culture transparente
+   lui laisse traverser la ligne qu'elle sert justement à dater. C'était l'inverse dans les deux
+   sens — la grille traversait les noms de ferme et s'arrêtait sur les cultures.
+
+   La teinte est celle de `series-item-title`, reprise et non réinventée : c'est la même
+   séparation, sur le même objet, à deux écrans de distance. */
+.compare-timeline-group {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin-top: 0.75rem;
+	padding: 1rem 1rem 0.5rem;
+	font-weight: 550;
+	background-color: #7771;
+}
+
+.compare-timeline-group:first-child {
+	margin-top: 0;
+}
+
+/* Le champ de recherche prend la largeur qui reste : les 93 espèces se cherchent au nom, et un
+   champ étroit tronquerait les suggestions qu'il propose. */
+.compare-species {
+	flex: 1;
+	min-width: 16rem;
+}
+
+.compare-legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	margin-bottom: 0.75rem;
+	font-size: 0.85rem;
+	color: var(--muted);
+}
+
+.compare-legend > span {
+	display: flex;
+	align-items: center;
+	gap: 0.375rem;
+}
+
+.compare-legend .util-timeline-event {
+	flex: 0 0 auto;
+}
+
+/* Le logo de la ferme à gauche de son nom, sur la ligne de titre du tableau comme sur celle de la
+   frise : c'est ce qui l'identifie d'un coup d'oeil, comme sur les cartes de fermes du groupe. */
+.compare-farm {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.compare-plan .compare-timeline-rest {
+	display: none;
+}
+
+.compare-timeline-species.is-expanded .compare-timeline-rest {
+	display: grid;
+}
+
+.compare-timeline-species.is-expanded .compare-timeline-more {
+	display: none;
+}
+
+.compare-timeline-more {
+	padding: 0.25rem 0;
+	font-size: 0.9rem;
+}
+
+.compare-timeline-more a {
+	position: relative;
+}
+
+.compare-timeline-more a::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 0;
+	right: 0;
+	height: var(--touch-target);
+	transform: translateY(-50%);
+}

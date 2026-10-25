@@ -1,0 +1,17 @@
+AccessEvent:
+  id: serial32
+  type: enum(SCAN, FLOOD, ERROR)
+  ip: ?ipv4
+  host: ?text8(1, 100)
+  path: ?text8(1, 255)
+  status: int16
+  hour: datetime
+  count: int32(1, null)
+  hosts: ?int16(1, null)
+  paths: ?int32(1, null)
+  notifiedAt: ?datetime
+  INDEX: [
+    ["hour"],
+    ["ip", "hour"],
+    ["type", "hour"]
+  ]

@@ -1,0 +1,474 @@
+/* Les colonnes de la liste : le châssis vient de util-table, les rangs les
+   héritent en subgrid. Le chevron, le nom borné, le relevé d'usage qui prend la
+   place restante, et les étoiles au bord droit, prises à leur contenu. */
+#variety-rating {
+	grid-template-columns: 2.5rem minmax(0, 22rem) minmax(0, 1fr) max-content;
+}
+
+/* Le sélecteur est posé contre la liste qu'il filtre. Sans cette largeur il
+   occuperait la ligne entière, un input-group valant 100 % par défaut. */
+.variety-rating-tools {
+	display: flex;
+	justify-content: flex-end;
+	margin-bottom: 0.5rem;
+}
+
+.variety-rating-tools .input-group {
+	width: auto;
+}
+
+/* Le groupe d'une espèce ne doit pas rompre la chaîne de subgrid : sa bande et
+   ses lignes restent des rangs de la grille, le conteneur ne sert qu'à les tenir
+   ensemble. */
+.variety-plant {
+	display: contents;
+}
+
+/* Une espèce dont toutes les variétés ont été ignorées n'a plus rien à annoncer. */
+.variety-plant:not(:has(.variety-line)) {
+	display: none;
+}
+
+/* Le coin arrondi de la grille est posé sur son premier enfant ; le conteneur
+   d'espèce ne dessine rien, la bande le porte à sa place. */
+.variety-plant:first-child .variety-line-plant {
+	border-top-left-radius: var(--radius);
+	border-top-right-radius: var(--radius);
+}
+
+/* util-table-title porte la largeur, la hauteur, les gouttières et le filet : la
+   bande d'espèce n'ajoute que ce que le plan de culture lui donne en propre, son
+   fond et son nom en capitales (series.css, .series-item-title). */
+.variety-line-plant {
+	display: flex;
+	align-items: center;
+	background-color: #7771;
+}
+
+.variety-line-plant div.plant-vignette {
+	margin: -1.3rem 0.75rem -1rem 0;
+}
+
+/* util-table-title donne déjà la graisse, l'interlettrage et la couleur d'un
+   intertitre : le nom d'espèce n'ajoute que les capitales. */
+.variety-line-plant-name {
+	text-transform: uppercase;
+}
+
+/* Le rang aligne son texte sur la ligne de base ; ici un chevron, un nom, un
+   relevé d'usage et cinq étoiles, qui se centrent. Toute la ligne ouvre son
+   tiroir, d'où le curseur. */
+.variety-line {
+	align-items: center;
+	cursor: pointer;
+}
+
+.variety-line-toggle,
+.variety-line-name {
+	display: flex;
+	align-items: center;
+	min-width: 0;
+	color: inherit;
+}
+
+.variety-line-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.variety-line-toggle {
+	color: var(--muted);
+}
+
+/* La ligne dont le tiroir est ouvert forme un seul bloc avec lui : même fond, même
+   liseré, et plus de filet entre les deux. Le liseré est une ombre intérieure et non
+   une bordure, qui décalerait les pistes de subgrid de la ligne par rapport à celles
+   des autres lignes. */
+.variety-line:has(+ .variety-drawer) {
+	background-color: var(--secondary-highlight);
+	box-shadow: inset 0.5rem 0 0 var(--color-neon);
+	border-bottom: 0;
+	font-weight: bold;
+}
+
+/* Le chevron suit le tiroir, il n'a pas d'état propre à tenir. La rotation porte
+   sur l'icône et non sur son lien : le lien est plus étroit que l'icône, qu'il
+   laisse déborder, et le pivoter descendrait le chevron d'une demi-icône. */
+.variety-line-toggle > svg {
+	transition: transform 0.15s ease-out;
+}
+
+.variety-line:has(+ .variety-drawer) .variety-line-toggle > svg {
+	transform: rotate(90deg);
+}
+
+/* Ce que la structure a cultivé de la variété : une indication, pas le sujet de
+   la ligne, donc au gris du texte secondaire et sur un seul rang. */
+.variety-line-usage {
+	overflow: hidden;
+	color: var(--muted);
+	font-size: 0.875rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Le contrôle du produit, resserré : sur une ligne de liste il n'a pas de
+   libellé, et ses cinq étoiles ne doivent pas peser autant que dans le tiroir. */
+.variety-line-rating .variety-rating-criterion {
+	gap: 0;
+}
+
+/* Tiroir ouvert, la croix de fermeture prend la place des étoiles : la note se
+   donne alors dans le tiroir. La cellule reste alignée à droite, et la piste garde
+   sa largeur, prise sur les lignes repliées qui ont toujours leurs cinq étoiles. */
+.variety-line-rating {
+	display: flex;
+	justify-content: flex-end;
+}
+
+/* Le même retrait que les étoiles qu'elle remplace, pour que la croix tombe sur
+   le même bord droit et offre une cible de la même hauteur. */
+.variety-line-close {
+	display: none;
+	padding: 0.25rem 0.1875rem;
+	color: var(--muted);
+	cursor: pointer;
+}
+
+.variety-line:has(+ .variety-drawer) .variety-line-rating .variety-rating-criterion {
+	display: none;
+}
+
+.variety-line:has(+ .variety-drawer) .variety-line-close {
+	display: block;
+}
+
+@media (min-width: 768px) {
+
+	.variety-line-rating .variety-rating-stars {
+		font-size: 1.15rem;
+	}
+
+}
+
+/* Les variétés au-delà des premières, servies mais repliées. */
+.variety-line-rest {
+	display: none;
+}
+
+.is-expanded .variety-line-rest {
+	display: grid;
+}
+
+.is-expanded .variety-line-more {
+	display: none;
+}
+
+.variety-line-more {
+	padding: 0.5rem 1rem 0.5rem 3.25rem;
+	border-bottom: 1px dashed var(--border);
+	font-size: 0.9rem;
+}
+
+/* Le tiroir, ouvert sous sa ligne, sur le blanc de la grille : c'est le même
+   objet que la ligne, pas un panneau posé dessus. */
+.variety-drawer {
+	padding: 0.5rem 1rem 1.25rem 2.5rem;
+	background-color: var(--secondary-highlight);
+	border-bottom: 1px dashed var(--border);
+	border-left: 0.5rem solid var(--color-neon);
+}
+
+.variety-drawer form {
+	margin-bottom: 0;
+}
+
+/* Enregistrer d'un côté, supprimer de l'autre : les deux boutons voisins se
+   choisissaient l'un pour l'autre, alors que l'un défait ce que l'autre écrit. */
+.variety-rating-actions {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	margin-top: 1.5rem;
+}
+
+/*
+ * Les notes d'un côté, ce qui décrit la variété de l'autre : sur un grand écran
+ * le tiroir tient alors dans une hauteur d'écran, sans repousser la liste hors
+ * de vue.
+ */
+.variety-drawer-columns {
+	display: grid;
+	gap: 0 3rem;
+}
+
+@media (min-width: 992px) {
+
+	.variety-drawer-columns {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	}
+
+}
+
+/* Les intitulés des champs se lisent comme les titres des critères en face : même
+   graisse, et le champ posé juste dessous. En block parce qu'un label est en ligne,
+   où une marge basse ne pousserait rien. */
+.variety-drawer .form-control-label {
+	display: block;
+	margin-bottom: 0.25rem;
+	font-weight: bold;
+}
+
+/* Le fond, le rayon et le padding viennent de util-block-inside. */
+.variety-rating-usage {
+	margin-top: 0.75rem;
+	margin-bottom: 1.5rem;
+	font-size: 0.875rem;
+}
+
+/* La phrase est déjà sur la ligne au-dessus, où la colonne d'usage la porte ;
+   elle ne revient ici que sur les écrans qui n'ont pas cette colonne. */
+.variety-rating-usage-headline {
+	display: none;
+	margin-bottom: 0.25rem;
+	font-weight: bold;
+}
+
+/* Frise de l'année : une barre par action, aux couleurs du plan de culture. */
+.variety-rating-timeline-row {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-top: 0.25rem;
+}
+
+.variety-rating-timeline-label {
+	flex-shrink: 0;
+	width: 8rem;
+	color: var(--muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/*
+ * Une cellule par semaine plutôt qu'une barre continue : les séries échelonnées
+ * et les légumes d'hiver récoltés à cheval sur deux années n'ont pas de période
+ * continue, l'intensité dit à quelle fréquence la semaine est concernée.
+ */
+/*
+ * La grille des mois est portée par le fond de la piste, calée sur les douze
+ * cellules de l'axe : les semaines colorées sont des enfants, elles passent donc
+ * par-dessus les traits.
+ */
+.variety-rating-timeline-track {
+	display: flex;
+	flex-grow: 1;
+	height: 0.75rem;
+	border-radius: var(--radius);
+	overflow: hidden;
+	background-color: var(--background);
+	background-image: repeating-linear-gradient(
+		to right,
+		transparent 0,
+		transparent calc(100% / 12 - 1px),
+		var(--border) calc(100% / 12 - 1px),
+		var(--border) calc(100% / 12)
+	);
+}
+
+/* Pas de gap : il ferait des stries blanches au milieu d'une période continue. */
+.variety-rating-timeline-week {
+	flex: 1 1 0;
+}
+
+.variety-rating-timeline-months {
+	position: relative;
+}
+
+.variety-rating-timeline-months {
+	display: flex;
+	flex-grow: 1;
+	color: var(--muted);
+	font-size: 0.75rem;
+}
+
+.variety-rating-timeline-months > span {
+	flex: 1 1 0;
+	text-align: center;
+}
+
+.variety-rating-criteria {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	margin: 0;
+}
+
+.variety-rating-criterion {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+/* La note globale n'est pas un critère comme les autres : on l'en détache. */
+.variety-rating-criterion-overall {
+	margin-top: 0.25rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--border);
+}
+
+.variety-rating-criteria-title {
+	font-weight: bold;
+}
+
+.variety-rating-criteria-title.is-separated {
+	margin-top: 0.25rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--border);
+}
+
+.variety-rating-criterion-label {
+	flex-grow: 1;
+	min-width: 0;
+}
+
+/* Des taps rapprochés sur les étoiles se lisent comme un double tap, qui sélectionnerait la rangée. */
+.variety-rating-stars {
+	flex-shrink: 0;
+	display: flex;
+	font-size: 1.5rem;
+	line-height: 1;
+	user-select: none;
+}
+
+/* Le padding élargit la cible tactile sans écarter les étoiles à l'œil. */
+.variety-rating-star {
+	padding: 0.25rem 0.1875rem;
+	color: var(--border);
+	cursor: pointer;
+	transition: color 0.1s ease-out, transform 0.1s ease-out;
+}
+
+/*
+ * La couleur des étoiles allumées dépend du niveau de la note, du rouge au vert.
+ * data-value porte la note enregistrée, data-preview le niveau survolé : les
+ * deux suivent la même gamme pour que l'aperçu annonce la bonne couleur.
+ */
+.variety-rating-criterion[data-value="1"] .variety-rating-star-on,
+.variety-rating-criterion[data-preview="1"] .variety-rating-star-hover {
+	color: var(--danger);
+}
+
+.variety-rating-criterion[data-value="2"] .variety-rating-star-on,
+.variety-rating-criterion[data-preview="2"] .variety-rating-star-hover {
+	color: var(--warning);
+}
+
+.variety-rating-criterion[data-value="3"] .variety-rating-star-on,
+.variety-rating-criterion[data-preview="3"] .variety-rating-star-hover {
+	color: var(--careful);
+}
+
+.variety-rating-criterion[data-value="4"] .variety-rating-star-on,
+.variety-rating-criterion[data-preview="4"] .variety-rating-star-hover {
+	color: var(--success);
+}
+
+.variety-rating-criterion[data-value="5"] .variety-rating-star-on,
+.variety-rating-criterion[data-preview="5"] .variety-rating-star-hover {
+	color: var(--production);
+}
+
+.variety-rating-star:hover {
+	transform: scale(1.15);
+}
+
+/* Le bouton d'effacement ne sert que si le critère porte une note. */
+.variety-rating-criterion-clear {
+	flex-shrink: 0;
+	width: 1.5rem;
+	color: var(--muted);
+	cursor: pointer;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.15s ease-out;
+}
+
+.variety-rating-criterion:not([data-value=""]) .variety-rating-criterion-clear {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+@media (max-width: 767px) {
+
+	/* Trois pistes seulement : le relevé d'usage ne tient pas à côté d'un nom de
+	   variété et de cinq étoiles, et c'est lui qui cède. */
+	#variety-rating {
+		grid-template-columns: 2.5rem minmax(0, 1fr) max-content;
+	}
+
+	.variety-line-usage {
+		display: none;
+	}
+
+	.variety-rating-usage-headline {
+		display: block;
+	}
+
+
+	/* Cinq cibles côte à côte, et c'est le geste principal de l'écran : au doigt
+	   elles réclament plus que les 23 px que rend la taille du grand écran. Cinq
+	   fois 44 px ne tiennent pas dans une ligne de 360 px, c'est le plus large
+	   qu'on puisse leur donner sans chasser le nom de la variété. */
+	.variety-rating-stars {
+		font-size: 1.75rem;
+	}
+
+	.variety-rating-star,
+	.variety-line-close {
+		padding: 0.5rem 0.375rem;
+	}
+
+	.variety-line-close {
+		font-size: 1.25rem;
+	}
+
+	.variety-drawer {
+		padding: 1rem 0.75rem;
+	}
+
+	/* Le libellé d'action mangeait le tiers de la frise : sur un écran étroit la
+	   barre des semaines compte davantage que le nom entier de l'intervention. */
+	.variety-rating-timeline-label {
+		width: 5rem;
+		font-size: 0.75rem;
+	}
+
+	.variety-line-plant,
+	.variety-line-more {
+		padding-left: 0.5rem;
+		padding-right: 0.5rem;
+	}
+
+	.variety-line-more {
+		padding-left: 2.75rem;
+	}
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.variety-rating-star,
+	.variety-line-toggle > svg {
+		transition: none;
+	}
+
+	.variety-rating-star:hover {
+		transform: none;
+	}
+
+}

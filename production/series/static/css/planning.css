@@ -1,0 +1,737 @@
+#planning-weekly-container .tabs-item a.tab-item[data-tab="todo"]:hover,
+#planning-weekly-container .tabs-item a.tab-item.selected[data-tab="todo"] {
+
+	& {
+		color: var(--todo);
+	}
+
+	&:after {
+		background-color: var(--todo);
+	}
+	
+}
+
+#planning-weekly-container .tabs-item a.tab-item[data-tab="done"]:hover,
+#planning-weekly-container .tabs-item a.tab-item.selected[data-tab="done"] {
+
+	& {
+		color: var(--done);
+	}
+
+	&:after {
+		background-color: var(--done);
+	}
+	
+}
+
+#planning-weekly-tabs:has(a.tab-item[data-tab="done"].selected) {
+}
+
+#planning-weekly-container .tabs-item a.tab-item[data-tab="time"]:hover,
+#planning-weekly-container .tabs-item a.tab-item.selected[data-tab="time"] {
+	
+	& {
+		color: var(--primary);
+	}
+
+	&:after {
+		background-color: var(--primary);
+	}
+	
+}
+
+#planning-weekly-tabs:has(a.tab-item[data-tab="time"].selected) {
+}
+
+@media (max-width: 1099px), (max-height: 599px) {
+
+	body[data-template~="structure-planning-yearly"] header {
+		position: relative;
+	}
+
+}
+
+body[data-template~="structure-planning-yearly"] main {
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: auto auto auto 1fr;
+	overflow: hidden;
+	height: 100vh;
+}
+
+body[data-template~="structure-planning-yearly"] main > div.container {
+	margin-top: 0;
+}
+
+#planning-year-wrapper {
+	padding: 0 1rem;
+	width: 100%;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+#planning-year-weeks {
+	display: grid;
+	grid-auto-flow: column;
+	grid-column-gap: 1rem;
+	align-items: start;
+	height: 100%;
+	overflow-y: hidden;
+}
+
+#planning-year-weeks .planning-year-week {
+	display: grid;
+	grid-template-rows: auto auto 1fr;
+	width: 20rem;
+	background-color: white;
+	border-radius: var(--radius);
+	box-shadow: 1px 1px 1px #88888850;
+	height: 100%;
+	overflow: auto;
+	padding-bottom: 1rem;
+}
+
+#planning-year-weeks .planning-year-week.planning-year-week-current {
+	border: 2px solid var(--secondary);
+}
+
+#planning-year-weeks .planning-year-week h2.planning-year-week-title {
+	margin-top: 1rem;
+	margin-bottom: 0;
+	text-align: center;
+	background: white;
+	position: sticky;
+	top: 0;
+}
+
+#planning-year-weeks .planning-year-week div.planning-year-week-days {
+	font-size: .9rem;
+	text-align: center;
+	margin-bottom: 1rem;
+	color: var(--primary);
+}
+
+body[data-template~="structure-planning-daily"],
+body[data-template~="structure-planning-yearly"] {
+	height: 100vh;
+	min-height: 100vh;
+}
+
+@media (max-width: 1099px), (max-height: 694px) {
+
+	[data-template~="structure-planning-yearly"][data-template~="structure-planning-scrolling"],
+	[data-template~="structure-planning-daily"][data-template~="structure-planning-scrolling"] {
+		height: calc(100vh + var(--nav-height));
+		min-height: calc(100vh + var(--nav-height));
+	}
+
+	body[data-template~="structure-planning-daily"] header {
+		position: relative;
+	}
+
+}
+
+#planning-daily-wrapper {
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: auto auto 1fr;
+	overflow: hidden;
+	height: calc(100vh - var(--nav-height));
+	padding-top: 1rem;
+}
+
+body[data-template~="structure-planning-weekly"] main > div.container,
+body[data-template~="structure-planning-daily"] main > div.container {
+	margin-top: 0;
+}
+
+body[data-touch="yes"][data-template~="structure-planning-daily"] main {
+	height: calc(100vh - var(--nav-structure));
+}
+
+body[data-template~="structure-planning-daily"] #planning-search {
+	width: calc(var(--screen-width) - var(--nav-width));
+	padding-left: var(--container-padding);
+	padding-right: var(--container-padding);
+}
+
+#planning-daily-container {
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+#planning-daily-list {
+	display: grid;
+	transition: all 1s;
+	height: 100%;
+}
+
+@media (max-width: 575px) {
+
+	#planning-daily-list {
+		width: calc(100vw * 8);
+		grid-template-columns: repeat(8, 100vw);
+		padding: 0;
+	}
+
+}
+
+@media (min-width: 576px) {
+
+	#planning-daily-list {
+		width: calc(30rem * 8 + var(--container-padding) * 2 + var(--nav-width));
+		grid-template-columns: repeat(8, 30rem);
+		padding: 0 var(--container-padding);
+	}
+
+}
+
+.planning-daily {
+	margin-bottom: 2rem;
+	height: 100%;
+	overflow: auto;
+	padding: 0 1rem 2rem;
+}
+
+.planning-daily:not(:first-child) {
+	border-left: 1px solid white;
+}
+
+.planning-daily-header {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: center;
+	position: sticky;
+	top: 0;
+	z-index: 400;
+	background-color: var(--background-body);
+	height: 5rem;
+	margin-left: -1rem;
+	margin-right: -1rem;
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+
+.planning-daily-header h2 {
+	margin-bottom: 0;
+	font-size: 1.6rem;
+}
+.planning-daily-header + div.planning-week-title {
+	margin-top: 0rem;
+}
+
+.planning-daily-today .planning-daily-header h2 {
+	font-weight: bold;
+}
+
+.planning-daily-absent {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	margin-bottom: 1rem;
+}
+
+#planning-weekly-wrapper {
+	display: grid;
+	align-items: flex-start;
+	margin-bottom: 2rem;
+}
+
+@media (min-width: 992px) {
+
+	#planning-weekly-wrapper {
+		grid-template:
+			"time time" auto
+			"actions actions" auto
+			"todo done" 1fr / 1fr 1fr;
+		grid-column-gap: 2rem;
+		grid-row-gap: 1rem;
+	}
+
+	#planning-weekly-tabs {
+		display: none;
+	}
+
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+
+	#planning-weekly-wrapper {
+		grid-template:
+			"time time" auto
+			"actions actions" auto
+			"todo done" 1fr / 1fr 1fr;
+		grid-column-gap: 1rem;
+		grid-row-gap: 0.5rem;
+	}
+
+	#planning-weekly-tabs {
+		display: none;
+	}
+
+}
+
+@media (max-width: 767px) {
+
+	#planning-weekly-wrapper {
+		grid-template:
+			"actions" auto
+			"tabs" auto
+			"todo" auto
+			"done" auto
+			"time" auto / 1fr;
+		grid-row-gap: 0;
+	}
+
+}
+
+@media (min-width: 768px) {
+
+	#planning-weekly-container > .tabs-item {
+		display: none;
+	}
+
+}
+
+@media (min-width: 768px) {
+
+	#planning-weekly-wrapper > .tab-panel:not(.selected) {
+		display: block;
+	}
+
+}
+
+/* `template-structure.css` annule la marge basse du dernier enfant de la tête, au-dessus de 1100 px
+   de large et 600 px de haut seulement : l'enveloppe que `taskWeek.v.php` remplace en devient ce
+   dernier enfant, et la bande qu'elle porte garderait sa marge. */
+#tasks-calendar-top > :last-child {
+	margin-bottom: 0;
+}
+
+@media (max-width: 1099px), (max-height: 599px) {
+
+	#tasks-calendar-top > :last-child {
+		margin-bottom: var(--space-md);
+	}
+
+}
+
+a.tasks-calendar-week {
+	color: inherit;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+a.tasks-calendar-week .asset-icon {
+	font-size: 0.6em;
+	margin-left: var(--space-xs);
+	vertical-align: middle;
+}
+
+/* Le disque précédent est posé dans le `h1`, où la classe de la rangée des pages le met en bloc. */
+span.tasks-calendar-before {
+	display: inline-flex;
+	vertical-align: top;
+	margin-right: var(--space-sm);
+}
+
+span.tasks-calendar-days {
+	display: block;
+	margin-left: calc(2rem + 2px + var(--space-sm));
+}
+
+#tasks-calendar-months-wrapper {
+	background-color: var(--background-light);
+	height: 3rem;
+	margin-bottom: 0.5rem;
+}
+
+#tasks-calendar-months {
+	height: 100%;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	text-align: center;
+	background-color: var(--background-light);
+}
+
+a.tasks-calendar-month {
+	color: var(--text);
+	font-weight: bold;
+	text-decoration: none;
+	transition: border-color 0.25s;
+}
+
+@media (max-width: 767px) {
+
+	a.tasks-calendar-month {
+		text-transform: capitalize;
+	}
+
+}
+
+@media (min-width: 768px) {
+
+	a.tasks-calendar-month {
+		text-transform: uppercase;
+	}
+
+}
+
+a.tasks-calendar-month:hover,
+a.tasks-calendar-month.selected {
+	color: var(--secondary);
+}
+
+a.tasks-calendar-month.selected {
+	font-size: 1.2rem;
+}
+
+#planning-weekly-tabs {
+	grid-area: tabs;
+	margin-top: 1rem;
+}
+
+#planning-weekly-time {
+	grid-area: time;
+}
+
+#planning-weekly-time:empty {
+	display: none;
+}
+
+#planning-weekly-time .tabs-item {
+	border-bottom: 0;
+}
+
+#planning-daily-time {
+	width: calc(var(--screen-width) - var(--nav-width));
+	padding-left: var(--container-padding);
+	padding-right: var(--container-padding);
+}
+
+/* Borné à la rangée dépliée, et à l'onglet lui-même : l'id battrait les deux règles du socle, celle qui masque
+   les onglets d'une rangée repliée et celle qui masque l'onglet-menu d'une rangée dépliée, lequel prend la
+   classe de l'onglet choisi. */
+#planning-daily-time :not(.tabs-h-folded) > .tabs-item > .tasks-time-all:not(.tab-item-menu) {
+	display: flex;
+}
+
+/* L'onglet-menu prend les classes de l'onglet choisi : ses vignettes sont dans son libellé, pas à sa racine. */
+#planning-daily-time .tasks-time-all:not(.tab-item-menu) > *:not(:first-child),
+#planning-daily-time .tasks-time-all > .tab-item-menu-label > *:not(:first-child) {
+	margin-left: -1.5rem;
+}
+
+#planning-daily-time .tasks-time-all.tasks-time-all-condensed:not(.tab-item-menu) > *:not(:first-child),
+#planning-daily-time .tasks-time-all.tasks-time-all-condensed > .tab-item-menu-label > *:not(:first-child) {
+	margin-left: -2rem;
+}
+
+#planning-daily-time .tabs-item {
+	margin-bottom: 0;
+}
+
+#planning-weekly-time .tabs-item {
+	margin-bottom: 0;
+}
+
+@media (min-width: 768px) {
+
+	#planning-weekly-time .tabs-item {
+		grid-column-gap: 1rem;
+	}
+
+}
+
+#planning-weekly-time .tab-item {
+	padding: 0.5rem .75rem;
+}
+
+#planning-weekly-time .tab-item:after {
+	display: none;
+}
+
+#planning-weekly-time .tab-item.selected,
+#planning-weekly-time .tab-item:hover {
+	background: var(--primary);
+}
+
+.tasks-time-content {
+	padding: 1rem 0.75rem;
+	background: var(--gradient);
+}
+
+
+#planning-weekly-done {
+	grid-area: done;
+}
+
+#planning-weekly-todo {
+	grid-area: todo;
+}
+
+@media (max-width: 767px) {
+
+	#planning-weekly-todo {
+		margin-bottom: 1rem;
+	}
+
+}
+
+div.planning-week h2 {
+	margin-bottom: 0;
+}
+
+div.planning-week-header {
+	padding: 1rem 0;
+}
+
+@media (max-width: 767px) {
+
+	div.planning-week-header {
+		text-align: end;
+		padding: 0 0 1rem 0;
+	}
+
+	h2.planning-week-title {
+		display: none;
+	}
+
+}
+
+@media (min-width: 767px) {
+
+	div.planning-week-header {
+		display: flex;
+		justify-content: space-between;
+	}
+
+}
+
+div.planning-week-title {
+	padding: 0.75rem 1rem;
+	background-color: var(--todo);
+	margin-top: 2rem;
+	font-size: 1rem;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	font-weight: bold;
+	color: white;
+	border-top-left-radius: var(--radius);
+	border-top-right-radius: var(--radius);
+}
+
+div.planning-week-title-container {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+div.planning-week-title-action a {
+	text-transform: none;
+	letter-spacing: 0;
+	font-weight: normal;
+	color: white;
+	font-size: 0.9rem;
+}
+
+#planning-weekly-wrapper div.planning-filters {
+	grid-area: actions;
+}
+
+div.planning-filters {
+	display: flex;
+	align-items: center;
+	background-color: var(--background-light);
+	padding: 0.5rem;
+	overflow-x: auto;
+}
+
+@media (max-width: 575px) {
+
+	div.planning-filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 0.125rem;
+		margin-left: calc(-1 * var(--container-xs-padding));
+		margin-right: calc(-1 * var(--container-xs-padding));
+	}
+
+}
+
+@media (min-width: 576px) {
+
+	div.planning-filters {
+		gap: 0.5rem;
+		width: 100%;
+		overflow-x: auto;
+		border-radius: var(--radius);
+	}
+
+}
+
+div.planning-filters-buttons {
+	display: flex;
+}
+
+div.planning-filters-buttons a.btn {
+	padding: 0.5rem;
+	font-size: 1.25rem;
+	margin-right: 0.5rem;
+}
+
+a.planning-filters-favorite {
+	display: block;
+	border-radius: var(--radius);
+	padding: 0.5rem;
+	font-size: 0.9rem;
+	white-space: nowrap;
+	transition: filter 0.5s;
+}
+
+@media (max-width: 767px) {
+
+	a.planning-filters-favorite {
+		letter-spacing: -0.1px;
+	}
+
+}
+
+a.planning-filters-favorite.selected {
+	border: 2px solid white;
+}
+
+a.planning-filters-favorite:hover {
+	text-decoration: none;
+	filter: brightness(0.9);
+}
+
+
+@media (max-width: 575px) {
+
+	div.planning-filters-dropdown .dropdown-item {
+		padding: 0.75rem 0.5rem;
+		letter-spacing: -0.2px;
+		font-size: 0.9rem;
+	}
+
+	div.planning-filters-dropdown.dropdown-list-4 {
+		grid-template-columns: minmax(25vw, auto) minmax(25vw, auto) minmax(25vw, auto);
+	}
+
+}
+
+@media (min-width: 575px) {
+
+	div.planning-filters-dropdown .dropdown-item {
+		padding: 0.75rem;
+	}
+
+}
+
+.planning-plant-list {
+	margin-bottom: 0;
+	font-size: 0.9rem;
+}
+
+.planning-daily .planning-plant-list {
+	font-size: 0.9rem;
+}
+
+.planning-plant-list tbody {
+	background-color: var(--background-odd);
+}
+
+.planning-plant-list tbody tr:not(:first-child) td {
+	border-top: 1px dashed var(--border);
+}
+
+.planning-plant-list thead th {
+	padding-top: 0;
+	padding-bottom: 0.125rem;
+	color: var(--muted);
+	background-color: transparent;
+}
+
+.planning-plant-list tbody td {
+	vertical-align: baseline;
+	padding-top: 0.125rem;
+	padding-bottom: 0.125rem;
+}
+
+.planning-plant-value {
+	text-align: end;
+}
+
+table.planning-plant-list-semis-pepiniere .planning-plant-value {
+	width: 7rem;
+}
+
+.planning-daily .planning-plant-area {
+	display: none;
+}
+
+#planning-export-container .flow-timeline-comments,
+#planning-export-container .tasks-planning-plant,
+#planning-export-container .tasks-planning-item-validate {
+	display: none;
+}
+
+#planning-export-container .planning-export-container {
+	display: none;
+}
+
+#planning-export-container .tasks-planning-action {
+	position: relative;
+	top: 0;
+}
+
+#planning-export-container .tasks-planning-action .tasks-planning-select {
+	visibility: hidden;
+}
+
+#planning-export-container .tasks-planning-item-main {
+	grid-template-columns: 2fr 1fr;
+	padding: 0.375rem 0;
+}
+
+#planning-export-container .tasks-planning-item-description,
+#planning-export-container .tasks-planning-item-details {
+	grid-column: span 2;
+}
+
+/* Sans étape à 100 %, le fond revient à celui de la ligne et non à la transparence. Le fond tient deux
+   paliers de --duration-lg, comme util-flash-success (juicinessAi.css) : la ligne gagnée se lit avant de
+   s'éteindre. */
+div.tasks-planning-item.tasks-planning-item-arrived {
+	animation: tasks-planning-item-arrived calc(2 * var(--duration-lg)) var(--ease-out);
+}
+
+.tasks-planning-item-appeared {
+	animation: tasks-planning-item-appeared var(--duration-md) var(--ease-out);
+}
+
+div.tasks-planning-item.tasks-planning-item-appeared {
+	animation: tasks-planning-item-appeared var(--duration-md) var(--ease-out), tasks-planning-item-arrived calc(2 * var(--duration-lg)) var(--ease-out) var(--duration-md);
+}
+
+@keyframes tasks-planning-item-arrived {
+	0%, 40% { background-color: color-mix(in srgb, var(--primary) 12%, transparent); }
+}
+
+@keyframes tasks-planning-item-appeared {
+	0% { opacity: 0; transform: translateY(-0.5rem); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	/* 0.01ms et non `animation: none` : c'est la forme du mouvement réduit que la règle des jetons de
+	   mouvement reconnaît (`CssSentinel`, `findMotion()`), toute autre durée littérale y est refusée. */
+	div.tasks-planning-item.tasks-planning-item-arrived,
+	.tasks-planning-item-appeared,
+	div.tasks-planning-item.tasks-planning-item-appeared {
+		animation-duration: 0.01ms;
+		animation-delay: 0s;
+	}
+
+}

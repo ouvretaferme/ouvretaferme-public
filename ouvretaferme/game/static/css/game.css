@@ -1,0 +1,727 @@
+/* Les teintes de la veillée, que la cour et ses feuilles partagent, autour de la nuit et de l'or de reboot.css que
+   reprend le bouton btn-game-gold : le verre des bandeaux sur l'herbe claire, et l'encre d'or qui garde son contraste
+   sur le papier d'une feuille */
+body[data-template~="game"] {
+	--game-glass: color-mix(in srgb, var(--game-night) 72%, transparent);
+	--game-gold-ink: #8a6512;
+	--game-text: #f6f0e1;
+	background: var(--background-game);
+	font-family: var(--font-text);
+}
+
+body[data-template~="game"] main {
+	padding-top: 2rem;
+}
+
+@media (min-width: 991px) and (max-width: 1399px) {
+    html:has(body[data-template~="game"]) {
+        font-size: 14px;
+    }
+}
+
+body[data-template~="game"] .util-block-sticked {
+	width: 25rem;
+	left: calc(50vw - 12.5rem);
+	font-size: 1.5rem;
+	line-height: 1.4;
+	text-align: center;
+	background-color: var(--game);
+	box-shadow: 0 0 5rem black;
+}
+
+body[data-template~="game"] h1 {
+	font-family: 'Mystery Quest', serif;
+	text-align: center;
+	margin-bottom: 2rem;
+	font-size: 4rem;
+}
+
+@media (min-width: 768px) {
+
+	body[data-template~="game"] h1 {
+		margin-top: 1rem;
+		margin-bottom: 3rem;
+	}
+
+}
+
+.game-intro {
+	max-width: 50rem;
+	margin: 0 auto 2rem auto;
+}
+
+.game-intro h2,
+.game-intro h3 {
+	text-align: center;
+}
+
+.game-intro h3 {
+	font-size: 1.5rem;
+}
+
+.game-intro h2 {
+	font-size: 2rem;
+}
+
+.game-intro-disclaimer {
+	color: var(--primary);
+	text-align: center;
+	margin-top: 2rem;
+}
+
+.game-intro-disclaimer p {
+	font-style: italic;
+}
+
+.game-intro-disclaimer a {
+	text-decoration: underline;
+}
+
+/* Une étiquette de scène, sur les jetons communs (scene.css, `.scene-frame`) ; 0,9 rem comme celles de la carte et du
+   bourg, qui se posent sur le dessin et ne doivent pas en cacher plus qu'une case */
+.game-mark {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-xxs);
+	padding: var(--space-xxs) var(--space-xs);
+	border-radius: var(--scene-control-radius);
+	background-color: color-mix(in srgb, var(--scene-surface) 90%, transparent);
+	color: var(--scene-text);
+	font-family: var(--scene-font);
+	font-size: 0.9rem;
+	white-space: nowrap;
+}
+
+.game-mark-empty {
+	cursor: pointer;
+	font-size: 1.25rem;
+	padding: var(--space-xxs);
+}
+
+.game-mark-ripe {
+	background-color: var(--game);
+	color: var(--scene-surface);
+}
+
+.game-mark-locked,
+.game-mark-avatar {
+	font-weight: bold;
+}
+
+/* La cour (board.js) occupe l'écran, et l'habillage (desk.js) se pose par-dessus. `isolation` garde la scène, ses
+   marques et ce qui vole dans la cour sous les feuilles, qui sont posées après elle dans la page */
+.game-court {
+	position: relative;
+	isolation: isolate;
+	height: min(calc(100svh - 8rem), 52rem);
+	min-height: 30rem;
+	margin-bottom: var(--space-lg);
+	border-radius: var(--radius-lg);
+	overflow: hidden;
+	color: var(--game-text);
+}
+
+.game-board-scene,
+.game-board-scene > #game-board-container {
+	position: absolute;
+	inset: 0;
+}
+
+/* La scène empile ses marques au-dessus de son dessin (`z-index` posé par le moteur) : elle les garde chez elle, pour que
+   ce qui se pose ensuite sur la cour, la porte comprise, passe au-dessus */
+.game-board-scene {
+	isolation: isolate;
+}
+
+/* La cour se glisse (board.js, `MapControls`) : la main ouverte, sauf sur ce qui se touche, où la scène pose `pointer` */
+.game-board-scene canvas {
+	cursor: grab;
+}
+
+@media (max-width: 767px) {
+
+	.game-court {
+		margin-left: calc(-1 * var(--container-padding));
+		margin-right: calc(-1 * var(--container-padding));
+		border-radius: 0;
+	}
+
+}
+
+/* Le haut de la cour laisse passer le doigt jusqu'à la scène entre ses bandeaux, et le bandeau de tête, qui court sur
+   toute la largeur, entre ses pastilles */
+.game-court-top {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-xs);
+	padding: var(--space-sm);
+	pointer-events: none;
+}
+
+.game-court-top > *,
+.game-hud > * {
+	pointer-events: auto;
+}
+
+.game-court-top > .game-hud {
+	pointer-events: none;
+}
+
+.game-hud {
+	display: flex;
+	align-items: center;
+	gap: var(--space-xs);
+}
+
+.game-hud-player,
+.game-hud-item,
+.game-tool,
+.game-advent,
+.game-banner {
+	background-color: var(--game-glass);
+	color: var(--game-text);
+	backdrop-filter: blur(6px);
+	border-radius: 2rem;
+}
+
+/* Une seule hauteur pour les pastilles du bandeau, celle d'un contrôle de scène : le portrait, le chiffre en Fraunces
+   d'un compteur et l'icône d'un outil ne pèsent pas pareil, et chacun donnerait sinon la sienne à sa pastille */
+.game-hud-player,
+.game-hud-item,
+.game-tool {
+	height: var(--scene-control);
+}
+
+.game-hud-player {
+	display: flex;
+	align-items: center;
+	gap: var(--space-xs);
+	padding: var(--space-xxs) var(--space-sm) var(--space-xxs) var(--space-xxs);
+	font-weight: bold;
+	cursor: pointer;
+}
+
+a.game-hud-player:hover {
+	color: var(--game-gold);
+}
+
+.game-hud-item {
+	display: flex;
+	align-items: center;
+	gap: var(--space-xs);
+	padding: var(--space-xs) var(--space-sm);
+	white-space: nowrap;
+}
+
+.game-hud-item b {
+	font-family: 'Fraunces', serif;
+	font-size: 1.25rem;
+	line-height: 1;
+	color: var(--game-gold);
+}
+
+.game-time > .asset-icon {
+	color: var(--game-gold);
+}
+
+.game-time-value > small {
+	margin-left: var(--space-xxs);
+	opacity: 0.75;
+}
+
+.game-gauge {
+	display: flex;
+	gap: var(--space-xxs);
+}
+
+.game-gauge i {
+	width: 0.375rem;
+	height: 0.875rem;
+	border-radius: 1px;
+	background-color: color-mix(in srgb, var(--game-text) 25%, transparent);
+}
+
+.game-gauge i.game-gauge-on {
+	background-color: var(--game-gold);
+}
+
+.game-hud-tools {
+	display: flex;
+	gap: var(--space-xs);
+	margin-left: auto;
+}
+
+.game-tool {
+	display: flex;
+	align-items: center;
+	gap: var(--space-xs);
+	padding: var(--space-xs) var(--space-sm);
+	font-weight: bold;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.game-tool:hover {
+	color: var(--game-gold);
+}
+
+/* Le calendrier de l'Avent, jusqu'au 24 décembre où passent les rennes */
+.game-advent {
+	display: flex;
+	gap: var(--space-xxs);
+	margin-inline: auto;
+	padding: var(--space-xxs);
+}
+
+.game-advent-day {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 50%;
+	font-weight: bold;
+}
+
+.game-advent-past {
+	opacity: 0.45;
+}
+
+.game-advent-today {
+	background-color: var(--game-gold);
+	color: var(--game-night);
+}
+
+.game-banner {
+	margin-inline: auto;
+	padding: var(--space-xs) var(--space-md);
+	text-align: center;
+}
+
+a.game-banner:hover {
+	color: var(--game-gold);
+}
+
+@media (max-width: 575px) {
+
+	.game-tool-label,
+	.game-hud-name,
+	.game-time-value > small,
+	.game-gauge {
+		display: none;
+	}
+
+	/* Sept jours de l'Avent tiennent sur un téléphone, choisis autour d'aujourd'hui (`DeskUi::getAdvent()`) */
+	.game-advent-far {
+		display: none;
+	}
+
+	.game-tool,
+	.game-hud-item {
+		padding: var(--space-xs);
+	}
+
+	/* Sur un téléphone, la caméra recule et la marque du cellier rejoint le nom de la personne posée devant lui : elle
+	   descend sous son point d'ancrage, vers les caisses qu'elle compte */
+	.game-cellar {
+		translate: 0 calc(50% + var(--space-xs));
+	}
+
+}
+
+/* L'accueil et la fin de partie, posés au milieu de la cour vide */
+.game-panel {
+	position: absolute;
+	inset: var(--space-md);
+	width: min(44rem, 100% - 2 * var(--space-md));
+	margin-inline: auto;
+	padding: var(--space-lg);
+	overflow-y: auto;
+	border-radius: var(--radius-lg);
+	background-color: color-mix(in srgb, var(--background-game) 94%, transparent);
+	color: var(--text);
+}
+
+/* La porte du jour : le battant tourne sur ses gonds, puis la porte s'efface (`GameDesk.closeDoor()`) */
+.game-door:not([hidden]) {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--space-md);
+	background-color: color-mix(in srgb, var(--game-night) 55%, transparent);
+	perspective: 60rem;
+}
+
+.game-door-frame {
+	position: relative;
+	width: min(24rem, 100%);
+	border: 0.375rem solid var(--game-gold);
+	border-radius: 12rem 12rem var(--radius) var(--radius);
+	overflow: hidden;
+}
+
+.game-door-inside {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--space-xs);
+	padding: var(--space-xxl) var(--space-lg) var(--space-lg);
+	background-color: var(--background-game);
+	color: var(--text);
+	text-align: center;
+}
+
+.game-door-inside h2 {
+	font-family: 'Fraunces', serif;
+	font-size: 1.75rem;
+	margin: 0;
+}
+
+.game-door-inside p {
+	margin: 0;
+}
+
+.game-door-open {
+	margin-top: var(--space-sm);
+}
+
+/* Les étoiles au cintre de la porte, au-dessus de la vignette */
+.game-door-leaf {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	display: flex;
+	justify-content: center;
+	padding-top: var(--space-sm);
+	color: var(--game-gold-ink);
+	font-size: 1.5rem;
+	pointer-events: none;
+}
+
+/* Le battant tourne sur ses gonds */
+.game-door-leaving .game-door-frame {
+	transform-origin: left center;
+	animation: game-door-swing var(--duration-xl) var(--ease-in-out) forwards;
+}
+
+/* La porte s'efface une fois le battant ouvert */
+.game-door-leaving {
+	animation: game-door-fade var(--duration-lg) var(--ease-out) var(--duration-xl) forwards;
+}
+
+@keyframes game-door-swing {
+	from {
+		transform: rotateY(0deg);
+	}
+	to {
+		transform: rotateY(-100deg);
+		opacity: 0;
+	}
+}
+
+@keyframes game-door-fade {
+	to {
+		opacity: 0;
+	}
+}
+
+/* La marque du cellier, au pied de la maison : un légume par espèce, puis les soupes */
+.game-cellar {
+	cursor: pointer;
+	gap: var(--space-xs);
+}
+
+.game-cellar-stock {
+	display: flex;
+	gap: var(--space-xs);
+}
+
+.game-cellar-item {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-xxs);
+}
+
+.game-cellar-empty {
+	opacity: 0.45;
+}
+
+.game-cellar-soup {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-xxs);
+	padding-left: var(--space-xs);
+	border-left: 1px solid var(--scene-border);
+}
+
+/* La récolte qui vole jusqu'au cellier, et les rennes qui montent du bandeau ; leur départ est posé par `GameDesk.fly()`
+   en coordonnées de l'écran */
+.game-fly {
+	position: fixed;
+	translate: -50% -50%;
+	pointer-events: none;
+	animation: game-fly var(--duration-xl) var(--ease-in-out) forwards;
+}
+
+@keyframes game-fly {
+	from {
+		transform: translate(0, 0) scale(1.4);
+	}
+	40% {
+		transform: translate(var(--game-fly-spread), -3rem) scale(1.4);
+	}
+	to {
+		transform: translate(var(--game-fly-x), var(--game-fly-y)) scale(0.6);
+		opacity: 0.4;
+	}
+}
+
+.game-float {
+	position: fixed;
+	translate: -50% 0;
+	padding: var(--space-xxs) var(--space-xs);
+	border-radius: 2rem;
+	background-color: var(--game-glass);
+	color: var(--game-gold);
+	font-family: 'Fraunces', serif;
+	font-weight: bold;
+	white-space: nowrap;
+	pointer-events: none;
+	animation: game-float calc(2 * var(--duration-xl)) var(--ease-out) forwards;
+}
+
+@keyframes game-float {
+	from {
+		transform: translateY(0);
+		opacity: 0;
+	}
+	20% {
+		opacity: 1;
+	}
+	to {
+		transform: translateY(2rem);
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.game-door-leaving .game-door-frame {
+		animation-duration: 0.01ms;
+	}
+
+	.game-door-leaving {
+		animation-duration: 0.01ms;
+		animation-delay: 0s;
+	}
+
+	.game-fly {
+		animation-duration: 0.01ms;
+	}
+
+	.game-float {
+		animation-duration: 0.01ms;
+	}
+
+}
+
+/* Les feuilles du bandeau */
+.game-sheet-lead {
+	margin: var(--space-sm) 0;
+	font-weight: bold;
+}
+
+.game-pot {
+	display: flex;
+	align-items: baseline;
+	justify-content: center;
+	gap: var(--space-xs);
+	margin: var(--space-sm) 0;
+	color: var(--game-gold-ink);
+	font-size: 1.25rem;
+}
+
+.game-pot b {
+	font-family: 'Fraunces', serif;
+	font-size: 2.5rem;
+	line-height: 1;
+}
+
+.game-recipe {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--space-xxs);
+}
+
+.game-podium {
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
+	gap: var(--space-xs);
+	margin: var(--space-md) 0;
+}
+
+.game-podium-step {
+	flex: 1 1 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--space-xxs);
+	min-width: 0;
+	padding: var(--space-sm) var(--space-xs);
+	border-radius: var(--radius) var(--radius) 0 0;
+	background-color: var(--background-game);
+	text-align: center;
+}
+
+.game-podium-step b {
+	overflow: hidden;
+	max-width: 100%;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.game-podium-1 {
+	order: 2;
+	padding-bottom: var(--space-xxl);
+}
+
+.game-podium-2 {
+	order: 1;
+	padding-bottom: var(--space-xl);
+}
+
+.game-podium-3 {
+	order: 3;
+	padding-bottom: var(--space-md);
+}
+
+.game-podium-medal {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 50%;
+	background-color: var(--game-gold);
+	color: var(--game-night);
+	font-family: 'Fraunces', serif;
+	font-weight: bold;
+}
+
+.game-podium-1 .game-podium-medal {
+	width: 2.25rem;
+	height: 2.25rem;
+	font-size: 1.25rem;
+}
+
+.game-card {
+	display: flex;
+	align-items: center;
+	gap: var(--space-md);
+	margin: var(--space-sm) 0 var(--space-md);
+}
+
+.game-card-name {
+	font-family: 'Fraunces', serif;
+	font-size: 1.5rem;
+	font-weight: bold;
+}
+
+.game-decks {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-xs);
+}
+
+body.game-tile-sheet-open,
+body.game-sheet-open {
+	overflow: hidden;
+}
+
+/* util-sheet-body ne pose aucun retrait : le contenu reprend les côtés de util-sheet-head, pour que le titre et les
+   rangs tombent sur la même verticale (comme la boutique et la planification) */
+.game-tile-sheet .util-sheet-body,
+.game-sheet .util-sheet-body {
+	padding: 0 0.875rem var(--space-xs);
+}
+
+.game-tile-sheet .util-sheet-body > p {
+	margin: var(--space-sm) 0;
+}
+
+.game-tile-sheet .game-tile-sheet-action.disabled,
+.game-sheet .game-sheet-action.disabled {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+.game-tile-sheet-detail,
+.game-sheet-detail {
+	display: block;
+	margin-top: var(--space-xxs);
+}
+
+.game-table th {
+	white-space: nowrap;
+}
+
+.game-home {
+	padding: 2rem;
+	border-radius: var(--radius);
+	margin-bottom: 2rem;
+	background-color: var(--game);
+	color: white;
+	display: flex;
+	align-items: start;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.game-home-links {
+	display: flex;
+	gap: 0.25rem;
+	flex-wrap: wrap;
+}
+
+.game-home h4 {
+	font-family: 'Mystery Quest', serif;
+	font-size: 2.25rem;
+}
+
+.game-home h2 {
+	font-size: 2rem;
+}
+
+.game-home img {
+	width: 30vw;
+	max-width: 25rem;
+	margin-left: 1rem;
+	margin-bottom: 1rem;
+	border-radius: 1rem;
+}
+
+@media (max-width: 767px) {
+
+	.game-home img {
+		display: none;
+	}
+
+}
+
+.game-home-button {
+	background-color: var(--background-game);
+	color: var(--game);
+}
+
+.game-home-button:hover {
+	color: var(--game);
+}

@@ -1,0 +1,18 @@
+Block:
+  id: serial32
+  owner: text8(1, 50) @charset(ascii)
+  reference: int32(0, null)
+  parent: ?block\Block
+  type: text8(1, 50) @charset(ascii)
+  variant: ?text8(1, 30) @charset(ascii)
+  title: ?text8(1, 250)
+  content: ?editor24
+  media: ?textFixed(30, 30) @charset(ascii)
+  url: ?url
+  settings: json = PHP([])
+  position: int16(0, null)
+  createdAt: datetime = SPECIAL(now)
+  updatedAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["reference", "owner"]
+  ]

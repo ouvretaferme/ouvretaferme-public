@@ -1,0 +1,378 @@
+/* Products */
+.item-panel-header {
+	margin-top: .5rem;
+	font-size: 1.1rem;
+}
+
+td.product-item-actions {
+	text-align: right;
+}
+
+td.product-item-price {
+	white-space: nowrap;
+}
+
+td.product-item-unit {
+	width: 3rem;
+	font-weight: bold;
+}
+
+
+td.product-item-year-before {
+	font-size: 0.8rem;
+}
+
+.product-item-vat {
+	white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+
+	.product-item-vat {
+		display: none;
+	}
+
+}
+
+td.product-item-stock a {
+	color: var(--text);
+}
+
+.product-item-stock-expired {
+	color: var(--muted);
+	font-size: 0.9rem;
+	margin-right: 0.5rem;
+}
+
+div.product-item-label {
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+	column-gap: 0.25rem;
+	line-height: 1.4;
+}
+
+div.product-item-label > a {
+	line-height: 1.4;
+}
+
+.product-item-label-distribution {
+	margin-left: 0.5rem;
+}
+
+.product-item-label-unit {
+	font-weight: bold;
+	text-transform: uppercase;
+	font-size: 0.8rem;
+	margin-left: 0.5rem;
+}
+
+div.product-item-infos {
+	margin-top: 0.25rem;
+	font-size: 0.9rem;
+	line-height: 1.2;
+	color: var(--muted);
+}
+
+div.product-item-presentation-wrapper {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-gap: 1rem;
+}
+
+@media (max-width: 575px) {
+
+	div.product-item-presentation-wrapper {
+		grid-template-columns: 1fr;
+	}
+
+}
+
+div.product-item-presentation {
+	margin-bottom: 2rem;
+}
+
+div.product-vignette-plant,
+div.product-vignette-profile {
+	pointer-events: none;
+	position: absolute;
+	width: 50%;
+	height: 50%;
+	z-index: 1;
+	border: 2px solid;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 60%;
+	top: -12%;
+	left: -12%;
+	color: white;
+	background-color: white;
+}
+
+.product-write [data-profile] {
+	display: none;
+}
+
+.product-write:not(:has(input[name="profile"]:not([value="other"]):checked)) .product-write-details {
+	display: none;
+}
+
+.product-write:has(input[name="profile"][value="plant"]:checked) [data-profile~="plant"] {
+	display: block;
+}
+
+.product-write:has(input[name="profile"][value="animal"]:checked) [data-profile~="animal"] {
+	display: block;
+}
+
+.product-write:has(input[name="profile"][value="food"]:checked) [data-profile~="food"] {
+	display: block;
+}
+
+.product-write:has(input[name="profile"][value="product"]:checked) [data-profile~="product"] {
+	display: block;
+}
+
+.product-write:has(input[name="profile"][value="composition"]:checked) [data-profile~="composition"] {
+	display: block;
+}
+
+.product-write:has(input[name="profile"][value="other"]:checked) [data-profile~="other"] {
+	display: block;
+}
+
+.product-write:has(input[name="profile"][value="composition"]:checked) [data-not-profile~="composition"] {
+	display: none;
+}
+
+#product-update.product-write [data-field="profile"]:has(input[name="profile"][value="composition"]:checked) {
+	display: none;
+}
+
+/* Pas d'affichage de composition à l'update*/
+#product-update.product-write [data-field="profile"] label:has(input[name="profile"][value="composition"]) {
+	display: none;
+}
+
+.product-profile-icon {
+	vertical-align: middle;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	color: white;
+}
+
+.product-profile-plant {
+	background-color: var(--success);
+}
+
+.product-profile-animal {
+	background-color: #ada779;
+}
+
+.product-marks-list > *:not(:last-child) {
+	margin-right: 0.2rem;
+}
+.product-display-unit {
+	margin-left: 0.5rem;
+	font-size: 1.1rem;
+	font-weight: normal;
+	color: var(--muted);
+}
+
+table.product-variant-grid td {
+	vertical-align: middle;
+}
+
+.product-variant-card-disabled {
+	opacity: 0.5;
+}
+
+td.product-variant-quick > .util-quick,
+dd.product-variant-reference > .util-quick {
+	min-width: var(--touch-target);
+}
+
+td.product-variant-quick > .util-quick {
+	position: relative;
+}
+
+td.product-variant-quick > .util-quick::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 50%;
+	height: var(--touch-target);
+	translate: 0 -50%;
+}
+
+dd.product-variant-reference > .util-quick {
+	min-height: var(--touch-target);
+}
+
+/* Le couple fond et texte de badge-danger et badge-success : la légende se lit dans le tableau, et l'ancienne valeur tient 4,5:1 là où le gris atténué tombe à 3,4 */
+#product-unify-prices td.product-unify-change {
+	--unify-tint: var(--danger);
+}
+
+#product-unify-prices td.product-unify-open {
+	--unify-tint: var(--success);
+}
+
+#product-unify-prices td:is(.product-unify-change, .product-unify-open) {
+	background-color: color-mix(in srgb, var(--unify-tint) 14%, white);
+}
+
+#product-unify-prices :is(.product-unify-was, .product-unify-arrow) {
+	color: color-mix(in srgb, var(--unify-tint) 66%, black);
+}
+
+#product-unify-prices .product-unify-change .product-unify-was {
+	text-decoration: line-through;
+}
+
+#product-unify-prices .product-unify-arrow {
+	padding: 0 0.25rem;
+}
+
+#product-unify-prices .product-unify-now {
+	font-weight: bold;
+}
+
+#product-unify-prices .product-unify-legend {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+	margin-top: 0.5rem;
+	font-size: 0.85rem;
+}
+
+#product-unify-prices .product-unify-target {
+	font-weight: bold;
+	margin-bottom: 0.5rem;
+}
+
+#product-unify-prices .util-block + .util-block {
+	margin-top: 0.5rem;
+}
+
+.product-price-mode {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.25rem 0.75rem;
+}
+
+
+
+a.product-family-toggle {
+	position: relative;
+}
+
+a.product-family-toggle::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: -14px;
+	bottom: -2px;
+}
+
+tbody.product-family a.product-family-collapse,
+tbody.product-family-open a.product-family-expand {
+	display: none;
+}
+
+tbody.product-family-open a.product-family-collapse {
+	display: inline-block;
+}
+
+tbody.product-family td.product-item-unit,
+tbody.product-family-variants td.product-item-unit {
+	white-space: nowrap;
+}
+
+tbody.product-family-variants > tr > td.td-vignette {
+	text-align: right;
+}
+
+tbody.product-family-variants > tr > td.td-vignette > * {
+	margin-left: auto;
+}
+
+table.product-list-table.tr-bordered tr.tr-title {
+	border-bottom: 1px dashed var(--border);
+}
+
+.product-variant-add-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.product-price-steps-table {
+	width: 100%;
+	margin-bottom: 0.5rem;
+}
+
+.product-price-steps-table th {
+	font-size: 0.8rem;
+	font-weight: normal;
+	color: var(--muted);
+	text-align: left;
+	padding-bottom: 0.25rem;
+}
+
+.product-price-steps-table td {
+	padding: 0 0.25rem 0.25rem 0;
+	vertical-align: middle;
+}
+
+.product-price-steps-table td:last-child,
+.product-price-steps-table th:last-child {
+	padding-right: 0;
+	width: 1px;
+}
+
+.product-price-steps-gap {
+	white-space: nowrap;
+	color: var(--success);
+}
+
+.product-price-steps-table .product-price-steps-gap {
+	text-align: center;
+}
+
+.product-price-steps-gap-up {
+	color: var(--danger);
+}
+
+.product-price-steps .util-block-empty {
+	padding-top: 1.25rem;
+	padding-bottom: 1.25rem;
+	text-align: left;
+}
+
+.product-price-steps .util-block-empty p {
+	max-width: none;
+	margin-left: 0;
+	margin-right: 0;
+}
+
+.product-price-steps .util-block-empty .util-buttons {
+	justify-content: flex-start;
+}
+
+a + .product-price-steps-link {
+	margin-left: 0.5rem;
+}
+
+.util-block.product-write-off .form-group:not([data-wrapper="private"]):not([data-wrapper="pro"]),
+.util-block.product-write-off > [data-profile] {
+	display: none;
+}

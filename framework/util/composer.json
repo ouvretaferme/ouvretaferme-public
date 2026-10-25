@@ -1,0 +1,7 @@
+{
+    "name": "ouvretaferme/util",
+    "type": "library",
+    "require": {
+        "chillerlan/php-qrcode": "^6.0"
+    }
+}

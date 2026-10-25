@@ -1,0 +1,101 @@
+/* Les jetons communs aux scènes 3D (.claude/skills/3d/ds-scene.md) : la scène a son propre design system, qui s'écarte
+   de celui du produit (décidé le 2026-10-11). Une scène les reçoit en posant .scene-frame sur sa racine, et ne
+   garde dans sa feuille que les jetons qui lui sont propres */
+.scene-frame {
+	--scene-surface: #ffffff;
+	--scene-text: #1f2a1f;
+	--scene-muted: #5f6b5f;
+	--scene-border: #d5dad0;
+	--scene-accent: #2f6b3a;
+	--scene-accent-soft: #e3efe4;
+	--scene-danger: #b8432c;
+	--scene-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	--scene-control: 44px;
+	--scene-control-small: 28px;
+	--scene-control-radius: 8px;
+	--scene-tool-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Le navigateur donne à la scène tout l'écran (SceneFullscreen, fullscreen.js) : l'arrondi du cadre n'a plus de bord où s'appuyer */
+.scene-frame:fullscreen {
+	border-radius: 0;
+}
+
+/* Une rangée qui défile sans barre s'estompe du côté où il en reste (SceneScroll, scroll.js) */
+.scene-frame .scene-more-right {
+	mask-image: linear-gradient(to right, #000 calc(100% - var(--space-xl)), transparent);
+}
+
+.scene-frame .scene-more-left {
+	mask-image: linear-gradient(to left, #000 calc(100% - var(--space-xl)), transparent);
+}
+
+.scene-frame .scene-more-left.scene-more-right {
+	mask-image: linear-gradient(to right, transparent, #000 var(--space-xl), #000 calc(100% - var(--space-xl)), transparent);
+}
+
+/* Une souris ne glisse pas une rangée : SceneScroll pose une flèche au milieu de son bord, dans l'estompe, du côté où il en
+   reste, sous un pointeur fin seulement (plus bas) */
+.scene-frame .scene-scroll {
+	position: absolute;
+	z-index: 1;
+	display: none;
+	place-items: center;
+	width: var(--scene-control-small);
+	height: var(--scene-control-small);
+	border: 1px solid var(--scene-border);
+	border-radius: 50%;
+	background-color: var(--scene-surface);
+	box-shadow: var(--scene-tool-shadow);
+	color: var(--scene-text);
+	translate: 0 -50%;
+	cursor: pointer;
+}
+
+.scene-frame .scene-scroll[data-direction="1"] {
+	translate: -100% -50%;
+}
+
+.scene-frame .scene-scroll .asset-icon {
+	width: 16px;
+	height: 16px;
+	margin-top: 0;
+}
+
+/* pointer: fine écarte en plus de hover: hover les écrans tactiles qui se déclarent capables de survol, certains Android : ils
+   auraient une flèche sous le doigt, qui glisse déjà la rangée */
+@media (hover: hover) and (pointer: fine) {
+
+	.scene-frame .scene-scroll {
+		display: grid;
+	}
+
+}
+
+/* La vitesse de lecture (`SceneUi::getSpeed()`). Ses libellés occupent la même case, un seul se voit : le bouton a la largeur
+   du plus long, et ce qui le suit ne bouge pas quand la vitesse change */
+.scene-speed-label {
+	display: inline-grid;
+}
+
+.scene-speed-label > * {
+	grid-area: 1 / 1;
+	text-align: left;
+	visibility: hidden;
+}
+
+.scene-speed-label > .selected {
+	visibility: visible;
+}
+
+/* Sous 768 px, une vitesse a la hauteur d'une cible tactile. La liste ouverte quitte la scène pour le <body> : c'est sa classe
+   qui la borne */
+@media (max-width: 767px) {
+
+	.scene-speed-list .dropdown-item {
+		display: flex;
+		align-items: center;
+		min-height: var(--touch-target);
+	}
+
+}

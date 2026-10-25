@@ -1,0 +1,33 @@
+Analytics:
+  structure: structure\Structure
+  data: int(0, null)
+  value: int16(0, null)
+  createdAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["structure", "data"]
+  ]
+
+EnableBankingHistory:
+  structure: structure\Structure
+  accountId: text8(1, null)
+  connectedAt: text8(7, 7)
+  UNIQUE: [
+    ["accountId", "connectedAt"]
+  ]
+
+PdpHistory:
+  id: serial32
+  structure: structure\Structure
+  partner: ?pdp\Partner
+  action: enum(INVOICE, INVOICES, INVOICE_DETAILS, INVOICE_SEND, INVOICE_DOWNLOAD, EVENT, EVENT_SEND, ADDRESS, ADDRESS_CREATE, ADDRESS_DELETE, COMPANY_RETRIEVE, COMPANY, SESSION, TOKEN_REFRESH, VALIDATION_REPORT)
+  invoicing: ?invoicing\Invoicing
+  arg: ?json = PHP([])
+  request: text8
+  result: ?json = PHP([])
+  date: datetime = SPECIAL(now)
+  doneBy: ?user\User = SPECIAL(user)
+  relaunchedDate: ?datetime
+  relaunchedBy: ?user\User
+  INDEX: [
+    ["action", "date"]
+  ]

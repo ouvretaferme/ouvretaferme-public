@@ -1,0 +1,410 @@
+body.template-pdf {
+	background-color: white;
+	line-height: 1.4;
+	/* Le papier n'a pas de profondeur : un composant repris de l'écran s'imprime avec son bord, sans l'ombre qui l'en détache */
+	--shadow-v2: none;
+}
+
+html {
+	font-size: 12px !important;
+}
+
+body.template-pdf h1,
+body.template-pdf h2,
+body.template-pdf h3 {
+	font-family: 'Bricolage Grotesque', sans-serif;
+}
+
+/* La marque s'écrit de la même façon en tête et en pied : c'est le pied qui donne le
+   ton, en capitale initiale et sans interlettrage. L'en-tête la posait en capitales
+   espacées, ce qui se lit comme une autre police sur la même page. */
+.pdf-brand,
+.pdf-footer-brand {
+	display: flex;
+	align-items: center;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--color-brand);
+}
+
+.pdf-brand {
+	gap: 2.5mm;
+}
+
+.pdf-brand svg {
+	width: 6mm;
+	height: 6mm;
+	flex: none;
+}
+
+.pdf-structure {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2mm;
+	text-align: center;
+	margin: 5mm 0 8mm;
+}
+
+.pdf-structure-logo {
+	width: 17mm;
+	height: 17mm;
+	object-fit: contain;
+	background-size: contain;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+.pdf-structure-name {
+	font-family: 'Bricolage Grotesque', sans-serif;
+	font-size: 1rem;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+
+.pdf-structure-heading,
+.pdf-toc-title {
+	font-family: 'Bricolage Grotesque', sans-serif;
+	font-size: 1.85rem;
+	font-weight: 500;
+	letter-spacing: -0.01em;
+	margin-top: 2.5mm;
+}
+
+.pdf-structure-meta {
+	font-size: 0.8rem;
+	color: var(--color-neutral);
+}
+
+.pdf-title-block {
+	margin: 14mm 0 8mm;
+}
+
+.pdf-title {
+	font-family: 'Bricolage Grotesque', sans-serif;
+	font-size: 2.85rem;
+	font-weight: 400;
+	line-height: 1.05;
+	letter-spacing: -0.02em;
+	max-width: 140mm;
+}
+
+.pdf-lede {
+	margin: 4mm 0 0 0;
+	max-width: 125mm;
+	font-size: 1rem;
+	color: var(--text);
+}
+
+.pdf-structure + .pdf-lede {
+	margin-bottom: 8mm;
+}
+
+.pdf-figures {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 6mm;
+	padding: 5mm 0;
+	margin-bottom: 7mm;
+	border-top: 1px solid #1a1a1a;
+	border-bottom: 1px solid #d8d8d8;
+}
+
+.pdf-figure-value {
+	font-family: 'Bricolage Grotesque', sans-serif;
+	font-size: 2rem;
+	font-weight: 700;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+}
+
+.pdf-figure-label {
+	margin-top: 1.5mm;
+	font-size: 0.7rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--color-neutral);
+}
+
+.pdf-toc {
+	margin: 5mm 0 8mm;
+}
+
+.pdf-toc-title {
+	font-size: 1rem;
+}
+
+.pdf-toc ol {
+	padding-left: 5mm;
+	line-height: 1.9;
+}
+
+.pdf-footer {
+	display: grid;
+	gap: 8mm;
+	margin-top: 6mm;
+	padding-top: 2.5mm;
+	border-top: 2px solid #1a1a1a;
+	font-size: 0.68rem;
+	line-height: 1.5;
+	color: var(--color-neutral);
+	break-inside: avoid;
+}
+
+.pdf-footer-1 {
+	grid-template-columns: 1fr;
+}
+
+.pdf-footer-2 {
+	grid-template-columns: 1fr auto;
+}
+
+.pdf-footer-3 {
+	grid-template-columns: 1.5fr 1fr auto;
+}
+
+.pdf-footer-brand {
+	gap: 2mm;
+	margin-bottom: 1mm;
+}
+
+.pdf-footer-brand svg {
+	width: 4.5mm;
+	height: 4.5mm;
+	flex: none;
+}
+
+.pdf-footer-page {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+
+table.pdf-table-bordered tr:first-child {
+	border: 0;
+}
+table.pdf-table-bordered {
+	break-inside: auto;
+	border-collapse: collapse;
+	margin: 0 auto 1cm;
+	box-shadow: none;
+}
+
+body:not(.landscape) table.pdf-table-bordered {
+	max-width: 18.5cm;
+}
+body.landscape table.pdf-table-bordered {
+	max-width: 26.5cm;
+}
+table.pdf-table-bordered tbody td,
+table.pdf-table-bordered th {
+	padding: 0.1cm 0.2cm;
+}
+
+table.pdf-table-bordered th {
+	font-weight: normal;
+	vertical-align: bottom;
+}
+
+table.pdf-table-bordered tbody tr td {
+	border-bottom: 1px solid #f0f0f0;
+}
+
+table.pdf-table-bordered tbody tr:last-child td {
+	border-bottom: 1px solid #1a1a1a;
+}
+
+table.pdf-table-bordered thead tr th {
+	font-size: 0.65rem;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--color-neutral);
+	border-bottom: 1px solid #1a1a1a;
+}
+
+tr.pdf-tr-title th,
+tr.pdf-tr-title td {
+	font-family: 'Bricolage Grotesque', sans-serif;
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: #1a1a1a;
+	border-bottom: 1px solid #1a1a1a;
+	padding-top: 0.35cm;
+}
+
+.pdf-facing-side {
+	font-family: 'Bricolage Grotesque', sans-serif;
+	font-size: 1rem;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--color-brand);
+	margin-bottom: 2mm;
+}
+
+body.template-pdf table.pdf-facing-table {
+	table-layout: fixed;
+}
+
+body.template-pdf table.pdf-facing-table td,
+body.template-pdf table.pdf-facing-table th {
+	overflow-wrap: break-word;
+}
+
+/* Deux colonnes de postes dans la largeur d'une : les libellés reviennent souvent à
+   la ligne, et l'interligne des cellules décidait à lui seul si le bilan tenait sur
+   une page ou en débordait d'un pied. */
+body.template-pdf table.pdf-facing-table tbody td {
+	font-size: 0.85rem;
+	padding-top: 0.05cm;
+	padding-bottom: 0.05cm;
+}
+
+/* Jusqu'à huit colonnes de montants sur la largeur d'une page : un montant qui revient à la ligne
+   laisse son symbole seul sous le chiffre. */
+body.template-pdf table.pdf-facing-table tbody td.text-end {
+	white-space: nowrap;
+	padding-left: 0.1cm;
+	padding-right: 0.1cm;
+}
+
+/* Un tableau qui porte sept colonnes de montants : le libellé n'a plus qu'un tiers de
+   la largeur et revient à la ligne une fois sur deux. L'interligne se resserre d'autant,
+   sans quoi le registre des amortissements gagne une page qui ne porte que son pied. */
+body.template-pdf table.pdf-table-compact tbody td {
+	padding-top: 0.05cm;
+	padding-bottom: 0.05cm;
+}
+
+body.template-pdf table.pdf-facing-table .pdf-facing-split {
+	border-left: 1px solid #d9d9d9;
+	padding-left: 5mm;
+}
+
+body.template-pdf table.pdf-facing-table tr.pdf-facing-heading > th {
+	font-family: 'Bricolage Grotesque', sans-serif;
+	font-size: 1rem;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--color-brand);
+	border-bottom: 0;
+	padding-bottom: 2mm;
+}
+
+.pdf-equality {
+	margin-top: 4mm;
+	text-align: center;
+	font-size: 0.75rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--color-brand);
+}
+
+body.template-pdf tr.pdf-tr-ml-1 > td:first-child {
+	padding-left: 0.5cm;
+}
+
+.pdf-note {
+	margin-top: 3mm;
+	text-align: center;
+	font-size: 0.7rem;
+	color: var(--color-neutral);
+}
+
+body.template-pdf table.pdf-sheet {
+	table-layout: fixed;
+	width: 100%;
+	margin-top: 0.5cm;
+}
+
+body.template-pdf table.pdf-sheet .pdf-sheet-sign {
+	width: 2.6cm;
+}
+
+body.template-pdf table.pdf-sheet th.pdf-sheet-sign,
+body.template-pdf table.pdf-sheet td.pdf-sheet-sign {
+	text-align: center;
+	border-left: 1px solid var(--border);
+}
+
+body.template-pdf table.pdf-sheet tbody td {
+	height: 1.15cm;
+	vertical-align: middle;
+	border-bottom: 1px solid var(--border);
+}
+
+body.template-pdf table.pdf-sheet tr.pdf-sheet-group > td {
+	height: auto;
+	padding-top: 7mm;
+	padding-bottom: 1.5mm;
+	background-color: white;
+	border-bottom: 1px solid #1a1a1a;
+	font-family: 'Bricolage Grotesque', sans-serif;
+	font-size: 0.9rem;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--color-brand);
+}
+
+body.template-pdf table.pdf-sheet thead + tbody tr.pdf-sheet-group > td {
+	padding-top: 3mm;
+}
+
+/* Sans quoi le pied qui ne tient plus sous la table part seul sur une page blanche : il emmène
+   avec lui le dernier groupe de lignes, que l'impression garde d'un seul tenant. */
+body.template-pdf table.pdf-sheet + .pdf-footer {
+	break-before: avoid;
+}
+
+body.template-pdf td.balance-td-net,
+body.template-pdf td.balance-td-amortization,
+body.template-pdf td.balance-td-brut,
+body.template-pdf table.balance-table {
+	border-left: 0;
+	border-right: 0;
+}
+
+body.template-pdf tr.sig-title > td {
+	background-color: #f6f8f8;
+	font-weight: 600;
+	border-top: 1px solid #d8d8d8;
+}
+
+body.template-pdf tr.sig-content > td {
+	color: #4a4a4a;
+}
+
+body.template-pdf td.sig-category-name {
+	padding-left: 0.6cm;
+}
+
+body.template-pdf tr.sig-title > td.sig-category-name {
+	padding-left: 0.2cm;
+	color: #1a1a1a;
+}
+
+body.template-pdf tr.overview_group-total {
+	text-transform: none;
+}
+
+@media print {
+
+	.pdf-structure,
+	.pdf-figures,
+	.pdf-toc,
+	.pdf-title-block,
+	.pdf-footer {
+		break-inside: avoid;
+	}
+
+	.pdf-structure,
+	tr.tr-title,
+	tr.pdf-sheet-group {
+		break-after: avoid;
+	}
+
+}

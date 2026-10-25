@@ -1,0 +1,2525 @@
+*, *::before, *::after {
+	box-sizing: border-box;
+}
+
+:root {
+
+	--info: #e1eaff;
+	--careful: #d4aa00;
+	--warning: #cb6503;
+	--danger: #dc3545;
+	/* Un texte orange ou rouge posé sur un fond clair : l'orange pur n'y tient que 3,89:1, sous les
+	   4,5:1 d'un texte courant. Assombris, ils tiennent 6,61:1 et 7,56:1 sur blanc. */
+	--warning-on-light: color-mix(in srgb, var(--warning) 72%, black);
+	--danger-on-light: color-mix(in srgb, var(--danger) 72%, black);
+	--text: #212529;
+	--text-intermediate: #5F5F5F;
+	--success: #198754;
+	/* Le vert tient 4,53:1 sur blanc et tombe à 4,09:1 sur le fond teinté d'un message : assombri
+	   comme l'orange et le rouge, il y tient 6,75:1. */
+	--success-on-light: color-mix(in srgb, var(--success) 72%, black);
+	/* Le gris atténué descend jusque sur le rang foncé de `util-table-even` (#f2f2f5) et sur le fond
+	   d'une carte (#ececef) : c'est le fond le plus sombre qu'il rencontre qui fixe sa valeur, et non
+	   le blanc. Mesuré le 2026-09-23, #7a7a80 y tenait 3,82:1 et 3,62:1, sous la barre de 4,5:1 que
+	   demande un texte de 14,4px. */
+	--muted: #6b6b70;
+	--border: #ddd;
+	--border-light: #F2F2F2;
+	--radius: .75rem;
+	/* La cible d'un doigt, en px et non en rem : la racine descend à 12px sur un téléphone, où
+	   2,75rem ne vaudraient plus que 33px, juste là où la cible compte le plus. */
+	--touch-target: 44px;
+
+	--pill-height: 2.25rem;
+	/* La pastille de couleur d'une action, que réserve aussi une liste alignée sur son nom. */
+	--action-circle: 1.25rem;
+
+	/* La hachure d'une absence, une seule pour tout le produit : la semaine de temps (`util-day`) et la frise
+	   des périodes de l'onglet Personnes la lisent ici. Ses intervalles sont transparents, pour que la frise
+	   y laisse voir sa période : la semaine de temps pose le blanc dessous. */
+	--absent-hatch: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--danger) 45%, white) 0 0.25rem, transparent 0.25rem 0.5rem);
+
+	/* Les outils posés sur une carte : un blanc, une encre et un geste d'une teinte qu'aucun jardin ni abri ne porte,
+	   hors du thème parce qu'ils se lisent sur une photo satellite comme sur le plan, l'encre cernant le geste */
+	--maptool-surface: #fff;
+	--maptool-text: #1f2a1f;
+	--maptool-ring: #22d3ee;
+	--maptool-ink: #3b2a12;
+	--maptool-danger: #b8432c;
+	--maptool-success: var(--success);
+	--maptool-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+	--maptool-radius: 8px;
+	--maptool-pin: 14px;
+	--maptool-pin-small: 10px;
+	/* La ligne d'une cote qui passe à la ligne plutôt que de s'étendre sur la carte */
+	--maptool-say-width: 240px;
+	/* La forme désignée sur une carte : un trait clair cerné de sombre sur la photo satellite, où les
+	   contours des parcelles sont déjà blancs, et un trait sombre cerné de clair sur le dessin */
+	--map-selected: #fff;
+	--map-selected-casing: var(--maptool-ink);
+	--map-selected-ink: var(--text);
+	/* Le filet qui sépare deux planches voisines sur une carte, sur la photo satellite puis sur le dessin */
+	--map-bed-line: #fff;
+	--map-bed-line-ink: var(--text);
+	/* Le contour d'un jardin sur la photo satellite, de plein champ puis sous abri, et le cerne qui le détache
+	   de la photo et des planches. Sur le dessin, la carte garde --open-field et --greenhouse */
+	--map-plot-line-open-field: #4ade80;
+	--map-plot-line-greenhouse: #ffa726;
+	--map-plot-casing: var(--maptool-ink);
+	--radius-lg: 1rem;
+	--radius-xl: 1.5rem;
+	--space-xxs: 0.25rem;
+	--space-xs: 0.5rem;
+	--space-sm: 0.75rem;
+	--space-md: 1rem;
+	--space-lg: 1.5rem;
+	--space-xl: 2rem;
+	--space-xxl: 3rem;
+
+	/* L'onglet `.tab-item` : son libellé et son remplissage, et la hauteur qui s'en déduit, que la tête
+	   d'un écran lit pour garder leur place aux onglets qui y montent (`tabs-page`, `component.css`). Les
+	   5px sont la place du trait de l'onglet choisi. */
+	--tab-item-font-size: 1.1rem;
+	--tab-item-padding: var(--space-md);
+	--tab-item-height: calc(2 * var(--tab-item-padding) + 5px + var(--tab-item-font-size));
+
+	/* La ligne du second libellé d'un onglet (`tab-item-detail`), à 0.8em de l'onglet et interligne 1.2 :
+	   une rangée qui en porte un grandit d'autant, et la tête qui la reçoit aussi. */
+	--tab-item-detail-height: calc(0.8 * 1.2 * var(--tab-item-font-size));
+
+	/* La part de l'univers dans la colonne du gabarit structure et dans le filet qui la sépare de la
+	   feuille (`template-structure.css`), reprise par la démonstration du design system (`designAi.css`). L'univers y
+	   entre par sa couleur claire, `--domain-light`, puis le mélange est assombri de `--frame-shade` :
+	   sa couleur sombre, mêlée à tant de blanc, virait au gris, celle de la vente surtout. Le filet en prend
+	   davantage que la colonne, dont il doit se détacher comme de la feuille. */
+	--frame-tint: 8%;
+	--frame-line-tint: 14%;
+	--frame-shade: 3%;
+
+	/* La part de la couleur de l'univers dans le halo de la pastille d'`util-start` et sous un de ses
+	   boutons en contour au survol (`component.css`). */
+	--util-start-halo-tint: 14%;
+
+	/* La part de la couleur des barres dans la série de l'an dernier d'`util-bars-before` (`component.css`). */
+	--bars-before-tint: 14%;
+
+	/* La part de l'encre de la liste d'`util-omnibox` dans ses textes atténués : intitulé de famille,
+	   détail, réserve et ligne sans suggestion (`component.css`). util-brand-scope-light le porte à 100 %
+	   sous une marque claire. */
+	--omnibox-muted-tint: 70%;
+
+	/* La part de noir dans la couleur de sélection d'un univers, tirée de sa couleur claire : le jeton de
+	   l'univers ouvert, l'entrée choisie du menu et son + (`template-structure.css`). */
+	--selection-shade: 25%;
+
+	--footer-margin-top: var(--space-xl);
+	--gradient: linear-gradient(to top, transparent 0, #8882 100%);
+
+	--link: #0D1F8E;
+	--soil: #48372f;
+	--harvest: #2e71b5;
+	--order: #7e1661;
+	--todo: slategray;
+	--done: teal;
+	--muted-light: #d5d5d5;
+	--selling: #722583;
+	--basket: #b17e2f;
+	--background-body-neutral: #f5f6f7;
+	--background-body: var(--background-body-neutral);
+	--background: #ececef;
+	--background-dark: #e9e9eb;
+	--background-light: #fafafa;
+	--background-surface: white;
+	/* La feuille d'un écran, à toutes les largeurs, où le contenu se pose (`template-structure.css`), et celle
+	   d'`util-paper` : un gris neutre, le même sous tous les univers, sur lequel les blocs et les
+	   lignes de tableau se lisent en blanc. */
+	--background-paper: color-mix(in srgb, var(--background-light) 75%, var(--border-light));
+	--background-odd: #fcfcfe;
+	--background-even: #f2f2f5;
+	--background-game: #f7ecda;
+	--background-hover: var(--secondary-highlight);
+	--background-column-hover: color-mix(in srgb, var(--color-brand) 6%, transparent);
+	--primary: #373737;
+	--secondary: var(--commercialisation);
+	--secondary-light: var(--commercialisation-light);
+	--secondary-neutral: var(--commercialisation-neutral);
+	/* Une variable se calcule sur l'élément qui la déclare : le voile suit un --secondary redéfini sur :root
+	   (gabarits structure, boutique), pas celui que template-base.css pose sur <body>. */
+	--secondary-highlight: color-mix(in srgb, var(--secondary) 2.75%, transparent);
+	--highlight: #fffd71;
+	--shop: #006d6b;
+	--dark: #212529;
+	--pro: #008874;
+	--private: #527a00;
+	/* Chaque couleur d'univers est celle de son jeton ouvert ou survolé dans le menu (template-structure.css,
+	   règle du jeton ouvert) : la couleur claire foncée de --selection-shade. Écrite ainsi, l'égalité tient
+	   quand une couleur claire change. Sa couleur sombre est le fond du menu sombre (`User::nav`), sous
+	   l'encre blanche, réglée à l'œil univers par univers : le pourcentage qui fait la même impression
+	   n'est pas le même d'une teinte à l'autre. */
+	--production: color-mix(in srgb, var(--production-light), black var(--selection-shade));
+	--production-light: #0f8c66;
+	--production-dark: color-mix(in srgb, var(--production-light), black 45%);
+	--production-neutral: #CCE2D1;
+	--open-field: #15803d;
+	--open-field-background: #CCE2D1;
+	--greenhouse: #b45309;
+	--greenhouse-background: #fde9c8;
+	--nitrogen: var(--production);
+	--phosphate: var(--order);
+	--potash: var(--harvest);
+	/* Les teintes d'un jour de travail, posées ici et non lues dans --secondary, que chaque rubrique redéfinit :
+	   un jour à venir, travaillé ou d'absence a la même apparence partout, dans `util-day` comme dans la grille
+	   des Récoltes. */
+	--day-accent: var(--production);
+	--day-worked: color-mix(in srgb, var(--todo) 50%, white);
+	--day-future: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--day-accent) 22%, white) 0 0.25rem, white 0.25rem 0.5rem);
+	--day-absent: var(--absent-hatch), white;
+	--commercialisation: color-mix(in srgb, var(--commercialisation-light), black var(--selection-shade));
+	--commercialisation-light: #4E5FC0;
+	--commercialisation-dark: color-mix(in srgb, var(--commercialisation-light), black 45%);
+	--commercialisation-neutral: #ccd6e2;
+	--accounting: color-mix(in srgb, var(--accounting-light), black var(--selection-shade));
+	--accounting-light: #22829f;
+	--accounting-dark: color-mix(in srgb, var(--accounting-light), black 45%);
+	--accounting-neutral: #ccdde2;
+	--accounting-background: #f9fafc;
+	--settings: color-mix(in srgb, var(--settings-light), black var(--selection-shade));
+	--settings-light: #8747b1;
+	--settings-dark: color-mix(in srgb, var(--settings-light), black 35%);
+	--settings-neutral: #decce2;
+	--amap: color-mix(in srgb, var(--amap-light), black var(--selection-shade));
+	--amap-light: #a82e53;
+	--amap-dark: color-mix(in srgb, var(--amap-light), black 30%);
+	--amap-neutral: #e1cbd3;
+	/* La bande claire d'une AMAP (`util-masthead-amap`) et son grand disque : les mélanges que
+	   util-brand-scope tire de --amap pour la bande du tableau de bord, pour que l'accueil et les autres
+	   écrans aient le même fond. */
+	--amap-background: color-mix(in srgb, var(--amap) 9%, white);
+	--amap-disc: color-mix(in srgb, var(--amap) 15%, white);
+	--community: var(--primary);
+	/* L'encre posée sur --primary et sur --community. Un jeton et non `white` en dur :
+	   une couleur choisie par un groupe peut être claire, et le blanc y disparaît. */
+	--primary-ink: white;
+	--community-ink: white;
+	--game: #7a1b1b;
+	/* La nuit et l'or de la veillée, les teintes de la cour du jeu */
+	--game-night: #172038;
+	--game-gold: #f2c14e;
+	--account-group: #FDE9D9;
+	--system: linear-gradient(to right, var(--commercialisation) 0, var(--production) 50%, var(--accounting) 100%);
+	--superpdp: blue;
+	--facturation-electronique: #002EBD;
+
+	--draft: var(--todo);
+	--confirmed: var(--order);
+	--prepared: var(--done);
+	--delivered: var(--success);
+
+	--plant: var(--success);
+	--animal: #ada779;
+	--food: #b17e2f;
+	--product: var(--prepared);
+	--composition: var(--order);
+	--shipping: black;
+	--service: #5a720e;
+	--other: black;
+
+	--ach: var(--todo);
+	--ven: var(--order);
+	--ban: var(--done);
+	--ks: var(--success);
+	--od: var(--harvest);
+
+	--color-brand: #1D4B53;
+	--color-brand-25: color-mix(in srgb, var(--color-brand) 25%, transparent);
+
+	--color-lavande: #8290FD;
+	--color-neon: #00D8A8;
+	--color-terracota: #B6231A;
+	--color-neutral-variant: #CCE2D1;
+	--color-neutral: #5C5F5F;
+	--color-gris-charbon-fonce: #5D5D5D;
+	--color-gris-charbon-clair: #676767;
+	--color-vert-sauvage: #A8B9AB;
+
+	--color-reference: #004E5A;
+	--color-vert-emeraude: #2FBB75;
+	--color-bg-otf: var(--color-brand);
+	--color-bg-vert-amande: #EBF7E1;
+	--color-bg-vert-menthe: #E1F7E8;
+	--color-bg-vert-bleu: #E6FBF7;
+	--color-bg-vert-sauge: #B0CCC3;
+	--color-bg-blanc-menthe: #F3FDFB;
+	--color-bg-blanc-gris: #F5F8F9;
+	--color-bg-turquoise: color-mix(in srgb, var(--color-neon) 16%, white);
+	--color-lavande-fonce: color-mix(in srgb, var(--color-lavande) 70%, black);
+	--color-bg-lavande: color-mix(in srgb, var(--color-lavande-fonce) 12%, white);
+
+	/* La bande claire d'un réseau (`util-masthead-network`) et l'onglet choisi de son bandeau. Les
+	   groupes gardent le turquoise, et la lavande, choisie sur la planche du chantier
+	   bandeau-reseaux-groupes, distingue un réseau. */
+	--network-background: var(--color-bg-lavande);
+
+	/* Les quatre teintes d'un parcours en phases, lues par util-tint-phase-* et par rien d'autre. Chacune
+	   porte un chiffre blanc à 4,5:1 au moins. La première est la marque, déclarée plus bas avec les autres
+	   jetons qui en sont tirés. La troisième est un jeton à part et non la terracotta, qui reste au geste
+	   public : le rouge et l'orange d'un composant disent une alerte, et aucun ne lit ces jetons. */
+	--color-phase-2: var(--color-lavande-fonce);
+	--color-phase-3: #A63823;
+	--color-phase-4: color-mix(in srgb, var(--color-vert-emeraude) 65%, black);
+
+	--color-text-main:var(--color-brand);
+	/* L'émeraude ne tient que 2,5:1 sur blanc : un texte vert d'une page publique, titre ou chiffre,
+	   lit cette encre plus sombre. 71 % la mène à 4,6:1, 72 % resterait au ras de 4,5:1. */
+	--color-encre-accent: color-mix(in srgb, var(--color-vert-emeraude) 71%, black);
+
+	--criterion-production: var(--color-vert-emeraude);
+	--criterion-resistance: var(--color-reference);
+	--criterion-work: var(--soil);
+	--criterion-quality: var(--color-lavande);
+
+	--font-title: 'Bricolage Grotesque', sans-serif;
+	--font-lead-text: 'Bitter', serif;
+	--font-text: 'DM Sans', sans-serif;
+
+	--shadow-vert: 0 0.9rem 1.85rem rgba(47, 187, 158, 0.08);
+
+	--util-chip-caret: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%235C5F5F' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+	--util-chip-caret-secondary: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%233B4790' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+	--util-chip-caret-white: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+
+	--shadow-v2: 0 4px 20px 0 rgba(0, 0, 0, 0.06);
+	--shadow-v2-selected: 0 4px 20px 0 rgba(0, 0, 0, 0.18);
+	--shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
+
+	/* La largeur d'un paragraphe à lire d'une traite, un chapô ou un texte d'accueil. */
+	--reading-width: 60ch;
+
+	/* La plus petite piste d'une grille util-cards-small : deux cartes tiennent sur la largeur d'un téléphone. */
+	--cards-small-width: 12rem;
+
+	/* Un jour des semaines d'un mois (`util-days-month`) : sa colonne, et la pastille qu'elle loge avec sa marge. */
+	--day-month-width: 3.75rem;
+	--day-month-calendar: 3.25rem;
+
+	/* La colonne qui nomme chaque rang d'une frise, devant l'axe : un nom tient sur sa ligne, et la colonne
+	   cesse de grandir avant de prendre à l'axe la place de ses années. */
+	--timeline-name-column: minmax(10rem, 16rem);
+
+	/* La colonne d'un identifiant saisi ou importé, comme un numéro de pièce : à sa longueur tant qu'il est
+	   court, puis à la ligne, pour qu'un identifiant sans point de césure ne prenne pas la place du texte. */
+	--identifier-column: fit-content(12rem);
+}
+
+/* Les jetons tirés de la marque pour les pages publiques. Une variable se calcule là où elle est
+   déclarée : posés sur :root seul, ils garderaient la couleur de Ouvretaferme dans une portée qui
+   redéfinit --color-brand, comme la page d'un réseau à sa couleur. Les bandes les recalculent, et
+   util-brand-scope se pose sur l'élément qui redéfinit la marque. */
+:root,
+.util-page-hero,
+.util-band,
+.util-brand-scope {
+	/* Un filet décoratif, à 1,31:1 sur blanc : il entoure une carte, jamais seul un champ ou un bouton. */
+	--border-brand: color-mix(in srgb, var(--color-brand) 16%, white);
+	/* Les titres des pages publiques, un cran sous la marque. */
+	--color-encre: color-mix(in srgb, var(--color-brand) 55%, black);
+	--color-phase-1: var(--color-brand);
+}
+
+/* La bande d'accueil prend la couleur de la portée par --primary-on-light, que la portée pose avec la
+   marque qu'elle redéfinit. Sans elle, chaque jeton est invalide au calcul et la bande retombe sur les
+   replis de component.css. Sans color-mix(), un jeton refusé rendrait le fond transparent au lieu du
+   repli : la règle ne s'applique donc qu'aux navigateurs qui le connaissent, et aucune valeur calculée
+   d'avance ne peut servir une couleur choisie. L'encre se mêle de noir : --primary-on-light tient le
+   contraste sur le fond de la page, pas sur la bande qu'elle teinte.
+   Le fond et l'encre de la bande se posent aussi sur la portée, pour qu'un repère de la page, comme
+   l'étape choisie d'une leçon, prenne la teinte de la bande sans en recopier le mélange. La bande
+   les recalcule pour elle-même, --primary-on-light pouvant être redéfinie entre la portée et elle. */
+@supports (color: color-mix(in srgb, white, black)) {
+
+	.util-brand-scope,
+	.util-brand-scope .util-page-hero {
+		--page-hero-background: color-mix(in srgb, var(--primary-on-light) 9%, white);
+		--page-hero-ink: color-mix(in srgb, var(--primary-on-light) 70%, black);
+	}
+
+	.util-brand-scope .util-page-hero {
+		--page-hero-disc-large: color-mix(in srgb, var(--primary-on-light) 15%, white);
+		--page-hero-disc-small: color-mix(in srgb, var(--primary-on-light) 22%, white);
+		--icon-raised-color: var(--primary-on-light);
+	}
+
+}
+
+/* `color-mix()` n'existe que depuis Chrome 111, et Chrome s'arrête à la version 109 sous Windows 7. Une
+   variable dont la valeur est refusée rend toute propriété qui la lit invalide au calcul : le fond d'un
+   `btn-secondary` y devient transparent sous son encre blanche, et le bouton disparaît. Ces valeurs sont
+   les mélanges ci-dessus calculés d'avance : elles se recalculent quand une couleur claire change. */
+@supports not (color: color-mix(in srgb, white, black)) {
+
+	:root {
+		--background-paper: #f8f8f8;
+		--background-column-hover: rgba(29, 75, 83, 0.06);
+		--production: #0b694d;
+		--production-dark: #084d38;
+		--commercialisation: #3b4790;
+		--commercialisation-dark: #2b346a;
+		--accounting: #1a6277;
+		--accounting-dark: #134757;
+		--settings: #653585;
+		--settings-dark: #582e73;
+		--amap: #7e223e;
+		--amap-dark: #76203a;
+		--amap-background: #f3ebee;
+		--amap-disc: #ecdee2;
+		--color-brand-25: rgba(29, 75, 83, 0.25);
+	}
+
+	:root {
+		--color-bg-turquoise: #d6f9f1;
+		--color-lavande-fonce: #5b65b1;
+		--color-bg-lavande: #ebecf6;
+		--color-phase-4: #1f7a4c;
+		--color-encre-accent: #218553;
+	}
+
+	:root,
+	.util-page-hero,
+	.util-band,
+	.util-brand-scope {
+		--border-brand: #dbe2e3;
+		--color-encre: #10292e;
+	}
+
+}
+
+@media (min-width: 576px) {
+
+	:root {
+		--box: 0.375rem 0.375rem 0.25rem #5551;
+		--box-hover: 0.5rem 0.5rem 0 #4441;
+		--box-selected: 0.5rem 0.5rem 0 #0002;
+	}
+
+}
+
+@media (max-width: 575px) {
+
+	:root {
+		--box: 0.25rem 0.25rem 0.175rem #5551;
+		--box-hover: 0.375rem 0.375rem 0 #4441;
+		--box-selected: 0.375rem 0.375rem 0 #0002;
+	}
+
+}
+
+::selection {
+	color: var(--primary);
+	background: #e5e5f3;
+}
+
+html {
+	font-size: 13px;
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+}
+
+@media (min-width: 1600px) and (min-height: 992px) {
+
+	html {
+		font-size: 15px;
+	}
+
+	@media (min-width: 1800px) {
+
+		html {
+			font-size: 16px;
+		}
+
+	}
+
+	@media (min-width: 2000px) {
+
+		html {
+			font-size: 17px;
+		}
+
+	}
+
+	@media (min-width: 2400px) {
+
+		html {
+			font-size: 18px;
+		}
+
+	}
+
+}
+
+@media (min-width: 1400px) and (max-width: 1599px) and (min-height: 992px) {
+
+	html {
+		font-size: 16px;
+	}
+
+}
+
+@media (min-width: 1400px) and (max-height: 992px) {
+
+	html {
+		font-size: 15px;
+	}
+
+}
+
+@media (min-width: 1300px) and (max-width: 1399px) {
+
+	html {
+		font-size: 15px;
+	}
+
+}
+
+@media (min-width: 1200px) and (max-width: 1299px) {
+
+	html {
+		font-size: 13px;
+	}
+
+}
+
+@media (min-width: 360px) and (max-width: 449px) {
+
+	html {
+		font-size: 12px;
+	}
+
+}
+
+@media (max-width: 359px) {
+
+	html {
+		font-size: 11px;
+	}
+
+}
+
+body {
+	margin: 0;
+	font-family: "Open Sans", sans-serif;
+	font-size: 1rem;
+	font-weight: 400;
+	line-height: 1.6;
+	color: var(--text);
+}
+
+p {
+	margin-top: 0;
+	margin-bottom: 0.66rem;
+}
+
+p:has(+ h1),
+p:has(+ h2),
+p:has(+ h3),
+p:has(+ h4),
+p:has(+ h5),
+p:has(+ h6) {
+	margin-bottom: 1rem;
+}
+
+[data-href],
+a {
+	cursor: pointer;
+	color: var(--secondary-on-light, var(--secondary));
+	text-decoration: none;
+}
+
+[data-href]:hover,
+a:hover {
+	text-decoration: underline;
+	color: inherit;
+}
+
+a.readonly {
+	cursor: default;
+}
+
+label {
+	display: inline-block;
+	margin-bottom: 0;
+}
+
+pre {
+	margin-bottom: 0.35rem;
+}
+
+address {
+	font-weight: normal;
+	font-style: normal;
+	line-height: 1.2;
+}
+
+img, svg {
+	vertical-align: middle;
+}
+
+ol, ul {
+	margin-top: 0;
+	margin-bottom: .75rem;
+	padding-left: 2rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-weight: normal;
+	margin: 0 0 1rem 0;
+	line-height: 1.2;
+}
+
+h5, h6 {
+	font-weight: normal;
+	margin-bottom: 0.5rem;
+}
+
+hr {
+	border-top: 1px solid var(--border);
+	margin-top: 2rem;
+	margin-bottom: 2rem;
+}
+
+code {
+	background: rgba(0, 0, 0, 0.05);
+	border-radius: var(--radius);
+	padding: 1rem;
+	display: block;
+	/* Un chemin ou une commande n'a pas de point de césure : sans cela, il pousse la page et fait
+	   défiler tout l'écran de côté. */
+	overflow-wrap: anywhere;
+}
+
+
+address {
+	margin: 0.5rem 0 0.5rem 1rem;
+	border-left: 2px solid var(--border);
+	padding-left: 1rem;
+}
+
+:root {
+	--radius-stick-lg: var(--radius);
+	--radius-stick-md: var(--radius);
+	--radius-stick-sm: var(--radius);
+	--radius-stick-xs: var(--radius);
+}
+
+table {
+	width: 100%;
+	margin-bottom: 1rem;
+	border-collapse: collapse;
+}
+
+/* Un tableau a la même allure sur toutes les pages, panneaux compris : ni carte ni ombre, ce sont ses
+   rangs qui le posent sur la page, et la police et l'interligne des pages de structure, qu'un gabarit
+   qui écrit son texte autrement (template-base.css) ne lui transmet pas. Une page qu'un réseau ou un
+   site habille garde la police qu'il a choisie (`--customFont`), tableau compris. À l'écran seulement :
+   un PDF remis à un tiers garde ceux de son gabarit (pdf.css). */
+@media screen {
+
+	table:not(.table-unstyled) {
+		border-radius: var(--radius);
+		font-family: var(--customFont, "Open Sans", sans-serif);
+		line-height: 1.6;
+	}
+
+	table:not(.table-unstyled) thead {
+		border-bottom: 2px solid var(--secondary-neutral);
+	}
+
+}
+
+table:not(.table-unstyled) tr > *:first-child {
+	padding-left: 1rem;
+}
+
+table:not(.table-unstyled) tr > *:last-child {
+	padding-right: 1rem;
+}
+
+@media (min-width: 1600px) {
+
+	table:not(.table-unstyled) tr > *:first-child {
+		padding-left: 1.5rem;
+	}
+
+	table:not(.table-unstyled) tr > *:last-child {
+		padding-right: 1.5rem;
+	}
+
+}
+
+table:not(.table-unstyled):not(.tr-even) tbody td,
+table:not(.table-unstyled):not(.tbody-even) tbody th {
+	background-color: var(--background-odd);
+}
+
+table:not(.table-unstyled):not(:has(thead)) tbody:first-child td:first-child {
+	border-top-left-radius: var(--radius);
+}
+
+table:not(.table-unstyled):not(:has(thead)) tbody:first-child td:last-child {
+	border-top-right-radius: var(--radius);
+}
+
+table:not(.table-unstyled) tbody:last-child tr:last-child td:first-child {
+	border-bottom-left-radius: var(--radius);
+}
+
+table:not(.table-unstyled) tbody:last-child tr:last-child td:last-child {
+	border-bottom-right-radius: var(--radius);
+}
+
+/* Une dernière ligne masquée garde son :last-child : le rayon se posait alors sur une ligne que
+   personne ne voit, et le bas du tableau redevenait carré. Il se reporte sur la dernière ligne
+   réellement affichée. Cas courant d'un tableau de saisie dont la ligne vierge se replie. */
+table:not(.table-unstyled) tbody:last-child tr:has(+ tr:last-child.hide) > *:first-child {
+	border-bottom-left-radius: var(--radius);
+}
+
+table:not(.table-unstyled) tbody:last-child tr:has(+ tr:last-child.hide) > *:last-child {
+	border-bottom-right-radius: var(--radius);
+}
+
+
+/* Un en-tête de tableau nomme la colonne, il ne la commente pas : capitales et
+   gris le rangent au niveau d'une étiquette, sous le contenu qu'il annonce. Sans
+   letter-spacing — l'espacement des capitales rend bien sur trois mots d'affiche,
+   pas sur sept intitulés d'un tableau qu'on parcourt. */
+table th {
+	padding: 0.75rem 0.5rem;
+	text-align: left;
+	vertical-align: bottom;
+	text-transform: uppercase;
+	font-size: 0.8rem;
+	color: var(--text-intermediate);
+}
+
+table:not(.table-unstyled) thead > *:first-child > *:first-child {
+	border-top-left-radius: var(--radius);
+}
+
+table:not(.table-unstyled) thead > *:first-child > *:last-child {
+	border-top-right-radius: var(--radius);
+}
+
+.stick-lg {
+
+	table {
+		border-collapse: separate;
+		border-spacing: 0;
+		border-radius: var(--radius-stick-lg);
+	}
+
+	table thead > *:first-child > *:first-child {
+		border-top-left-radius: var(--radius-stick-lg);
+	}
+
+	table thead > *:first-child > *:last-child {
+		border-top-right-radius: var(--radius-stick-lg);
+	}
+
+}
+
+.stick-md {
+
+	table {
+		border-radius: var(--radius-stick-md);
+	}
+
+	table thead > *:first-child > *:first-child {
+		border-top-left-radius: var(--radius-stick-md);
+	}
+
+	table thead > *:first-child > *:last-child {
+		border-top-right-radius: var(--radius-stick-md);
+	}
+
+}
+
+.stick-sm {
+
+	table {
+		border-radius: var(--radius-stick-sm);
+	}
+
+	table thead > *:first-child > *:first-child {
+		border-top-left-radius: var(--radius-stick-sm);
+	}
+
+	table thead > *:first-child > *:last-child {
+		border-top-right-radius: var(--radius-stick-sm);
+	}
+
+}
+
+.stick-xs {
+
+	table {
+		border-radius: var(--radius-stick-xs);
+	}
+
+	table thead > *:first-child > *:first-child {
+		border-top-left-radius: var(--radius-stick-xs);
+	}
+
+	table thead > *:first-child > *:last-child {
+		border-top-right-radius: var(--radius-stick-xs);
+	}
+
+}
+
+table td {
+	padding: 0.5rem;
+	vertical-align: baseline;
+}
+
+table tr.td-padding-xs td,
+table.td-padding-xs td {
+	padding-top: 0.25rem;
+	padding-bottom: 0.25rem;
+}
+
+@media (min-width: 1400px) {
+
+	table td {
+		padding: 0.5rem;
+	}
+
+	table th {
+		padding: 1rem 0.5rem;
+	}
+
+}
+
+table tr {
+	transition: background-color 0.25s;
+}
+
+table.tbody-hover tbody:hover tr > * {
+	background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+table.tbody-even tbody:nth-of-type(odd) tr > * {
+	background-color: var(--background-odd);
+}
+
+table.tbody-even tbody:nth-of-type(even) tr > * {
+	background-color: var(--background-even);
+}
+
+/* Un groupe de lignes : une tête (tbody.tbody-group) et ses enfants (tbody.tbody-group-sub), qui
+   se lisent comme une seule bande. La règle ci-dessus compte le tbody des enfants, même replié, et
+   décale l'alternance de tout ce qui suit un groupe : elle se recompte donc sans lui, ni sans un
+   groupe masqué, et les enfants prennent le fond de leur tête. Les lignes enfants portent tr-sub pour le retrait. */
+table.tbody-even > tbody:nth-child(odd of tbody:not(.tbody-group-sub, .hide)) > tr > *,
+table.tbody-even > tbody:nth-child(odd of tbody:not(.tbody-group-sub, .hide)) + tbody.tbody-group-sub > tr > * {
+	background-color: var(--background-odd);
+}
+
+table.tbody-even > tbody:nth-child(even of tbody:not(.tbody-group-sub, .hide)) > tr > *,
+table.tbody-even > tbody:nth-child(even of tbody:not(.tbody-group-sub, .hide)) + tbody.tbody-group-sub > tr > * {
+	background-color: var(--background-even);
+}
+
+tbody.tbody-group > tr:first-child > * {
+	border-top: 1px solid var(--border);
+}
+
+tbody.tbody-group-sub > tr + tr > * {
+	border-top: 1px dashed var(--border);
+}
+
+tbody.tbody-group-sub > tr:last-child > * {
+	border-bottom: 1px solid var(--border);
+}
+
+/* Défait le `font-size` et la `color` que `tr.tr-sub > td` impose plus bas à toute sous-ligne :
+   l'enfant d'un groupe est un objet de plein droit, pas une ligne de détail. `inherit` et non une
+   valeur, c'est ce que la cellule porterait sans cette règle. */
+tbody.tbody-group-sub > tr.tr-sub > td {
+	font-size: inherit;
+	color: inherit;
+}
+
+tbody.tbody-group tr.tr-title {
+	font-weight: normal;
+}
+
+/* Le groupe repliable : sa tête porte tbody-group-fold, et tbody-group-open quand ses enfants se
+   montrent. Le titre s'ouvre et se ferme comme un util-fold, chevron compris, mais la tête et ses
+   enfants sont deux tbody frères : c'est le sélecteur de voisin qui masque les enfants, aucun
+   tbody ne pouvant en contenir un autre. */
+tbody.tbody-group-fold:not(.tbody-group-open) + tbody.tbody-group-sub {
+	display: none;
+}
+
+.tbody-group-toggle,
+.tbody-group-toggle:hover {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-xs);
+	color: inherit;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+tbody.tbody-group-open .tbody-group-toggle > .util-fold-chevron {
+	transform: rotate(180deg);
+}
+
+/* Un fond de ligne se peint sur les cellules, jamais sur le <tr>.
+   Les coins arrondis du bas du tableau sont posés sur les td (border-collapse interdit de les
+   poser ailleurs) : un fond porté par la ligne s'étale par-dessus et rend le bas carré. Le défaut
+   ne se voyait qu'au repos — au survol, --background-hover est presque transparent et laissait
+   réapparaître le fond arrondi du tableau. */
+table.tr-hover tbody tr:hover > * {
+	background-color: var(--background-hover) !important;
+}
+
+table.tbody-hover tbody:hover tr > * {
+	background-color: var(--background-hover) !important;
+}
+
+/* Le :not() empêche un intertitre de prendre une couleur d'alternance, il ne l'empêche pas d'être
+   compté : nth-of-type compte tous les tr du tbody. Chaque titre intercalé décalait donc la parité
+   de tout ce qui le suit, jusqu'à donner deux rangs voisins du même fond de part et d'autre du
+   titre (mesuré le 2026-09-20). Le `of` recompte sur les seules lignes de données, comme
+   tbody-even plus haut, et rend la sélection elle-même : les :not() n'ont plus à être répétés.
+   Comme ils sont entrés dans le `of`, qui ajoute la spécificité de son argument, le sélecteur
+   pèse un type de moins qu'avant : une surcharge d'état lui passe devant plus facilement,
+   jamais l'inverse (mesuré le 2026-09-20). */
+table.tr-even tbody tr:nth-child(even of tr:not(.tr-title):not(.tr-sub)) > * {
+	background-color: var(--background-even);
+}
+
+table.tr-even tbody tr:nth-child(odd of tr:not(.tr-title):not(.tr-sub)) > * {
+	background-color: var(--background-odd);
+}
+
+table.tr-bordered tr:not(.tr-title) {
+	border-bottom: 1px dashed var(--border);
+}
+
+tr.row-highlight > * {
+	background-color: var(--background-dark) !important;
+}
+
+tr.tr-upper,
+tr.tr-upper td,
+tr.tr-upper th {
+	text-transform: uppercase;
+}
+
+tr.tr-bold > th,
+tr.tr-bold > td {
+	font-weight: bold;
+}
+tr.tr-light > td {
+	opacity: 0.5;
+}
+
+tr.tr-title {
+	font-weight: 550;
+	color: var(--text);
+	border-bottom: 1px solid var(--border);
+}
+
+tr.tr-title > * {
+	background-color: var(--background-odd);
+}
+
+tr.tr-title td,
+tr.tr-title th {
+	padding-top: 1rem;
+	padding-bottom: 0.5rem;
+	letter-spacing: 0.5px;
+}
+
+tr.tr-title h3,
+tr.tr-title h4 {
+	text-transform: none;
+	margin: 0.5rem 0;
+}
+
+tr.tr-sub > td {
+	padding-top: 0.35rem;
+	padding-bottom: 0.35rem;
+	font-size: 0.9rem;
+	color: var(--text-intermediate);
+}
+
+tr.tr-sub > td:first-child {
+	padding-left: 2rem;
+}
+
+table.tr-even tbody tr.tr-sub > * {
+	background-color: var(--background-odd);
+}
+
+@media (max-width: 767px) {
+
+	tr.tr-sub > td:first-child {
+		padding-left: 1.25rem;
+	}
+
+}
+
+tr.tr-disabled {
+	opacity: 0.5;
+}
+
+/* Une échéance qui n'est pas encore échue, dans un tableau d'échéances : elle se lit, elle n'est pas
+   encore arrivée. Elle prend la place de la couleur de tr-sub, y compris dans un groupe, où
+   `tbody.tbody-group-sub > tr.tr-sub > td` la remet à `inherit` : d'où le même sélecteur, posé après. */
+tr.tr-future > td,
+tbody.tbody-group-sub > tr.tr-future > td {
+	color: var(--muted);
+	font-style: italic;
+}
+
+.td-bold {
+	font-weight: bold;
+}
+
+
+thead.thead-sticky {
+	position: sticky;
+	top: var(--mainSticky);
+	z-index: 99; /* Doit passer sous la nav */
+}
+
+/* Les écrans d'administration sont en gabarit « base » : leur barre du haut est `#root-nav`, collée
+   à 0 et haute de `--nav-main`. `--mainSticky` y vaut 0, il décrit la colonne latérale d'une
+   structure, que ces écrans n'ont pas. */
+[data-admin] thead.thead-sticky {
+	top: var(--nav-main);
+}
+
+/* Un en-tête collant recouvre les rangs qui défilent sous lui : il prend le fond de ce qui porte le
+   tableau, la page, la feuille ou le panneau, qui le disent dans `--background-body`. */
+thead.thead-sticky > tr > * {
+	background-color: var(--background-body);
+}
+
+/* Un panneau est blanc (lime.css), quelle que soit la page qui l'ouvre. */
+.panel-dialog {
+	--background-body: var(--background-surface);
+}
+
+/* Le pendant de util-table-sticky-column pour une <table>. Pas de fond ici : tr-even et la règle
+   par défaut le posent déjà sur chaque cellule de tbody. L'en-tête et le pied n'en ont pas : la règle
+   suivante leur donne le fond de ce qui porte le tableau, et celle d'après le blanc d'une table-unstyled, qui
+   donne aussi le sien à sa première colonne. Une cellule fusionnée qui ouvre un rang défile : fixée,
+   elle recouvrirait les colonnes qu'elle chapeaute. */
+table.td-sticky-first tr > :first-child:not([colspan]) {
+	position: sticky;
+	left: 0;
+	z-index: 1;
+	box-shadow: 0.25rem 0 0.25rem -0.25rem color-mix(in srgb, var(--text) 35%, transparent);
+}
+
+/* Le pendant de `.util-table-sticky-column.is-fitted` : `MainStickyColumn` pose `is-fitted` quand rien
+   ne défile, et l'ombre, qui n'annonce alors aucune colonne passée dessous, s'éteint. */
+table.td-sticky-first.is-fitted tr > :first-child:not([colspan]) {
+	box-shadow: none;
+}
+
+table.td-sticky-first :is(thead, tfoot) tr > :first-child:not([colspan]) {
+	background-color: var(--background-body);
+}
+
+table.table-unstyled.td-sticky-first :is(thead, tfoot) tr > :first-child:not([colspan]) {
+	background-color: var(--background-surface);
+}
+
+/* --background-hover est presque transparent : sur la cellule fixe, il laisserait voir les colonnes
+   qui défilent dessous. Il se peint en calque sur le fond du tableau. */
+table.td-sticky-first.tr-hover tbody tr:hover > :first-child:not([colspan]),
+table.td-sticky-first.tbody-hover tbody:hover tr > :first-child:not([colspan]) {
+	background-color: var(--background-surface) !important;
+	background-image: linear-gradient(var(--background-hover), var(--background-hover));
+}
+
+/* Le pendant pour une util-table, dont l'en-tête n'est pas un thead. Le fond est de la règle et non
+   de l'appelant : un en-tête collant sans fond laisse passer les rangées à travers, donc il n'y a pas
+   d'écran où l'omettre soit juste. C'est celui de ce qui porte le tableau, comme pour un thead ; un
+   tableau qui en veut un autre le pose sur sa propre classe, comme `util-table-seeds` dans
+   component.css. */
+.util-table-sticky > .util-table-head {
+	position: sticky;
+	top: var(--mainSticky);
+	z-index: 99;
+	background-color: var(--background-body);
+}
+
+[data-admin] .util-table-sticky > .util-table-head {
+	top: var(--nav-main);
+}
+
+/* Une page publique n'a que la barre du gabarit « base », haute de --nav-base-height à toute largeur :
+   --mainSticky y réserverait une barre de structure absente, --nav-main une hauteur qui n'est pas la sienne.
+   Cette barre est à z-index 10 (template-base.css) et non 100 comme en administration : à 99, l'en-tête que
+   la fin du tableau repousse vers le haut passerait par-dessus. */
+[data-template~="presentation"] .util-table-sticky > .util-table-head {
+	top: var(--nav-base-height);
+	z-index: 9;
+}
+
+/* La couche et l'ombre des cellules fixes sont déclarées par la table, pour qu'un écran qui fige une cellule de
+   plus la pose au même rang qu'elles et lui donne la même ombre, éteinte avec la leur. À un rang de moins, ce que
+   les cellules qui défilent positionnent et l'ombre de la première passeraient dessus. */
+.util-table-sticky-column {
+	--table-sticky-column-layer: 1;
+	--table-sticky-column-shadow: 0.25rem 0 0.25rem -0.25rem color-mix(in srgb, var(--text) 35%, transparent);
+}
+
+/* `MainStickyColumn` (main/static/js/stickyColumnAi.js) pose `is-fitted` quand l'enveloppe n'a rien à
+   faire défiler. L'ombre est posée par la feuille et le script l'éteint, dans ce sens et pas l'autre :
+   un écran qui ne charge pas le script garde le rendu d'avant, jamais une colonne dont le filet
+   annonce un défilement qui n'existe pas. */
+.util-table-sticky-column.is-fitted {
+	--table-sticky-column-shadow: none;
+}
+
+/* La cellule fixe prend le fond de son rang, alternance comprise : sans fond, les colonnes
+   défileraient à travers elle. Son `::after` couvre la gouttière qui la suit, où les cellules défilantes
+   passeraient sinon, et porte le filet d'ombre qui dit que quelque chose passe dessous. Elle s'étire
+   sur la hauteur du rang, que l'alignement sur la ligne de base laisserait à celle de son texte : une
+   cellule voisine sur deux lignes resterait visible sous elle.
+   La première cellule est celle d'une tête ou d'une ligne, posée sous la table ou dans un groupe sans boîte
+   (`display: contents`), dont les lignes sont des petits-enfants de la table. Un groupe est tout enfant de la
+   table qui n'est ni sa tête ni une ligne. L'intertitre et la ligne d'ajout prennent toute la largeur : collés,
+   ils ne bougeraient pas et leur ombre tomberait au bout de la ligne. Les sélecteurs passent par `:where()` pour
+   peser ce que pesait `> * > :first-child`, sur lequel les feuilles des poseurs se sont réglées. */
+.util-table-sticky-column > .util-table-head {
+	background-color: var(--table-head-background, var(--background-body));
+}
+
+.util-table-sticky-column > :where(.util-table-head, .util-table-row:not(.util-table-add)) > :first-child,
+.util-table-sticky-column > :where(:not(.util-table-head, .util-table-row)) > :where(.util-table-row:not(.util-table-add)) > :first-child,
+.util-table-sticky-column > :where(.util-table-title) > :is(:first-child, h2, h3, h4, h5, h6),
+.util-table-sticky-column > :where(:not(.util-table-head, .util-table-row)) > :where(.util-table-title) > :is(:first-child, h2, h3, h4, h5, h6),
+.util-table-sticky-column > :where(.util-table-add) > :first-child,
+.util-table-sticky-column > :where(:not(.util-table-head, .util-table-row)) > :where(.util-table-add) > :first-child {
+	position: sticky;
+	left: 0;
+	z-index: var(--table-sticky-column-layer);
+	align-self: stretch;
+	background-color: inherit;
+}
+
+/* Une cellule fixe d'en-tête s'étire pour porter le fond sur toute la hauteur de la barre : son
+   texte redescend au pied, là où `align-self: end` posait les autres. */
+.util-table-sticky-column > .util-table-head > :first-child {
+	align-self: stretch;
+	display: flex;
+	flex-direction: column;
+	justify-content: end;
+}
+
+.util-table-sticky-column > :where(.util-table-head, .util-table-row:not(.util-table-add)) > :first-child::after,
+.util-table-sticky-column > :where(:not(.util-table-head, .util-table-row)) > :where(.util-table-row:not(.util-table-add)) > :first-child::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 100%;
+	width: 0.5rem;
+	background-color: inherit;
+	box-shadow: var(--table-sticky-column-shadow);
+}
+
+/* L'intertitre et la ligne d'ajout restent des bandes qui défilent. Ce qui colle, c'est ce qu'ils portent au
+   début de la ligne : la première cellule et le titre de l'intertitre, le lien de la ligne d'ajout, sans quoi le
+   geste sortirait du cadre dès la première colonne passée. Ils sont posés par la règle des cellules fixes plus
+   haut, mais à leur largeur et à leur hauteur, et sans ombre : l'ombre est celle de la colonne, qu'ils traversent.
+   Ils restent collés là où ils sont au repos. La cellule d'une ligne porte son retrait en padding, à l'intérieur
+   de ce qui colle, quand la case et le titre de l'intertitre sont posés dans le padding de la bande et que la
+   position collée ne le compte pas : ils collent donc à `--table-edge`, le retrait que la bande déclare. Le titre
+   y ajoute `--table-title-sticky-left`, son écart à la case, que l'écran règle sur ce qui le précède, sa marge
+   ne comptant pas non plus. */
+.util-table-sticky-column > :where(.util-table-title) > :is(:first-child, h2, h3, h4, h5, h6),
+.util-table-sticky-column > :where(:not(.util-table-head, .util-table-row)) > :where(.util-table-title) > :is(:first-child, h2, h3, h4, h5, h6),
+.util-table-sticky-column > :where(.util-table-add) > :first-child,
+.util-table-sticky-column > :where(:not(.util-table-head, .util-table-row)) > :where(.util-table-add) > :first-child {
+	justify-self: start;
+	align-self: auto;
+}
+
+.util-table-sticky-column > :where(.util-table-title) > :is(:first-child, h2, h3, h4, h5, h6),
+.util-table-sticky-column > :where(:not(.util-table-head, .util-table-row)) > :where(.util-table-title) > :is(:first-child, h2, h3, h4, h5, h6) {
+	left: var(--table-edge);
+}
+
+/* Un titre en tête de l'intertitre n'a rien devant lui et colle au retrait seul. */
+.util-table-sticky-column > :where(.util-table-title) > :is(h2, h3, h4, h5, h6):not(:first-child),
+.util-table-sticky-column > :where(:not(.util-table-head, .util-table-row)) > :where(.util-table-title) > :is(h2, h3, h4, h5, h6):not(:first-child) {
+	left: calc(var(--table-edge) + var(--table-title-sticky-left, 0px));
+}
+
+/* Dans un conteneur qui défile en largeur, l'en-tête colle à ce conteneur et non plus à la page :
+   il ne suit plus la lecture, et `--mainSticky` le fait glisser sur les premières lignes. */
+.util-overflow thead.thead-sticky {
+	position: relative;
+	top: 0;
+}
+
+.util-overflow-frame thead.thead-sticky {
+	top: 0;
+}
+
+@media (max-width: 449px) {
+
+	.util-overflow-xs thead.thead-sticky {
+		position: relative;
+		top: 0;
+	}
+
+}
+
+@media (max-width: 575px) {
+
+	.util-overflow-sm thead.thead-sticky,
+	.util-overflow-frame thead.thead-sticky {
+		position: relative;
+		top: 0;
+	}
+
+}
+
+@media (max-width: 767px) {
+
+	.util-overflow-md thead.thead-sticky {
+		position: relative;
+		top: 0;
+	}
+
+}
+
+@media (max-width: 991px) {
+
+	.util-overflow-lg thead.thead-sticky {
+		position: relative;
+		top: 0;
+	}
+
+}
+
+@media (max-width: 1199px) {
+
+	.util-overflow-xl thead.thead-sticky {
+		position: relative;
+		top: 0;
+	}
+
+}
+
+div.div-even > *:nth-of-type(even) {
+	background-color: white;
+}
+
+div.div-even > *:nth-of-type(odd) {
+	background-color: var(--background-odd);
+}
+
+/* Un voile, pas une couleur : --secondary-highlight est à 2,7 % d'alpha et n'a de sens que
+   superposé au fond de la ligne. En background-color il occupe la même couche que le zébrage, qui
+   peint désormais les cellules — les deux s'excluent au lieu de se composer, et la colonne
+   surlignée restait blanche pendant que sa ligne grisait. En background-image il se pose par-dessus
+   le fond, quel qu'il soit : zébrage, survol ou ligne mise en avant. Le !important devient inutile,
+   les deux propriétés ne se disputant plus rien. */
+td.t-highlight {
+	background-image: linear-gradient(var(--secondary-highlight), var(--secondary-highlight));
+}
+
+@media (max-width: 1399px) {
+
+	.stick-xl {
+		width: var(--screen-width);
+		transform: translate3d(calc(-1 * var(--container-xl-padding)), 0, 0);
+		border-radius: 0 !important;
+	}
+
+}
+
+@media (max-width: 1199px) {
+
+	.stick-lg {
+		width: var(--screen-width);
+		transform: translate3d(calc(-1 * var(--container-lg-padding)), 0, 0);
+		border-radius: 0 !important;
+	}
+
+	:root {
+		--radius-stick-lg: 0;
+	}
+
+}
+
+@media (max-width: 991px) {
+
+	.stick-lg,
+	.stick-md {
+		width: var(--screen-width);
+		transform: translate3d(calc(-1 * var(--container-md-padding)), 0, 0);
+		border-radius: 0 !important;
+	}
+
+	:root {
+		--radius-stick-lg: 0;
+		--radius-stick-md: 0;
+	}
+
+}
+
+@media (max-width: 767px) {
+
+	.stick-lg,
+	.stick-md,
+	.stick-sm {
+		width: var(--screen-width);
+		transform: translate3d(calc(-1 * var(--container-sm-padding)), 0, 0);
+		border-radius: 0 !important;
+	}
+
+	.stick-lg table,
+	.stick-md table,
+	.stick-sm table {
+		border-radius: 0 !important;
+	}
+
+	:root {
+		--radius-stick-lg: 0;
+		--radius-stick-md: 0;
+		--radius-stick-sm: 0;
+	}
+
+}
+
+@media (max-width: 575px) {
+
+	.stick-lg,
+	.stick-md,
+	.stick-xs,
+	.stick-sm {
+		width: var(--screen-width);
+		transform: translate3d(calc(-1 * var(--container-xs-padding)), 0, 0);
+		border-radius: 0 !important;
+	}
+
+	:root {
+		--radius-stick-lg: 0;
+		--radius-stick-md: 0;
+		--radius-stick-sm: 0;
+		--radius-stick-xs: 0;
+	}
+
+}
+
+ul.list-inline {
+	margin-bottom: 0px;
+}
+
+/* Forms */
+input, button, select, optgroup, textarea {
+	margin: 0;
+	font-family: inherit;
+	font-size: inherit;
+	line-height: inherit;
+}
+
+button, select {
+	text-transform: none;
+}
+
+button {
+	cursor: pointer;
+}
+
+.click-waiting {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+.opacity-100 {
+	opacity: 1;
+}
+
+.opacity-75 {
+	opacity: .75;
+}
+
+.opacity-50 {
+	opacity: .5;
+}
+
+.opacity-25 {
+	opacity: .25;
+}
+
+.fs-2 {
+	font-size: 2rem;
+}
+
+.fs-3 {
+	font-size: 3rem;
+}
+
+.pt-0 {
+	padding-top: 0 !important;
+}
+
+.mt-0 {
+	margin-top: 0 !important;
+}
+
+.mt-1 {
+	margin-top: 1rem !important;
+}
+
+.mt-2 {
+	margin-top: 2rem !important;
+}
+
+.mt-3 {
+	margin-top: 3rem !important;
+}
+
+.mt-4 {
+	margin-top: 4rem !important;
+}
+
+.pb-0 {
+	padding-bottom: 0 !important;
+}
+
+.mb-0 {
+	margin-bottom: 0 !important;
+}
+
+.mb-1 {
+	margin-bottom: 1rem !important;
+}
+
+.mb-2 {
+	margin-bottom: 2rem !important;
+}
+
+.mb-3 {
+	margin-bottom: 3rem !important;
+}
+
+.mb-4 {
+	margin-bottom: 4rem !important;
+}
+
+.ml-0 {
+	margin-left: 0 !important;
+}
+
+.ml-1 {
+	margin-left: 1rem !important;
+}
+
+.ml-2 {
+	margin-left: 2rem !important;
+}
+
+.ml-3 {
+	margin-left: 3rem !important;
+}
+
+.ml-4 {
+	margin-left: 4rem !important;
+}
+
+.ml-5 {
+	margin-left: 5rem !important;
+}
+
+.mr-0 {
+	margin-right: 0 !important;
+}
+
+.mr-1 {
+	margin-right: 1rem !important;
+}
+
+.mr-2 {
+	margin-right: 2rem !important;
+}
+
+.mr-3 {
+	margin-right: 3rem !important;
+}
+
+.mr-4 {
+	margin-right: 4rem !important;
+}
+
+.mr-5 {
+	margin-right: 5rem !important;
+}
+
+.font-xl {
+	font-size: 120%;
+}
+
+.font-lg {
+	font-size: 110%;
+}
+
+.font-md {
+	font-size: 100%;
+}
+
+.font-sm {
+	font-size: 90%;
+}
+
+.font-xs {
+	font-size: 80%;
+}
+
+input[type=checkbox], input[type=radio] {
+	box-sizing: border-box;
+	padding: 0;
+	vertical-align: middle;
+}
+
+/* Text */
+.text-sm {
+	font-size: 0.9rem;
+}
+
+/* Icon */
+
+.asset-icon {
+	display: inline-block;
+	width: calc(1em + 1px);
+	min-width: calc(1em + 1px);
+	margin-top: -0.125rem;
+	height: 1em;
+	pointer-events: none;
+	/* Le symbole est mis à l'échelle pour tenir exactement dans la boîte : sans overflow visible,
+	   une hauteur fractionnaire (1em de 11,7px par exemple) fait rogner sa dernière rangée de pixels */
+	overflow: visible;
+}
+
+.asset-icon-lg {
+	font-size: 1.2em;
+}
+
+.asset-icon-rotate-90 {
+	transform: rotate(90deg);
+}
+
+.asset-icon-rotate--90 {
+	transform: rotate(-90deg);
+}
+
+.asset-icon-flip-h {
+	transform: scaleX(-1);
+}
+
+.asset-icon-flip-v {
+	transform: scaleY(-1);
+}
+
+/* Containers */
+:root {
+
+	--container-xs-padding: 0.5rem;
+	--container-sm-padding: 1rem;
+	--container-md-padding: 1.5rem;
+	--container-lg-padding: 1.5rem;
+	--container-xl-padding: 1.5rem;
+	--container-xxl-padding: 2rem;
+
+	--container-width: calc(var(--screen-width) - 2 * var(--container-padding) - var(--nav-width));
+
+}
+
+@media (max-width: 575px) {
+
+	:root {
+		--container-padding: var(--container-xs-padding);
+	}
+
+}
+
+@media (min-width: 576px) and (max-width: 767px) {
+
+	:root {
+		--container-padding: var(--container-sm-padding);
+	}
+
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+
+	:root {
+		--container-padding: var(--container-md-padding);
+	}
+
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+
+	:root {
+		--container-padding: var(--container-lg-padding);
+	}
+
+}
+
+@media (min-width: 1200px) and (max-width: 1599px) {
+
+	:root {
+		--container-padding: var(--container-xl-padding);
+	}
+
+}
+
+@media (min-width: 1600px) {
+
+	:root {
+		--container-padding: var(--container-xxl-padding);
+	}
+
+}
+
+@media (max-width: 575px) {
+
+	:root {
+		--responsive-padding: var(--container-xs-padding);
+	}
+
+}
+
+@media (min-width: 576px) {
+
+	:root {
+		--responsive-padding: 1rem;
+	}
+
+}
+
+.container {
+	width: var(--screen-width);
+	max-width: 1600px;
+	margin-left: auto;
+	margin-right: auto;
+	padding-left: var(--container-padding);
+	padding-right: var(--container-padding);
+}
+
+@media (max-width: 449px) {
+
+	.hide-xxs-down {
+		display: none !important;
+	}
+
+}
+
+@media (max-width: 575px) {
+
+	.hide-xs-down {
+		display: none !important;
+	}
+
+}
+
+@media (min-width: 450px) {
+
+	.hide-xs-up {
+		display: none !important;
+	}
+
+}
+
+@media (min-width: 576px) {
+
+	.hide-sm-up {
+		display: none !important;
+	}
+
+}
+
+@media (max-width: 767px) {
+
+	.hide-sm-down {
+		display: none !important;
+	}
+
+}
+
+@media (min-width: 768px) {
+
+	.hide-md-up {
+		display: none !important;
+	}
+
+}
+
+@media (max-width: 991px) {
+
+	.hide-md-down {
+		display: none !important;
+	}
+
+}
+
+@media (min-width: 992px) {
+
+	.hide-lg-up {
+		display: none !important;
+	}
+
+}
+
+@media (max-width: 1199px) {
+
+	.hide-lg-down {
+		display: none !important;
+	}
+
+}
+
+@media (max-width: 1599px) {
+
+	.hide-xl-down {
+		display: none !important;
+	}
+
+}
+
+@media (max-width: 1099px), (max-height: 599px) {
+
+	.hide-lateral-down {
+		display: none !important;
+	}
+
+}
+
+@media (min-width: 1200px) {
+
+	.hide-xl-up {
+		display: none !important;
+	}
+
+}
+@media (min-width: 1600px) {
+
+	.hide-xxl-up {
+		display: none !important;
+	}
+
+}
+
+@media (min-width: 1100px) and (min-height: 600px) {
+
+	.hide-lateral-up {
+		display: none !important;
+	}
+
+}
+
+.hide {
+	display: none !important;
+}
+
+.panel-dialog .hide-panel-in {
+	display: none !important;
+}
+
+:not(.panel-dialog) .hide-panel-out {
+	display: none !important;
+}
+
+.not-visible {
+	visibility: hidden;
+}
+
+body:not([data-touch="no"]) .hide-touch {
+	display: none !important;
+}
+
+body:not([data-touch="yes"]) .hide-notouch {
+	display: none !important;
+}
+
+.util-quick {
+	display: inline-block;
+	border-bottom: 2px dotted transparent;
+	margin-bottom: -2px;
+}
+
+.util-quick:not(:has(.btn)) {
+	padding-bottom: var(--space-xxs);
+}
+
+a.util-quick {
+	color: inherit;
+}
+
+.util-quick:hover:not(:has(.btn)) {
+	text-decoration: none;
+	border-color: var(--primary);
+	cursor: pointer;
+}
+
+.util-quick-dropdown {
+	padding: 1rem;
+	background-color: var(--primary);
+	color: white;
+	max-width: 30rem;
+}
+
+.util-quick-form {
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-row-gap: 0.5rem;
+	justify-items: stretch;
+}
+
+.util-quick-form h4 {
+	margin-bottom: 0;
+}
+
+table th,
+.util-table-header,
+.util-table-head > * {
+	font-size: 0.9rem;
+	align-self: end;
+	padding-top: 1rem;
+	padding-bottom: 1rem;
+	font-weight: 550;
+	line-height: 1.3;
+	text-transform: var(--table-head-case, uppercase);
+	color: var(--table-head-color, var(--text-intermediate));
+}
+
+
+/* Un tableau en grille.
+
+   Même châssis et mêmes couleurs qu'un `table`, mais les colonnes sont déclarées
+   dans la feuille de style plutôt que par le balisage : une media query peut donc
+   les redistribuer, là où un tableau n'a que le débordement horizontal à offrir
+   quand la fenêtre se resserre.
+
+   L'usage pose `grid-template-columns` sur `.util-table` ; les lignes reprennent
+   ces pistes en `subgrid` et n'ont rien à en savoir. Chacune reste **un seul
+   élément** : c'est ce qui lui permet de porter le survol, l'alternance et, en
+   repli, la redistribution de ses propres cellules sur deux rangs.
+
+	<div class="util-table util-table-even" style="grid-template-columns: 1fr 8rem">
+		<div class="util-table-head"><div>Produit</div><div>Prix</div></div>
+		<div class="util-table-title">Légumes</div>
+		<div class="util-table-row"><div>Carotte</div><div>2,50 €</div></div>
+	</div> */
+.util-table {
+	display: grid;
+	margin-bottom: 1rem;
+}
+
+/* Le pendant de la <table> : ni carte ni ombre, la police et l'interligne des pages de structure. */
+@media screen {
+
+	.util-table {
+		border-radius: var(--radius);
+		font-family: var(--customFont, "Open Sans", sans-serif);
+		line-height: 1.6;
+	}
+
+}
+
+.util-table-head,
+.util-table-row {
+	display: grid;
+	grid-column: 1 / -1;
+	grid-template-columns: subgrid;
+}
+
+/* `subgrid` n'existe que depuis Chrome 117, et Chrome s'arrête à la version 109 sous Windows 7 : la déclaration
+   y est refusée, la ligne n'a plus de pistes et toutes ses cellules s'empilent dans la première colonne. La ligne
+   reprend alors la liste des pistes du tableau, lignes nommées comprises, et son écart entre colonnes, que
+   `subgrid` lui aurait transmis ; elle garde sa boîte et ses rangs. Les pistes dimensionnées au contenu (`auto`,
+   `max-content`) se calculent ligne par ligne : une colonne peut s'écarter de plusieurs centaines de pixels
+   d'une ligne à l'autre quand leurs contenus diffèrent beaucoup, une ligne de formulaire sous des lignes de
+   texte par exemple. Lisible, pas aligné. */
+@supports not (grid-template-columns: subgrid) {
+
+	.util-table-head,
+	.util-table-row {
+		grid-template-columns: inherit;
+		column-gap: inherit;
+	}
+
+}
+
+/* Comme `vertical-align: baseline` sur une cellule : ce qui s'aligne d'une
+   colonne à l'autre, c'est le texte, pas le haut des cellules. */
+.util-table-row {
+	align-items: baseline;
+	transition: background-color 0.25s;
+	background-color: var(--background-odd);
+}
+
+:where(.util-table-row) {
+	border-bottom: var(--table-row-border, 0);
+}
+
+.util-table-head {
+	border-bottom: var(--table-head-border, 2px solid var(--secondary-neutral));
+}
+
+.util-table-row > * {
+	padding: 0.5rem;
+}
+
+/* Le vertical de l'en-tête vient de sa typographie, plus haut : ne poser ici que
+   l'horizontal, sinon le raccourci l'écrase et la barre d'en-tête perd la hauteur
+   d'un `th`. */
+.util-table-head > * {
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+}
+
+:where(.util-table-head > *) {
+	background-color: var(--table-head-background, transparent);
+}
+
+/* Le retrait de la première colonne passe par `--table-edge`, que les enfants d'un intertitre héritent : une
+   table à colonne fixe y colle sa case et son titre. */
+.util-table-head > *:first-child,
+.util-table-row > *:first-child,
+.util-table-title {
+	--table-edge: 1rem;
+	padding-left: var(--table-edge);
+}
+
+.util-table-head > *:last-child,
+.util-table-row > *:last-child {
+	padding-right: 1rem;
+}
+
+@media (min-width: 1600px) {
+
+	.util-table-head > *:first-child,
+	.util-table-row > *:first-child,
+	.util-table-title {
+		--table-edge: 1.5rem;
+	}
+
+	.util-table-head > *:last-child,
+	.util-table-row > *:last-child {
+		padding-right: 1.5rem;
+	}
+
+}
+
+/* L'alternance, sur le modèle de `table.tr-even`. Le `of .util-table-row` n'est pas
+   décoratif : `nth-of-type` compte les frères du même nom de balise, et l'en-tête
+   comme les intertitres d'une grille sont des `div` au même titre que les rangs.
+   Chaque intertitre décalait donc la parité de tout ce qui le suit, jusqu'à donner
+   deux rangs voisins de la même couleur de part et d'autre d'un titre (mesuré le
+   2026-09-20). La parité se compte sur les seuls rangs, et court d'un groupe au
+   suivant : deux rangs consécutifs ne portent jamais le même fond. Le `of` pèse aussi : il
+   ajoute la spécificité de son argument, et ce sélecteur est passé de trois classes à quatre.
+   Une surcharge d'état posée sur un rang doit donc peser une classe de plus qu'avant, sans quoi
+   elle cesse de peindre sans que rien ne lève. */
+.util-table-even .util-table-row:nth-child(odd of .util-table-row) {
+	background-color: var(--background-odd);
+}
+
+.util-table-even .util-table-row:nth-child(even of .util-table-row) {
+	background-color: var(--background-even);
+}
+
+.util-table-hover .util-table-row:hover {
+	background-color: var(--background-hover) !important;
+}
+
+/* Le pendant de `table.tr-bordered` : les lignes se séparent par un filet plutôt
+   que par une alternance de fond. À préférer quand les cellules portent des
+   champs de saisie — deux fonds qui alternent derrière des entrées blanches se
+   lisent comme deux états, et on cherche lequel des deux veut dire quelque chose.
+
+   Le filet est posé sur la ligne et non sur ses cellules : une grille en subgrid
+   n'a pas de bordure de rang, et une bordure par cellule laisse des trous dans les
+   gouttières. */
+.util-table-bordered .util-table-row {
+	border-bottom: 1px dashed var(--border);
+}
+
+.util-table-bordered .util-table-row:last-child {
+	border-bottom: 0;
+}
+
+/* Un filet plein au-dessus d'une ligne qui ouvre un groupe, quand le groupe n'a pas
+   d'intertitre (`util-table-title`) : sa première ligne le nomme, les suivantes le
+   continuent. Dans une table à filets, le tireté de la ligne d'avant se retire, sans
+   quoi les deux traits se doubleraient. */
+.util-table .util-table-row.util-table-break {
+	border-top: 1px solid var(--border);
+}
+
+.util-table-bordered .util-table-row:has(+ .util-table-break) {
+	border-bottom: 0;
+}
+
+/* Le pendant de `tr.tr-title` : un intertitre sur toute la largeur. */
+.util-table-title {
+	grid-column: 1 / -1;
+	padding-top: 1rem;
+	padding-bottom: 0.5rem;
+	padding-right: 1rem;
+	font-weight: 550;
+	letter-spacing: 0.5px;
+	color: var(--text);
+	background-color: var(--background-odd);
+	border-bottom: 1px solid var(--border);
+}
+
+/* Le pendant de `tbody-group` : une tête (util-table-group) et ses rangs (util-table-group-sub), qui se
+   lisent comme une seule bande. Le filet est une ombre intérieure et non une bordure : il court ainsi sans
+   coupure de la tête au dernier rang, et ne décale pas la première colonne des rangs voisins. */
+.util-table > .util-table-group,
+.util-table > .util-table-group-sub {
+	box-shadow: inset 3px 0 0 var(--secondary);
+}
+
+/* Le pendant de `colspan` : une cellule qui prend toute la ligne. */
+.util-table-full {
+	grid-column: 1 / -1;
+}
+
+.util-table > *:first-child {
+	border-top-left-radius: var(--radius);
+	border-top-right-radius: var(--radius);
+}
+
+.util-table > *:last-child {
+	border-bottom-left-radius: var(--radius);
+	border-bottom-right-radius: var(--radius);
+}
+
+.td-min-content {
+	width: 1%;
+	white-space: nowrap;
+}
+
+.td-vignette {
+	width: 1%;
+	vertical-align: middle;
+}
+
+
+td.td-vertical-align-middle,
+.td-vertical-align-middle td,
+th.td-vertical-align-middle,
+.td-vertical-align-middle th {
+	vertical-align: middle;
+}
+
+td.td-vertical-align-top,
+.td-vertical-align-top td,
+th.td-vertical-align-top,
+.td-vertical-align-top th {
+	vertical-align: top;
+}
+
+tr:not(:last-child):has(> .td-border) .td-border {
+	border-bottom: 1px dashed var(--border);
+}
+
+.td-checkbox {
+	text-align: center;
+	width: 1%;
+}
+
+.td-checkbox > label {
+	display: flex;
+	align-items: stretch;
+	width: 3rem;
+	justify-content: center;
+	padding: 0.5rem;
+	margin: -0.5rem;
+	transform: translate(0, 0.25rem);
+}
+
+.td-checkbox > label input {
+	width: 1.2rem;
+	height: 1.2rem;
+}
+
+/* Flex */
+.flex-wrap {
+	flex-wrap: wrap;
+}
+
+.flex-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.flex-align-center {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.flex-justify-space-between {
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.flex-justify-center {
+	justify-content: center;
+}
+
+/* Text */
+.text-start {
+	text-align: left;
+}
+.text-end {
+	text-align: right;
+}
+.text-center {
+	text-align: center;
+}
+
+.text-upper {
+	text-transform: uppercase;
+}
+.text-lower {
+	text-transform: lowercase;
+}
+/* Une adresse ou un mot sans espace n'a pas de point de coupure : il fixe la largeur minimale de sa
+   boîte, et une carte de grille ou une bande en flex sort alors de l'écran. */
+.text-break {
+	overflow-wrap: anywhere;
+}
+.text-ucfirst::first-letter {
+	text-transform: capitalize;
+}
+/* Colors */
+.color-text {
+	color: var(--text) !important;
+}
+.color-primary {
+	color: var(--primary) !important;
+}
+.color-secondary {
+	color: var(--secondary) !important;
+}
+.color-info {
+	color: var(--info) !important;
+}
+.color-success {
+	color: var(--success) !important;
+}
+.color-success a {
+	color: var(--success) !important;
+	text-decoration: underline;
+}
+.color-danger {
+	color: var(--danger) !important;
+}
+.color-danger a {
+	color: var(--danger) !important;
+	text-decoration: underline;
+}
+.color-careful {
+	color: var(--careful) !important;
+}
+.color-careful a {
+	color: var(--careful) !important;
+	text-decoration: underline;
+}
+.color-warning {
+	color: var(--warning) !important;
+}
+.color-warning a {
+	color: var(--warning) !important;
+	text-decoration: underline;
+}
+.color-warning-on-light {
+	color: var(--warning-on-light) !important;
+}
+.color-danger-on-light {
+	color: var(--danger-on-light) !important;
+}
+.color-encre-accent {
+	color: var(--color-encre-accent) !important;
+}
+.color-muted {
+	color: var(--muted) !important;
+}
+.color-muted-light {
+	color: var(--muted-light) !important;
+}
+.color-white {
+	color: white !important;
+}
+
+.color-selling {
+	color: var(--selling);
+}
+
+.color-accounting {
+	color: var(--accounting);
+}
+
+.color-commercialisation {
+	color: var(--commercialisation);
+}
+
+.color-commercialisation-light {
+	color: var(--commercialisation-light);
+}
+
+.color-production {
+	color: var(--production);
+}
+
+.color-settings {
+	color: var(--settings);
+}
+
+.color-todo {
+	color: var(--todo);
+}
+
+.color-pro {
+	color: var(--pro);
+}
+
+.color-private {
+	color: var(--private);
+}
+
+.color-game {
+	color: var(--game);
+}
+.color-facturation-electronique {
+	color: var(--facturation-electronique);
+}
+
+/* Background */
+.bg-primary {
+	background-color: var(--primary) !important;
+}
+.bg-secondary {
+	background-color: var(--secondary) !important;
+}
+.bg-info {
+	background-color: var(--info) !important;
+}
+.bg-success {
+	background-color: var(--success) !important;
+}
+.bg-danger {
+	background-color: var(--danger) !important;
+}
+.bg-warning {
+	background-color: var(--warning) !important;
+}
+.bg-muted {
+	background-color: var(--muted) !important;
+}
+.bg-background {
+	background-color: var(--background) !important;
+}
+.bg-background-light {
+	background-color: var(--background-light) !important;
+}
+.bg-background-even {
+	background-color: var(--background-even) !important;
+}
+.bg-background-body {
+	background-color: var(--background-body) !important;
+}
+.bg-white {
+	background-color: white !important;
+}
+
+
+.bg-neon {
+	background-color: var(--color-neon) !important;
+}
+
+.bg-lavande {
+	background-color: var(--color-lavande) !important;
+}
+
+.bg-terracota {
+	background-color: var(--color-terracota) !important;
+}
+
+
+.bg-harvest {
+	background-color: var(--harvest) !important;
+}
+.bg-todo {
+	background-color: var(--todo) !important;
+}
+.bg-done {
+	background-color: var(--done) !important;
+}
+.bg-order {
+	background-color: var(--order) !important;
+}
+.bg-selling {
+	background-color: var(--selling) !important;
+}
+.bg-production {
+	background-color: var(--production) !important;
+}
+.bg-open-field {
+	background-color: var(--open-field) !important;
+}
+.bg-greenhouse {
+	background-color: var(--greenhouse) !important;
+}
+.bg-commercialisation {
+	background-color: var(--commercialisation) !important;
+}
+.bg-accounting {
+	background-color: var(--accounting) !important;
+}
+.bg-settings {
+	background-color: var(--settings) !important;
+}
+
+.bg-pro {
+	background-color: var(--pro);
+}
+
+.bg-private {
+	background-color: var(--private);
+}
+
+.bg-shop {
+	background-color: var(--shop) !important;
+}
+
+.bg-game {
+	background-color: var(--game) !important;
+}
+
+.bg-confirmed {
+	background-color: var(--confirmed) !important;
+}
+
+.bg-prepared {
+	background-color: var(--prepared) !important;
+}
+
+.bg-delivered {
+	background-color: var(--delivered) !important;
+}
+
+
+/* Borders */
+
+.border-accounting {
+	border-color: var(--accounting) !important;
+}
+.border-danger {
+	border: 1px solid var(--danger);
+}
+.border-warning {
+	border: 1px solid var(--warning);
+}
+.border-success {
+	border: 1px solid var(--success);
+}
+
+/* Annotation */
+
+.annotation {
+	font-size: 0.9rem;
+	font-weight: bold;
+	border-bottom-width: 2px;
+	border-bottom-style: solid;
+}
+
+.annotation-lg {
+	font-size: 1rem;
+}
+
+
+/* Waiter */
+@keyframes waiterRotate {
+	 0% { transform: rotate(0deg); }
+	 100% { transform: rotate(360deg); }
+}
+
+.waiter {
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	left: 0;
+	background-color: #fffc;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 4rem;
+	color: var(--secondary);
+}
+
+.waiter .asset-icon {
+	animation: waiterRotate 2s linear infinite;
+}
+
+
+/* Tabs */
+.nav {
+	display: flex;
+	flex-wrap: wrap;
+	column-gap: 0.5rem;
+	padding-left: 0;
+	margin-bottom: 0;
+	list-style: none;
+}
+
+.nav.nav-background {
+	background-color: #fafafa;
+	border: 1px solid #eee;
+	border-radius: 3px;
+	margin-top: 1rem;
+	padding: 0.75rem;
+}
+
+.emoji {
+	height: 1.52em;
+	width: 1.52em;
+	margin: 0 .05em 0 .1em;
+	vertical-align: -0.5em;
+}
+
+
+.h-menu,
+.h-back {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background-color: var(--primary);
+	color: white;
+	border-radius: 50%;
+	font-size: 75%;
+	width: 2.75rem;
+	height: 2.75rem;
+	line-height: 1;
+	margin-right: .5em;
+	transition: background-color 0.5s;
+}
+
+@media print {
+
+	.h-menu,
+	.h-back {
+		display: none;
+	}
+
+}
+
+.h-menu-wrapper {
+	font-size: 2rem;
+	height: 2.75rem;
+	display: inline-block;
+}
+
+@media (max-width: 575px) {
+
+	.h-menu,
+	.h-back {
+		width: 2.5rem;
+		height: 2.5rem;
+	}
+
+	.h-menu-wrapper {
+		height: 2.5rem;
+	}
+
+}
+
+@media (min-width: 449px) and (max-width: 575px) {
+
+	.h-menu-wrapper {
+		font-size: 2rem;
+	}
+
+}
+
+@media (max-width: 449px) {
+
+	.h-menu-wrapper {
+		font-size: 1.75rem;
+	}
+
+}
+
+a.h-back {
+	text-decoration: none;
+}
+
+@media (max-width: 767px) {
+
+	.h-back {
+		display: none;
+	}
+
+}
+
+.h-menu:hover,
+.h-back:hover {
+	color: white;
+	background-color: var(--primary);
+}
+
+/* User settings  */
+
+
+@media print {
+
+	nav,
+	header,
+	footer {
+		display: none !important;
+	}
+
+	.util-print-invisible {
+		visibility: hidden !important;
+	}
+
+	.util-print-hide {
+		display: none !important;
+	}
+
+	.util-print-block {
+		display: block !important;
+	}
+
+	.util-print-break-after {
+		page-break-after: always;
+	}
+
+	.util-print-break-inside-avoid {
+		break-inside: avoid;
+	}
+
+}

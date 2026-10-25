@@ -1,0 +1,227 @@
+Aid:
+  # Un dispositif d'aide aux structures agricoles, stable d'une année à l'autre : ce qui change chaque
+  # année (dates, taux d'un appel) vit sur aid\Edition. Catalogue commun, sans colonne structure.
+  id: serial32
+  name: text8(1, 250) @collate(general)
+  summary: ?text8(1, 250) @collate(general)
+  conditions: ?editor16
+  organization: aid\Organization # L'organisme qui accorde l'aide, celui que la fiche affiche ; les autres rôles sont dans aid\AidOrganization
+  level: enum(NATIONAL, PAC, REGION, DEPARTMENT, INTERCOMMUNAL, OTHER)
+  type: enum(GRANT, LOAN, ADVANCE, GUARANTEE, TAX, SOCIAL, SERVICE, LAND)
+  calendar: enum(PERMANENT, CALL, CAMPAIGN, AUTOMATIC)
+  # Le taux ou le montant tel que l'organisme le publie, sans lequel une aide ne se publie pas
+  # (Aid::acceptPublish()), sauf quand l'organisme n'en publie aucun (rateUnpublished) ; les champs
+  # chiffrés qui suivent sont facultatifs. Vide à la reprise quand la source ne le donne pas à lire.
+  rate: ?text16(1, 1000) @collate(general)
+  rateUnpublished: bool = FALSE # L'organisme ne publie ni taux ni montant : la relecture l'a lu sur sa source, et l'aide se publie sans (Aid::getPublishMissing())
+  ratePercentMax: ?decimal(5, 2, 0.0, 100.0)
+  amountMax: ?decimal(12, 2, 0.0, null)
+  amountUnit: ?enum(EURO, PER_HECTARE, PER_UGB, PER_HEAD, PER_METER, PER_LITER)
+  floor: ?decimal(12, 2, 0.0, null)
+  ceiling: ?decimal(12, 2, 0.0, null)
+  boundBase: ?enum(EXPENSE, AID) # L'assiette de floor et ceiling : la dépense éligible ou l'aide versée
+  boundPeriod: ?enum(YEAR) # La période de floor et ceiling, vide quand ils bornent toute l'aide
+  productions: json = PHP([]) # Les fqn de structure\Production concernés, vide pour toutes les productions
+  labels: ?set(AB, AOP, AOC, IGP, LABEL_ROUGE, STG, HVE) # Les labels exigés : l'aide est réservée à qui les porte
+  labelsBonus: ?set(AB, AOP, AOC, IGP, LABEL_ROUGE, STG, HVE) # Les labels qui bonifient une aide ouverte à tous, sans la réserver
+  beneficiaries: ?set(FARM, YOUNG_FARMER, NEW_FARMER, CUMA, GROUP, COMMUNITY, ASSOCIATION, LANDOWNER)
+  direct: bool = TRUE # Faux quand la structure ne dépose pas elle-même : la fiche nomme alors le demandeur, l'aide reste affichée
+  depositUrl: ?url # Le site où la structure dépose son dossier, quand ce n'est pas la source officielle
+  commitmentRule: ?text16(1, 1000) # Ce qui fait perdre l'aide s'il est fait trop tôt (devis signé, achat), tel que la source le dit
+  piecesUnpublished: bool = FALSE # L'organisme ne publie pas la liste des pièces : la fiche le dit à la place de la liste
+  parent: ?aid\Aid # Le dispositif dont l'aide est un volet
+  keywords: ?text8(1, 250) @collate(general) # Les mots de la recherche absents du texte
+  status: enum(DRAFT, PUBLISHED, ARCHIVED) = DRAFT
+  verification: enum(PRIMARY, RELAY, TO_CHECK, CONFLICT) = TO_CHECK # La confiance dans le contenu, indépendante de status
+  checkedAt: ?date # La dernière lecture de la source officielle par une personne
+  checkedBy: ?user\User
+  piecesCheckedAt: ?date # La dernière relecture de la liste des pièces par une personne (AidLib::checkPieces()), jamais posée par un agent
+  publishedAt: ?datetime
+  notes: ?text16(1, null) # Ce que la recherche a relevé sans que le modèle le structure (bonifications, sources lues, réserves), pour la relecture ; jamais affiché aux structures
+  seedDifferences: ?json # Ce qu'une reprise aurait écrit sur une aide relue, qu'elle ne réécrit pas (ImportLib::seedAid()) : propriété par propriété, et les lignes filles ajoutées ou retirées, jusqu'à ce que l'équipe tranche
+  seedKept: ?text8(64, 64) @charset(ascii) # L'empreinte (sha256) du dernier écart que l'équipe a gardé : une reprise qui rapporte le même ne le réécrit pas
+  aliases: json = PHP([]) # Les identifiants de recherche fusionnés dans cette aide, pour qu'une reprise ne la recrée pas
+  createdAt: datetime = SPECIAL(now)
+  updatedAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["organization"],
+    ["parent"]
+  ]
+  SEARCH: [
+    ["name", "summary", "keywords"]
+  ]
+
+AidLink:
+  # Une conditionnalité entre deux aides : aid requiert, exclut ou complète target.
+  id: serial32
+  aid: aid\Aid
+  target: aid\Aid
+  kind: enum(REQUIRES, EXCLUDES, COMPLEMENTS)
+  INDEX: [
+    ["target"]
+  ]
+  UNIQUE: [
+    ["aid", "target", "kind"]
+  ]
+
+AidOrganization:
+  id: serial32
+  aid: aid\Aid
+  organization: aid\Organization
+  role: enum(FUNDER, COFUNDER, INSTRUCTOR, PAYER, DESK, RELAY)
+  INDEX: [
+    ["organization"]
+  ]
+  UNIQUE: [
+    ["aid", "organization", "role"]
+  ]
+
+AidPiece:
+  # Une pièce à fournir pour l'aide, à un moment du dépôt : une pièce courante (piece) ou un nom libre
+  # (name), jamais les deux (AidPiece::properties()). L'ordre se fait par moment puis par id.
+  id: serial32
+  aid: aid\Aid
+  moment: enum(APPLICATION, PAYMENT)
+  piece: ?aid\Piece
+  name: ?text8(1, 250)
+  note: ?text8(1, 250) # La condition de la ligne, quand la pièce ne vaut pas pour tous
+  url: ?url # Le modèle que l'organisme donne à remplir, jamais une copie hébergée
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["aid"],
+    ["piece"]
+  ]
+
+AidTag:
+  id: serial32
+  aid: aid\Aid
+  tag: aid\Tag
+  INDEX: [
+    ["tag"]
+  ]
+  UNIQUE: [
+    ["aid", "tag"]
+  ]
+
+Area:
+  # Le périmètre d'une aide, toujours ramené au département, seul niveau que le profil d'une structure
+  # connaît. Une aide nationale ou PAC sans ligne vaut partout ; une ligne la borne.
+  id: serial32
+  aid: aid\Aid
+  department: text8(2, 3) @charset(ascii) # Le code INSEE, 2A et 2B compris (AidSetting::DEPARTMENTS)
+  epci: ?text8(9, 9) @charset(ascii) # Le SIREN de l'EPCI, stocké sans servir au filtre
+  commune: ?text8(5, 5) @charset(ascii) # Le code INSEE de la commune, stocké sans servir au filtre
+  note: ?text8(1, 250) # Ce que le département ne dit pas : zone de montagne, aire de captage, communes isolées
+  INDEX: [
+    ["department"]
+  ]
+  # Une seule ligne par département tant qu'aucune ne descend à l'EPCI ou à la commune : MySQL accepte
+  # plusieurs NULL dans une clé unique, donc une clé qui les inclurait ne refuserait aucun doublon.
+  UNIQUE: [
+    ["aid", "department"]
+  ]
+
+Edition:
+  # Une fenêtre datée de l'aide. state se lit à part des dates : une enveloppe épuisée ferme un appel
+  # avant sa date de clôture. Une aide PERMANENT n'en porte que pour dire la fin du dispositif : elle
+  # se dépose au fil de l'eau, mais plus après cette date.
+  id: serial32
+  aid: aid\Aid
+  name: ?text8(1, 100) @collate(general)
+  startDate: ?date
+  endDate: ?date
+  state: enum(OPEN, SUSPENDED, EXHAUSTED, CLOSED) = OPEN
+  rate: ?text16(1, 1000) @collate(general) # L'emporte sur celui de l'aide le temps de l'édition
+  ceiling: ?decimal(12, 2, 0.0, null) # L'emporte sur celui de l'aide le temps de l'édition, sur la même assiette (Aid.boundBase)
+  url: ?url
+  checkedAt: ?date
+  createdAt: datetime = SPECIAL(now) # Une relecture de ce jour ou d'après éteint « appel sans date de fin » pour cette édition (AidLib::getReviewUndatedSql())
+  INDEX: [
+    ["aid"]
+  ]
+
+Expected:
+  # Une ligne attendue d'une liste officielle fermée (méthode de recherche du 23/10) : ce qui doit
+  # exister sur un territoire. Son état se dérive de l'aide ou de l'organisme lié, qui bougent sans
+  # elle (Expected::getState()) : il n'est jamais stocké.
+  id: serial32
+  code: text8(1, 60) @charset(ascii) # La clé que le semis pose et retrouve (feader-84-203, department-15), la même d'une base à l'autre
+  family: enum(NATIONAL, FEADER, DEPARTMENT, GAL, PARK, EPCI)
+  region: ?text8(2, 2) @charset(ascii) # Le code de AidSetting::REGIONS, vide pour NATIONAL ; d'une ligne d'organisme, tiré de department par Expected::properties()
+  department: ?text8(2, 3) @charset(ascii) # Le code INSEE, posé pour DEPARTMENT, GAL, PARK et EPCI
+  number: ?text8(1, 20) @charset(ascii) # Le numéro officiel (203, 73.01, T02), vide pour un organisme
+  name: text8(1, 250) @collate(general) # L'intitulé de la liste officielle
+  aid: ?aid\Aid # L'aide qui résout une ligne FEADER ou NATIONAL
+  organization: ?aid\Organization # L'organisme d'une ligne DEPARTMENT, GAL, PARK ou EPCI, jamais avec aid (Expected::properties())
+  justification: ?text8(1, 250) @collate(general) # Pourquoi la ligne n'est pas ouverte sur ce territoire ou cette campagne
+  justificationUrl: ?url # L'adresse officielle qui le montre
+  listUrl: ?url # La liste officielle d'où vient la ligne
+  createdAt: datetime = SPECIAL(now)
+  updatedAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["aid"],
+    ["organization"],
+    ["region"]
+  ]
+  UNIQUE: [
+    ["code"]
+  ]
+
+Organization:
+  # Un organisme qui accorde, cofinance, instruit, paie ou relaie des aides.
+  id: serial32
+  name: text8(1, 250) @collate(general)
+  type: enum(STATE, OPERATOR, REGION, DEPARTMENT, EPCI, CHAMBER, WATER_AGENCY, PARK, GAL, ASSOCIATION, EUROPE, OTHER)
+  # Son échelon propre, distinct de celui des aides qu'il accorde (Aid.level) : une Région accorde aussi
+  # des aides PAC, et une agence de l'eau intervient sur un bassin qui n'est ni une région ni un département.
+  level: enum(EUROPE, NATIONAL, REGION, DEPARTMENT, INTERCOMMUNAL, LOCAL)
+  url: ?url
+  grants: bool = TRUE # Faux pour un relais, qui n'accorde rien en propre
+  createdAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["name"]
+  ]
+
+Piece:
+  # Une pièce courante, que plusieurs aides demandent (RIB, Kbis, attestation MSA), semée par aid/configure/piecesAi.
+  id: serial32
+  fqn: fqn # Le jeton de l'API
+  name: text8(1, 100) @collate(general)
+  position: int8(0, null)
+  createdAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["fqn"]
+  ]
+
+Source:
+  # Une url suivie par la veille (aid\WatchLib), qui n'écrit que les colonnes après kind. Une aide dont
+  # toutes les sources PRIMARY sont DEAD sort de l'affichage.
+  id: serial32
+  aid: aid\Aid
+  url: url
+  kind: enum(PRIMARY, RELAY, AGGREGATOR, PIECES)
+  status: enum(ALIVE, MOVED, DEAD) = ALIVE
+  statusAt: ?datetime # Quand la veille a posé l'état : une relecture de l'aide antérieure le remet dans la file
+  movedUrl: ?url # L'adresse où la page redirige (MOVED), que l'équipe reporte dans url ou non
+  fingerprint: ?text8(1, 64) @charset(ascii) # L'empreinte du texte utile de la page, comparée nuit après nuit
+  failures: int8(0, null) = 0 # Les nuits d'échec consécutives : la troisième passe la source DEAD
+  failedAt: ?date # La nuit du dernier échec compté : deux passages la même nuit n'en comptent qu'un
+  unreadSince: ?date # La première nuit d'une suite où la page ne s'est pas laissé lire, vide dès qu'elle se lit
+  unreadReason: ?enum(FORBIDDEN, LIMITED, SERVER, TIMEOUT, CHALLENGE, ROBOTS) # Pourquoi elle ne s'est pas laissé lire la dernière nuit
+  checkedAt: ?datetime # La dernière lecture réussie
+  changedAt: ?datetime # Le dernier changement d'empreinte
+  INDEX: [
+    ["aid"]
+  ]
+
+Tag:
+  # Ce qu'une aide finance (serre, irrigation, haie), rattaché aux projets de l'entrée par projet.
+  id: serial32
+  fqn: fqn # Le jeton de l'url et de l'API
+  name: text8(1, 100) @collate(general)
+  projects: set(INVEST, INSTALL, ADVICE, CRISIS, IRRIGATION, ENERGY, ENVIRONMENT, ORGANIC, SELL, LAND, EMPLOYMENT) # Un douzième projet passe par une migration, il porte son icône à l'écran
+  position: int8(0, null)
+  createdAt: datetime = SPECIAL(now)
+  UNIQUE: [
+    ["fqn"]
+  ]

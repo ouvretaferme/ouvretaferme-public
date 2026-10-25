@@ -1,0 +1,42 @@
+/* Gabarit « Profil » des pages de formations d'un réseau : les dates en grand bloc plein de la
+   couleur, comme la photo du gabarit de boutique, sous un bandeau blanc ; l'encadré et la citation
+   portent un large bloc de couleur à gauche, les étapes sont des carrés arrondis, l'onglet actif
+   est teinté.
+   La page mêle le fond choisi au blanc et les surfaces restent blanches : Profil n'est pas dans
+   `LearningSetting::DESIGN_MATTERS`, les encres se calculent sur le fond choisi adouci et le
+   blanc. */
+
+.learning-public[data-learning-design="profil"],
+.learning-doc[data-learning-design="profil"] {
+	--radius: .75rem;
+	--radius-lg: 1rem;
+	--border: #e3e3e3;
+	--shadow-v2: none;
+	--heading-weight: 600;
+	--callout-background: white;
+	--callout-accent-width: 2.5rem;
+	--marker-radius: .5rem;
+	--table-head-border: 3px solid var(--primary);
+	--tab-active-background: var(--learning-tint);
+	--tab-active-color: var(--text);
+	--tab-radius: .5rem;
+	--tab-bar-height: 0;
+	--quote-background: linear-gradient(var(--primary), var(--primary)) no-repeat left / 1.25rem 100%, color-mix(in srgb, var(--learning-background-chosen) 50%, white);
+	--quote-radius: .75rem;
+	--quote-padding: .75rem 1rem .75rem 2.25rem;
+}
+
+.learning-public[data-learning-design="profil"] {
+	/* Le fond posé est déjà adouci de moitié de blanc (`CommunityLib::BACKGROUND_SOFTENING`), comme
+	   C'est voulu pour toutes les pages de formations : les 60 % s'appliquent à ce fond adouci,
+	   et la page garde une teinte du fond choisi, sur laquelle le bandeau blanc se détache. */
+	--learning-background: color-mix(in srgb, var(--learning-background-chosen) 60%, white);
+	--calendar-size: 4.5rem;
+	--calendar-background: var(--primary);
+	--calendar-color: var(--primary-ink);
+	--calendar-day-size: 1.75rem;
+}
+
+.learning-public[data-learning-design="profil"] .community-header {
+	background-color: white;
+}

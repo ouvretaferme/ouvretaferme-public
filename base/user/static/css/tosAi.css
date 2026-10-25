@@ -1,0 +1,99 @@
+/* La fenêtre des nouvelles CGU (`user\TosAiUi`). Tout est borné à #user-tos : la feuille reste chargée
+   après la fermeture du panneau, pendant toute la navigation ajax. */
+
+#user-tos {
+	background-color: var(--background);
+}
+
+/* Sans titre ni croix, Lime.Panel.header() rend encore un .panel-header-content vide : l'en-tête
+   n'est donc jamais :empty, et sa bordure blanche resterait seule en haut de la fenêtre. */
+#user-tos .panel-header {
+	display: none;
+}
+
+#user-tos .panel-footer {
+	background-color: var(--background);
+}
+
+#user-tos .user-tos-head {
+	text-align: center;
+	margin: 0.5rem 0 1.5rem;
+}
+
+#user-tos .user-tos-head h2 {
+	font-family: var(--font-title);
+	font-size: 2rem;
+	margin: 0;
+}
+
+#user-tos .user-tos-head p {
+	margin: 1rem 0 0;
+	color: var(--muted);
+}
+
+#user-tos .user-tos-head .user-tos-intro {
+	max-width: 40rem;
+	margin: 0.75rem auto 0;
+	color: inherit;
+}
+
+#user-tos .util-title h4 {
+	font-weight: bold;
+}
+
+#user-tos .user-tos-change {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.75rem 0.5rem;
+	line-height: 1.35;
+}
+
+#user-tos .user-tos-change + .user-tos-change {
+	border-top: 1px dashed var(--border);
+}
+
+#user-tos .user-tos-change-action {
+	display: block;
+	width: fit-content;
+	margin-top: 0.25rem;
+	font-size: 0.9rem;
+	font-weight: bold;
+}
+
+#user-tos .user-tos-footer {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+#user-tos .user-tos-later {
+	margin-left: auto;
+}
+
+#user-tos .user-tos-refuse {
+	flex-basis: 100%;
+	margin: 0;
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+@media (max-width: 575px) {
+
+	#user-tos .user-tos-head h2 {
+		font-size: 1.5rem;
+	}
+
+	#user-tos .user-tos-footer .btn {
+		flex: 1;
+	}
+
+	#user-tos .user-tos-later {
+		flex-basis: 100%;
+		margin-left: 0;
+		text-align: center;
+	}
+
+}

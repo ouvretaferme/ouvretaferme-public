@@ -1,0 +1,55 @@
+/* Gabarit « Craie » des pages de formations d'un réseau : l'écriture du tableau de la salle de
+   formation, sans le tableau. Titres et texte dans les polices de craie, bandeau souligné d'un trait
+   de craie tireté de la couleur, titres de section soulignés du même trait ;
+   les étapes et les dates sont des aplats de la couleur, l'onglet actif une teinte.
+
+   La page et les surfaces sont celles du fond choisi : Craie n'est pas dans
+   `LearningSetting::DESIGN_MATTERS`, et les encres se calculent sur ce fond adouci et le blanc des
+   cartes. Les polices viennent de `LearningSetting::DESIGN_FONTS`. */
+
+.learning-public[data-learning-design="craie"],
+.learning-doc[data-learning-design="craie"] {
+	--radius: .375rem;
+	--radius-lg: .5rem;
+	--border: color-mix(in srgb, var(--primary) 18%, white);
+	--shadow-v2: none;
+	--heading-weight: 700;
+	--heading-justify: flex-start;
+	--heading-border: 2px dashed var(--primary);
+	--heading-padding: 0 0 .35rem;
+	--button-weight: 700;
+	--figure-background: color-mix(in srgb, var(--primary) 8%, white);
+	--callout-background: white;
+	--callout-border: color-mix(in srgb, var(--primary) 18%, white);
+	--callout-accent-width: .5rem;
+	--callout-accent-style: dashed;
+	--marker-radius: .375rem;
+	--marker-background: var(--primary);
+	--marker-color: var(--primary-ink);
+	--step-line: repeating-linear-gradient(to bottom, var(--primary) 0 .5rem, transparent .5rem .8rem) no-repeat center / 2px 100%;
+	--table-head-background: color-mix(in srgb, var(--primary) 10%, white);
+	--table-head-border: 2px dashed var(--primary);
+	--table-head-case: none;
+	--tab-active-background: var(--learning-tint);
+	--tab-active-color: var(--text);
+	--tab-radius: .375rem .375rem 0 0;
+	--tab-bar-height: 0;
+	--quote-background: white;
+	--quote-border: 2px dashed color-mix(in srgb, var(--primary) 40%, white);
+	--quote-radius: .375rem;
+	--quote-padding: 1rem 1.25rem;
+	--calendar-size: 3rem;
+	--calendar-radius: .375rem;
+	--calendar-background: var(--primary);
+	--calendar-color: var(--primary-ink);
+}
+
+.learning-public[data-learning-design="craie"] .community-header {
+	padding-bottom: var(--space-lg);
+	background: transparent;
+	border-bottom: 3px dashed var(--primary);
+}
+
+.learning-public[data-learning-design="craie"] .community-header h1 {
+	line-height: 1.3;
+}

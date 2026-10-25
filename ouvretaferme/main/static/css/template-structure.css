@@ -1,0 +1,3332 @@
+:root:has(body[data-template~="structure-production"]) {
+	--secondary: var(--production);
+	--secondary-light: var(--production-light);
+	--secondary-neutral: var(--production-neutral);
+	--util-chip-caret-secondary: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%230b694c' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+	--info: #e1ffe4;
+}
+
+:root:has(body[data-template~="structure-commercialisation"]) {
+}
+
+:root:has(body[data-template~="structure-accounting"]) {
+	--secondary: var(--accounting);
+	--secondary-light: var(--accounting-light);
+	--secondary-neutral: var(--accounting-neutral);
+	--util-chip-caret-secondary: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%231a6277' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+	--info: #e1fbff;
+}
+
+:root:has(body[data-template~="structure-settings"]) {
+	--secondary: var(--settings);
+	--secondary-light: var(--settings-light);
+	--secondary-neutral: var(--settings-neutral);
+	--util-chip-caret-secondary: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23653585' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+	--info: #f2e1ff;
+}
+
+/* Le cadre : la teinte de l'univers où se pose la navigation, la colonne au bureau, à gauche de la
+   feuille qui porte l'écran. Le téléphone n'en garde que la barre de la structure (`#root-nav`), que
+   la tablette pose sur la couleur de la marque. Il se calcule sur `<body>`, où `--domain` suit l'univers survolé dans la
+   colonne et dans la rangée des univers : `main` fixe le sien à l'univers de l'écran, et le filet de
+   la feuille, qui le lirait, garderait sa couleur pendant le survol. Une propriété personnalisée
+   hérite de sa valeur déjà résolue, si bien que chaque nœud lit ici la couleur de `<body>`. */
+body[data-template~="structure"] {
+	--structure-cadre: color-mix(in srgb, color-mix(in srgb, var(--domain-light) var(--frame-tint), var(--background-surface)), #000 var(--frame-shade));
+	--structure-cadre-filet: color-mix(in srgb, color-mix(in srgb, var(--domain-light) var(--frame-line-tint), var(--background-surface)), #000 var(--frame-shade));
+	background-color: var(--structure-cadre);
+}
+
+/* La feuille et le pied qui la prolonge prennent le même fond à toutes les largeurs, que la tête et tout
+   ce qui se pose sur le fond du corps lisent dans `--background-body` pour s'y joindre sans couture. */
+body[data-template~="structure"] > main,
+body[data-template~="structure"] > footer,
+body[data-template~="structure"] > footer div.util-footer {
+	--background-body: var(--background-paper);
+	background-color: var(--background-paper);
+}
+
+/* Ce qui est plus large que la feuille s'arrête à son bord au lieu de faire défiler la page de côté.
+   Seul l'axe horizontal est coupé : une fenêtre ouverte près du bas de la feuille, comme la durée du
+   temps de travail, la dépasse vers le bas et doit rester visible. `clip`, et non `hidden`, laisse
+   l'autre axe en `visible` et ne fait pas de la feuille un conteneur de défilement, qui retiendrait
+   les éléments collants. */
+body[data-template~="structure"] > main {
+	overflow-x: clip;
+}
+
+/* L'univers de l'écran, à toutes les largeurs : le fond clair de la colonne, des barres du haut et du
+   bas en part, comme l'entrée choisie. Chaque nœud qui pose `--domain` pose aussi `--domain-light`, sa
+   couleur claire, d'où se tirent le cadre et tout ce qui en reprend la teinte (`--frame-shade`,
+   `reboot.css`). Le gris des pages sans univers n'a pas de couleur claire et se reprend tel quel. Sur
+   `<body>` s'ajoute `--domain-dark`, le fond du menu sombre. */
+body[data-template~="structure"] {
+	--domain: var(--primary);
+	--domain-light: var(--primary);
+	--domain-dark: var(--primary);
+}
+
+body[data-template~="structure"][data-template~="structure-production"] {
+	--domain: var(--production);
+	--domain-light: var(--production-light);
+	--domain-dark: var(--production-dark);
+}
+
+body[data-template~="structure"][data-template~="structure-commercialisation"] {
+	--domain: var(--commercialisation);
+	--domain-light: var(--commercialisation-light);
+	--domain-dark: var(--commercialisation-dark);
+}
+
+body[data-template~="structure"][data-template~="structure-accounting"] {
+	--domain: var(--accounting);
+	--domain-light: var(--accounting-light);
+	--domain-dark: var(--accounting-dark);
+}
+
+body[data-template~="structure"][data-template~="structure-settings"] {
+	--domain: var(--settings);
+	--domain-light: var(--settings-light);
+	--domain-dark: var(--settings-dark);
+}
+
+/* Au-dessus du téléphone, l'univers survolé ou touché prend la place de celui de l'écran : la colonne et
+   le déroulant de la tablette montrent ses onglets, dans sa couleur. Le panneau du téléphone pose le
+   sien nœud par nœud, plus bas dans cette feuille. */
+@media (min-width: 768px) and (min-height: 600px) {
+
+	body[data-template~="structure"][data-template~="structure-section-home"] {
+		--domain: var(--primary);
+		--domain-light: var(--primary);
+		--domain-dark: var(--primary);
+	}
+
+	body[data-template~="structure"][data-template~="structure-section-production"] {
+		--domain: var(--production);
+		--domain-light: var(--production-light);
+		--domain-dark: var(--production-dark);
+	}
+
+	body[data-template~="structure"][data-template~="structure-section-commercialisation"] {
+		--domain: var(--commercialisation);
+		--domain-light: var(--commercialisation-light);
+		--domain-dark: var(--commercialisation-dark);
+	}
+
+	body[data-template~="structure"][data-template~="structure-section-accounting"] {
+		--domain: var(--accounting);
+		--domain-light: var(--accounting-light);
+		--domain-dark: var(--accounting-dark);
+	}
+
+	body[data-template~="structure"][data-template~="structure-section-settings"] {
+		--domain: var(--settings);
+		--domain-light: var(--settings-light);
+		--domain-dark: var(--settings-dark);
+	}
+
+}
+
+/* Les jetons des univers, dans la colonne, la tablette et la barre du bas du téléphone : chacun plein
+   de la couleur claire de son univers, celui de l'univers ouvert foncé. Paramètres n'a de jeton que
+   dans la barre du bas : la colonne et la tablette le posent au pied et dans la barre du haut, hors
+   de `#structure-nav-sections`. */
+:is(#structure-nav-sections, .structure-bar) .structure-nav-section {
+	--structure-jeton: var(--primary);
+}
+
+:is(#structure-nav-sections, .structure-bar) .structure-nav-section-production {
+	--structure-jeton: var(--production-light);
+}
+
+:is(#structure-nav-sections, .structure-bar) .structure-nav-section-commercialisation {
+	--structure-jeton: var(--commercialisation-light);
+}
+
+:is(#structure-nav-sections, .structure-bar) .structure-nav-section-accounting {
+	--structure-jeton: var(--accounting-light);
+}
+
+:is(#structure-nav-sections, .structure-bar) .structure-nav-section-settings {
+	--structure-jeton: var(--settings-light);
+}
+
+/* L'anneau du jeton de l'univers ouvert, à la tablette et au téléphone, où le jeton est plus petit que
+   dans la colonne. */
+:is(#structure-nav-sections, .structure-bar) {
+	--structure-anneau: 4px;
+}
+
+body[data-template~="structure"] #root-nav {
+	z-index: 501;
+	font-weight: normal;
+	color: var(--text);
+}
+
+/* Le menu, de la colonne aux barres, au compte et aux notifications, s'écrit en DM Sans. Ce qui s'y
+   distingue prend 500, ou la police des titres en 600, jamais un gras que le navigateur simulerait :
+   une graisse de DM Sans au-delà de 500 se charge d'abord dans `font-dm-sans.css`. */
+body[data-template~="structure"] #root-nav,
+body[data-template~="structure"] > header {
+	font-family: var(--font-text);
+}
+
+body structure-nav-wrapper a {
+	color: white;
+}
+
+body > nav ul > li > form > button {
+	color: black;
+}
+
+
+.structure-nav-actions {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	justify-content: space-between;
+}
+
+.structure-nav-actions > * {
+	display: flex;
+	align-items: center;
+	padding: 0;
+}
+
+body > nav .nav-item {
+	display: flex;
+	align-items: center;
+	height: 100%;
+	padding: 0 1rem;
+	transition: background-color 0.5s;
+}
+
+@media (max-width: 575px) {
+
+	body > nav .nav-item {
+		padding: 0 0.5rem;
+	}
+
+}
+
+/* Un nom fait d'un seul mot plus large que sa place se coupe où il faut, à tous les paliers : entier,
+   il pousserait la cloche hors de l'écran, et au bureau la coupe à trois lignes ne pose ses points
+   de suspension qu'à un retour à la ligne. */
+.structure-nav-name {
+	overflow-wrap: anywhere;
+}
+
+/* À gauche de la cloche, le même retrait à tous les paliers ; sa droite dépend de ce qui la suit,
+   le bord de la colonne au bureau, le compte en dessous. */
+.structure-nav-actions .notification-bell > a.nav-item {
+	padding-left: var(--space-xs);
+}
+
+.structure-nav-actions a.nav-item:hover {
+	background-color: color-mix(in srgb, var(--domain) 8%, transparent);
+}
+
+.structure-nav-actions > * > a.nav-icon {
+	font-weight: 500;
+}
+
+@media (max-width: 575px) {
+
+	.structure-nav-actions > * > a.nav-icon {
+		font-size: 0.9rem;
+	}
+
+}
+
+
+@media (min-width: 576px) and (max-width: 767px) {
+
+	.structure-nav-actions > * > a.nav-icon {
+		font-size: 0.9rem;
+	}
+
+}
+
+body > nav a:active:not(.dropdown-item),
+body > nav a:hover:not(.dropdown-item) {
+	text-decoration: none;
+}
+
+body .structure-nav-title {
+	display: flex;
+	align-items: center;
+	line-height: 1.2;
+	z-index: 1;
+}
+
+body[data-template~="structure"] > main .container {
+	max-width: initial;
+	margin-left: 0;
+	margin-right: 0;
+}
+
+/* Le pied appartient à la feuille : il en prolonge le fond, séparé du contenu par le filet du cadre,
+   sans bande grise ni coup de pinceau. Le filet se pose à distance du contenu, que la page finisse
+   sur du texte ou sur le cadre d'une carte. */
+body[data-template~="structure"] > footer {
+	padding-top: var(--space-xxl);
+}
+
+body[data-template~="structure"] > footer div.util-footer {
+	margin-top: 0;
+	padding-top: var(--space-xl);
+	border-top: 1px solid var(--structure-cadre-filet);
+}
+
+body[data-template~="structure"] > footer div.util-footer .util-separator-top {
+	display: none;
+}
+
+
+#structure-nav {
+	padding: 0;
+}
+
+.structure-tab {
+	display: flex;
+	align-items: center;
+	padding: 0.75rem 1rem;
+	text-decoration: none;
+	color: inherit;
+	letter-spacing: 0.1px;
+	font-weight: 500;
+}
+
+.structure-nav-help {
+	position: absolute;
+	bottom: 1rem;
+}
+
+.structure-tab[data-nav="help-accounting"] {
+
+	display: inline-block;
+  background-color: #257D92;
+  color: white;
+  margin: 0.75rem;
+  border-radius: var(--radius);
+  padding: 0.25rem 1rem;
+
+	& > span {
+		vertical-align: center;
+	}
+}
+.structure-tab.disabled {
+	opacity: 0.33;
+}
+
+.structure-tab.structure-tab-subtitle {
+
+	border-radius: 1.5rem;
+	font-family: var(--font-title);
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	padding: 0.5rem 1rem;
+	line-height: 1;
+
+}
+
+a.structure-tab.structure-tab-subtitle:hover {
+	text-decoration: none !important;
+}
+
+@media (max-height: 799px), (max-width: 399px) {
+
+	div.structure-tab {
+		padding-right: 0;
+	}
+
+	@media (max-width: 399px) {
+
+		.structure-tab {
+			padding-left: 0.5rem;
+			padding-right: 0.5rem;
+		}
+
+	}
+
+}
+
+/* `a:hover` (`reboot.css`) souligne un lien survolé : une entrée du menu ne se souligne pas, son survol
+   est un fond. */
+a.structure-tab:hover {
+	text-decoration: none;
+}
+
+/* L'entrée choisie est pleine de la couleur du jeton de l'univers ouvert, à l'encre blanche, dans la
+   colonne et dans le déroulant de la tablette : l'entrée et son complément lisent l'encre du groupe. Au
+   téléphone, le groupe se défait dans la bande et s'étale dans la feuille : l'entrée y porte le plein
+   seule, dans son bloc plus bas dans cette feuille. La couleur se calcule sur place depuis
+   `--domain-light`, que la barre du bas et son panneau posent nœud par nœud : une propriété qui la
+   porterait serait figée sur l'élément qui la déclare (`--selection-shade`, `reboot.css`). */
+@media (min-width: 768px) and (min-height: 600px) {
+
+	.structure-tab-wrapper:has(.structure-tab:not(.structure-tab-subnav).selected):not(:has(.structure-subnav-item.selected)),
+	#structure-nav a.structure-subnav-item.selected {
+		background-color: color-mix(in srgb, var(--domain-light), black var(--selection-shade));
+		color: var(--primary-ink);
+	}
+
+	.structure-tab-wrapper:has(.structure-tab:not(.structure-tab-subnav).selected):not(:has(.structure-subnav-item.selected)) :is(.structure-tab-complement, .structure-tab-icon) {
+		color: inherit;
+	}
+
+	a.structure-tab:not(.structure-tab-subnav, .selected):hover {
+		background-color: color-mix(in srgb, var(--domain) 8%, transparent);
+		border-radius: var(--radius);
+	}
+
+	.structure-tab .structure-tab-icon {
+		color: var(--domain);
+	}
+
+}
+
+.structure-tab .structure-tab-on {
+	display: none;
+}
+
+.structure-tab + div.structure-subnav-wrapper {
+	margin-top: -0.125rem;
+}
+
+.structure-tab .structure-tab-icon svg {
+	font-size: 1.2rem;
+}
+
+/* Un logo posé en svg brut, celui de Ouvretaferme au pied du groupe Bureau, prend les dimensions des
+   icônes par l'enveloppe `.asset-icon` (`reboot.css`), au corps des icônes voisines, et l'alignement
+   que `reboot.css` donne à tout svg : son libellé s'aligne ainsi sur le leur. */
+.structure-tab .structure-tab-icon > span.asset-icon {
+	font-size: 1.2rem;
+	vertical-align: middle;
+}
+
+.structure-tab .structure-tab-icon > span.asset-icon > svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+/* Le groupe se détache de ses entrées par le corps et la graisse, dans la police du texte : la police
+   des titres reste au nom de la structure et à celui de l'univers. */
+.structure-tab-label {
+	font-family: var(--font-text);
+	font-size: 1.1rem;
+	font-weight: 700;
+}
+
+.structure-tab-alert {
+	margin-left: 0.5rem;
+	color: var(--danger);
+}
+
+@media (max-width: 449px) {
+
+	.structure-tab-invoicing {
+		letter-spacing: -0.4px;
+	}
+
+}
+
+.structure-tab-complement {
+	display: inline-flex;
+	align-items: center;
+	line-height: 1;
+	border-radius: 1rem;
+	font-weight: 500;
+	font-size: 0.9rem;
+	padding: 0.625rem;
+	color: var(--domain);
+}
+
+a.structure-tab-complement:hover {
+	text-decoration: none;
+}
+
+.structure-tab-complement svg {
+	margin-bottom: -0.125rem;
+}
+
+/* Les espaces que le HTML laisse entre l'avatar et le chevron ne comptent pas dans une rangée
+   flexible : l'écart est celui du compte au pied de la colonne. */
+.structure-nav-actions a.nav-user {
+	column-gap: var(--space-xs);
+	color: inherit;
+}
+
+div.structure-nav-planning {
+	display: flex;
+	align-items: center;
+	column-gap: 0.25rem;
+}
+
+/* Les entrées s'écrivent comme le texte de la feuille, sous leur groupe en gras. */
+a.structure-subnav-item {
+	display: block;
+	color: inherit;
+	font-weight: 400;
+}
+
+/* Les univers et le fil d'Ariane restent un cran au-dessus du texte de la feuille, sans prendre le
+   gras réservé aux groupes. */
+.structure-nav-section,
+.structure-breadcrumbs-link {
+	font-weight: 500;
+}
+
+@media (max-width: 1199px) {
+
+	a.structure-subnav-item[data-sub-nav="preaccounting"] {
+		font-size: 1rem;
+	}
+}
+
+a.structure-subnav-item[data-sub-nav="preaccounting"] > span.structure-subnav-prefix {
+	margin-left: .5rem;
+	margin-right: .25rem;
+}
+
+@media (max-height: 599px) {
+
+	a.structure-subnav-item {
+		padding-top: 0.125rem;
+		padding-bottom: 0.125rem;
+	}
+
+}
+
+@media (min-height: 600px) and (max-height: 767px) {
+
+	a.structure-subnav-item {
+		padding-top: 0.5rem;
+		padding-bottom: 0.5rem;
+	}
+
+}
+
+a.structure-subnav-item.selected {
+	background-color: color-mix(in srgb, var(--domain-light), black var(--selection-shade));
+	color: var(--primary-ink);
+	border-radius: var(--radius);
+}
+
+a.structure-subnav-item:hover {
+	text-decoration: none;
+}
+
+a.structure-subnav-item:not(.selected):hover {
+	background-color: color-mix(in srgb, var(--domain) 8%, transparent);
+	border-radius: var(--radius);
+}
+
+/* Le nom de la structure reste le texte le plus fort de la barre, comme en tête de la colonne. */
+.structure-nav-identity {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-family: var(--font-title);
+	font-weight: 600;
+}
+
+.structure-nav-switch-icon {
+	margin-left: var(--space-xs);
+}
+
+.structure-nav-year {
+	display: inline-block;
+	font-size: 1.2rem;
+	text-align: left;
+	background-color: var(--primary);
+	color: white;
+	border-radius: calc(var(--radius) * 2);
+	width: max-content;
+	transition: color .5s;
+}
+
+@media print {
+
+	.structure-nav-year {
+		display: none;
+	}
+
+}
+
+.structure-nav-year {
+	text-decoration: none;
+}
+
+.structure-nav-year:hover {
+	color: white;
+}
+
+/* La graisse est celle du titre d'`util-page-header` (`component.css`), que la tête porte le plus souvent :
+   un titre de tête écrit sans lui en garde le poids. */
+.structure-template-main-content h1 {
+	font-size: 2rem;
+	font-weight: 300;
+}
+
+body[data-template~="structure"] .container {
+	width: calc(var(--screen-width) - var(--nav-width))
+}
+
+
+@media screen {
+
+	body[data-template~="structure"][data-template~="structure-fixed"] .container {
+		width: auto;
+	}
+
+}
+
+.structure-nav-section-production,
+.structure-nav-section-settings {
+	letter-spacing: -0.5px;
+}
+
+.structure-nav-section-accounting {
+	letter-spacing: -0.2px;
+}
+
+.structure-nav-accounting-title {
+	color: var(--text);
+}
+
+.structure-nav-accounting-title a {
+	color: inherit;
+	text-decoration: none;
+}
+
+/* La comptabilité prend sa propre colonne dans la feuille du téléphone, la section Ouvretaferme
+   partage celle du groupe Bureau : sans son filet, son titre s'y lirait comme une entrée de plus. La
+   colonne du menu le reprend plus loin, avec celui de la comptabilité. */
+.structure-nav-ouvretaferme {
+	border-top: 1px solid color-mix(in srgb, var(--domain) 40%, var(--background-surface));
+	padding-top: var(--space-sm);
+	margin-top: var(--space-sm);
+}
+
+.structure-nav-join-block {
+	margin: 0.5rem 0.25rem;
+	padding: 0.5rem;
+	border-radius: var(--radius);
+	font-size: .9rem;
+	line-height: 1.4;
+	background-color: var(--color-bg-blanc-menthe);
+}
+
+.structure-nav-join-block a:not(.btn):hover {
+	color: var(--text);
+}
+
+/* Le fondu du pied de la colonne, réglé sur son défilement (`#structure-nav`). Déclarée, la hauteur
+   du fondu s'interpole ; sa valeur initiale nulle vaut pour une colonne qui ne défile pas, dont la
+   chronologie de défilement reste inactive. */
+@property --structure-nav-fade {
+	syntax: '<length>';
+	inherits: false;
+	initial-value: 0px;
+}
+
+@keyframes structure-nav-fade {
+	0%, 90% {
+		--structure-nav-fade: var(--space-xl);
+	}
+	100% {
+		--structure-nav-fade: 0px;
+	}
+}
+
+/* La feuille porte ses tableaux à toutes les largeurs, comme elle porte son fond : ceux d'`util-paper`
+   (`component.css`, où se lit leur raison), dans le même ordre. Les règles d'une util-table sont en
+   `:where()` pour la même raison que là-bas, comme les cellules blanches d'un tableau sans bandes. */
+body[data-template~="structure"] > main table:not(.table-unstyled) thead.thead-sticky > tr:last-child > *,
+body[data-template~="structure"] > main table:not(.table-unstyled) thead.thead-sticky > tr > [rowspan] {
+	background-image: linear-gradient(var(--border), var(--border));
+	background-size: 100% 1px;
+	background-position: 0 100%;
+	background-repeat: no-repeat;
+}
+
+:where(body[data-template~="structure"] > main) table:not(.table-unstyled):not(.tr-even, .tbody-even) tbody td {
+	background-color: var(--background-surface);
+}
+
+body[data-template~="structure"] > main table.tr-even tr.tr-title {
+	border-bottom: 1px solid var(--domain, var(--primary));
+}
+
+body[data-template~="structure"] > main table.tr-even tr.tr-title > td {
+	background-color: transparent;
+	padding-top: var(--space-lg);
+}
+
+/* Un titre collant passe au-dessus des rangs en défilant : sans fond, ils se liraient au travers. */
+body[data-template~="structure"] > main table.tr-even tr.tr-title.util-stick-main > td {
+	background-color: var(--background-paper);
+}
+
+:where(body[data-template~="structure"] > main) .util-table-row,
+:where(body[data-template~="structure"] > main) .util-table-title {
+	background-color: var(--background-surface);
+}
+
+:where(body[data-template~="structure"] > main) .util-table-even .util-table-title {
+	background-color: transparent;
+	border-bottom-color: var(--domain, var(--primary));
+	padding-top: var(--space-lg);
+}
+
+:where(body[data-template~="structure"] > main) .util-table-sticky > .util-table-head {
+	border-radius: 0;
+}
+
+@media (min-width: 1100px) and (min-height: 600px) {
+
+	/* `--nav-height` est la hauteur de la tête du planning du jour. Les autres têtes prennent la hauteur
+	   de ce qu'elles portent, et la tête de colonne a la sienne. */
+	:root {
+		--nav-height: 10rem;
+		--structure-nav-top: 4.25rem;
+		--sections-height: 5.25rem;
+	}
+
+	@media (min-width: 2000px) {
+
+		:root {
+			--nav-width: 22vw;
+			--nav-padding: 1.5rem;
+		}
+
+	}
+
+	@media (min-width: 1800px) and (max-width: 1999px) {
+
+		:root {
+			--nav-width: 22rem;
+			--nav-padding: 1.5rem;
+		}
+
+	}
+
+
+	@media (min-width: 1400px) and (max-width: 1799px) {
+
+		:root {
+			--nav-width: 21rem;
+			--nav-padding: 1rem;
+		}
+
+	}
+
+	@media (max-width: 1399px) {
+
+		:root {
+			--nav-width: 19rem;
+			--nav-padding: 1rem;
+		}
+
+	}
+
+	/* Au-delà de 2400 px, la colonne et la feuille restent ensemble à cette largeur, centrées, et le cadre
+	   de `<body>`, qui teint le fond de toute la page faute de fond sur `<html>`, remplit les côtés. Ce
+	   qui se calcule depuis la largeur de l'écran la lit ici plafonnée, et la colonne garde les 22 % qu'elle
+	   prend à 2400 px. La largeur de la media query compte la barre de défilement, que `lime.js` retire de
+	   la sienne : juste au-dessus de 2400 px, le plafond la retire aussi, comme le fait déjà `lime.css`. */
+	@media screen and (min-width: 2400px) {
+
+		body[data-template~="structure"] {
+			--screen-width: min(2400px, 100vw - 15px);
+			--nav-width: calc(0.22 * 2400px);
+			--container-width: calc(var(--screen-width) - 2 * var(--container-padding) - var(--nav-width));
+			max-width: var(--screen-width);
+			margin-left: auto;
+			margin-right: auto;
+		}
+
+	}
+
+	@media screen {
+
+		body[data-template~="structure"] {
+			display: grid;
+			grid-template:
+				"nav main" var(--structure-nav-top)
+				"header main" 1fr
+				"header footer" auto / var(--nav-width) 1fr;
+		}
+
+	}
+
+	/* La colonne porte la teinte de l'univers sur toute la hauteur de la fenêtre, et la feuille tout
+	   l'écran, sa tête comprise. Le rem entre le menu et la feuille est pris dans la colonne : la
+	   feuille garde la largeur que tous les conteneurs calculent depuis `--nav-width`. */
+	body[data-template~="structure"] #root-nav,
+	body[data-template~="structure"] > header {
+		background-color: var(--structure-cadre);
+		padding-right: var(--space-md);
+	}
+
+	/* Les onglets d'un écran montent dans sa tête (`tabs-page`, `component.css`), sur le filet qui la
+	   ferme, et franchissent l'écart entre elle et le contenu. La tablette et le téléphone n'ont pas de
+	   tête où monter : leurs onglets ouvrent le contenu, ce que `tabs-page` rend quand rien n'est posé. */
+	body[data-template~="structure"] {
+		--structure-feuille-retrait: var(--space-md);
+		--structure-onglets-montes: 1;
+		--structure-onglets-alignement: flex-start;
+	}
+
+	/* Le filet sépare la colonne de la feuille sur toute la hauteur de la fenêtre. C'est un trait fixé
+	   à la fenêtre et non une bordure, qui décalerait le contenu d'un pixel : sans `left`, il garde
+	   l'abscisse de `main`, et passe au-dessus de tout ce qui touche le bord, tête collante, bande
+	   pleine largeur ou colonne collante. À l'impression, un élément fixe se répète sur chaque page. */
+	@media screen {
+
+		body[data-template~="structure"] > main::before {
+			content: "";
+			position: fixed;
+			top: 0;
+			bottom: 0;
+			z-index: 101;
+			width: 1px;
+			background-color: var(--structure-cadre-filet);
+			pointer-events: none;
+		}
+
+	}
+
+	body[data-template~="structure"] > header {
+		grid-area: header;
+		position: fixed;
+		display: flex;
+		flex-direction: column;
+		width: var(--nav-width);
+		top: var(--structure-nav-top) !important;
+		height: calc(100vh - var(--structure-nav-top));
+		z-index: 100;
+	}
+
+	@media screen {
+
+		body[data-template~="structure"] > main  {
+			grid-area: main;
+		}
+
+	}
+
+	/* La tête est sur la feuille et prend la hauteur de ce qu'elle porte. Son pied est la place des
+	   onglets qu'un écran y fait monter (`tabs-page`, `component.css`), qui s'y posent donc sur son bord
+	   bas, et rien quand il n'y en a pas : `util-page-band` porte son propre retrait autour du titre, et
+	   le contenu suit à la même distance du bord bas de la tête dans les deux cas. */
+	body[data-template~="structure"] > main .container.structure-template-main-title {
+		padding-top: var(--space-xl);
+		padding-bottom: var(--structure-onglets-hauteur, 0px);
+		background-color: var(--background-body);
+	}
+
+	/* Un titre écrit sans `util-page-band` reçoit de la tête le retrait que la bande lui aurait donné,
+	   pour tomber à la même hauteur que les autres et laisser le même écart avant le contenu. */
+	body[data-template~="structure"] > main .container.structure-template-main-title:not(:has(.util-page-band)) {
+		padding-top: calc(var(--space-xl) + var(--space-sm));
+		padding-bottom: var(--structure-onglets-hauteur, var(--space-md));
+	}
+
+	/* `planning.css` retire `--nav-height` de la fenêtre pour que la liste du jour tienne jusqu'en bas
+	   (`#planning-daily-wrapper`) : une tête qui grandirait avec son contenu pousserait la liste hors
+	   de l'écran. */
+	body[data-template~="structure-planning-daily"] > main .container.structure-template-main-title {
+		height: var(--nav-height);
+	}
+
+	@media screen {
+
+		body[data-touch="no"][data-template~="structure"] > main .container.structure-template-main-title {
+			position: sticky;
+			left: var(--nav-width);
+			width: calc(var(--screen-width) - var(--nav-width));
+			z-index: 100;
+		}
+
+	}
+
+	body[data-template~="structure"] > main .container.structure-template-main-container {
+		padding-top: var(--structure-feuille-retrait);
+	}
+
+	body[data-template~="structure"] > main .container.structure-template-main-title:not(.structure-template-main-title-with-year) {
+		display: flex;
+		flex-direction: column;
+	}
+
+	body[data-template~="structure"] > main .container.structure-template-main-title.structure-template-main-title-with-year {
+		display: grid;
+		grid-template-columns: 1fr;
+		grid-template-rows: auto 1fr;
+	}
+
+	body[data-template~="structure"] > main .container.structure-template-main-title > div.structure-template-main-content {
+		display: flex;
+		align-items: center;
+	}
+
+	body[data-template~="structure"] > main .container.structure-template-main-title > div.structure-template-main-content > div {
+		width: 100%;
+	}
+
+	body[data-template~="structure"] > main .container.structure-template-main-title > div.structure-template-main-content > div > *:last-child {
+		margin-bottom: 0;
+	}
+
+	body[data-template~="structure"] > footer  {
+		grid-area: footer;
+	}
+
+	body[data-template~="structure"] > nav {
+		grid-area: nav;
+		position: fixed;
+		height: var(--structure-nav-top);
+		top: 0;
+		width: var(--nav-width);
+		z-index: 100;
+	}
+
+	/* En tête de colonne, le nom de la structure à gauche et la cloche à droite : Paramètres et le
+	   compte descendent au pied (`StructureTemplate::getNavFoot()`). */
+	.structure-nav-wrapper {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		column-gap: var(--space-xxs);
+		height: var(--structure-nav-top);
+		min-height: var(--structure-nav-top);
+		padding: 0 var(--space-xs) 0 var(--space-sm);
+	}
+
+	.structure-nav-actions .nav-item {
+		padding: 0 var(--space-xs);
+	}
+
+	/* La cloche se cale sur le bord droit de la colonne, celui du « + » et de l'entrée choisie, et sa
+	   cible tactile s'étend vers le nom de la structure. La place que `notification.css` réserve à
+	   droite de l'icône pour le compteur l'en écarterait : le compteur se pose sur son coin. Il part
+	   d'un point fixe de l'icône, son bord droit ici, et s'allonge vers la marge de la colonne : ancré
+	   à droite, un compteur à deux chiffres recouvrirait la cloche. Sa largeur s'arrête où commence la
+	   feuille, soit ce qu'il recouvre de l'icône, le retrait de la tête et la marge de la colonne : un
+	   nombre plus long se coupe plutôt que de mordre sur elle. */
+	.structure-nav-actions .notification-bell > a.nav-item {
+		justify-content: flex-end;
+		padding-right: 0;
+	}
+
+	.structure-nav-actions .notification-bell > a.nav-item > .util-counter {
+		left: calc(100% - var(--space-sm));
+		box-sizing: border-box;
+		max-width: calc(var(--space-sm) + var(--space-xs) + var(--space-md));
+		overflow: hidden;
+		white-space: nowrap;
+	}
+
+	.structure-nav-actions .structure-nav-account {
+		display: none;
+	}
+
+	/* Paramètres ferme la rangée des univers à la tablette ; la colonne le porte à son pied. */
+	#structure-nav-sections .structure-nav-settings {
+		display: none;
+	}
+
+	/* Un nom long passe à la ligne dans son propre bloc, élément de la rangée : la flèche reste à sa
+	   droite, et non sous le dernier mot. L'étoile et la flèche se posent sur la première ligne du
+	   nom, comme dans le texte. Au-delà de trois lignes le nom se coupe : la tête de la colonne a une
+	   hauteur fixe, dont une quatrième sortirait. La coupe s'écrit ici et non par `util-text-clamp`,
+	   qui ferait du nom un bloc dans les barres de la tablette et du téléphone, où il reste dans la
+	   ligne avec sa flèche. */
+	.structure-nav-identity > :last-child {
+		display: flex;
+		align-items: baseline;
+		min-width: 0;
+	}
+
+	.structure-nav-name {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 3;
+		overflow: hidden;
+	}
+
+	.structure-nav-switch-icon {
+		flex: none;
+	}
+
+	.structure-nav-title {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.structure-nav-identity {
+		display: flex;
+		align-items: center;
+		column-gap: var(--space-xs);
+		min-width: 0;
+		min-height: var(--touch-target);
+		padding: var(--space-xxs) var(--space-xs);
+		border-radius: var(--radius);
+		font-family: var(--font-title);
+		font-size: 0.95rem;
+		font-weight: 700;
+	}
+
+	a.structure-nav-switch:hover {
+		background-color: color-mix(in srgb, var(--domain) 8%, transparent);
+	}
+
+	.structure-nav-title-type {
+		margin-top: var(--space-xxs);
+		font-weight: normal;
+	}
+
+	/* La marque passe sous le nom et la cloche : seule la largeur entière de la colonne tient
+	   « Groupement de producteurs » sur une ligne, et la tête grandit d'autant pour garder le nom
+	   entier sur ses deux lignes. */
+	body:has(> nav > .structure-nav-wrapper > .structure-nav-title-type) {
+		--structure-nav-top: 6.75rem;
+	}
+
+	.structure-nav-wrapper:has(.structure-nav-title-type) {
+		flex-wrap: wrap;
+		align-content: center;
+	}
+
+	/* La rangée entière est réservée à la marque, que le badge porté à l'intérieur n'occupe qu'à sa
+	   mesure : le nom prend une base nulle (`flex: 1`), et dès que la colonne est assez large, nom,
+	   cloche et badge tiendraient sur une seule ligne, le nom réduit à quelques pixels. */
+	.structure-nav-wrapper .structure-nav-title-type {
+		order: 1;
+		flex-basis: 100%;
+		padding-left: var(--space-xs);
+	}
+
+	#structure-nav {
+
+		overflow: auto;
+		flex: 1 1 auto;
+		min-height: 0;
+
+	}
+
+	/* La colonne défile sans barre : une barre classique (Linux, Windows) prend sa largeur sur les
+	   entrées et le +, qui quitteraient l'axe droit de la cloche et du compte, posés hors de la zone
+	   qui défile. Cette largeur dépend du système et ne se compense pas. Le pied s'efface en fondu
+	   tant qu'il reste à défiler, seul signe qu'une suite est cachée quand le bas tombe entre deux
+	   entrées ; le fondu se règle sur le défilement, et un navigateur qui ne sait pas l'y régler
+	   garde sa barre. Un lien qui prend le focus au clavier s'arrête au-dessus du fondu, de la
+	   hauteur de celui-ci. */
+	@supports (animation-timeline: scroll()) {
+
+		#structure-nav {
+			scrollbar-width: none;
+			scroll-padding-bottom: var(--space-xl);
+			mask-image: linear-gradient(to bottom, black calc(100% - var(--structure-nav-fade)), transparent);
+			animation: structure-nav-fade var(--ease-linear) both;
+			animation-timeline: scroll(self);
+		}
+
+	}
+
+	#structure-nav:last-child {
+		margin-bottom: 1rem;
+	}
+
+	.structure-tabs {
+		position: relative;
+		padding-top: 0.5rem;
+		min-height: 100%;
+	}
+
+	/* Retrait et arrondi sur toutes les entrées : posés sur la seule entrée choisie, ils la décaleraient
+	   de ses voisines. C'est leur seul retrait, à toutes les largeurs : la tête, le titre de l'univers
+	   et le pied se rangent sur l'axe de leurs icônes. */
+	.structure-tab-wrapper {
+		margin-inline: var(--space-xs);
+		border-radius: var(--radius);
+	}
+
+	/* La rangée du titre, qui ne montre que son + (plus bas), le pose sur le bord droit des entrées. */
+	.structure-tabs .structure-tabs-universe {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		column-gap: var(--space-xs);
+		margin: 0 var(--space-xs) 0 calc(var(--space-xs) + var(--space-sm));
+		font-size: 1.6rem;
+		line-height: 1.1;
+	}
+
+	/* La colonne n'écrit pas le titre de l'univers, que son jeton nomme déjà (décidé le
+	   2026-10-15) : seul son + reste, dans la rangée de la première entrée et centré sur elle. L'entrée
+	   lui laisse sa largeur à droite quand l'univers en a un, et son complément, comme « Hebdomadaire »
+	   au planning, se retire : dans la largeur qui reste, il n'en garderait que trois lettres, et
+	   l'écran ouvert dit déjà la vue. */
+	.structure-tabs {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		align-content: start;
+	}
+
+	.structure-tabs .structure-tabs-universe {
+		grid-area: 1 / 1;
+		align-self: center;
+		z-index: 1;
+		visibility: hidden;
+	}
+
+	.structure-tabs .structure-tabs-universe > .structure-tabs-create {
+		visibility: visible;
+	}
+
+	.structure-tabs > .structure-tab-wrapper:nth-child(1 of .structure-tab-wrapper) {
+		grid-area: 1 / 1;
+	}
+
+	/* Un groupe qui déplie ses entrées sous la sienne prend deux rangées, dont il fait les siennes : le
+	   + se centre sur la première, celle de l'entrée du groupe, et non sur tout le groupe. */
+	.structure-tabs > .structure-tab-wrapper:nth-child(1 of .structure-tab-wrapper):has(> .structure-subnav-wrapper) {
+		grid-row: 1 / span 2;
+		display: grid;
+		grid-template-rows: subgrid;
+	}
+
+	.structure-tabs:has(.structure-tabs-create) > .structure-tab-wrapper:nth-child(1 of .structure-tab-wrapper) > .structure-tab {
+		margin-right: calc(var(--structure-tabs-create) + var(--space-xs));
+	}
+
+	.structure-tabs > .structure-tab-wrapper:nth-child(1 of .structure-tab-wrapper) > .structure-tab-complement {
+		display: none;
+	}
+
+	@media (min-height: 992px) {
+
+		.structure-tabs {
+			font-size: 1.1rem;
+		}
+
+	}
+
+	.structure-tab-close {
+		display: none;
+	}
+
+	/* Le groupe Bureau n'a pas de + : sa rangée de titre resterait vide au-dessus du tableau de bord
+	   (« On vire la ligne "Pilotage" », le 2026-10-17, L52). Sans elle, le groupe se range en
+	   colonne, ce qui permet au package de l'accueil de pousser ce qu'il porte au pied
+	   (`base/dashboard/static/css/pilotage.css`). La tablette et la feuille du téléphone gardent le
+	   titre. */
+	.structure-tabs.structure-section-home > .structure-tabs-universe {
+		display: none;
+	}
+
+	.structure-tabs.structure-section-home,
+	.structure-tabs.structure-section-home > #structure-pilotage {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.structure-tabs.structure-section-home > #structure-pilotage {
+		flex: 1;
+	}
+
+	/* Sans icône, l'exercice se retire de ce que l'icône et son écart prennent à un titre de section. */
+	.structure-tab.structure-tab-subtitle {
+		padding-left: var(--space-xxl);
+	}
+
+	.structure-tab {
+
+		padding: 0.625rem 0.75rem;
+
+		@media (max-height: 749px) {
+			padding-top: 0.5rem;
+			padding-bottom: 0.5rem;
+		}
+
+		@media (min-height: 992px) and (min-width: 400px) {
+			padding: 0.75rem;
+		}
+
+	}
+
+	#structure-nav-sections {
+
+		display: grid;
+		grid-column-gap: 0.5rem;
+		width: 100%;
+		height: var(--sections-height);
+		align-items: end;
+		/* Le haut réserve l'anneau de 5 px du jeton ouvert et 2 px d'air : la barre du nom, peinte
+		   par-dessus la tête, rognerait le cercle centré dans la rangée. */
+		padding: 7px 1rem 0;
+		margin-bottom: 1rem;
+		/* La tête est une colonne flexible : sans cela, la rangée y cède sa hauteur au menu et se
+		   tasse sur son contenu, le haut de l'anneau compris. */
+		flex-shrink: 0;
+
+		@media (min-width: 1200px) {
+			padding-inline: 1.5rem;
+		}
+
+		@media (min-width: 2500px) {
+
+			padding-left: 3vw;
+			padding-right: 3vw;
+
+		}
+
+	}
+
+	.structure-nav-sections-1 {
+		grid-template-columns: max-content;
+	}
+
+	.structure-nav-sections-2 {
+		grid-template-columns: 1fr 1fr;
+		width: 75% !important;
+		margin-inline: auto;
+	}
+
+	.structure-nav-sections-3 {
+		grid-template-columns: 1fr 1fr 1fr;
+		width: 90% !important;
+		margin-inline: auto;
+	}
+
+	.structure-nav-sections-4 {
+		grid-template-columns: auto auto auto auto;
+	}
+
+	.structure-nav-sections-5 {
+		grid-template-columns: repeat(5, auto);
+		justify-content: space-between;
+	}
+
+	.structure-nav-section {
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		row-gap: 0.5rem;
+		color: var(--text);
+		font-size: 0.9rem;
+	}
+
+	a.structure-nav-section {
+		text-decoration: none;
+	}
+
+	.structure-nav-section-icon {
+		font-size: 1.35rem;
+		line-height: 1.3;
+		width: 2.75rem;
+		height: 2.75rem;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: var(--structure-jeton);
+		color: var(--primary-ink);
+	}
+
+	/* L'anneau du jeton de l'univers ouvert le sépare de son cercle par le fond de la colonne. */
+	body[data-template~="structure-production"]:not([data-template*="structure-section-"]) .structure-nav-section-production,
+	body[data-template~="structure-section-production"] .structure-nav-section-production,
+	body[data-template~="structure-commercialisation"]:not([data-template*="structure-section-"]) .structure-nav-section-commercialisation,
+	body[data-template~="structure-section-commercialisation"] .structure-nav-section-commercialisation,
+	body[data-template~="structure-accounting"]:not([data-template*="structure-section-"]) .structure-nav-section-accounting,
+	body[data-template~="structure-section-accounting"] .structure-nav-section-accounting,
+	body[data-template~="structure-dashboard"]:not([data-template*="structure-section-"]) .structure-nav-section-home,
+	body[data-template~="structure-section-home"] .structure-nav-section-home {
+		font-family: var(--font-title);
+		font-weight: 600;
+	}
+
+	body[data-template~="structure-production"]:not([data-template*="structure-section-"]) .structure-nav-section-production .structure-nav-section-icon,
+	body[data-template~="structure-section-production"] .structure-nav-section-production .structure-nav-section-icon,
+	body[data-template~="structure-commercialisation"]:not([data-template*="structure-section-"]) .structure-nav-section-commercialisation .structure-nav-section-icon,
+	body[data-template~="structure-section-commercialisation"] .structure-nav-section-commercialisation .structure-nav-section-icon,
+	body[data-template~="structure-accounting"]:not([data-template*="structure-section-"]) .structure-nav-section-accounting .structure-nav-section-icon,
+	body[data-template~="structure-section-accounting"] .structure-nav-section-accounting .structure-nav-section-icon,
+	body[data-template~="structure-dashboard"]:not([data-template*="structure-section-"]) .structure-nav-section-home .structure-nav-section-icon,
+	body[data-template~="structure-section-home"] .structure-nav-section-home .structure-nav-section-icon {
+		background-color: color-mix(in srgb, var(--structure-jeton), black var(--selection-shade));
+		box-shadow: 0 0 0 3px var(--structure-cadre), 0 0 0 5px var(--structure-jeton);
+	}
+
+	.structure-nav-section-label {
+		font-size: 0.8rem;
+	}
+
+	@media (max-width: 1299px) {
+
+		.structure-nav-section-label {
+			font-size: 0.75rem;
+		}
+
+	}
+
+	.structure-nav-sections-1 .structure-nav-section,
+	.structure-nav-sections-2 .structure-nav-section {
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+
+	.structure-nav-section-up,
+	.structure-nav-section-down {
+		display: none;
+	}
+
+	#structure-nav div.structure-subnav-wrapper {
+		display: flex;
+		flex-direction: column;
+		grid-column-gap: 1.25rem;
+	}
+
+	@media (min-height: 800px) {
+
+		#structure-nav-sections {
+			height: 5.5rem;
+		}
+
+	}
+
+	/* Plus marqué que le filet du cadre, qui se fond dans le fond du menu : celui-ci sépare la
+	   comptabilité du reste, et la section Ouvretaferme des entrées de la structure dans le groupe
+	   Bureau (L91), et doit se voir en menu clair. Le menu sombre reprend son filet. */
+	.structure-nav-accounting,
+	.structure-nav-ouvretaferme {
+		border-top: 1px solid color-mix(in srgb, var(--domain) 40%, var(--background-surface));
+		padding-top: .75rem;
+		margin-top: .75rem;
+	}
+
+	@media (max-height: 849px) {
+
+		.structure-nav-accounting,
+		.structure-nav-ouvretaferme {
+			padding-top: .5rem;
+			margin-top: .5rem;
+		}
+
+	}
+
+	@media (max-height: 749px) {
+
+		.structure-nav-accounting,
+		.structure-nav-ouvretaferme {
+			padding-top: .25rem;
+			margin-top: .25rem;
+		}
+
+	}
+
+	.structure-tab .structure-tab-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--radius);
+		margin-right: 0.5rem;
+		width: 1.75rem;
+	}
+
+	.structure-tab .structure-tab-icon:not(:empty) {
+		height: 1.75rem;
+	}
+
+	/* Le retrait de gauche est celui du titre de section (`.structure-tab`) : après la marge, qui vaut
+	   l'icône du titre et son écart, le libellé tombe sur la verticale de celui du titre. */
+	a.structure-subnav-item {
+		padding: 0.5rem 0.5rem 0.5rem var(--space-sm);
+		margin-left: 2.25rem;
+		line-height: 1.5;
+	}
+
+	@media (min-height: 750px) and (max-height: 849px) {
+
+		a.structure-subnav-item {
+			padding-top: 0.375rem;
+			padding-bottom: 0.375rem;
+		}
+
+	}
+	@media (max-height: 749px) {
+
+		a.structure-subnav-item {
+			padding-top: 0.25rem;
+			padding-bottom: 0.25rem;
+		}
+
+	}
+
+	@media (min-width: 1300px) {
+
+		a.structure-subnav-item.selected {
+			border-radius: var(--radius);
+		}
+
+	}
+
+	.structure-nav-year {
+		margin-top: 1rem;
+		padding: 0.25rem 2rem;
+	}
+
+	#structure-breadcrumbs {
+		display: none;
+	}
+
+	/* Le pied s'en tient au bas de la colonne même quand les onglets n'y sont pas (`dashboard.css`).
+	   L'icône de Paramètres, après le remplissage de son lien, tombe sur l'axe des icônes des entrées,
+	   et le compte sur le bord droit de l'entrée choisie. */
+	.structure-nav-foot {
+		display: flex;
+		flex: none;
+		align-items: center;
+		column-gap: var(--space-xxs);
+		margin-top: auto;
+		padding: var(--space-xs) var(--space-xs) var(--space-xs) var(--space-sm);
+		border-top: 1px solid var(--structure-cadre-filet);
+	}
+
+	/* Sans compte, l'inscription et la connexion sont deux blocs : seul le premier se cale à droite. */
+	.structure-nav-foot > div.structure-nav-account:first-of-type {
+		margin-left: auto;
+	}
+
+	.structure-nav-foot a.nav-item {
+		display: flex;
+		align-items: center;
+		column-gap: var(--space-xs);
+		min-height: var(--touch-target);
+		padding: 0 var(--space-xs);
+		border-radius: var(--radius);
+		color: inherit;
+	}
+
+	/* Le chevron de Paramètres prend la taille de celui du compte, son voisin, que le corps réduit du
+	   libellé lui ferait perdre. */
+	.structure-nav-foot a.structure-nav-settings > span + svg {
+		font-size: 1rem;
+		transition: transform var(--duration-md);
+	}
+
+	/* Fermé, le chevron montre où ses onglets vont s'ouvrir, au-dessus de lui ; ouvert, il se retourne
+	   comme celui d'un util-fold. Ouvert, c'est aussi l'écran de Paramètres sans autre univers déplié,
+	   les deux états où le bouton est plein. */
+	body[data-template~="structure-settings"]:not([data-template*="structure-section-"]) .structure-nav-foot a.structure-nav-settings > span + svg,
+	body[data-template~="structure-section-settings"] .structure-nav-foot a.structure-nav-settings > span + svg {
+		transform: rotate(180deg);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+
+		.structure-nav-foot a.structure-nav-settings > span + svg {
+			transition-duration: 0.01ms;
+		}
+
+	}
+
+	.structure-nav-foot a.nav-item:hover {
+		background-color: color-mix(in srgb, var(--domain) 8%, transparent);
+		text-decoration: none;
+	}
+
+	/* Le champ de saisie prend la place du + (`EntryUi::getMenu()`, jeton `structure-entry`) : il se pose
+	   sous les univers, au bord des entrées de la colonne. Hors du bureau, il est en bas de l'écran
+	   (blocs de la tablette et du téléphone). */
+	#entry-menu {
+		padding: 0 var(--space-xs) var(--space-xs);
+	}
+
+	/* Sur l'accueil, le champ est dans la page (`StructureTemplate::$entryInPage`) et la colonne en garde la
+	   hauteur : les entrées qui le suivent ne bougent pas d'un écran à l'autre, et un clic visé sur l'une
+	   d'elles en revenant à l'accueil ne tombe pas dans le champ. La hauteur est celle d'un form-control,
+	   plus la marge basse de #entry-menu. */
+	#entry-menu-place {
+		height: calc(2.25rem + 2px + var(--space-xs));
+	}
+
+}
+
+@media (max-width: 1099px), (max-height: 599px) {
+
+	:root {
+		--nav-width: 0rem;
+		--nav-height: calc(var(--nav-main) + var(--nav-structure));
+	}
+
+
+	div.structure-nav-wrapper {
+		display: flex;
+		justify-content: space-between;
+		align-items: stretch;
+		height: var(--nav-main);
+		min-height: var(--nav-main);
+		column-gap: 0.5rem;
+		padding: 0 var(--container-padding);
+	}
+
+	/* Le compte suit la cloche, qui n'a plus de place à sa suite pour son compteur (notification.css) :
+	   le compteur se pose sur son coin. L'icône est centrée dans sa cible, large de 1.3125rem : le
+	   compteur part de son bord droit et s'allonge vers le compte. */
+	.structure-nav-actions .notification-bell > a.nav-item {
+		justify-content: center;
+		padding-right: var(--space-xs);
+	}
+
+	.structure-nav-actions .notification-bell > a.nav-item > .util-counter {
+		left: calc(50% + 1.3125rem / 2 - var(--space-sm));
+	}
+
+	body[data-touch="no"] .structure-nav-wrapper {
+		position: sticky;
+		z-index: 500;
+		left: 0;
+		width: var(--screen-width);
+		margin-left: 0;
+		margin-right: 0;
+	}
+
+	/* La teinte de l'univers ne reste qu'à la barre de la structure, fermée par le filet du cadre : la
+	   rangée des univers et le fil qui la suivent à la tablette sont blancs, la tête et le contenu sur la
+	   feuille. */
+	body[data-template~="structure"] {
+		background-color: var(--background-surface);
+	}
+
+	body[data-template~="structure"] #root-nav {
+		background-color: var(--structure-cadre);
+		border-bottom: 1px solid var(--structure-cadre-filet);
+	}
+
+	/* À la tablette, la barre de la structure est pleine de la couleur de la marque, à son encre. Son
+	   filet en prend la couleur et garde son pixel, que la hauteur de la barre compte. */
+	@media (min-width: 768px) and (min-height: 600px) {
+
+		body[data-template~="structure"] #root-nav {
+			background-color: var(--primary);
+			border-bottom-color: var(--primary);
+			color: var(--primary-ink);
+		}
+
+		.structure-nav-actions a.nav-item:hover {
+			background-color: color-mix(in srgb, var(--primary-ink) 12.5%, transparent);
+		}
+
+	}
+
+	body[data-template~="structure"] > footer div.util-footer {
+		border-top-color: var(--border);
+	}
+
+	.structure-nav-wrapper {
+		align-items: center;
+	}
+
+	.structure-nav-actions .nav-item {
+		padding: 0 var(--space-xs);
+	}
+
+	.structure-nav-foot {
+		display: none;
+	}
+
+	body[data-template~="structure"] > header {
+		position: sticky;
+		z-index: 500;
+		top: 0;
+	}
+
+	/* Rien ne sépare la tête du contenu que ses écarts, sur la même feuille : elle en laisse autant sous
+	   son titre qu'au-dessus. Le dernier élément de la tête y rend sa marge basse, comme au bureau, et la
+	   bande du titre, plus remplie en bas qu'en haut (`component.css`), rattrape l'écart que la tête
+	   laisse en moins sous elle. */
+	body[data-template~="structure"] > main .container.structure-template-main-title {
+		background: var(--background-body);
+		margin-top: 0;
+		padding-top: var(--space-md);
+		padding-bottom: var(--space-sm);
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+	}
+
+	/* Une tête collante est déjà positionnée, et son décalage ne doit pas changer. */
+	body[data-template~="structure"]:not([data-touch="no"]) > main .container.structure-template-main-title {
+		position: relative;
+	}
+
+	body[data-touch="no"][data-template~="structure"] > main .container.structure-template-main-title {
+		position: sticky;
+		width: var(--screen-width);
+		left: 0;
+		z-index: 100;
+	}
+
+	body[data-template~="structure"] > main .container.structure-template-main-title > div > *:last-child,
+	body[data-template~="structure"] > main .container.structure-template-main-title > div.structure-template-main-content > div > *:last-child {
+		margin-bottom: 0;
+	}
+
+	body[data-template~="structure"] > main .container.structure-template-main-title + .container {
+		margin-top: 1.5rem;
+	}
+
+	body[data-template~="structure"] > main .container.structure-template-main-title:has(.util-page-band) + .container {
+		margin-top: 0;
+	}
+
+	/* Structure nav */
+	body[data-touch="no"] #structure-nav-sections {
+		position: sticky;
+		left: 0;
+		width: var(--screen-width);
+	}
+
+	/* Chaque univers porte son propre retrait, que l'onglet de l'univers ouvert garde autour de son
+	   contenu : la rangée le reprend sur ses bords pour que le premier jeton reste aligné sur la feuille. */
+	#structure-nav-sections {
+		display: flex;
+		padding: var(--space-xxs) calc(var(--container-padding) - var(--space-sm));
+		height: var(--structureSections);
+		align-items: stretch;
+		background-color: var(--background-surface);
+		max-width: var(--screen-width);
+		overflow: auto;
+	}
+
+
+	.structure-nav-sections-2 {
+		grid-template-columns: max-content max-content;
+	}
+
+	.structure-nav-sections-3 {
+		grid-template-columns: auto auto auto;
+	}
+
+	.structure-nav-sections-4 {
+		grid-template-columns: auto auto auto auto;
+	}
+
+	.structure-nav-section {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		column-gap: var(--space-xs);
+		padding: var(--space-xxs) 0;
+		color: var(--text);
+	}
+
+	#structure-nav-sections > a {
+		padding-left: var(--space-sm);
+		padding-right: var(--space-sm);
+	}
+
+	/* Plein quand il est choisi, Paramètres se centre dans la rangée à la hauteur d'un jeton, sans toucher
+	   le filet du fil. */
+	#structure-nav-sections .structure-nav-settings {
+		align-self: center;
+		min-height: 2.5rem;
+		font-size: inherit;
+	}
+
+	.structure-nav-section svg {
+		font-size: 1.2rem;
+	}
+
+	.structure-nav-join {
+		grid-area: join;
+	}
+
+	.structure-nav-planning {
+		grid-area: planning;
+	}
+
+	.structure-nav-planning-v2 {
+		grid-area: planning-v2;
+	}
+
+	.structure-nav-cultivation {
+		grid-area: cultivation;
+	}
+
+	.structure-nav-analyze-production {
+		grid-area: analyze;
+	}
+
+	.structure-nav-intelligence-vegetable {
+		grid-area: intelligence;
+	}
+
+	@media (min-width: 576px) {
+
+		.structure-section-production {
+			display: grid;
+			align-items: start;
+			grid-template:
+				"planning planning" auto
+				"planning-v2 planning-v2" auto
+				"cultivation analyze" auto
+				"cultivation intelligence" 1fr / 1fr 1fr;
+		}
+
+		.structure-section-production:has(.structure-nav-join) {
+			grid-template:
+				"join join" auto
+				"planning planning" auto
+				"planning-v2 planning-v2" auto
+				"cultivation analyze" auto
+				"cultivation intelligence" 1fr / 1fr 1fr;
+		}
+
+
+	}
+
+	@media (max-width: 575px) {
+
+		.structure-section-production {
+			display: grid;
+			align-items: start;
+			grid-template:
+				"planning planning" auto
+				"planning-v2 planning-v2" auto
+				"cultivation analyze" auto
+				"cultivation intelligence" 1fr / 1fr 1fr;
+		}
+
+		.structure-section-production:has(.structure-nav-join) {
+			grid-template:
+				"join join" auto
+				"planning planning" auto
+				"planning-v2 planning-v2" auto
+				"cultivation analyze" auto
+				"cultivation intelligence" 1fr / 1fr 1fr;
+		}
+
+
+	}
+
+	.structure-nav-selling {
+		grid-area: selling;
+	}
+
+	.structure-nav-communication {
+		grid-area: communication;
+	}
+
+	.structure-nav-analyze-commercialisation {
+		grid-area: analyze;
+	}
+
+	@media (min-width: 576px) {
+
+		.structure-section-commercialisation {
+			display: grid;
+			align-items: start;
+			grid-template: "selling communication analyze" 1fr / auto auto auto;
+		}
+
+		.structure-section-commercialisation:has(.structure-nav-join) {
+			grid-template:
+				"join join join" auto
+				"selling communication analyze" 1fr / auto auto auto;
+		}
+
+	}
+
+	@media (max-width: 575px) {
+
+		.structure-section-commercialisation {
+			display: grid;
+			align-items: start;
+			grid-template:
+				"selling communication" auto
+				"selling analyze" 1fr / auto auto;
+		}
+
+		.structure-section-commercialisation:has(.structure-nav-join) {
+			grid-template:
+				"join join" auto
+				"selling communication" auto
+				"selling analyze" 1fr / auto auto;
+		}
+
+
+	}
+
+	.structure-nav-proof {
+		grid-area: proof;
+	}
+
+	.structure-nav-bank {
+		grid-area: bank;
+	}
+
+	.structure-nav-cash {
+		grid-area: cash;
+	}
+
+	.structure-nav-accounting {
+		grid-area: accounting;
+	}
+
+	.structure-nav-preaccounting {
+		grid-area: preaccounting;
+	}
+
+	.structure-nav-invoicing {
+		grid-area: invoicing;
+	}
+
+	.structure-section-accounting {
+		display: grid;
+		align-items: start;
+		grid-template:
+			"invoicing accounting" auto
+			"proof accounting" auto
+			"bank accounting" auto
+			"cash accounting" auto
+			"preaccounting accounting" 1fr / 1fr 1fr;
+	}
+
+	.structure-nav-training {
+		grid-area: training;
+	}
+
+	.structure-section-accounting:has(.structure-nav-training) {
+		grid-template:
+			"training training" auto
+			"invoicing accounting" auto
+			"proof accounting" auto
+			"bank accounting" auto
+			"cash accounting" auto
+			"preaccounting accounting" 1fr / 1fr 1fr;
+	}
+
+	.structure-nav-structure {
+		grid-area: structure;
+	}
+
+	.structure-nav-team {
+		grid-area: team;
+	}
+
+	.structure-nav-feature {
+		grid-area: feature;
+	}
+
+	.structure-nav-data {
+		grid-area: data;
+	}
+
+	.structure-nav-subscription {
+		grid-area: subscription;
+	}
+
+	@media (min-width: 576px) {
+
+		.structure-section-settings {
+			display: grid;
+			align-items: start;
+			grid-template:
+				"structure feature data" auto
+				"team feature data" auto
+				"subscription feature data" auto / 1fr 1fr 1fr;
+		}
+
+		.structure-section-settings:has(.structure-nav-join) {
+			grid-template:
+				"join join join" auto
+				"structure feature data" auto
+				"team feature data" auto
+				"subscription feature data" auto / 1fr 1fr 1fr;
+		}
+	}
+
+	@media (max-width: 575px) {
+
+		.structure-section-settings {
+			display: grid;
+			align-items: start;
+			grid-template:
+				"structure feature" auto
+				"team feature" auto
+				"data feature" auto
+				"subscription feature" auto / 1fr 1fr;
+		}
+
+		.structure-section-settings:has(.structure-nav-join) {
+			grid-template:
+				"join join" auto
+				"structure feature" auto
+				"team feature" auto
+				"data feature" auto
+				"subscription feature" auto / 1fr 1fr;
+		}
+
+	}
+
+	#structure-nav {
+		display: flex;
+		align-items: center;
+		height: var(--nav-structure);
+		min-height: var(--nav-structure);
+		background-color: var(--background-surface);
+	}
+
+	[data-touch="no"] #structure-nav {
+		position: sticky;
+		left: 0;
+		width: var(--screen-width);
+	}
+
+	/* L'univers ouvert, dont le jeton se fonce et se cercle sur le blanc de la rangée
+	   (`--structure-jeton-ouvert`, règle du jeton ci-dessous). Paramètres, sans jeton, est plein quand il
+	   est choisi, comme dans la barre du haut du bureau (`a.structure-nav-settings`). */
+	body[data-template~="structure-production"]:not([data-template*="structure-section-"]) #structure-nav-sections .structure-nav-section-production,
+	body[data-template~="structure-section-production"] #structure-nav-sections .structure-nav-section-production,
+	body[data-template~="structure-commercialisation"]:not([data-template*="structure-section-"]) #structure-nav-sections .structure-nav-section-commercialisation,
+	body[data-template~="structure-section-commercialisation"] #structure-nav-sections .structure-nav-section-commercialisation,
+	body[data-template~="structure-accounting"]:not([data-template*="structure-section-"]) #structure-nav-sections .structure-nav-section-accounting,
+	body[data-template~="structure-section-accounting"] #structure-nav-sections .structure-nav-section-accounting,
+	body[data-template~="structure-dashboard"]:not([data-template*="structure-section-"]) #structure-nav-sections .structure-nav-section-home {
+		--structure-jeton-ouvert: 1;
+		color: var(--text);
+		font-family: var(--font-title);
+		font-weight: 600;
+	}
+
+	/* Le jeton d'un univers, dans la bande de la tablette et dans la barre du bas. Un seul jeu de valeurs
+	   pour les deux, que l'univers ouvert règle par `--structure-jeton-ouvert` (1, sinon 0) : foncé de
+	   `--selection-shade`, cerclé du blanc de la rangée et de la barre puis de sa couleur. Les deux listes qui le posent ne
+	   reconnaissent pas l'univers ouvert de la même façon, la barre du bas suivant aussi son panneau.
+	   `:where()` laisse la barre du bas plafonner la taille du jeton dans sa propre règle. */
+	:where(#structure-nav-sections, .structure-bar) .structure-nav-section-icon {
+		display: flex;
+		flex: none;
+		align-items: center;
+		justify-content: center;
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: 50%;
+		background-color: color-mix(in srgb, var(--structure-jeton), black calc(var(--selection-shade) * var(--structure-jeton-ouvert, 0)));
+		box-shadow: 0 0 0 calc(var(--structure-anneau) / 2 * var(--structure-jeton-ouvert, 0)) var(--background-surface), 0 0 0 calc(var(--structure-anneau) * var(--structure-jeton-ouvert, 0)) var(--structure-jeton);
+		color: var(--primary-ink);
+	}
+
+	/* Dans le déroulant de la tablette et la feuille du téléphone, le nom de l'univers et son + coiffent
+	   les onglets : chaque groupe porte une grille d'aires nommées, et la ligne implicite ouverte avant
+	   la première (`grid-row-end: 1`) lui évite d'en réécrire chacune. La bande du téléphone le masque
+	   avec tout ce qui n'est pas une entrée (`#structure-nav .structure-tabs > :not(.structure-tab-wrapper)`). */
+	.structure-tabs .structure-tabs-universe {
+		grid-row: span 1 / 1;
+		grid-column: 1 / -1;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		column-gap: var(--space-xs);
+		min-height: var(--structure-tab-close);
+		margin: 0 var(--structure-tab-close) 0 var(--space-sm);
+		color: var(--domain);
+		font-family: var(--font-title);
+		font-size: 1.4rem;
+		font-weight: 500;
+		line-height: 1.1;
+	}
+
+	.structure-nav-section-up {
+		display: none;
+	}
+
+	.structure-nav-title .structure-logo-view {
+		width: 1.75rem !important;
+		height: 1.75rem !important;
+		min-width: 1.75rem !important;
+		font-size: 1rem !important;
+	}
+
+	.structure-nav-title-type {
+
+		align-self: center;
+		margin-left: 0.5rem;
+		margin-right: auto;
+
+		@media (max-width: 575px) {
+
+			& {
+				display: none;
+			}
+
+		}
+
+	}
+
+	/* Le déroulant de la tablette recouvre le fil d'un bord à l'autre, sans arrondi : il se lit comme le
+	   fil déplié. Il est blanc, comme la page qu'il recouvre, et ses entrées ont le retrait et la pastille
+	   du fil, l'entrée choisie de sa hauteur : le pixel ajouté au retrait est la bordure
+	   transparente que le fil pose en haut et en bas de ses liens (`.structure-breadcrumbs-link`).
+	   L'entrée choisie y est pleine, comme dans le fil et la colonne (`a.structure-subnav-item.selected`).
+	   La bande et le panneau du téléphone sont les mêmes nœuds : ils remettent ces jetons à leur valeur
+	   (bloc du téléphone, plus bas). */
+	body[data-template~="structure"] {
+		--structure-deroulant-libelle: var(--domain);
+		--structure-deroulant-croix: var(--background-body);
+		--structure-deroulant-entree: calc(var(--space-xs) + 1px) var(--space-sm);
+	}
+
+	/* Les entrées se décalent de leur propre retrait pour que leur libellé tombe sur le bord du
+	   container, comme l'icône du fil. */
+	.structure-tabs {
+		position: absolute;
+		left: 0;
+		width: 100%;
+		padding: var(--space-xs) calc(var(--container-padding) - var(--space-sm)) var(--space-md);
+		gap: 0 0.5rem;
+		background-color: var(--background-surface);
+		box-shadow: var(--shadow-v2);
+		z-index: 3;
+	}
+
+	body[data-touch="yes"] .structure-tabs {
+		top: var(--structureSections);
+	}
+
+	body[data-touch="no"] .structure-tabs {
+		top: 0;
+	}
+
+	/* Les entrées des groupes du déroulant s'écrivent à l'encre de l'univers, comme son titre. À la
+	   tablette, l'entrée choisie, pleine de cette couleur, rend à son libellé l'encre du plein ; la bande
+	   du téléphone peint le libellé lui-même (bloc du téléphone, plus bas). */
+	#structure-nav .structure-tabs .structure-tab-wrapper > .structure-tab .structure-tab-label {
+		color: var(--structure-deroulant-libelle);
+	}
+
+	@media (min-width: 768px) and (min-height: 600px) {
+
+		#structure-nav .structure-tabs .structure-tab-wrapper:has(> .structure-tab:not(.structure-tab-subnav).selected):not(:has(.structure-subnav-item.selected)) > .structure-tab .structure-tab-label {
+			color: inherit;
+		}
+
+	}
+
+	.structure-tab-wrapper {
+		border-radius: var(--radius);
+	}
+
+	.structure-tab {
+		display: flex;
+		column-gap: 0.5rem;
+		align-items: center;
+		border-radius: var(--radius);
+		padding: 1rem 0.75rem;
+	}
+
+	@media (min-width: 450px) {
+
+		.structure-tab {
+			font-size: 1.1rem;
+		}
+
+	}
+
+	.structure-tab .structure-tab-icon {
+		width: 1.5rem;
+	}
+
+	/* Le côté de la croix, que le titre de l'univers laisse libre à sa droite. La croix occupe la
+	   rangée du titre, à sa hauteur : son disque se centre sur celui du +, de la même taille, et ne
+	   descend pas sur la première entrée. Sa boîte déborde sur le remplissage du déroulant, d'autant
+	   que la marge autour du disque, pour que celui-ci s'arrête sur le bord droit des entrées. */
+	.structure-tabs {
+		--structure-tab-close: 3.5rem;
+	}
+
+	.structure-tab-close {
+		position: absolute;
+		top: 0.5rem;
+		right: 0;
+		width: var(--structure-tab-close);
+		height: var(--structure-tab-close);
+		font-size: 1.25rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.structure-tab-close span {
+		width: calc(100% - 1rem);
+		height: calc(100% - 1rem);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: var(--structure-deroulant-croix);
+		color: var(--domain);
+	}
+
+	div.structure-subnav-wrapper {
+		display: grid;
+		grid-template-columns: 1fr;
+		row-gap: 0.1rem;
+	}
+
+	a.structure-subnav-item {
+		padding: var(--structure-deroulant-entree);
+		border-radius: var(--radius);
+	}
+
+	@media (max-width: 359px) {
+
+		.structure-subnav-prefix {
+			display: none;
+		}
+
+	}
+	.structure-nav-year {
+		font-size: 1.1rem;
+		padding: 0.25rem 0.75rem;
+		margin-bottom: .5rem;
+	}
+
+	#structure-breadcrumbs {
+		width: 100%;
+		height: 100%;
+		display: grid;
+		align-items: center;
+		grid-template-columns: max-content 1fr;
+		padding-left: var(--container-padding);
+		padding-right: var(--container-padding);
+		color: var(--text);
+		letter-spacing: -0.1px;
+		position: relative;
+	}
+
+	.structure-breadcrumbs-link {
+		color: inherit;
+		border-top: 1px solid transparent;
+		border-bottom: 1px solid transparent;
+		padding-top: var(--space-xs);
+		padding-bottom: var(--space-xs);
+	}
+
+	a.structure-breadcrumbs-link:hover {
+		text-decoration: none;
+	}
+
+	/* Une entrée de la rangée a le remplissage de la pastille du choix, et la rangée n'a pas d'écart :
+	   deux libellés restent à la même distance, que l'un des deux soit choisi ou non. Le survol est celui
+	   du menu (`a.structure-subnav-item:hover`), un fond de la forme de la pastille. Le lien de la section,
+	   à côté de son icône, nomme l'écran ouvert sans choisir parmi d'autres : il n'en prend aucun. */
+	.structure-breadcrumbs-categories > .structure-breadcrumbs-link {
+		padding-left: var(--space-sm);
+		padding-right: var(--space-sm);
+		border-radius: var(--radius);
+	}
+
+	.structure-breadcrumbs-categories > a.structure-breadcrumbs-link:not(.selected):hover {
+		background-color: color-mix(in srgb, var(--domain) 8%, transparent);
+	}
+
+	.structure-breadcrumbs-section-link {
+		margin-left: var(--space-xxs);
+	}
+
+	/* L'entrée choisie est pleine, comme dans la colonne et le déroulant. */
+	.structure-breadcrumbs-link.selected {
+		background-color: color-mix(in srgb, var(--domain-light), black var(--selection-shade));
+		color: var(--primary-ink);
+	}
+
+	#structure-breadcrumbs-section {
+		background-color: var(--background-surface);
+		color: var(--domain);
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		display: flex;
+		align-items: center;
+		padding-left: max(1rem, var(--container-padding));
+		z-index: 2;
+	}
+
+	.structure-breadcrumbs-categories {
+		display: flex;
+		padding-left: 4rem;
+		overflow-x: auto;
+		white-space: nowrap;
+		position: absolute;
+		left: 0;
+		right: var(--container-padding);
+		z-index: 1;
+	}
+
+	.structure-breadcrumbs-categories {
+		-ms-overflow-style: none;  /* Internet Explorer 10+ */
+		scrollbar-width: none;  /* Firefox, Safari 18.2+, Chromium 121+ */
+	}
+	.structure-breadcrumbs-categories::-webkit-scrollbar {
+		display: none;  /* Older Safari and Chromium */
+	}
+
+	/* Hors du bureau, le champ du menu est en bas de l'écran, sur toute la largeur, et sa liste s'ouvre
+	   au-dessus de lui. À la tablette, il s'y fixe seul : l'en-tête reste en haut, compté par les têtes
+	   collantes (`--mainSticky`), et le contenu lui laisse sa hauteur. Le téléphone le remet dans son
+	   en-tête, déjà fixé en bas (bloc du téléphone). */
+	/* La hauteur du champ est celle d'un form-control, que l'omnibox porte (une ligne de 1.5rem, deux
+	   marges de 0.375rem, deux bords de 1px), plus les marges et le filet de #entry-menu. */
+	body[data-template~="structure"][data-template~="structure-entry"] {
+		--structure-entry: calc(2.25rem + 2px + 2 * var(--space-xs) + 1px);
+	}
+
+	#entry-menu {
+		--util-omnibox-max-width: none;
+		--util-omnibox-list-top: auto;
+		--util-omnibox-list-bottom: calc(100% + 0.375rem);
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		padding: var(--space-xs) var(--space-md);
+		background-color: var(--background-surface);
+		border-top: 1px solid var(--border);
+	}
+
+	body[data-template~="structure"][data-template~="structure-entry"] > main {
+		padding-bottom: calc(var(--structure-entry) + var(--space-md));
+	}
+
+	body[data-template~="structure"][data-template~="structure-entry"] > footer {
+		padding-bottom: var(--structure-entry);
+	}
+
+	body[data-template~="structure"][data-template~="structure-entry"] :is(.util-block-sticked, .util-toast-stack) {
+		bottom: calc(var(--structure-entry) + var(--space-md));
+	}
+
+	/* Une sélection en cours prend le bas de l'écran : le champ lui cède la place, comme la barre du
+	   téléphone. */
+	body[data-template~="structure"][data-template~="structure-entry"].batch-open #entry-menu {
+		display: none;
+	}
+
+}
+
+.structure-tab-disabled {
+	opacity: 0.5;
+}
+
+/* Le contenu de l'écran garde l'univers de l'écran. Au-dessus du téléphone, `body` prend celui de
+   l'univers survolé dans la navigation : les boutons et la saison changeraient de couleur sous la
+   souris. */
+body[data-template~="structure"] > main {
+	--domain: var(--primary);
+	--domain-light: var(--primary);
+}
+
+body[data-template~="structure"][data-template~="structure-production"] > main {
+	--domain: var(--production);
+	--domain-light: var(--production-light);
+}
+
+body[data-template~="structure"][data-template~="structure-commercialisation"] > main {
+	--domain: var(--commercialisation);
+	--domain-light: var(--commercialisation-light);
+}
+
+body[data-template~="structure"][data-template~="structure-accounting"] > main {
+	--domain: var(--accounting);
+	--domain-light: var(--accounting-light);
+}
+
+body[data-template~="structure"][data-template~="structure-settings"] > main {
+	--domain: var(--settings);
+	--domain-light: var(--settings-light);
+}
+
+/* Onglets pour les saisons */
+.structure-tabs-season .structure-tabs-season-page {
+	display: flex;
+	align-items: center;
+	height: 3rem;
+	font-weight: bold;
+}
+
+.structure-tabs-season .structure-tabs-season-page:before {
+	content: ">";
+	font-size: 0.9rem;
+	margin: 0 0.75rem;
+}
+
+.structure-tabs-season .structure-tabs-season-action {
+	flex: 1 0 auto;
+	text-align: right;
+}
+
+
+body[data-template~="structure-production"]:not([data-template*="structure-section-"]) .structure-nav-section-production,
+body[data-template~="structure-section-production"] .structure-nav-section-production,
+body[data-template~="structure-commercialisation"]:not([data-template*="structure-section-"]) .structure-nav-section-commercialisation,
+body[data-template~="structure-section-commercialisation"] .structure-nav-section-commercialisation,
+body[data-template~="structure-accounting"]:not([data-template*="structure-section-"]) .structure-nav-section-accounting,
+body[data-template~="structure-section-accounting"] .structure-nav-section-accounting {
+	border-color: white;
+}
+
+body[data-template~="structure-production"]:not([data-template*="structure-section-"]) .structure-nav-section-production,
+body[data-template~="structure-section-production"] .structure-nav-section-production {
+	position: relative;
+	z-index: 1;
+}
+
+
+body[data-template~="structure-commercialisation"]:not([data-template*="structure-section-"]) .structure-nav-section-commercialisation,
+body[data-template~="structure-section-commercialisation"] .structure-nav-section-commercialisation {
+	position: relative;
+	z-index: 1;
+}
+
+body[data-template~="structure-accounting"]:not([data-template*="structure-section-"]) .structure-nav-section-accounting,
+body[data-template~="structure-section-accounting"] .structure-nav-section-accounting {
+	position: relative;
+	z-index: 1;
+}
+
+body[data-template~="structure-settings"]:not([data-template*="structure-section-"]) .structure-nav-section-settings,
+body[data-template~="structure-section-settings"] .structure-nav-section-settings {
+	position: relative;
+	z-index: 1;
+}
+
+body:not([data-template~="structure-home"]):not([data-template~="structure-section-home"]) .structure-tabs.structure-section-home,
+body[data-template*="structure-section-"]:not([data-template~="structure-section-home"]) .structure-tabs.structure-section-home {
+	display: none;
+}
+
+body:not([data-template~="structure-production"]):not([data-template~="structure-section-production"]) .structure-tabs.structure-section-production,
+body[data-template*="structure-section-"]:not([data-template~="structure-section-production"]) .structure-tabs.structure-section-production {
+	display: none;
+}
+
+body:not([data-template~="structure-commercialisation"]):not([data-template~="structure-section-commercialisation"]) .structure-tabs.structure-section-commercialisation,
+body[data-template*="structure-section-"]:not([data-template~="structure-section-commercialisation"]) .structure-tabs.structure-section-commercialisation {
+	display: none;
+}
+
+body:not([data-template~="structure-accounting"]):not([data-template~="structure-section-accounting"]) .structure-tabs.structure-section-accounting,
+body[data-template*="structure-section-"]:not([data-template~="structure-section-accounting"]) .structure-tabs.structure-section-accounting {
+	display: none;
+}
+
+body:not([data-template~="structure-settings"]):not([data-template~="structure-section-settings"]) .structure-tabs.structure-section-settings,
+body[data-template*="structure-section-"]:not([data-template~="structure-section-settings"]) .structure-tabs.structure-section-settings {
+	display: none;
+}
+
+@media (max-width: 1099px), (max-height: 599px) {
+
+	body:not([data-template~="structure-section-home"]) .structure-tabs.structure-section-home {
+		display: none;
+	}
+
+	body[data-template~="structure-section-home"] .structure-nav-section-home .structure-nav-section-down {
+		display: none;
+	}
+
+	body[data-template~="structure-section-home"] .structure-nav-section-home .structure-nav-section-up {
+		display: block;
+	}
+
+	body:not([data-template~="structure-section-production"]) .structure-tabs.structure-section-production {
+		display: none;
+	}
+
+	body[data-template~="structure-section-production"] .structure-nav-section-production .structure-nav-section-down {
+		display: none;
+	}
+
+	body[data-template~="structure-section-production"] .structure-nav-section-production .structure-nav-section-up {
+		display: block;
+	}
+
+	body:not([data-template~="structure-section-commercialisation"]) .structure-tabs.structure-section-commercialisation {
+		display: none;
+	}
+
+	body[data-template~="structure-section-commercialisation"] .structure-nav-section-commercialisation .structure-nav-section-down {
+		display: none;
+	}
+
+	body[data-template~="structure-section-commercialisation"] .structure-nav-section-commercialisation .structure-nav-section-up {
+		display: block;
+	}
+
+	body:not([data-template~="structure-section-accounting"]) .structure-tabs.structure-section-accounting {
+		display: none;
+	}
+
+	body[data-template~="structure-section-accounting"] .structure-nav-section-accounting .structure-nav-section-down {
+		display: none;
+	}
+
+	body[data-template~="structure-section-accounting"] .structure-nav-section-accounting .structure-nav-section-up {
+		display: block;
+	}
+
+	body:not([data-template~="structure-section-settings"]) .structure-tabs.structure-section-settings {
+		display: none;
+	}
+
+	body[data-template~="structure-section-settings"] .structure-nav-section-settings .structure-nav-section-down {
+		display: none;
+	}
+
+	body[data-template~="structure-section-settings"] .structure-nav-section-settings .structure-nav-section-up {
+		display: block;
+	}
+
+	/* À la tablette, sous la barre de la structure, la rangée et le fil sont blancs d'un bord à l'autre : le
+	   fil et le déroulant s'y découpent par des filets gris, le déroulant ouvert gardant son ombre. */
+	@media (min-width: 768px) and (min-height: 600px) {
+
+		body[data-template~="structure"] #structure-nav {
+			border-top: 1px solid var(--border);
+			border-bottom: 1px solid var(--border);
+		}
+
+		body[data-template~="structure"] #structure-nav .structure-tabs {
+			border-bottom: 1px solid var(--border);
+		}
+
+	}
+
+}
+
+@media (max-width: 767px), (max-height: 599px) {
+
+	body[data-template~="structure"] {
+		/* La barre se mesure au doigt et non au texte : elle ne grandit plus avec la racine passé 57 px,
+		   et ses jetons et libellés, eux en rem, s'y serrent. */
+		--structure-bar: min(4.75rem, 57px);
+		--structure-strip: calc(var(--touch-target) + 2 * var(--space-xxs));
+		--nav-structure: calc(var(--structure-bar) + var(--structure-strip));
+		--mainSticky: var(--nav-main);
+	}
+
+	body[data-template~="structure"][data-template~="structure-dashboard"] {
+		--nav-structure: var(--structure-bar);
+	}
+
+	/* La barre du haut reste en vue, comme celle du bas : `--mainSticky` la compte. */
+	body[data-template~="structure"] > nav {
+		position: sticky;
+		top: 0;
+		z-index: 500;
+		height: var(--nav-main);
+	}
+
+	/* La place de la barre du bas, que le contenu laisse sous lui, l'écarte aussi du filet du pied : le pied
+	   n'en rajoute pas au-dessus. Il la reprend en dessous, sans quoi la barre, fixe, cache ses derniers
+	   liens en fin de défilement. */
+	body[data-template~="structure"] > main {
+		padding-bottom: calc(var(--nav-structure) + var(--space-md));
+	}
+
+	body[data-template~="structure"] > footer {
+		padding-top: 0;
+		padding-bottom: var(--nav-structure);
+	}
+
+	/* Ce qui se fixe en bas de l'écran se pose au-dessus de la barre et de sa bande : la barre d'un lot
+	   (`batch.css`) et celle d'un panier (`util-basket-bar`) passaient dessous et disparaissaient, le
+	   bloc collé et les messages passaient dessus et la cachaient. */
+	body[data-template~="structure"] :is(.batch-group-wrapper, .util-basket-bar) {
+		bottom: var(--nav-structure);
+	}
+
+	/* Une sélection en cours prend le bas de l'écran : la barre et sa bande lui cèdent la place, et
+	   reviennent quand elle se vide ou se ferme. `batch-open` est posé par `Batch` (batch.js) plutôt que
+	   lu par un `:has()` sur le body, que Firefox réévaluerait sur tout le document à chaque mutation. */
+	body[data-template~="structure"].batch-open .batch-group-wrapper {
+		bottom: 0;
+	}
+
+	body[data-template~="structure"].batch-open .structure-bar,
+	body[data-template~="structure"].batch-open > header {
+		display: none;
+	}
+
+	body[data-template~="structure"] :is(.util-block-sticked, .util-toast-stack) {
+		bottom: calc(var(--nav-structure) + var(--space-md));
+	}
+
+	body[data-template~="structure"] .structure-bar {
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		z-index: 100;
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: minmax(0, 1fr);
+		grid-template-rows: 100%;
+		align-items: stretch;
+		row-gap: 0;
+		height: var(--structure-bar);
+		/* L'anneau du jeton de l'univers ouvert déborde du jeton de son épaisseur : la barre la garde
+		   au-dessus de ses jetons, calés en haut, plus une demi-épaisseur pour que l'anneau ne touche
+		   jamais son bord, même quand le plafond de sa hauteur serre les jetons. */
+		padding: calc(var(--structure-anneau) * 1.5) 0 0;
+		color: var(--text);
+	}
+
+	/* La bande et la barre ne forment qu'un bloc : le filet le borde par le haut, que l'en-tête porte
+	   au-dessus de la barre, sauf sur l'accueil où la bande n'est pas rendue. */
+	body[data-template~="structure"][data-template~="structure-dashboard"]:not([data-panel="open"]) .structure-bar {
+		border-top: 1px solid var(--border);
+	}
+
+	/* La barre du bas porte les univers et le panneau leurs entrées : les onglets et le fil d'Ariane
+	   de l'en-tête, rendus pour les autres largeurs, se retirent. */
+	body[data-template~="structure"] > header #structure-nav-sections,
+	body[data-template~="structure"] #structure-breadcrumbs {
+		display: none;
+	}
+
+	body[data-template~="structure"] .structure-bar .structure-nav-section-home {
+		--domain: var(--primary);
+		--domain-light: var(--primary);
+	}
+
+	body[data-template~="structure"] .structure-bar .structure-nav-section {
+		grid-row: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-start;
+		row-gap: var(--space-xxs);
+		min-width: 0;
+		width: auto;
+		height: auto;
+		padding: 0;
+		background-color: transparent;
+		color: var(--text);
+		font-size: 0.9rem;
+		line-height: 1.2;
+		text-decoration: none;
+	}
+
+	body[data-template~="structure"] .structure-bar .structure-nav-section .structure-nav-section-icon {
+		/* Le jeton suit le plafond de la barre (`--structure-bar`). */
+		width: min(2.5rem, 30px);
+		height: min(2.5rem, 30px);
+		font-size: 1.3rem;
+	}
+
+	body[data-template~="structure"] .structure-bar .structure-nav-section-label {
+		max-width: 100%;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		font-size: inherit;
+		line-height: inherit;
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-dashboard"] .structure-bar .structure-nav-section-home,
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-production"] .structure-bar .structure-nav-section-production,
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-commercialisation"] .structure-bar .structure-nav-section-commercialisation,
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-accounting"] .structure-bar .structure-nav-section-accounting,
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-settings"] .structure-bar .structure-nav-section-settings,
+	body[data-template~="structure"][data-panel="open"][data-template~="structure-section-home"] .structure-bar .structure-nav-section-home,
+	body[data-template~="structure"][data-panel="open"][data-template~="structure-section-production"] .structure-bar .structure-nav-section-production,
+	body[data-template~="structure"][data-panel="open"][data-template~="structure-section-commercialisation"] .structure-bar .structure-nav-section-commercialisation,
+	body[data-template~="structure"][data-panel="open"][data-template~="structure-section-accounting"] .structure-bar .structure-nav-section-accounting,
+	body[data-template~="structure"][data-panel="open"][data-template~="structure-section-settings"] .structure-bar .structure-nav-section-settings {
+		font-family: var(--font-title);
+		font-weight: 600;
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-dashboard"] .structure-bar .structure-nav-section-home .structure-nav-section-icon,
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-production"] .structure-bar .structure-nav-section-production .structure-nav-section-icon,
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-commercialisation"] .structure-bar .structure-nav-section-commercialisation .structure-nav-section-icon,
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-accounting"] .structure-bar .structure-nav-section-accounting .structure-nav-section-icon,
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-settings"] .structure-bar .structure-nav-section-settings .structure-nav-section-icon,
+	body[data-template~="structure"][data-panel="open"][data-template~="structure-section-home"] .structure-bar .structure-nav-section-home .structure-nav-section-icon,
+	body[data-template~="structure"][data-panel="open"][data-template~="structure-section-production"] .structure-bar .structure-nav-section-production .structure-nav-section-icon,
+	body[data-template~="structure"][data-panel="open"][data-template~="structure-section-commercialisation"] .structure-bar .structure-nav-section-commercialisation .structure-nav-section-icon,
+	body[data-template~="structure"][data-panel="open"][data-template~="structure-section-accounting"] .structure-bar .structure-nav-section-accounting .structure-nav-section-icon,
+	body[data-template~="structure"][data-panel="open"][data-template~="structure-section-settings"] .structure-bar .structure-nav-section-settings .structure-nav-section-icon {
+		--structure-jeton-ouvert: 1;
+	}
+
+	/* ⚠️ `html >` passe devant `body[data-template~="structure-planning-daily"] header` et sa jumelle
+	   `yearly` (`series/static/css/planning.css`), chargées après et de même poids sans lui, qui
+	   remettent l'en-tête en flux. */
+	html > body[data-template~="structure"] > header {
+		position: fixed;
+		top: auto;
+		bottom: var(--structure-bar);
+		left: 0;
+		right: 0;
+		/* ⚠️ Au-dessus du `z-index` de `#root-nav`, plus haut dans cette feuille : un élément de grille
+		   à `z-index` non `auto` crée un contexte d'empilement même en `position: static`, donc le
+		   `<nav>` remis en flux peindrait par-dessus le panneau. */
+		z-index: 510;
+		width: auto;
+		display: block;
+	}
+
+	body[data-template~="structure"][data-template~="structure-dashboard"]:not([data-panel="open"]) > header {
+		display: none;
+	}
+
+	body[data-template~="structure"] .structure-panel-scrim {
+		display: none;
+		position: fixed;
+		top: var(--nav-main);
+		bottom: var(--structure-bar);
+		left: 0;
+		right: 0;
+	}
+
+	body[data-template~="structure"][data-panel="open"] .structure-panel-scrim {
+		display: block;
+	}
+
+	/* ⚠️ Le voile est positionné et le panneau non : sans contexte propre, un élément positionné peint
+	   par-dessus ses frères en flux, et le voile masquerait la navigation qu'il accompagne. */
+	body[data-template~="structure"] #structure-nav.structure-panel {
+		position: relative;
+		z-index: 1;
+		left: auto;
+		align-items: stretch;
+		width: auto;
+		height: auto;
+		min-height: 0;
+		max-height: calc(100dvh - var(--nav-main) - var(--structure-bar));
+		overflow: hidden auto;
+		border-right: none;
+		border-top: 1px solid var(--border);
+	}
+
+	body[data-template~="structure"] .structure-panel .structure-tab-close {
+		display: none;
+	}
+
+	/* La feuille n'a pas de croix : son titre n'en garde ni la hauteur ni la place à droite. */
+	body[data-template~="structure"] .structure-panel .structure-tabs .structure-tabs-universe {
+		min-height: 0;
+		margin: var(--space-xxs) 0 var(--space-xs) var(--space-sm);
+	}
+
+	/* ⚠️ Chaque groupe porte une grille d'aires nommées et une position absolue, dessinées pour le
+	   panneau déroulant d'hier : le `position: static` remet le groupe dans le flux du panneau. */
+	body[data-template~="structure"] .structure-panel .structure-tabs {
+		position: static;
+		flex: none;
+		min-height: 0;
+		padding: var(--space-xs);
+		box-shadow: none;
+	}
+
+	/* La barre du bas, le panneau et ses groupes sont blancs, et le filet du panneau les sépare du contenu
+	   blanc. L'icône collée de la bande couvre les entrées qui défilent
+	   sous elle, d'où le même fond. */
+	body[data-template~="structure"] .structure-bar,
+	body[data-template~="structure"] .structure-panel .structure-tabs,
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-tabs:not(.structure-section-settings) .structure-tab-wrapper:has(.structure-subnav-item, .dropdown-item) > .structure-tab {
+		background-color: var(--background-surface);
+	}
+
+	body[data-template~="structure"][data-panel="open"] .structure-panel .structure-tabs {
+		column-gap: var(--space-md);
+		row-gap: var(--space-sm);
+		padding: var(--space-sm);
+	}
+
+	body[data-template~="structure"][data-panel="open"] .structure-panel div.structure-subnav-wrapper {
+		row-gap: var(--space-xxs);
+		margin-top: var(--space-xxs);
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-tabs {
+		display: none;
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-production"] #structure-nav .structure-tabs.structure-section-production,
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-commercialisation"] #structure-nav .structure-tabs.structure-section-commercialisation,
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-accounting"] #structure-nav .structure-tabs.structure-section-accounting,
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-settings"] #structure-nav .structure-tabs.structure-section-settings {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		column-gap: var(--space-xxs);
+		height: var(--structure-strip);
+		padding: var(--space-xxs) var(--space-xs);
+		overflow-x: auto;
+		scrollbar-width: none;
+		scroll-snap-type: x mandatory;
+		scroll-padding-left: var(--space-xs);
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-tabs > :not(.structure-tab-wrapper),
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-tab-wrapper > :not(a.structure-tab, .structure-subnav-wrapper),
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-subnav-wrapper > :not(a.structure-subnav-item),
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav :is(.structure-tab-icon, .structure-subnav-prefix) {
+		display: none;
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav :is(.structure-tab-wrapper, .structure-subnav-wrapper) {
+		display: contents;
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-section-settings .structure-tab-wrapper > div.structure-tab {
+		display: flex;
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-section-settings .structure-subnav-wrapper {
+		display: none;
+	}
+
+	/* L'entrée garde toute la hauteur tactile, et c'est son libellé qui porte la pastille de la
+	   sélection : une pastille à la hauteur de l'entrée remplissait la bande. */
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav :is(.structure-tab, .structure-subnav-item) {
+		flex: none;
+		display: flex;
+		align-items: center;
+		min-height: var(--touch-target);
+		margin: 0;
+		padding: var(--space-xs) var(--space-xxs);
+		background-color: transparent;
+		color: var(--text);
+		font-size: 1rem;
+		white-space: nowrap;
+		text-decoration: none;
+		scroll-snap-align: start;
+		cursor: pointer;
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav :is(.structure-tab-label, .structure-subnav-item > span:not(.structure-subnav-prefix)) {
+		padding: var(--space-xxs) var(--space-xs);
+		border-radius: 999px;
+		/* Groupes et entrées se suivent sur la même ligne de la bande, et c'est la pastille de la
+		   sélection qui les distingue : ils y prennent le corps et la graisse des listes de la bande
+		   (`a.dropdown-item`, plus bas). */
+		font-family: inherit;
+		font-size: inherit;
+		font-weight: 500;
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-tab-wrapper:not(:has(.structure-subnav-item.selected, .dropdown-item.selected)) > .structure-tab.selected > .structure-tab-label,
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-subnav-item.selected > span:not(.structure-subnav-prefix),
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-section-settings .structure-tab-wrapper:has(.structure-subnav-item.selected) > div.structure-tab > .structure-tab-label {
+		background-color: color-mix(in srgb, var(--domain-light), black var(--selection-shade));
+		color: var(--primary-ink);
+	}
+
+	/* L'ancien planning range ses vues dans une liste déroulante, que la bande cache avec le sélecteur
+	   qui l'ouvre : la liste y devient une suite d'entrées, comme les sous-menus des autres groupes.
+	   Une entrée de liste n'a pas de libellé à part pour porter la pastille : sa bordure transparente
+	   lui rend la hauteur tactile, et le fond s'arrête à la pastille. */
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-nav-planning > div.dropdown-list {
+		display: contents;
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-nav-planning a.dropdown-item {
+		flex: none;
+		min-height: var(--touch-target);
+		border: solid transparent;
+		border-width: calc((var(--touch-target) - 1.25rem - 2 * var(--space-xxs)) / 2) var(--space-xxs);
+		border-radius: 999px;
+		padding: var(--space-xxs) var(--space-xs);
+		background-clip: padding-box;
+		background-color: transparent;
+		color: var(--text);
+		font-size: 1rem;
+		font-weight: 500;
+		line-height: 1.25rem;
+		white-space: nowrap;
+		scroll-snap-align: start;
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-nav-planning a.dropdown-item.selected {
+		background-color: color-mix(in srgb, var(--domain-light), black var(--selection-shade));
+		color: var(--primary-ink);
+	}
+
+	/* Un groupe qui a des entrées ne se dit que par son icône et un chevron, qui se collent à gauche de
+	   la bande tant que ses entrées y défilent, comme la section du fil d'Ariane
+	   (`MenuUi::getBreadcrumbs()`) : tout l'univers reste dans la bande, et l'icône de gauche dit à quel
+	   groupe appartient ce qu'on voit. Le groupe est une boîte qui borne son icône : à sa fin, le
+	   groupe suivant la pousse hors de la bande. Paramètres n'est pas concerné, la bande n'y montre que
+	   les groupes. Les vues de l'ancien planning sont des entrées de liste et non de sous-menu, d'où
+	   `.dropdown-item` à côté de `.structure-subnav-item`.
+
+	   Les entrées s'accrochent après l'icône. Un groupe sans entrées, un lien seul, s'accroche au bord :
+	   accroché après l'icône, il laisserait celle du groupe d'avant à moitié poussée, et se lirait
+	   comme une de ses entrées. `Structure.scrollStrip()` prolonge la course jusqu'à une accroche, pour
+	   qu'aucune entrée ne s'arrête sous une icône. */
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-tabs:not(.structure-section-settings):has(.structure-subnav-item, .dropdown-item) {
+		--structure-strip-icon: calc(1.25rem + 0.9rem + 2 * var(--space-xxs));
+		scroll-padding-left: calc(var(--space-xs) + var(--structure-strip-icon));
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-tabs:not(.structure-section-settings) .structure-tab-wrapper:not(:has(.structure-subnav-item, .dropdown-item)) > a.structure-tab {
+		scroll-margin-left: calc(-1 * var(--structure-strip-icon));
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-tabs:not(.structure-section-settings) .structure-tab-wrapper:has(.structure-subnav-item, .dropdown-item) {
+		flex: none;
+		display: flex;
+		align-items: center;
+	}
+
+	/* Le décalage négatif colle l'icône au bord de la bande, sa marge comprise, que son fond couvre :
+	   sans lui, les entrées défilées passeraient à sa gauche. */
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-tabs:not(.structure-section-settings) .structure-tab-wrapper:has(.structure-subnav-item, .dropdown-item) > .structure-tab {
+		position: sticky;
+		left: calc(-1 * var(--space-xs));
+		z-index: 1;
+		display: flex;
+		column-gap: var(--space-xxs);
+		padding: var(--space-xs) var(--space-xxs) var(--space-xs) var(--space-xs);
+		border-radius: 0;
+		box-shadow: none;
+		color: var(--domain);
+		scroll-snap-align: none;
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-tabs:not(.structure-section-settings) .structure-tab-wrapper:has(.structure-subnav-item, .dropdown-item) > .structure-tab > .structure-tab-chevron {
+		display: flex;
+		font-size: 0.9rem;
+		color: var(--text-intermediate);
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-tabs:not(.structure-section-settings) .structure-tab-wrapper:has(.structure-subnav-item, .dropdown-item) > .structure-tab > .structure-tab-icon {
+		display: flex;
+		font-size: 1.25rem;
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"]) #structure-nav .structure-tabs:not(.structure-section-settings) .structure-tab-wrapper:has(.structure-subnav-item, .dropdown-item) > .structure-tab > .structure-tab-label {
+		display: none;
+	}
+
+	/* La bande et le panneau sont blancs comme le déroulant de la tablette, mais leurs entrées reprennent
+	   l'encre de leur bloc et leur retrait. */
+	body[data-template~="structure"] {
+		--structure-deroulant-libelle: currentColor;
+		--structure-deroulant-entree: var(--space-sm) var(--space-xs) var(--space-sm) var(--space-md);
+	}
+
+	body[data-template~="structure"] #structure-nav {
+		border-bottom: 1px solid var(--border-light);
+	}
+
+	/* L'en-tête fixé en bas porte le champ du menu au-dessus de la bande des entrées, à sa place dans le
+	   flux : sa hauteur s'ajoute à celle que le contenu, le pied et ce qui se fixe en bas lui laissent
+	   (`--nav-structure`). Le contenu, le pied et ce qui se fixe en bas reprennent donc la règle de la
+	   barre, que le bloc de la tablette remplaçait par la seule hauteur du champ. L'accueil n'a pas
+	   d'en-tête, donc pas de champ. */
+	body[data-template~="structure"][data-template~="structure-entry"]:not([data-template~="structure-dashboard"]) {
+		--nav-structure: calc(var(--structure-bar) + var(--structure-strip) + var(--structure-entry));
+	}
+
+	body[data-template~="structure"][data-template~="structure-entry"] > main {
+		padding-bottom: calc(var(--nav-structure) + var(--space-md));
+	}
+
+	body[data-template~="structure"][data-template~="structure-entry"] > footer {
+		padding-bottom: var(--nav-structure);
+	}
+
+	body[data-template~="structure"][data-template~="structure-entry"] :is(.util-block-sticked, .util-toast-stack) {
+		bottom: calc(var(--nav-structure) + var(--space-md));
+	}
+
+	#entry-menu {
+		position: static;
+	}
+
+}
+
+/* L'encart des relevés de prix dans le menu : une carte cliquable dans son entier, sur
+   le fond sombre du menu. Le bouton n'en est pas un — c'est la carte qui porte le
+   lien —, il en garde seulement l'allure pour dire où l'on va. */
+a.structure-nav-quotation {
+	display: block;
+	color: var(--text);
+	background: linear-gradient(120deg, var(--color-bg-vert-menthe) 0%, var(--color-bg-vert-bleu) 100%);
+	transition: transform 0.2s, box-shadow 0.2s;
+}
+
+a.structure-nav-quotation:hover {
+	text-decoration: none;
+	color: var(--text);
+	transform: translateY(-2px);
+	box-shadow: var(--shadow-v2);
+}
+
+.structure-nav-quotation-header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 0.25rem;
+	color: var(--color-brand);
+}
+
+.structure-nav-quotation-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	flex-shrink: 0;
+	border-radius: 50%;
+	background-color: var(--color-brand);
+	color: #fff;
+	font-size: 0.8rem;
+}
+
+.structure-nav-quotation p {
+	margin-bottom: 0.5rem;
+	color: var(--text-intermediate);
+}
+
+/* Le chevron d'un groupe ne paraît que dans la bande du téléphone, derrière son icône. */
+.structure-tab-chevron {
+	display: none;
+}
+
+/* La barre du téléphone et son panneau sont rendus à toutes les largeurs avec les onglets
+   (`StructureTemplate::getNav()`) : seule la largeur choisit, et ces nœuds ne paraissent qu'en
+   dessous de 768 px de large ou de 600 de haut. */
+.structure-bar,
+.structure-panel-scrim {
+	display: none;
+}
+
+/* Le titre de l'univers est rendu en tête de chaque groupe d'onglets, et seuls le déroulant de la
+   tablette et la feuille du téléphone le montrent : la colonne n'en garde que le +, la bande du
+   téléphone dit l'univers par la barre. */
+.structure-tabs-universe {
+	display: none;
+}
+
+/* Paramètres, écrit à côté de son icône, au pied de la colonne et dans la barre du haut. Choisi, il
+   est plein comme l'entrée choisie d'un menu. */
+a.structure-nav-settings {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	column-gap: var(--space-xs);
+	min-height: var(--touch-target);
+	padding: 0 var(--space-sm) 0 var(--space-xs);
+	border-radius: calc(var(--touch-target) / 2);
+	color: inherit;
+	font-size: 0.9rem;
+	font-weight: 500;
+	text-decoration: none;
+}
+
+a.structure-nav-settings > svg:first-child {
+	font-size: 1.2rem;
+}
+
+a.structure-nav-settings:hover {
+	background-color: color-mix(in srgb, var(--domain) 8%, transparent);
+	color: inherit;
+	text-decoration: none;
+}
+
+body[data-template~="structure-settings"]:not([data-template*="structure-section-"]) a.structure-nav-settings,
+body[data-template~="structure-section-settings"] a.structure-nav-settings {
+	background-color: var(--settings);
+	color: var(--primary-ink);
+}
+
+.structure-tabs {
+	--structure-tabs-create: 2.5rem;
+}
+
+.structure-tabs-create {
+	display: flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: var(--structure-tabs-create);
+	height: var(--structure-tabs-create);
+	border-radius: 50%;
+	background-color: color-mix(in srgb, var(--domain-light), black var(--selection-shade));
+	color: var(--primary-ink);
+	font-size: 1.2rem;
+}
+
+a.structure-tabs-create:hover {
+	color: var(--primary-ink);
+}
+
+/* Le nom de la structure dans la barre du haut ouvre la liste des structures du compte. */
+a.structure-nav-switch {
+	color: inherit;
+	cursor: pointer;
+}
+
+a.structure-nav-switch:hover {
+	color: inherit;
+	text-decoration: none;
+}
+
+.structure-selector-search {
+	padding: var(--space-xxs) var(--space-sm) var(--space-xs);
+}
+
+/* Le carré du logo d'une structure (`StructureUi::getDropdownItem()`) : « Accueil » part du bord des
+   noms, et sa ligne a leur hauteur. */
+.structure-selector-home-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+}
+
+/* `.dropdown-list.dropdown-list-open` (lime.css, 0,2,0) pose sa propre hauteur maximale. */
+.dropdown-list.dropdown-list-open.structure-selector {
+	width: min(24rem, calc(100vw - 1rem));
+	max-height: min(36rem, calc(100dvh - 2rem));
+	overflow-y: auto;
+	padding-bottom: var(--space-xs);
+}
+
+.structure-selector-group {
+	display: flex;
+	align-items: center;
+	column-gap: var(--space-xs);
+}
+
+.structure-selector-count {
+	margin-left: auto;
+	color: var(--muted);
+}
+
+/* Le repli « Mes structures » se déplie dans la liste, sans le cadre que `dropdown-list-light` pose
+   autour d'un groupe : un cadre de plus dans un menu qui défile déjà se lit comme une boîte dans la boîte. */
+.dropdown-list.structure-selector .dropdown-item-group-items {
+	padding: 0;
+	border: none;
+}
+
+@media (max-width: 767px), (max-height: 599px) {
+
+	body[data-template~="structure"] {
+		--structure-menu-icon: 1rem;
+	}
+
+	.structure-panel {
+		display: flex;
+		flex-direction: column;
+		background-color: var(--background-surface);
+		border-right: 1px solid var(--border-light);
+		/* `min-height: auto` sur un élément flex empêche le défilement : remis à zéro, le panneau défile
+		   au lieu d'allonger la colonne. */
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+	}
+
+	/* `dashboard.css` masque `#structure-nav` sur l'accueil par un sélecteur d'identifiant : une classe
+	   seule ne le reprend pas. */
+	body[data-template~="structure"] #structure-nav.structure-panel {
+		display: flex;
+	}
+
+	.structure-panel .structure-tabs {
+		background-color: transparent;
+	}
+
+	.structure-panel .structure-tab,
+	.structure-panel .structure-subnav-item {
+		color: var(--text);
+	}
+
+	/* `a:hover` (`reboot.css`) souligne un lien survolé : une entrée du panneau ne se souligne pas, et
+	   garde son encre. */
+	body[data-template~="structure"] .structure-panel a.structure-tab:hover,
+	body[data-template~="structure"] .structure-panel a.structure-subnav-item:hover {
+		color: var(--text);
+		text-decoration: none;
+	}
+
+	body[data-touch="no"][data-template~="structure"] .structure-panel a.structure-tab:hover,
+	body[data-touch="no"][data-template~="structure"] .structure-panel a.structure-subnav-item:hover {
+		background-color: color-mix(in srgb, var(--domain) 8%, transparent);
+	}
+
+	body[data-template~="structure"] .structure-bar .structure-nav-section:hover {
+		color: inherit;
+	}
+
+	/* Quand une entrée d'un groupe est choisie, la pastille va à l'entrée et non au groupe. */
+	body[data-template~="structure"] .structure-panel a.structure-tab.selected:hover,
+	body[data-template~="structure"] .structure-panel a.structure-subnav-item.selected:hover,
+	.structure-panel .structure-tab-wrapper:not(:has(.structure-subnav-item.selected)) > .structure-tab.selected,
+	.structure-panel .structure-subnav-item.selected {
+		background-color: color-mix(in srgb, var(--domain-light), black var(--selection-shade));
+		color: var(--primary-ink);
+	}
+
+	.structure-bar .structure-nav-section-production {
+		--domain: var(--production);
+		--domain-light: var(--production-light);
+	}
+
+	.structure-bar .structure-nav-section-commercialisation {
+		--domain: var(--commercialisation);
+		--domain-light: var(--commercialisation-light);
+	}
+
+	.structure-bar .structure-nav-section-accounting {
+		--domain: var(--accounting);
+		--domain-light: var(--accounting-light);
+	}
+
+	.structure-bar .structure-nav-section-settings {
+		--domain: var(--settings);
+		--domain-light: var(--settings-light);
+	}
+
+	.structure-panel .structure-tabs.structure-section-home {
+		--domain: var(--primary);
+		--domain-light: var(--primary);
+	}
+
+	.structure-panel .structure-tabs.structure-section-production {
+		--domain: var(--production);
+		--domain-light: var(--production-light);
+	}
+
+	.structure-panel .structure-tabs.structure-section-commercialisation {
+		--domain: var(--commercialisation);
+		--domain-light: var(--commercialisation-light);
+	}
+
+	.structure-panel .structure-tabs.structure-section-accounting {
+		--domain: var(--accounting);
+		--domain-light: var(--accounting-light);
+	}
+
+	.structure-panel .structure-tabs.structure-section-settings {
+		--domain: var(--settings);
+		--domain-light: var(--settings-light);
+	}
+
+	body[data-template~="structure"][data-template~="structure-section-home"] #structure-nav,
+	body[data-template~="structure"][data-template~="structure-section-home"] .structure-bar {
+		--domain: var(--primary);
+		--domain-light: var(--primary);
+	}
+
+	body[data-template~="structure"][data-template~="structure-section-production"] #structure-nav,
+	body[data-template~="structure"][data-template~="structure-section-production"] .structure-bar {
+		--domain: var(--production);
+		--domain-light: var(--production-light);
+	}
+
+	body[data-template~="structure"][data-template~="structure-section-commercialisation"] #structure-nav,
+	body[data-template~="structure"][data-template~="structure-section-commercialisation"] .structure-bar {
+		--domain: var(--commercialisation);
+		--domain-light: var(--commercialisation-light);
+	}
+
+	body[data-template~="structure"][data-template~="structure-section-accounting"] #structure-nav,
+	body[data-template~="structure"][data-template~="structure-section-accounting"] .structure-bar {
+		--domain: var(--accounting);
+		--domain-light: var(--accounting-light);
+	}
+
+	body[data-template~="structure"][data-template~="structure-section-settings"] #structure-nav,
+	body[data-template~="structure"][data-template~="structure-section-settings"] .structure-bar {
+		--domain: var(--settings);
+		--domain-light: var(--settings-light);
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-production"] #structure-nav {
+		--domain: var(--production);
+		--domain-light: var(--production-light);
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-commercialisation"] #structure-nav {
+		--domain: var(--commercialisation);
+		--domain-light: var(--commercialisation-light);
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-accounting"] #structure-nav {
+		--domain: var(--accounting);
+		--domain-light: var(--accounting-light);
+	}
+
+	body[data-template~="structure"]:not([data-panel="open"])[data-template~="structure-settings"] #structure-nav {
+		--domain: var(--settings);
+		--domain-light: var(--settings-light);
+	}
+
+	body[data-template~="structure"] .structure-panel .structure-tab-complement {
+		border: none;
+		color: var(--domain);
+		font-weight: 500;
+	}
+
+	/* ⚠️ La rangée est une rangée flex, qui porte une entrée et son complément côte à côte : sans retour
+	   à la ligne, le complément sort du panneau par la droite, et l'`overflow-y` du panneau ne reprend
+	   pas un débordement latéral. */
+	body[data-template~="structure"] .structure-panel .structure-tab-wrapper {
+		flex-wrap: wrap;
+	}
+
+}
+
+/* Le menu sombre, choisi sur Mon compte (`User::nav`) : la colonne du bureau, la rangée des univers et le
+   fil de la tablette reprennent le fond plein de l'univers et l'encre blanche qu'ils avaient avant le
+   menu clair, sans que rien change de place. Le téléphone garde le menu clair pour tout le monde
+   (décidé le 2026-10-15), et les déroulants qui s'ouvrent depuis le menu gardent leur fond. */
+@media (min-width: 768px) and (min-height: 600px) {
+
+	body[data-nav="dark"][data-template~="structure"] > header {
+		color: white;
+	}
+
+	/* Le jeton de l'univers ouvert est le seul plein, blanc à l'icône de sa couleur : sur le fond plein,
+	   l'anneau qui le séparait de son cercle n'a plus lieu d'être. */
+	body[data-nav="dark"][data-template~="structure"] header .structure-nav-section-icon {
+		background-color: transparent;
+		color: inherit;
+	}
+
+	body[data-nav="dark"][data-template~="structure-production"]:not([data-template*="structure-section-"]) .structure-nav-section-production .structure-nav-section-icon,
+	body[data-nav="dark"][data-template~="structure-section-production"] .structure-nav-section-production .structure-nav-section-icon,
+	body[data-nav="dark"][data-template~="structure-commercialisation"]:not([data-template*="structure-section-"]) .structure-nav-section-commercialisation .structure-nav-section-icon,
+	body[data-nav="dark"][data-template~="structure-section-commercialisation"] .structure-nav-section-commercialisation .structure-nav-section-icon,
+	body[data-nav="dark"][data-template~="structure-accounting"]:not([data-template*="structure-section-"]) .structure-nav-section-accounting .structure-nav-section-icon,
+	body[data-nav="dark"][data-template~="structure-section-accounting"] .structure-nav-section-accounting .structure-nav-section-icon,
+	body[data-nav="dark"][data-template~="structure-dashboard"]:not([data-template*="structure-section-"]) .structure-nav-section-home .structure-nav-section-icon {
+		background-color: white;
+		box-shadow: none;
+		color: var(--domain-dark);
+	}
+
+	/* `header` passe devant la règle du jeton ouvert de la tablette, qui écrit son libellé à l'encre du
+	   texte depuis `#structure-nav-sections`. */
+	body[data-nav="dark"][data-template~="structure"] header #structure-nav-sections .structure-nav-section,
+	body[data-nav="dark"][data-template~="structure"] header .structure-nav-accounting-title {
+		color: inherit;
+	}
+
+}
+
+@media (min-width: 1100px) and (min-height: 600px) {
+
+	/* Le cadre autour de la feuille est la colonne prolongée : il prend le même fond. */
+	body[data-nav="dark"][data-template~="structure"] {
+		--structure-cadre: var(--domain-dark);
+	}
+
+	body[data-nav="dark"][data-template~="structure"] #root-nav,
+	body[data-nav="dark"][data-template~="structure"] > header {
+		--structure-cadre-filet: #ffffff20;
+		color: white;
+	}
+
+	/* Le filet de la comptabilité et de la section Ouvretaferme, marqué en menu clair, reprend ici celui
+	   du cadre. */
+	body[data-nav="dark"][data-template~="structure"] :is(.structure-nav-accounting, .structure-nav-ouvretaferme) {
+		border-top-color: var(--structure-cadre-filet);
+	}
+
+	body[data-nav="dark"] :is(.structure-tab .structure-tab-icon, .structure-tabs .structure-tabs-universe, .structure-tab-complement) {
+		color: inherit;
+	}
+
+	/* Le menu clair écarte le libellé du jeton de la largeur de l'anneau de l'univers ouvert. Le menu
+	   sombre n'a pas d'anneau : le libellé remonte de l'écart que l'anneau occupait. */
+	body[data-nav="dark"][data-template~="structure"] #structure-nav-sections .structure-nav-section {
+		row-gap: var(--space-xxs);
+	}
+
+	/* Le survol a la forme de l'entrée choisie (`a.structure-subnav-item.selected`). La cloche n'en a pas,
+	   comme en menu clair (`notification.css`) : sa cible tactile s'étend à gauche de l'icône, et le fond
+	   la montrerait décalée. */
+	body[data-nav="dark"] :is(.structure-nav-actions a.nav-item:not(.notification-bell > a), a.structure-nav-switch, .structure-nav-foot a.nav-item, a.structure-tab:not(.structure-tab-subnav, .selected), a.structure-subnav-item:not(.selected)):hover {
+		background-color: #ffffff20;
+		border-radius: var(--radius);
+	}
+
+	body[data-nav="dark"] .structure-tab-wrapper:has(.structure-tab:not(.structure-tab-subnav).selected):not(:has(.structure-subnav-item.selected)),
+	body[data-nav="dark"] #structure-nav a.structure-subnav-item.selected,
+	body[data-nav="dark"][data-template~="structure-settings"]:not([data-template*="structure-section-"]) a.structure-nav-settings,
+	body[data-nav="dark"][data-template~="structure-section-settings"] a.structure-nav-settings {
+		background-color: #0003;
+		color: white;
+	}
+
+	body[data-nav="dark"] #structure-nav .structure-tabs-create {
+		background-color: #ffffff20;
+	}
+
+	/* Sur le fond plein de l'univers, l'encre atténuée, la teinte de la marque et celles des écarts se
+	   perdent : le groupe Bureau prend l'encre blanche, éclaircie pour ce qui se lit en second
+	   (`base/dashboard/static/css/pilotage.css`). Le signe de l'écart dit encore son sens. */
+	body[data-nav="dark"] #structure-pilotage-home {
+		--muted: color-mix(in srgb, currentColor 65%, transparent);
+		--color-neutral: color-mix(in srgb, currentColor 65%, transparent);
+		--primary-on-light: currentColor;
+		--success: currentColor;
+		--danger: currentColor;
+	}
+
+}
+
+/* À la tablette, la barre de la structure garde la couleur de la marque, et le déroulant qui s'ouvre
+   sous le fil son fond et son encre. */
+@media (min-width: 768px) and (max-width: 1099px) and (min-height: 600px) {
+
+	body[data-nav="dark"][data-template~="structure"] :is(#structure-nav-sections, #structure-nav, #structure-breadcrumbs-section) {
+		background-color: var(--domain-dark);
+		border-color: #ffffff20;
+	}
+
+	body[data-nav="dark"] #structure-breadcrumbs,
+	body[data-nav="dark"] #structure-breadcrumbs-section {
+		color: inherit;
+	}
+
+	body[data-nav="dark"] .structure-breadcrumbs-link.selected {
+		background-color: #0003;
+		color: white;
+	}
+
+	body[data-nav="dark"] .structure-breadcrumbs-categories > a.structure-breadcrumbs-link:not(.selected):hover {
+		background-color: #ffffff20;
+	}
+
+	body[data-nav="dark"] #structure-nav .structure-tabs {
+		color: var(--text);
+	}
+
+}

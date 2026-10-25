@@ -1,0 +1,48 @@
+/* Gabarit « Ami » des pages de formations d'un réseau : bandeau d'une teinte claire de la couleur,
+   titres en capitales espacées soulignés, filets de 2 px teintés et boutons gras. La page part du
+   fond choisi et s'éclaircit vers le blanc.
+   Ami ne fixe aucune couleur sous le texte : il n'est pas dans `LearningSetting::DESIGN_MATTERS`, et
+   les encres se calculent sur le fond choisi tel qu'il se pose, adouci. Le bandeau lit la teinte que
+   `CommunityLib::getTint()` tire de ce fond, sous l'encre du texte. */
+
+.learning-public[data-learning-design="ami"],
+.learning-doc[data-learning-design="ami"] {
+	--radius: .75rem;
+	--radius-lg: 1rem;
+	--border: color-mix(in srgb, var(--primary) 24%, white);
+	--border-width: 2px;
+	--shadow-v2: none;
+	--heading-case: uppercase;
+	--heading-tracking: .12em;
+	--heading-weight: 700;
+	--heading-border: 2px solid currentColor;
+	--heading-padding: 0 0 .35rem;
+	--button-weight: 700;
+	--figure-background: color-mix(in srgb, var(--primary) 10%, white);
+	--table-head-background: color-mix(in srgb, var(--primary) 7%, white);
+	--callout-background: color-mix(in srgb, var(--primary) 8%, white);
+	--callout-border: var(--primary-on-light);
+	--callout-accent-width: 2px;
+	--callout-title-case: uppercase;
+	--marker-background: white;
+	--marker-color: var(--primary-on-light);
+	--marker-ring: inset 0 0 0 2px var(--primary-on-light);
+	--step-line: var(--primary-on-light);
+	--table-head-border: 2px solid var(--primary);
+	--tab-active-background: color-mix(in srgb, var(--primary) 12%, white);
+	--tab-active-color: var(--text);
+	--tab-radius: .75rem;
+	--quote-background: color-mix(in srgb, var(--primary) 7%, white);
+	--quote-radius: .75rem;
+	--quote-padding: .75rem 1rem;
+	--quote-icon-color: var(--primary);
+}
+
+.learning-public[data-learning-design="ami"] {
+	background-image: linear-gradient(180deg, var(--learning-background), white 36rem);
+}
+
+.learning-public[data-learning-design="ami"] .community-header {
+	background: var(--learning-tint);
+	--muted: var(--learning-tint-muted);
+}

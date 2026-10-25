@@ -1,0 +1,109 @@
+form.system-update-form [data-for],
+form.system-update-form [data-for-global] {
+	display: none;
+}
+
+.system-productions {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	grid-column-gap: 0.5rem;
+}
+
+.system-productions dt {
+	color: var(--secondary);
+}
+
+.system-productions dd {
+	font-weight: normal;
+	color: var(--text);
+}
+
+.system-production-description {
+	font-style: italic;
+}
+
+.system-selling-direct {
+	--selling-color: var(--private);
+}
+
+.system-selling-semi {
+	--selling-color: var(--pro);
+}
+
+.system-selling-long {
+	--selling-color: var(--commercialisation-light);
+}
+
+.system-selling-dot {
+	display: inline-block;
+	width: 0.8rem;
+	height: 0.8rem;
+	border-radius: 50%;
+	margin-right: 0.5rem;
+	background-color: var(--selling-color);
+	transform: translateY(0.1rem);
+}
+
+.system-selling {
+	margin-top: 0.5rem;
+}
+
+.system-selling-bar {
+	position: relative;
+	height: 1.75rem;
+	cursor: pointer;
+	touch-action: none;
+	user-select: none;
+}
+
+.system-selling-parts {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	border-radius: var(--radius);
+	background-color: var(--background);
+}
+
+.system-selling-part {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	color: #fff;
+	font-size: 0.8rem;
+	background-color: var(--selling-color);
+}
+
+.system-selling-handle {
+	position: absolute;
+	top: -0.25rem;
+	bottom: -0.25rem;
+	width: 0.85rem;
+	margin-left: -0.425rem;
+	border: 1px solid var(--border);
+	border-radius: 0.425rem;
+	background-color: #fff;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+	cursor: ew-resize;
+}
+
+.system-selling-footer {
+	margin-top: 0.35rem;
+	font-size: 0.8rem;
+}
+
+.system-selling-reset {
+	display: none;
+	cursor: pointer;
+}
+
+.system-selling-unset .system-selling-handle {
+	display: none;
+}
+
+.system-selling:not(.system-selling-unset) .system-selling-reset {
+	display: inline-block;
+}

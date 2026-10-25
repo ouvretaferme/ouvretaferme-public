@@ -1,0 +1,170 @@
+/*
+ * Le calculateur des besoins en fertilisation, dans la carte et la zone du résultat que les
+ * calculateurs partagent (`calculator.css`). Tout est borné par `fertilization-`, la feuille restant
+ * chargée après qu'on a quitté l'outil en navigation ajax.
+ */
+
+/* Les valeurs N, P₂O₅, K₂O sous la culture et sous chaque matière : le libellé prend la place qui
+ * reste, les trois colonnes de chiffres gardent la même largeur d'un tableau à l'autre. */
+.fertilization-values {
+	grid-template-columns: minmax(0, 1fr) 4.5rem 4.5rem 4.5rem;
+}
+
+/* Les deux façons de donner la culture, au-dessus de ses champs. */
+.fertilization-crop-tabs {
+	margin-bottom: 1rem;
+}
+
+/* Les trois teneurs saisies à la main sur une ligne, l'une sous l'autre sur un téléphone. */
+.fertilization-composition {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.5rem;
+}
+
+@media (max-width: 575px) {
+
+	.fertilization-composition {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+}
+
+/* Les quatre colonnes de chiffres ont une largeur plancher pour ne pas se tasser à droite d'une carte
+   large (« écarte les colonnes pour que ce soit pas tassé à droite », le 03/10). Sous 575px,
+   la largeur de leurs valeurs, sinon le tableau déborde à 360px. */
+.fertilization-balance {
+	grid-template-columns: minmax(0, 1fr) repeat(4, minmax(7rem, auto));
+}
+
+/* Sans exporté, une culture saisie à la main, le bilan perd sa dernière colonne. */
+.fertilization-balance.fertilization-balance-3 {
+	grid-template-columns: minmax(0, 1fr) repeat(3, minmax(7rem, auto));
+}
+
+@media (max-width: 575px) {
+
+	.fertilization-balance {
+		grid-template-columns: minmax(0, 1fr) auto auto auto auto;
+	}
+
+	.fertilization-balance.fertilization-balance-3 {
+		grid-template-columns: minmax(0, 1fr) auto auto auto;
+	}
+
+}
+
+/* Les deux tableaux du référentiel, sous les onglets du calculateur. Dans celui des cultures, l'espèce
+ * tient sur une ligne et la conduite prend la place qui reste ; le rendement, chaque groupe de
+ * chiffres et les sources la largeur de leurs valeurs. La conduite ne descend pas sous la largeur de
+ * son texte : sous 767px, le tableau défile dans `util-overflow-sm`, qui ne laisse rien au `1fr`, et
+ * un plancher à 0 la réduisait à rien, « Plein champ » tombant mot par mot. */
+.npk-reference-crops {
+	grid-template-columns: auto minmax(max-content, 1fr) auto repeat(3, auto) auto repeat(3, auto) auto auto;
+}
+
+/* La marque de fiabilité suit le K₂O de son groupe, dans une colonne étroite et sans en-tête : elle
+ * colle aux chiffres qu'elle qualifie. */
+.npk-reference-crops > .util-table-row > .npk-reference-mark {
+	padding-left: 0;
+}
+
+.npk-reference-mark > .util-confidence {
+	margin-left: 0;
+}
+
+/* Une ligne par document : sans nowrap, la colonne se couperait dans la largeur que lui laissent les
+ * chiffres au lieu de s'élargir, le tableau défilant déjà sous 767px. */
+.npk-reference-sources {
+	white-space: nowrap;
+}
+
+/* Le filet qui ouvre chaque espèce remplace l'intertitre : il garde les rendements d'une espèce
+ * ensemble sans couper le voile de l'exporté. */
+.npk-reference-crops > .npk-reference-crop-first {
+	border-top: 1px solid var(--border);
+}
+
+.npk-reference-plant {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+/* Le nom d'une matière tient sur une ligne, comme la conduite du tableau des cultures : sous 575px
+ * le tableau défile, et un plancher à 0 le coupait sur trois ou quatre lignes. */
+.npk-reference-materials {
+	grid-template-columns: minmax(max-content, 1fr) repeat(5, auto) auto;
+}
+
+/* Une ligne de ces deux tableaux centre ses cellules au lieu de les poser sur la ligne de base de
+ * `util-table-row` : la vignette de l'espèce et le rembourrage des badges déplacent cette ligne de
+ * base, et le texte voisin tombait de 1 à 3px plus haut ou plus bas que les badges. Une cellule voilée
+ * s'étire sur toute la hauteur du rang (`component.css`, `.util-table > * > .util-table-veil`), pour
+ * que le voile soit continu : elle centre donc elle-même son contenu, au bout à droite comme ses voisines. */
+.npk-reference-crops > .util-table-row,
+.npk-reference-materials > .util-table-row {
+	align-items: center;
+}
+
+.npk-reference-crops > .util-table-row > .util-table-veil,
+.npk-reference-materials > .util-table-row > .util-table-veil {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+}
+
+.npk-reference-group {
+	grid-column: span 3;
+}
+
+.npk-reference-group-4 {
+	grid-column: span 4;
+}
+
+.npk-reference-group-2 {
+	grid-column: span 2;
+}
+
+/* Chaque élément a sa teinte, que lisent son badge et son nom en tête de colonne (planche
+ * production-finir-npk-couleurs). Le `:is()` pèse deux classes : `.badge` pose lui-même
+ * `--badge-tint: var(--muted)`, et une classe seule l'emporterait ou non selon l'ordre des feuilles. */
+:is(.badge, .fertilization-element).fertilization-nitrogen {
+	--badge-tint: var(--nitrogen);
+}
+
+:is(.badge, .fertilization-element).fertilization-phosphate {
+	--badge-tint: var(--phosphate);
+}
+
+:is(.badge, .fertilization-element).fertilization-potash {
+	--badge-tint: var(--potash);
+}
+
+/* La couleur du texte d'un badge du socle (`component.css`, `.badge:not(.badge-solid, .badge-outline)`),
+ * pour qu'un nom et ses valeurs se lisent dans la même encre. */
+.fertilization-element {
+	color: color-mix(in srgb, var(--badge-tint) 66%, black);
+	font-weight: bold;
+}
+
+/* La notice montre des morceaux de l'écran sous chaque étape, bornés comme ceux de la notice des
+   paniers (`composition.css`). Sous 576 px, l'illustration prend aussi la colonne de la pastille de
+   `util-procedure`, dont le trait, posé en absolu après elle, se peindrait par-dessus sans
+   `z-index`. */
+.fertilization-notice-figure {
+	margin: .5rem 0 1.5rem;
+	max-width: 28rem;
+}
+
+@media (max-width: 575px) {
+
+	.util-procedure-step > .fertilization-notice-figure {
+		grid-column: 1 / -1;
+		position: relative;
+		z-index: 1;
+	}
+
+}

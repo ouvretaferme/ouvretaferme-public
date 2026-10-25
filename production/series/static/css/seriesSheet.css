@@ -1,0 +1,32 @@
+/* La fiche d'une série, que le plan 3D et le plan d'assolement posent chacun à sa place et que remplit `SeriesSheet`
+   (seriesSheet.js) : sa tête et ses rangs. Le plan 3D y montre aussi une planche, sous la même tête. */
+.series-sheet-head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: var(--space-xs);
+}
+
+.series-sheet-head h3 {
+	margin: 0;
+}
+
+/* Une intervention, sa pastille, son nom et le nombre de fois qu'elle revient : le navigateur coupe avant le compteur,
+   qui est une boîte en ligne, même derrière une espace insécable, et le laissait seul sous un nom long. En flex, le nom
+   se coupe dans sa piste et le compteur reste à sa suite. */
+.series-sheet-task,
+.series-sheet-task-label {
+	display: flex;
+	align-items: center;
+}
+
+.series-sheet-task-label {
+	gap: var(--space-xs);
+}
+
+/* Prévu et réalisé s'écartent de plus de six jours : le prévu barré, puis le réalisé */
+.series-sheet-planned {
+	margin-right: var(--space-xxs);
+	color: var(--muted);
+	text-decoration: line-through;
+}

@@ -1,0 +1,244 @@
+AdminLog:
+  id: serial32
+  user: user\User
+  userExternal: ?user\User
+  request: text8(1, 200)
+  method: enum(GET, POST)
+  parameters: ?json
+  ip: ipv4 = SPECIAL(ip)
+  sid: sid = SPECIAL(sid)
+  createdAt: datetime = SPECIAL(now)
+  LIB: AdminLogAiLib
+  INDEX: [
+    ["user", "createdAt"],
+    ["request", "createdAt"],
+    ["createdAt"],
+    ["userExternal", "createdAt"]
+  ]
+
+Ban:
+  id: serial32
+  user: ?user\User = NULL
+  ip: ?ipv4 = NULL
+  reason: text8(0, null)
+  admin: user\User
+  since: datetime = SPECIAL(now)
+  until: ?datetime
+  INDEX: [
+    ["user"],
+    ["ip"]
+  ]
+
+Challenge:
+  id: serial32
+  user: user\User
+  code: text8(1, 255)
+  token: textFixed(64, 64) @charset(ascii)
+  ip: ipv4 = SPECIAL(ip)
+  device: enum(WEB, APP, MOBILE_WEB, TABLET_WEB, CRAWLER)
+  createdAt: datetime = SPECIAL(now)
+  expiresAt: datetime
+  closedAt: ?datetime
+  closedBy: ?enum(CODE, LINK, FAILURES, RESENT, EXPIRED)
+  trustedUntil: ?datetime
+  LIB: ChallengeAiLib
+  INDEX: [
+    ["user", "createdAt"]
+  ]
+  UNIQUE: [
+    ["token"]
+  ]
+
+Country:
+  id: serial32
+  code: textFixed(2, 2)
+  name: text8 @collate(general)
+  position: ?int16(1, null)
+  eu: bool
+  parent: ?user\Country
+  center: ?point
+  UNIQUE: [
+    ["code"]
+  ]
+
+Log:
+  user: user\User
+  action: enum(LOGIN, LOGOUT, LOGIN_EXTERNAL, LOGIN_AUTO)
+  ip: ipv4 = SPECIAL(ip)
+  sid: sid = SPECIAL(sid)
+  device: enum(WEB, APP, MOBILE_WEB, TABLET_WEB, CRAWLER)
+  deviceVersion: ?int16
+  createdAt: datetime = SPECIAL(now)
+  userAction: ?user\User
+  SPLIT: [user, PHP(\user\UserSetting::LOG_SPLIT)]
+  INDEX: [
+    ["user", "createdAt"],
+    ["ip"],
+    ["userAction", "createdAt"]
+  ]
+
+LoginAttempt:
+  id: serial32
+  login: text8(1, 100)
+  user: ?user\User
+  ip: ipv4 = SPECIAL(ip)
+  failures: int16 = 0
+  status: enum(RUNNING, THROTTLED, SUCCEEDED, LINK) = RUNNING
+  firstAt: datetime = SPECIAL(now)
+  lastAt: datetime = SPECIAL(now)
+  notifiedAt: ?datetime
+  LIB: LoginAttemptAiLib
+  INDEX: [
+    ["login", "lastAt"],
+    ["ip", "lastAt"],
+    ["lastAt"]
+  ]
+
+LoginLink:
+  id: serial32
+  user: user\User
+  token: textFixed(64, 64) @charset(ascii)
+  ip: ipv4 = SPECIAL(ip)
+  device: enum(WEB, APP, MOBILE_WEB, TABLET_WEB, CRAWLER)
+  createdAt: datetime = SPECIAL(now)
+  expiresAt: datetime
+  closedAt: ?datetime
+  closedBy: ?enum(LINK, RESENT)
+  LIB: LoginLinkAiLib
+  INDEX: [
+    ["user", "createdAt"]
+  ]
+  UNIQUE: [
+    ["token"]
+  ]
+
+Tos:
+  id: serial32
+  user: user\User
+  version: int16(1, null)
+  mode: enum(SIGNUP, TACIT, HISTORIC, EXPLICIT)
+  ip: ?ipv4 = SPECIAL(ip)
+  acceptedAt: datetime = SPECIAL(now)
+  LIB: TosAiLib
+  UNIQUE: [
+    ["user", "version"]
+  ]
+
+User:
+  id: serial32
+  type: enum(PRIVATE, PRO) = PRIVATE
+  firstName: ?text8(1, PHP(\user\UserSetting::NAME_SIZE_MAX)) @collate(general)
+  lastName: text8(1, PHP(\user\UserSetting::NAME_SIZE_MAX)) @collate(general)
+  legalName: ?text8(1, PHP(\user\UserSetting::NAME_SIZE_MAX)) @collate(general)
+  email: ?email(1, 100)
+  phone: ?text8(1, null)
+  siret: ?text8(1, null)
+  invoiceCountry: ?user\Country
+  invoiceStreet1: ?text8(1, null)
+  invoiceStreet2: ?text8(1, null)
+  invoicePostcode: ?text8(1, null)
+  invoiceCity: ?text8(1, null)
+  deliveryCountry: ?user\Country
+  deliveryStreet1: ?text8(1, null)
+  deliveryStreet2: ?text8(1, null)
+  deliveryPostcode: ?text8(1, null)
+  deliveryCity: ?text8(1, null)
+  verified: bool = FALSE
+  visibility: enum(PUBLIC, PRIVATE) = PUBLIC
+  status: enum(ACTIVE, SUSPENDED, CLOSED) = ACTIVE
+  referer: ?user\User
+  seen: int32(0, null) = 0
+  seniority: int16(0, null) = 1
+  roleCustomer: bool = FALSE
+  roleProducer: bool = FALSE
+  roleConsultant: bool = FALSE
+  roleTeacher: bool = FALSE
+  nav: enum(DARK, LIGHT) = LIGHT
+  vignette: ?textFixed(30, 30) @charset(ascii)
+  onlineToday: bool = FALSE
+  loggedAt: datetime = SPECIAL(now)
+  createdAt: datetime = SPECIAL(now)
+  ping: datetime = SPECIAL(now)
+  deletedAt: ?datetime
+  bounce: bool = FALSE
+  INDEX: [
+    ["referer"]
+  ]
+  UNIQUE: [
+    ["email"]
+  ]
+
+UserAuth:
+  id: serial32
+  user: ?user\User
+  userArchive: ?user\User
+  type: enum(BASIC)
+  login: ?text8(0, 100) @collate(general)
+  loginArchive: ?text8(0, 100) @collate(general)
+  password: ?text8(1, null)
+  loggedAt: datetime = SPECIAL(now)
+  createdAt: datetime = SPECIAL(now)
+  passwordHash: ?text8(1, null)
+  hashExpirationDate: ?datetime
+  UNIQUE: [
+    ["user", "type"],
+    ["login", "type"]
+  ]
+
+UserAuto:
+  id: serial32
+  user: user\User
+  key: text8
+  usedAt: datetime = SPECIAL(now)
+  expiresAt: datetime
+  status: enum(ACTIVE, DELETED) = ACTIVE
+  INDEX: [
+    ["user"]
+  ]
+
+UserAvatar:
+  id: serial32
+  user: user\User
+  source: enum(EDITOR, PHOTO) = EDITOR
+  composition: json # EDITOR : un choix par famille du catalogue fermé ; PHOTO : la fiche rendue par l'agent
+  accessory: ?text8(1, 40) # clé du catalogue des accessoires, liste à arbitrer
+  companion: ?text8(1, 40) # slug d'un animal cuit des ambiances de base/scene (chat, lievre, herisson, coq, merle, rouge-gorge, abeille, papillon)
+  replacesPhoto: bool = TRUE # l'image de l'avatar tient lieu de photo de profil sur `User.vignette`
+  photo: ?textFixed(30, 30) @charset(ascii) # la photo de profil que l'avatar remplace, média `user-vignette`, tant que replacesPhoto
+  upload: ?user\UserAvatarUpload # le modèle téléversé montré à la place de la composition ; NULL, on montre la composition
+  createdAt: datetime = SPECIAL(now)
+  updatedAt: ?datetime
+  UNIQUE: [
+    ["user"]
+  ]
+
+UserAvatarRequest:
+  id: serial32
+  user: user\User
+  photo: ?textFixed(30, 30) @charset(ascii) # média `user-avatar-photo`, effacé au retour du modèle
+  status: enum(WAITING, DONE, REFUSED) = WAITING
+  reason: ?text8(1, 200)
+  createdAt: datetime = SPECIAL(now)
+  doneAt: ?datetime
+  INDEX: [
+    ["user"],
+    ["status"]
+  ]
+
+UserAvatarUpload:
+  id: serial32
+  user: user\User
+  hash: ?textFixed(20, 20) @charset(ascii) # média `user-avatar-upload`, le binaire converti ; NULL une fois retiré ou remplacé
+  bakedIndex: ?json # l'index du modèle converti, lu tel quel par sceneBuildModel() ; NULL une fois retiré ou remplacé
+  rules: int16(1, null) # version de base/scene/upload/avatar.json, qui versionne aussi le texte de l'engagement coché
+  status: enum(NEW, KEPT, WITHDRAWN) = NEW # visible dès l'envoi ; KEPT, vu et gardé par un admin ; WITHDRAWN, retiré
+  reason: ?enum(PERSON, BRAND, OFFENSIVE, OTHER) # motif d'un retrait, pris dans une liste fermée et envoyé à l'auteur
+  reasonText: ?text16(1, 500) # ce que l'admin ajoute au motif, envoyé à l'auteur
+  moderatedBy: ?user\User
+  moderatedAt: ?datetime
+  createdAt: datetime = SPECIAL(now)
+  INDEX: [
+    ["user"],
+    ["status"]
+  ]
+

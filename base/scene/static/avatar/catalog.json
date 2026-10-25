@@ -1,0 +1,972 @@
+{
+	"palettes": {
+		"skin": [
+			"#f1c7a6",
+			"#e6b48f",
+			"#d29c74",
+			"#b9805a",
+			"#a06a46",
+			"#8d5a3b",
+			"#6e4429",
+			"#5a3521",
+			"#4a2c1a",
+			"#3a2214",
+			"#2c1a10"
+		],
+		"metal": [
+			"#c9ccd0",
+			"#d9b45a",
+			"#2b2a2e"
+		],
+		"hair": [
+			"#2b2420",
+			"#483e30",
+			"#7a5a3a",
+			"#b07a45",
+			"#d9b77a",
+			"#c4502c",
+			"#9a9a96"
+		],
+		"tint": [
+			"#1d4b53",
+			"#2fbb75",
+			"#8290fd",
+			"#c4363c",
+			"#f39c43",
+			"#e8c872",
+			"#3d4250",
+			"#f4f1ea",
+			"#23263a",
+			"#7a1f33",
+			"#8a5a32"
+		],
+		"eyes": [
+			"#1d4b53",
+			"#321e11",
+			"#4a2d17",
+			"#5b3f1a",
+			"#6b4b14",
+			"#2a4d23",
+			"#214769",
+			"#434b51"
+		],
+		"frame": [
+			"#9c7b4f",
+			"#3a3236",
+			"#1d4b53",
+			"#2fbb75",
+			"#8290fd",
+			"#c4363c",
+			"#f39c43",
+			"#e8c872",
+			"#3d4250",
+			"#f4f1ea",
+			"#23263a",
+			"#7a1f33",
+			"#8a5a32"
+		]
+	},
+	"sharedPalettes": [
+		"metal"
+	],
+	"families": [
+		{
+			"key": "yeux",
+			"entries": [
+				"yeux-rond",
+				"yeux-amande",
+				"yeux-tombant",
+				"yeux-rieur",
+				"yeux-petit",
+				"yeux-allonge"
+			],
+			"optional": false,
+			"palette": "eyes",
+			"framing": "tete"
+		},
+		{
+			"key": "bouche",
+			"entries": [
+				"bouche-moyenne",
+				"bouche-fine",
+				"bouche-pleine",
+				"bouche-large",
+				"bouche-petite"
+			],
+			"optional": false,
+			"palette": null,
+			"framing": "tete"
+		},
+		{
+			"key": "aspect",
+			"entries": [
+				"peau-lisse",
+				"peau-burinee",
+				"peau-rosee",
+				"peau-marquee"
+			],
+			"optional": false,
+			"palette": null,
+			"framing": "tete"
+		},
+		{
+			"key": "taches",
+			"entries": [
+				"rousseur-legere",
+				"rousseur-dense"
+			],
+			"optional": true,
+			"palette": null,
+			"framing": "tete"
+		},
+		{
+			"key": "coiffure",
+			"entries": [
+				"rase",
+				"boule-a-zero",
+				"courte",
+				"epis-courts",
+				"degarnie",
+				"nattes-collees",
+				"tresses-dessus",
+				"carre",
+				"mi-longue",
+				"bataille",
+				"frisee",
+				"afro",
+				"locks",
+				"cheveux-longs",
+				"longs-raie",
+				"longs-ondules",
+				"longs-degarnis",
+				"tresses-africaines",
+				"queue-de-cheval",
+				"queue-tressee",
+				"tresse"
+			],
+			"optional": false,
+			"palette": "hair",
+			"framing": "tete"
+		},
+		{
+			"key": "haut",
+			"entries": [
+				"t-shirt",
+				"polo",
+				"pull",
+				"polaire-zip",
+				"sweat-capuche",
+				"debardeur",
+				"chemise"
+			],
+			"optional": false,
+			"palette": "tint",
+			"framing": "buste"
+		},
+		{
+			"key": "motif",
+			"entries": [
+				"motif-rayures",
+				"motif-carreaux",
+				"motif-camouflage",
+				"motif-pois",
+				"motif-fleurs"
+			],
+			"optional": true,
+			"palette": "tint",
+			"framing": "buste"
+		},
+		{
+			"key": "veste",
+			"entries": [
+				"gilet",
+				"doudoune-longue",
+				"veste-pluie",
+				"veste-travail"
+			],
+			"optional": true,
+			"palette": "tint",
+			"framing": "buste"
+		},
+		{
+			"key": "bas",
+			"entries": [
+				"pantalon",
+				"salopette",
+				"short-allege",
+				"bermuda",
+				"jean",
+				"pantalon-travail",
+				"legging",
+				"jupe-allegee"
+			],
+			"optional": false,
+			"palette": "tint",
+			"framing": "jambes"
+		},
+		{
+			"key": "chaussures",
+			"entries": [
+				"chaussures",
+				"bottes",
+				"chaussures-ville",
+				"chaussures-marche"
+			],
+			"optional": false,
+			"palette": "tint",
+			"framing": "pieds"
+		},
+		{
+			"key": "couvre-chef",
+			"entries": [
+				"casquette",
+				"chapeau-paille",
+				"bob",
+				"chapeau-feutre",
+				"cow-boy",
+				"chapeau-conique",
+				"beret",
+				"bonnet",
+				"bandeau-frontal",
+				"fichu",
+				"hijab-travail",
+				"chapeau-brousse",
+				"casquette-plate",
+				"turban",
+				"charlotte",
+				"cagoule"
+			],
+			"optional": true,
+			"palette": "tint",
+			"framing": "tete"
+		},
+		{
+			"key": "lunettes",
+			"entries": [
+				"lunettes-rondes",
+				"lunettes-rectangle",
+				"lunettes-demi-lune",
+				"lunettes-chat",
+				"lunettes-soleil",
+				"lunettes-aviateur",
+				"lunettes-coeur",
+				"lunettes-etoile",
+				"lunettes-securite"
+			],
+			"optional": true,
+			"palette": "frame",
+			"framing": "tete"
+		},
+		{
+			"key": "barbe",
+			"entries": [
+				"barbe-courte",
+				"moustache",
+				"moustache-fournie",
+				"bouc",
+				"favoris",
+				"barbe-longue"
+			],
+			"optional": true,
+			"palette": null,
+			"framing": "tete"
+		},
+		{
+			"key": "oreilles",
+			"entries": [
+				"clous-oreilles",
+				"anneaux-oreilles",
+				"creoles-oreilles",
+				"pendants-oreilles",
+				"plumes-oreilles",
+				"triangles-oreilles",
+				"etoiles-oreilles",
+				"carottes-oreilles",
+				"cerises-oreilles"
+			],
+			"optional": true,
+			"palette": "metal",
+			"framing": "tete"
+		},
+		{
+			"key": "cou",
+			"entries": [
+				"chaine",
+				"pendentif"
+			],
+			"optional": true,
+			"palette": "metal",
+			"framing": "buste"
+		},
+		{
+			"key": "poignet",
+			"entries": [
+				"bracelet",
+				"montre",
+				"montre-sport",
+				"manchette",
+				"bracelet-perles",
+				"bracelet-bresilien",
+				"bracelet-cuir"
+			],
+			"optional": true,
+			"palette": "metal",
+			"framing": "poignet"
+		},
+		{
+			"key": "accessoire",
+			"entries": [
+				"tablier",
+				"foulard",
+				"echarpe-laine",
+				"besace",
+				"hotte"
+			],
+			"optional": true,
+			"palette": "tint",
+			"framing": "buste"
+		}
+	],
+	"untinted": [
+		"boule-a-zero"
+	],
+	"held": [
+		"rateau",
+		"binette",
+		"panier",
+		"arrosoir",
+		"tomate",
+		"navet",
+		"gourde",
+		"tasse",
+		"carnet",
+		"tablette",
+		"couteau",
+		"lunettes-pliees",
+		"gants"
+	],
+	"companions": [
+		{
+			"key": "herisson",
+			"model": "herisson",
+			"scale": 1.286,
+			"position": [
+				-0.556,
+				0,
+				0.103
+			]
+		},
+		{
+			"key": "merle",
+			"model": "merle",
+			"scale": 1.148,
+			"position": [
+				-0.526,
+				0,
+				0.112
+			]
+		},
+		{
+			"key": "rouge-gorge",
+			"model": "rouge-gorge",
+			"scale": 1.243,
+			"position": [
+				-0.462,
+				0,
+				0.121
+			]
+		}
+	],
+	"defaults": {
+		"skin": "#e6b48f",
+		"entries": {
+			"yeux": "yeux-rond",
+			"bouche": "bouche-moyenne",
+			"aspect": "peau-lisse",
+			"taches": null,
+			"coiffure": "courte",
+			"haut": "t-shirt",
+			"motif": null,
+			"veste": null,
+			"bas": "pantalon",
+			"chaussures": "chaussures",
+			"couvre-chef": null,
+			"lunettes": null,
+			"barbe": null,
+			"oreilles": null,
+			"cou": null,
+			"poignet": null,
+			"accessoire": null
+		},
+		"tints": {
+			"yeux": "#1d4b53",
+			"coiffure": "#483e30",
+			"haut": "#2fbb75",
+			"veste": "#1d4b53",
+			"bas": "#1d4b53",
+			"chaussures": "#3d4250",
+			"couvre-chef": "#f39c43"
+		},
+		"entryTints": {
+			"tablier": "#1d4b53",
+			"foulard": "#c4363c",
+			"echarpe-laine": "#f39c43",
+			"besace": "#8a5a32",
+			"hotte": "#e8c872",
+			"beret": "#23263a",
+			"cow-boy": "#8a5a32",
+			"chapeau-conique": "#e8c872",
+			"bandeau-frontal": "#c4363c",
+			"hijab-travail": "#1d4b53",
+			"fichu": "#c4363c",
+			"chapeau-brousse": "#e8c872",
+			"casquette-plate": "#3d4250",
+			"turban": "#8290fd",
+			"charlotte": "#f4f1ea",
+			"cagoule": "#7a1f33",
+			"motif-rayures": "#f4f1ea",
+			"motif-carreaux": "#23263a",
+			"motif-camouflage": "#3d4250",
+			"motif-pois": "#f4f1ea",
+			"motif-fleurs": "#e8c872"
+		},
+		"skinEntryTints": {
+			"lunettes-rondes": [
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872"
+			],
+			"lunettes-rectangle": [
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872"
+			],
+			"lunettes-demi-lune": [
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872"
+			],
+			"lunettes-chat": [
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872"
+			],
+			"lunettes-soleil": [
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872"
+			],
+			"lunettes-aviateur": [
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872"
+			],
+			"lunettes-coeur": [
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872"
+			],
+			"lunettes-etoile": [
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872"
+			],
+			"lunettes-securite": [
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#23263a",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872",
+				"#e8c872"
+			]
+		},
+		"companion": null
+	},
+	"excluded": [
+		[
+			"sweat-capuche",
+			"doudoune-longue"
+		],
+		[
+			"sweat-capuche",
+			"veste-pluie"
+		],
+		[
+			"tablier",
+			"doudoune-longue"
+		],
+		[
+			"tablier",
+			"veste-pluie"
+		],
+		[
+			"tablier",
+			"veste-travail"
+		],
+		[
+			"hotte",
+			"sweat-capuche"
+		],
+		[
+			"hotte",
+			"doudoune-longue"
+		],
+		[
+			"hotte",
+			"veste-pluie"
+		],
+		[
+			"beret",
+			"afro"
+		],
+		[
+			"beret",
+			"locks"
+		],
+		[
+			"beret",
+			"tresses-africaines"
+		],
+		[
+			"cow-boy",
+			"afro"
+		],
+		[
+			"cow-boy",
+			"locks"
+		],
+		[
+			"cow-boy",
+			"tresses-africaines"
+		],
+		[
+			"chapeau-conique",
+			"afro"
+		],
+		[
+			"chapeau-conique",
+			"locks"
+		],
+		[
+			"chapeau-conique",
+			"tresses-africaines"
+		],
+		[
+			"hijab-travail",
+			"barbe-courte"
+		],
+		[
+			"hijab-travail",
+			"moustache"
+		],
+		[
+			"hijab-travail",
+			"moustache-fournie"
+		],
+		[
+			"hijab-travail",
+			"bouc"
+		],
+		[
+			"hijab-travail",
+			"favoris"
+		],
+		[
+			"hijab-travail",
+			"barbe-longue"
+		],
+		[
+			"hijab-travail",
+			"echarpe-laine"
+		],
+		[
+			"hijab-travail",
+			"foulard"
+		],
+		[
+			"fichu",
+			"barbe-courte"
+		],
+		[
+			"fichu",
+			"moustache"
+		],
+		[
+			"fichu",
+			"moustache-fournie"
+		],
+		[
+			"fichu",
+			"bouc"
+		],
+		[
+			"fichu",
+			"favoris"
+		],
+		[
+			"fichu",
+			"barbe-longue"
+		],
+		[
+			"fichu",
+			"echarpe-laine"
+		],
+		[
+			"chapeau-brousse",
+			"afro"
+		],
+		[
+			"chapeau-brousse",
+			"locks"
+		],
+		[
+			"chapeau-brousse",
+			"tresses-africaines"
+		],
+		[
+			"casquette-plate",
+			"afro"
+		],
+		[
+			"casquette-plate",
+			"locks"
+		],
+		[
+			"casquette-plate",
+			"tresses-africaines"
+		],
+		[
+			"charlotte",
+			"barbe-longue"
+		],
+		[
+			"cagoule",
+			"barbe-courte"
+		],
+		[
+			"cagoule",
+			"moustache"
+		],
+		[
+			"cagoule",
+			"moustache-fournie"
+		],
+		[
+			"cagoule",
+			"bouc"
+		],
+		[
+			"cagoule",
+			"favoris"
+		],
+		[
+			"cagoule",
+			"barbe-longue"
+		],
+		[
+			"cagoule",
+			"lunettes-rondes"
+		],
+		[
+			"cagoule",
+			"lunettes-rectangle"
+		],
+		[
+			"cagoule",
+			"lunettes-demi-lune"
+		],
+		[
+			"cagoule",
+			"lunettes-chat"
+		],
+		[
+			"cagoule",
+			"lunettes-soleil"
+		],
+		[
+			"cagoule",
+			"lunettes-aviateur"
+		],
+		[
+			"cagoule",
+			"lunettes-coeur"
+		],
+		[
+			"cagoule",
+			"lunettes-etoile"
+		],
+		[
+			"cagoule",
+			"lunettes-securite"
+		],
+		[
+			"cagoule",
+			"foulard"
+		],
+		[
+			"cagoule",
+			"echarpe-laine"
+		],
+		[
+			"motif-pois",
+			"gilet"
+		],
+		[
+			"motif-pois",
+			"doudoune-longue"
+		],
+		[
+			"motif-pois",
+			"veste-pluie"
+		],
+		[
+			"motif-pois",
+			"veste-travail"
+		],
+		[
+			"motif-fleurs",
+			"gilet"
+		],
+		[
+			"motif-fleurs",
+			"doudoune-longue"
+		],
+		[
+			"motif-fleurs",
+			"veste-pluie"
+		],
+		[
+			"motif-fleurs",
+			"veste-travail"
+		],
+		[
+			"foulard",
+			"pendentif"
+		],
+		[
+			"foulard",
+			"chaine"
+		],
+		[
+			"echarpe-laine",
+			"pendentif"
+		],
+		[
+			"echarpe-laine",
+			"chaine"
+		],
+		[
+			"hijab-travail",
+			"clous-oreilles"
+		],
+		[
+			"hijab-travail",
+			"anneaux-oreilles"
+		],
+		[
+			"fichu",
+			"clous-oreilles"
+		],
+		[
+			"fichu",
+			"anneaux-oreilles"
+		],
+		[
+			"cagoule",
+			"clous-oreilles"
+		],
+		[
+			"cagoule",
+			"anneaux-oreilles"
+		],
+		[
+			"charlotte",
+			"clous-oreilles"
+		],
+		[
+			"charlotte",
+			"anneaux-oreilles"
+		],
+		[
+			"hijab-travail",
+			"creoles-oreilles"
+		],
+		[
+			"hijab-travail",
+			"pendants-oreilles"
+		],
+		[
+			"hijab-travail",
+			"plumes-oreilles"
+		],
+		[
+			"hijab-travail",
+			"triangles-oreilles"
+		],
+		[
+			"hijab-travail",
+			"etoiles-oreilles"
+		],
+		[
+			"hijab-travail",
+			"carottes-oreilles"
+		],
+		[
+			"hijab-travail",
+			"cerises-oreilles"
+		],
+		[
+			"fichu",
+			"creoles-oreilles"
+		],
+		[
+			"fichu",
+			"pendants-oreilles"
+		],
+		[
+			"fichu",
+			"plumes-oreilles"
+		],
+		[
+			"fichu",
+			"triangles-oreilles"
+		],
+		[
+			"fichu",
+			"etoiles-oreilles"
+		],
+		[
+			"fichu",
+			"carottes-oreilles"
+		],
+		[
+			"fichu",
+			"cerises-oreilles"
+		],
+		[
+			"cagoule",
+			"creoles-oreilles"
+		],
+		[
+			"cagoule",
+			"pendants-oreilles"
+		],
+		[
+			"cagoule",
+			"plumes-oreilles"
+		],
+		[
+			"cagoule",
+			"triangles-oreilles"
+		],
+		[
+			"cagoule",
+			"etoiles-oreilles"
+		],
+		[
+			"cagoule",
+			"carottes-oreilles"
+		],
+		[
+			"cagoule",
+			"cerises-oreilles"
+		],
+		[
+			"charlotte",
+			"creoles-oreilles"
+		],
+		[
+			"charlotte",
+			"pendants-oreilles"
+		],
+		[
+			"charlotte",
+			"plumes-oreilles"
+		],
+		[
+			"charlotte",
+			"triangles-oreilles"
+		],
+		[
+			"charlotte",
+			"etoiles-oreilles"
+		],
+		[
+			"charlotte",
+			"carottes-oreilles"
+		],
+		[
+			"charlotte",
+			"cerises-oreilles"
+		]
+	]
+}

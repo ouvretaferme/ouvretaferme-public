@@ -1,0 +1,587 @@
+.onboarding {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	margin-bottom: 3rem;
+}
+
+.onboarding-header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+
+.onboarding-header-text {
+	margin: 0;
+	color: var(--text-intermediate);
+	max-width: 46rem;
+}
+
+.onboarding-header-skip {
+	font-size: 0.9rem;
+	color: var(--muted);
+	white-space: nowrap;
+}
+
+.onboarding-panel {
+	display: grid;
+	grid-template-columns: minmax(0, var(--onboarding-questions-width, 32rem)) minmax(var(--onboarding-preview-width, 0), 1fr);
+	padding: 0;
+	overflow: hidden;
+	min-height: 40rem;
+}
+
+/* Un parcours n'a pas toujours quelque chose à montrer à côté des questions : une étape qui ne
+   construit rien de visible n'a pas d'aperçu, et la colonne de droite n'a plus de raison d'être.
+
+   Elle disparaît donc au lieu de rester à moitié vide, et les questions prennent tout le panneau,
+   qui se borne à 60 rem et se centre : une colonne bornée dans un panneau qui suit la page laissait
+   un bloc blanc d'autant plus vide que l'écran est large (« faut consommer plus d'espace »,
+   2026-09-26), et au-delà de cette largeur une ligne de formulaire devient trop longue pour se relire.
+
+   `min-height` retombe à `auto` : les 40 rem tenaient la colonne de droite, qui n'est plus là. */
+.onboarding-panel-plain {
+	grid-template-columns: minmax(0, 1fr);
+	min-height: auto;
+}
+
+/* Le panneau sans aperçu, le panneau à barre en tête et ce qui se pose au-dessus d'eux, un résultat ou
+   ce qu'une réponse écrira, partagent une borne pour s'aligner bord à bord.
+
+   `width` est nécessaire avec la marge automatique : sur un enfant étiré d'un conteneur flex en
+   colonne, une marge horizontale `auto` annule l'étirement et le bloc se réduit à son contenu.
+   Mesuré à 1199 px, sans elle, 403 px au lieu des 780 px disponibles. */
+.onboarding-panel-plain,
+.onboarding-panel-progress-top,
+.onboarding-bound {
+	width: 100%;
+	max-width: 60rem;
+	margin-inline: auto;
+}
+
+/* La barre des marches appartient au parcours entier, pas à la colonne des questions : posée en enfant
+   direct du panneau, elle prend sa largeur et non celle de la colonne de gauche, qui fait 416 px quand
+   le panneau en fait 780 (mesuré à 1199 px sur le tunnel de contrat, dont les noms d'étapes s'y
+   repliaient sur deux lignes). Le panneau se borne alors comme `onboarding-panel-plain`, pour que les
+   étapes avec et sans aperçu montrent la même barre à la même largeur.
+
+   Le padding de la barre est celui que `.onboarding-steps` lui donnait, moins le bas, et la colonne
+   des questions descend son propre haut au `gap` de cette colonne : sinon les deux paddings verticaux
+   s'additionnent sous la barre, là où elle n'était séparée de la première question que par ce `gap`.
+
+   Les deux rangs sont déclarés parce que le panneau porte un `min-height` de 40 rem : sans eux, les
+   rangs implicites se partagent la hauteur restante à parts égales et la barre se retrouve au milieu
+   d'un rang de 220 px dès que l'étape est courte (mesuré le 28/09 sur la démonstration de la page
+   design system). Le premier rang prend la hauteur de la barre, le second tout le reste. */
+.onboarding-panel-progress-top {
+	grid-template-rows: auto 1fr;
+}
+
+.onboarding-panel-progress-top > .onboarding-progress {
+	grid-column: 1 / -1;
+	padding: 2rem 2.25rem 0;
+}
+
+.onboarding-panel-progress-top > .onboarding-steps {
+	padding-top: 1.25rem;
+}
+
+.onboarding-panel-plain .onboarding-steps {
+	border-right: 0;
+}
+
+.onboarding-steps {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+	padding: 2rem 2.25rem;
+	border-right: 1px solid var(--border-light);
+}
+
+.onboarding-progress {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.onboarding-stepper {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.onboarding-stepper span {
+	flex: 1;
+	height: 6px;
+	border-radius: 3px;
+	background: var(--background-dark);
+	transition: background-color 0.3s;
+}
+
+.onboarding-stepper span.is-done {
+	background: color-mix(in srgb, var(--secondary) 45%, white);
+}
+
+.onboarding-stepper span.is-current {
+	background: var(--secondary);
+}
+
+.onboarding-progress-label {
+	font-size: 0.9rem;
+	color: var(--muted);
+}
+
+.onboarding-progress-label b {
+	color: var(--text);
+}
+
+.onboarding-progress-names {
+	--onboarding-names-gap: var(--space-xs);
+	display: flex;
+	gap: var(--onboarding-names-gap);
+}
+
+/* Les noms des étapes faites sont la façon de reculer : sans curseur ni survol, rien ne le dit et
+   le parcours paraît n'avoir plus aucun retour depuis que le bouton est parti.
+
+   L'état vient de la classe et le sélecteur ne nomme aucune balise : une marche faite est un lien
+   quand les marches du parcours sont des adresses distinctes, un nom nu quand on y recule par un
+   script, et les deux formes se dessinent pareil. */
+.onboarding-progress-names > * {
+	flex: 1;
+	min-width: 0;
+	color: var(--muted);
+	text-decoration: none;
+	transition: color 0.15s;
+}
+
+.onboarding-progress-names > .is-done {
+	color: var(--secondary-on-light, var(--secondary));
+	cursor: pointer;
+}
+
+.onboarding-progress-names > .is-skipped {
+	cursor: pointer;
+}
+
+.onboarding-progress-names > :is(.is-done, .is-skipped):hover {
+	color: var(--primary-on-light, var(--primary));
+}
+
+.onboarding-progress-names > .is-current {
+	color: var(--text);
+	font-weight: bold;
+}
+
+.onboarding-step {
+	display: none;
+	flex-direction: column;
+	gap: 1.25rem;
+	flex: 1;
+}
+
+.onboarding-step.is-current {
+	display: flex;
+}
+
+.onboarding-step h2 {
+	font-size: 1.5rem;
+	font-weight: 600;
+	line-height: 1.25;
+	margin: 0;
+}
+
+.onboarding-step > .util-welcome + * {
+	margin-top: -1.25rem;
+}
+
+.onboarding-help {
+	margin: -0.75rem 0 0;
+	color: var(--text-intermediate);
+	font-size: 0.95rem;
+}
+
+.onboarding-tiles .field-radio-group {
+	border: 0;
+	padding: 0;
+	background: transparent;
+	gap: 1rem;
+}
+
+.onboarding-tiles .field-radio-group-item {
+	grid-template-columns: auto 1fr;
+	align-items: start;
+	gap: 1rem;
+	padding: 1rem;
+	border: 1.5px solid var(--border);
+	border-radius: var(--radius);
+	background: white;
+	transition: border-color 0.2s, background-color 0.2s;
+}
+
+.onboarding-tiles .field-radio-group.field-radio-group-1 > .field-radio-group-item:not(:last-child) {
+	border-bottom-style: solid;
+	border-bottom-width: 1.5px;
+}
+
+.onboarding-tiles .field-radio-group-item:hover {
+	background: var(--background-light);
+}
+
+.onboarding-tiles .field-radio-group > .field-radio-group-item:has(> input:checked) {
+	background: color-mix(in srgb, var(--secondary) 10%, white);
+}
+
+.onboarding-tiles .field-radio-group-item > input[type="radio"],
+.onboarding-tiles .field-radio-group-item > input[type="checkbox"] {
+	accent-color: var(--secondary);
+	width: 1.25rem;
+	height: 1.25rem;
+	margin-top: calc((1.4rem - 1.25rem) / 2);
+	/* form.css décale le radio de 1 px pour l'aligner sur la ligne de base ; ici il est centré sur la première ligne du titre */
+	transform: none;
+}
+
+.onboarding-tile {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.onboarding-tile-title {
+	font-weight: bold;
+}
+
+.onboarding-tile-desc {
+	font-size: 0.9rem;
+	color: var(--muted);
+	font-weight: normal;
+	line-height: 1.45;
+}
+
+/* Le texte d'une tuile est un enfant flex, donc large comme sa plus longue ligne : sans cette
+   règle, les champs d'une tuile prennent la largeur de sa description. */
+.onboarding-tile-text:has(> .onboarding-tile-fields) {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Les champs vivent dans la colonne du texte et reculent de la case (1.25rem) et de la gouttière
+   (1rem) pour occuper la tuile entière. */
+.onboarding-tile-fields {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	margin-top: 0.75rem;
+	margin-left: -2.25rem;
+}
+
+.onboarding-tile-fields .form-group {
+	margin: 0;
+}
+
+.onboarding-tile-more {
+	border-top: 1px solid var(--border);
+	margin-top: 0.75rem;
+	padding-top: 0.75rem;
+}
+
+.onboarding-tile-more-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.5rem;
+}
+
+.onboarding-tile-more-head b {
+	font-size: 0.9rem;
+}
+
+.onboarding-tile-add {
+	margin-top: 0.75rem;
+}
+
+.onboarding-tiles .field-radio-group-item:not(:has(> input:checked)) .onboarding-tile-fields {
+	display: none;
+}
+
+.onboarding-tiles .field-radio-group-item:has(.onboarding-tile-fields):has(> input:checked) {
+	align-items: start;
+}
+
+/* Une adresse d'invitation fait une centaine de caractères sans un seul espace : sans cette
+   règle elle ne se coupe nulle part et sort de la colonne, qui ne fait que 27 rem. `anywhere`
+   plutôt que `break-word` parce qu'il autorise la coupure même là où le mot pourrait tenir seul
+   sur la ligne suivante, ce qui est le cas d'une URL entière. */
+.onboarding-link > .form-control {
+	overflow-wrap: anywhere;
+}
+
+.onboarding-rows {
+	display: flex;
+	flex-direction: column;
+	gap: 0.625rem;
+}
+
+.onboarding-row {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	padding: 0.75rem;
+	box-shadow: none;
+}
+
+.onboarding-row:has(.form-error-wrapper) {
+	border-color: var(--danger);
+}
+
+.onboarding-row-main {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.onboarding-field-name {
+	flex: 1;
+	min-width: 0;
+}
+
+.onboarding-row-details {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.onboarding-row-details .onboarding-field {
+	flex: 1;
+	min-width: 11rem;
+}
+
+.onboarding-row-details .input-group {
+	flex-wrap: nowrap;
+}
+
+.onboarding-row-details input {
+	min-width: 3.5rem;
+}
+
+.onboarding-field .form-error-message {
+	font-size: 0.9rem;
+	color: var(--danger);
+	margin: 0.25rem 0 0;
+}
+
+.onboarding-row-remove {
+	color: var(--muted);
+	padding: 0.25rem;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.onboarding-row-remove:hover {
+	color: var(--danger);
+}
+
+.onboarding-field-label {
+	display: block;
+	font-size: 0.9rem;
+	color: var(--text-intermediate);
+	margin-bottom: 0.25rem;
+}
+
+.onboarding-footer {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin-top: auto;
+	padding-top: 1rem;
+	border-top: 1px solid var(--border-light);
+}
+
+.onboarding-panel-plain .onboarding-step h2 + .onboarding-footer {
+	border-top: none;
+}
+
+.onboarding-footer-side {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.onboarding-footer-main {
+	margin-left: auto;
+	display: flex;
+	gap: 0.5rem;
+}
+
+.onboarding-preview {
+	display: flex;
+	flex-direction: column;
+	gap: 0.875rem;
+	padding: 1.75rem 2rem;
+	background: var(--background-light);
+}
+
+.onboarding-preview-header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.onboarding-preview-title {
+	font-size: 0.9rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--muted);
+	font-weight: bold;
+}
+
+.onboarding-preview-summary {
+	font-size: 0.9rem;
+	color: var(--muted);
+}
+
+.onboarding-preview-body {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.onboarding-tip {
+	display: flex;
+	gap: 0.875rem;
+	align-items: flex-start;
+	margin-top: auto;
+	padding: 0.875rem 1rem;
+	font-size: 0.9rem;
+	line-height: 1.5;
+}
+
+.onboarding-tip > svg {
+	flex-shrink: 0;
+	color: var(--secondary-on-light, var(--secondary));
+	font-size: 1.25rem;
+	margin-top: 0.1rem;
+}
+
+.onboarding-tip [data-onboarding-tip] {
+	display: none;
+}
+
+.onboarding-tip [data-onboarding-tip].is-current {
+	display: inline;
+}
+
+.onboarding-tip b {
+	display: block;
+}
+
+/* Le composant ne marque courant que le conseil de l'étape : à une étape qui n'en a pas, le cadre
+   garderait son icône seule. Un conseil courant mais masqué (`hide`) laisse le cadre aussi vide.
+   Un cadre qui ne porte aucun conseil par étape ne suit pas les étapes, il reste affiché. */
+.onboarding-tip:has([data-onboarding-tip]):not(:has([data-onboarding-tip].is-current:not(.hide))) {
+	display: none;
+}
+
+@media (max-width: 991px) {
+
+	.onboarding-panel {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.onboarding-steps {
+		border-right: 0;
+		border-bottom: 1px solid var(--border-light);
+	}
+
+	.onboarding-panel {
+		min-height: auto;
+	}
+
+}
+
+@media (max-width: 575px) {
+
+	.onboarding-steps,
+	.onboarding-preview {
+		padding: 1.25rem 1rem;
+	}
+
+	/* La barre suit le padding de téléphone de la colonne dont elle est sortie, sinon elle garde les
+	   2,25 rem de côté que les questions n'ont plus. */
+	.onboarding-panel-progress-top > .onboarding-progress {
+		padding: 1.25rem 1rem 0;
+	}
+
+	/* Deux noms tiennent sur un téléphone, pas cinq : le courant, et l'étape faite qui le précède,
+	   qui reste le seul moyen de reculer dans un parcours sans bouton de retour. Un nom masqué garde
+	   sa colonne, sinon les deux visibles se partagent la rangée et ne sont plus sous leur segment. */
+	.onboarding-progress-names > * {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.onboarding-progress-names > :not(.is-current):not(:is(.is-done, .is-skipped):has(+ .is-current)) {
+		visibility: hidden;
+	}
+
+	/* Un nom visible plus long que sa colonne prend la place des noms masqués plutôt que de se couper :
+	   ils n'ont rien à y montrer. Le plancher est la taille minimale automatique d'un élément flex, son
+	   libellé entier, qui ne joue donc que lorsque la colonne ne suffit pas : tant que les deux noms
+	   visibles tiennent dans la leur, ils restent sous leur segment, et quand l'un en sort, l'autre se
+	   décale avec lui. Un conteneur de défilement ramènerait ce plancher à zéro, d'où `clip` et non
+	   `hidden`.
+
+	   Le plafond partage entre les deux noms ce que la rangée laisse une fois ses gouttières retirées,
+	   celles des noms masqués comprises, et l'ellipse reprend au-delà. Il compte les noms jusqu'à cinq :
+	   une frise plus longue demande sa ligne, sans quoi deux libellés longs y déborderaient d'une
+	   gouttière par nom de plus. */
+	.onboarding-progress-names > :is(.is-current, :is(.is-done, .is-skipped):has(+ .is-current)) {
+		min-width: auto;
+		max-width: calc((100% - (var(--onboarding-names, 2) - 1) * var(--onboarding-names-gap)) / 2);
+		overflow: clip;
+	}
+
+	.onboarding-progress-names:has(> :nth-child(3)) {
+		--onboarding-names: 3;
+	}
+
+	.onboarding-progress-names:has(> :nth-child(4)) {
+		--onboarding-names: 4;
+	}
+
+	.onboarding-progress-names:has(> :nth-child(5)) {
+		--onboarding-names: 5;
+	}
+
+	.onboarding-row-main {
+		flex-wrap: wrap;
+	}
+
+	.onboarding-footer,
+	.onboarding-footer-main {
+		flex-wrap: wrap;
+	}
+
+	.onboarding-footer-main {
+		flex-direction: column-reverse;
+		width: 100%;
+	}
+
+	.onboarding-footer-side {
+		flex-direction: column;
+		order: 1;
+		width: 100%;
+	}
+
+	.onboarding-footer .btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: var(--touch-target);
+	}
+
+}
+

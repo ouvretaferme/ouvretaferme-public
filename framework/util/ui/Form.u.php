@@ -1,0 +1,2857 @@
+<?php
+namespace util;
+
+/**
+ * Handle forms
+ */
+class FormUi {
+
+	protected ?string $lastFieldId = NULL;
+	protected ?string $lastFieldName = NULL;
+	protected ?string $lastFieldType = NULL;
+	protected ?string $nextWrapper = NULL;
+	protected ?string $formId = NULL;
+	protected ?bool $formDraft = NULL;
+
+	protected array $options = [];
+
+	protected ?string $id = NULL;
+
+	/**
+	 * Build a new form
+	 *
+	 * Options are:
+	 * - style: form style from options (basic, inline, horizontal)
+	 * -
+	 *
+	 * @param array $options Boostrap options
+	 */
+	public function __construct(array $options = []) {
+
+		$this->options = $options + [
+			'columns' => 2
+		];
+
+		if($this->options['columns'] > 1) {
+
+			$this->options += [
+				'firstColumnSize' => 33,
+				'columnBreak' => 'xs',
+			];
+
+		}
+
+		\Asset::css('util', 'form.css');
+		\Asset::js('util', 'form.js');
+
+	}
+
+	/**
+	 * Open a new form with POST method
+	 *
+	 * @param string $id Id
+	 * @param string $attributes Additional attributes for <form> tag (+ groupLabelClass, groupDivClass)
+	 */
+	public function open(?string $id = NULL, array $attributes = []): string {
+
+		if(isset($attributes['binary'])) {
+			$attributes['enctype'] = 'multipart/form-data';
+			unset($attributes['binary']);
+		}
+
+		$attributes['action'] ??= 'javascript:;';
+		$attributes['method'] ??= 'post';
+
+		if($id) {
+			$attributes['id'] = (string)$id;
+			$this->formDraft = isset($attributes['data-draft']);
+		} else {
+			$this->formDraft = NULL;
+		}
+
+		if(isset($attributes['id'])) {
+			$this->id = (string)$attributes['id'];
+		}
+
+		if($this->options['columns'] === 2) {
+			$attributes['class'] = 'form-columns form-columns-'.$this->options['firstColumnSize'].' form-columns-'.$this->options['columnBreak'].' '.($attributes['class'] ?? '');
+		}
+
+		if(in_array('novalidate', $attributes, TRUE)) {
+			$attribute = ' novalidate';
+			unset($attributes[array_search('novalidate', $attributes)]);
+		} else {
+			$attribute = '';
+		}
+
+		return '<form '.attrs($attributes).$attribute.'>';
+
+	}
+
+	public function getId(): ?string {
+		return $this->id;
+	}
+
+	public function openUrl(string $url, array $attributes = []): string {
+
+		$attributes['action'] = $url;
+
+		return $this->open(NULL, $attributes);
+
+	}
+
+	public function openAjax(string $url, array $attributes = []): string {
+
+		$attributes['data-ajax-form'] = $url;
+
+		return $this->open(NULL, $attributes);
+
+	}
+
+	/**
+	 * Close a form
+	 *
+	 */
+	public function close(): string {
+
+		$h = '</form>';
+
+		if($this->formDraft) {
+
+			$h .= '<script type="text/javascript">';
+				$h .= 'Draft.initDrafts(qs("#'.$this->formId.'"));';
+			$h .= '</script>';
+
+		}
+
+		return $h;
+
+	}
+
+	/**
+	 * Create a fieldset
+	 *
+	 */
+	public function fieldset(string $legend, string $content, array $attributes = []): string {
+
+		$attributes['data-wrapper'] ??= $this->nextWrapper;
+		$this->nextWrapper = NULL;
+
+		$attributes['class'] = 'form-group '.($attributes['class'] ?? '');
+
+		$h = '<fieldset '.attrs($attributes).'>';
+			$h .= '<legend>'.$legend.'</legend>';
+			$h .= '<div>'.$content.'</div>';
+		$h .= '</fieldset>';
+
+		return $h;
+
+	}
+
+	/**
+	 * Create a form group (according to options definition) from a label and form fields
+	 *
+	 */
+	public function group(?string $label = NULL, ?string $content = NULL, array $attributes = [], bool $nested = FALSE): string {
+
+		$wrapper = $attributes['data-wrapper'] ?? $this->nextWrapper;
+		$labelFor = $attributes['for'] ?? TRUE;
+
+		unset($attributes['data-wrapper'], $attributes['for']);
+		$this->nextWrapper = NULL;
+
+		if($wrapper !== NULL) {
+			if(substr($wrapper, -2) === '[]') {
+				$wrapper = substr($wrapper, 0, -2);
+			} else if(substr($wrapper, -strlen('-calculation')) === '-calculation') {
+				$wrapper = substr($wrapper, 0, -strlen('-calculation'));
+			}
+		}
+
+		$attributes['class'] = 'form-group '.($nested ? 'form-group-nested' : '').' '.($attributes['class'] ?? '');
+
+		$h = '<div data-wrapper="'.$wrapper.'" '.attrs($attributes).'>';
+
+		if(
+			(
+				$this->lastFieldType === NULL or (
+					str_starts_with($this->lastFieldType, 'radio') === FALSE and // No checkbox(es)
+					str_starts_with($this->lastFieldType, 'checkbox') === FALSE // No radio(s)
+				)
+			) and
+			$labelFor
+		) {
+			$for = 'for="'.$this->lastFieldId.'"';
+		} else {
+			$for = '';
+		}
+
+		if($this->options['columns'] === 2) {
+
+			if($label !== NULL) {
+				$h .= '<label '.$for.' class="form-control-label">'.$label.'</label>';
+			} else {
+				$h .= '<div class="form-control-label"></div>';
+			}
+			$h .= '<div class="form-control-field">'.$content.'</div>';
+
+		} else {
+
+			if($label !== NULL) {
+				$h .= '<label '.$for.' class="form-control-label">'.$label.'</label>';
+			}
+			$h .= ' <div>'.$content.'</div>';
+
+		}
+
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	public function section(string $content): string {
+
+		return $this->group(content: $content, attributes: ['class' => 'mt-1']);
+
+	}
+
+	/**
+	 * La gouttière entre deux cartes est portée par la grille (`.util-cards` de `component.css`) et
+	 * non par les cartes, qui n'ont aucune marge : `util-cards-1` n'est donc pas décoratif.
+	 */
+	public function cards(array $sections): string {
+
+		if($sections === []) {
+			return '';
+		}
+
+		$h = '<div class="util-cards util-cards-1 mb-2">';
+
+			foreach($sections as $section) {
+
+				$section += ['action' => ''];
+
+				$h .= '<div class="util-card">';
+
+					$h .= '<div class="util-title">';
+						$h .= '<h3>'.$section['title'].'</h3>';
+
+						if($section['action'] !== '') {
+							$h .= $section['action'];
+						}
+
+					$h .= '</div>';
+
+					$h .= $section['content'];
+
+				$h .= '</div>';
+
+			}
+
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	public function quick(\Element $e, string $property): string {
+
+		$e->expects(['id', $property]);
+
+		$form = new FormUi();
+
+		$uiClass = '\\'.$e->getModule().'Ui';
+
+		if(class_exists($uiClass)) {
+			$d = $uiClass::p($property);
+			$label = $d->label;
+			$confirm = is_closure($d->quickConfirm) ? call_user_func($d->quickConfirm, $e) : $d->quickConfirm;
+		} else {
+			$label = NULL;
+			$confirm = NULL;
+		}
+
+		$h = $form->openAjax(self::getQuickUrl($e));
+
+			$h .= $form->hidden('id', $e['id']);
+			$h .= $form->hidden('property', $property);
+
+			if(post_exists('list')) {
+
+				foreach(explode(',', POST('list')) as $argument) {
+					if(post_exists($argument)) {
+						$h .= $form->hidden($argument, POST($argument));
+					}
+				}
+
+			}
+
+			$h .= '<div class="util-quick-form">';
+				if($label !== NULL) {
+					$h .= '<h4>';
+						if($label instanceof \Closure) {
+							$h .= $label($e);
+						} else {
+							$h .= $label;
+						}
+					$h .= '</h4>';
+				}
+				$h .= '<div>';
+					$h .= $form->dynamicField($e, $property);
+				$h .= '</div>';
+				$h .= $form->submit(s("Enregistrer"), ['class' => 'btn btn-outline-transparent', 'data-confirm' => $confirm]);
+			$h .= '</div>';
+		$h .= $form->close();
+
+		return $h;
+
+	}
+
+	public static function getQuickUrl(\Element $e): string {
+		return '/@module/'.str_replace('\\', '/', $e->getModule()).'/doQuick';
+	}
+
+	/**
+	 * Create group from an element and given properties
+	 */
+	public function dynamicFieldsets(\Element $e, array $properties, array $dsCallback = []): string {
+
+		$h = '<div class="form-fieldsets">';
+
+			foreach($properties as $property) {
+				$h .= $this->dynamicFieldset($e, $property, $dsCallback[$property] ?? NULL);
+			}
+
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	/**
+	 * Create fieldset from an element and given property
+	 */
+	public function dynamicFieldset(\Element $e, string $property, ?\Closure $dCallback = NULL): string {
+
+		if($e instanceof \Element === FALSE) {
+			throw new \Exception('No element given');
+		}
+
+		$asterisk = str_ends_with($property, '*');
+
+		if($asterisk) {
+			$property = substr($property, 0, -1);
+		}
+
+		$d = NULL;
+		$h = $this->dynamicField($e, $property, $dCallback, $d);
+
+		switch($d->field) {
+
+			case NULL :
+				return '';
+
+			case 'hidden' :
+				return $h;
+
+			default :
+
+				$legend = is_closure($d->label) ? call_user_func($d->label, $e) : ($d->label ?? '<i>'.$property.'</i>');
+				if($asterisk or $d->asterisk) {
+					$legend .= $this->asterisk();
+				}
+
+				if($d->fieldset) {
+					$fieldsetAttributes = is_closure($d->fieldset) ? call_user_func($d->fieldset, $e) : $d->fieldset;
+				} else {
+					$fieldsetAttributes = [];
+				}
+
+				if($d->wrapper) {
+					$fieldsetAttributes['data-wrapper'] ??= is_closure($d->wrapper) ? call_user_func($d->wrapper, $e) : $d->wrapper;
+				}
+
+				return $this->fieldset($legend, $h, $fieldsetAttributes);
+
+
+		}
+
+	}
+
+	/**
+	 * Create group from an element and given properties
+	 */
+	public function dynamicGroups(\Element $e, array $properties, array $dsCallback = []): string {
+
+		$h = '';
+
+		foreach($properties as $property) {
+			$h .= $this->dynamicGroup($e, $property, $dsCallback[$property] ?? NULL);
+		}
+
+		return $h;
+
+	}
+
+	/**
+	 * Create group from an element and given property
+	 */
+	public function dynamicGroup(\Element $e, string $property, ?\Closure $dCallback = NULL): string {
+
+		if($e instanceof \Element === FALSE) {
+			throw new \Exception('No element given');
+		}
+
+		$asterisk = str_ends_with($property, '*');
+
+		if($asterisk) {
+			$property = substr($property, 0, -1);
+		}
+
+		$d = NULL;
+		$h = $this->dynamicField($e, $property, $dCallback, $d);
+
+		switch($d->field) {
+
+			case NULL :
+				return '';
+
+			case 'hidden' :
+				return $h;
+
+			default :
+
+				$label = '';
+
+				if($d->groupLabel !== FALSE) {
+					$label .= is_closure($d->labelBefore) ? call_user_func($d->labelBefore, $e) : $d->labelBefore;
+					$label .= is_closure($d->label) ? call_user_func($d->label, $e) : ($d->label ?? '<i>'.$property.'</i>');
+					if($asterisk or $d->asterisk) {
+						$label .= $this->asterisk();
+					}
+					$label .= is_closure($d->labelAfter) ? call_user_func($d->labelAfter, $e) : $d->labelAfter;
+				}
+
+				if($d->group) {
+					$groupAttributes = is_closure($d->group) ? call_user_func($d->group, $e) : $d->group;
+				} else {
+					$groupAttributes = [];
+				}
+
+				if($d->wrapper) {
+					$groupAttributes['data-wrapper'] ??= is_closure($d->wrapper) ? call_user_func($d->wrapper, $e) : $d->wrapper;
+				}
+
+				return $this->group($label, $h, $groupAttributes);
+
+
+		}
+
+	}
+
+	/**
+	 * Create a dynamic field
+	 */
+	public function dynamicField(\Element $e, string $property, ?\Closure $dCallback = NULL,  ?\PropertyDescriber &$d = NULL): string {
+
+		$classUi = $e->getModule().'Ui';
+		$ui = new $classUi();
+
+		$fullProperty = $property;
+
+		if(preg_match('/^([a-z0-9]+)\[([^\]]*)\]/si', $property, $matches) > 0) {
+			[, $property] = $matches;
+		}
+
+		$d = $ui->p($property);
+		$d->name ??= $fullProperty;
+
+		if($dCallback !== NULL) {
+			$dCallback($d);
+		}
+
+		$field = $d->field;
+
+		if(is_closure($d->attributes)) {
+			$d->attributes = call_user_func($d->attributes, $this, $e, $property, $field);
+		}
+
+		if($field === NULL) {
+			return '';
+		}
+
+		$d->last = '';
+
+		$dynamicField = $this->createDynamicField($d, $e, $property);
+
+		if($d->load) {
+			$load = $d->load;
+			$load();
+		}
+
+		$h = '';
+
+		if($d->before) {
+			$h .= is_closure($d->before) ? call_user_func($d->before, $this, $e, $property, $field) : $d->before;
+		}
+
+		if($d->prepend !== NULL or $d->append !== NULL) {
+
+			$input = '';
+
+			if($d->prepend) {
+				foreach((array)$d->prepend as $prepend) {
+					$input .= is_closure($prepend) ? call_user_func($prepend, $this, $e, $property, $field, $d->attributes) : $this->addon($prepend);
+				}
+			}
+
+			$input .= $dynamicField;
+
+			if($d->append) {
+				foreach((array)$d->append as $append) {
+					$input .= is_closure($append) ? call_user_func($append, $this, $e, $property, $field, $d->attributes) : $this->addon($append);
+				}
+			}
+
+			if($d->inputGroup) {
+				$inputGroupAttributes = is_closure($d->inputGroup) ? call_user_func($d->inputGroup, $e) : $d->inputGroup;
+			} else {
+				$inputGroupAttributes = [];
+			}
+
+			$h .= $this->inputGroup($input, $inputGroupAttributes);
+
+		} else {
+			$h .= $dynamicField;
+		}
+
+		if($d->after) {
+			$h .= is_closure($d->after) ? call_user_func($d->after, $this, $e, $property, $field, $d->attributes) : $d->after;
+		}
+
+		$h .= $d->last;
+
+		return $h;
+
+	}
+
+	/**
+	 * Identifiant stable d'un éditeur : <module>-<id>-<propriété>
+	 *
+	 * Renvoie NULL tant que l'élément n'a pas d'id, faute de quoi deux créations
+	 * successives partageraient le même brouillon
+	 */
+	protected static function getEditorDraftId(\Element $e, string $property): ?string {
+
+		$id = str_replace('\\', '-', $e->getModule()).'-'.$property;
+
+		if($e->exists()) {
+			return $id.'-'.$e['id'];
+		} else {
+			return $id;
+		}
+
+	}
+
+	public function createDynamicField(\PropertyDescriber $d, \Element $e, string $property): string {
+
+		$field = $d->field;
+		$attributes = $d->attributes;
+
+		$m = ($e->getModule())::model();
+
+		if(is_closure($field)) {
+			return $field->call($d, $this, $e, $property, $d);
+		}
+
+		$type = $d->type;
+
+		if(is_closure($d->default)) {
+			$default = ($d->default)($e, $property);
+		} else {
+			if(
+				$e->model()->hasProperty($property) and
+				$m->isPropertyNull($property)
+			) {
+				$default = $e->offsetExists($property) ? $e[$property] : ($d->default ?? NULL);
+			} else {
+				$default = $e[$property] ?? $d->default ?? NULL;
+			}
+		}
+
+		if(is_closure($d->values)) {
+			$values = ($d->values)($e);
+		} else {
+			$values = $d->values;
+		}
+
+		if(is_closure($d->placeholder)) {
+			$placeholder = ($d->placeholder)($e);
+		} else {
+			$placeholder = $d->placeholder;
+		}
+
+		if($placeholder) {
+			$attributes += [
+				'placeholder' => $placeholder
+			];
+		}
+
+		if(is_closure($d->required)) {
+			$required = ($d->required)($e);
+		} else {
+			$required = $d->required;
+		}
+
+		if($required) {
+			$attributes += [
+				'required' => $required
+			];
+		}
+
+		foreach($attributes as $key => $value) {
+			if(str_starts_with($key, 'callback') === FALSE and is_closure($value)) {
+				$attributes[$key] = call_user_func($value, $this, $e, $property, $attributes);
+			}
+		}
+
+		$name = $d->name ?? $property;
+
+		if($field !== 'default') {
+
+			switch($field) {
+
+				case 'select' :
+					return $this->select($name, $values, $default, $attributes);
+
+				case 'range' :
+					return $this->range($name, $d->from, $d->to, $d->step ?? 1, $default, $attributes);
+
+				case 'rangeSelect' :
+					return $this->rangeSelect($name, $d->from, $d->to, $d->step ?? 1, $default, $attributes);
+
+				case 'radio' :
+					return $this->radios($name, $values ?? $attributes['values'], $default, $attributes);
+
+				case 'calculation':
+					return $this->calculation($name, $default, $attributes);
+
+				case 'textarea' :
+				case 'yesNo' :
+				case 'switch' :
+				case 'weekNumber' :
+				case 'week' :
+				case 'month' :
+				case 'time' :
+				case 'date' :
+				case 'email' :
+				case 'hidden' :
+					return $this->{$field}($name, $default, $attributes);
+
+				case 'autocomplete' :
+
+					if(is_closure($d->autocompleteUrl)) {
+						$url = $d->autocompleteUrl->call($this, $this, $e);
+					} else {
+						$url = $d->autocompleteUrl ?? throw new \Exception('Missing $d->autocompleteUrl for autocomplete field');
+					}
+
+					if(is_closure($d->autocompleteBody)) {
+						$autocompleteBody = $d->autocompleteBody->call($this, $this, $e);
+					} else {
+						$autocompleteBody = $d->autocompleteBody ?? [];
+					}
+
+					if(is_closure($d->autocompleteDefault)) {
+						$autocompleteDefault = $d->autocompleteDefault->call($this, $e);
+					} else {
+						$autocompleteDefault = $d->autocompleteDefault;
+					}
+
+					$default = [];
+
+					if($d->multiple ?? FALSE) {
+
+						$name .= '[]';
+
+						if($autocompleteDefault instanceof \Collection) {
+							$default = $autocompleteDefault->makeArray(fn($e) => ($d->autocompleteResults)($e));
+						}
+
+					} else {
+
+						if($autocompleteDefault !== NULL) {
+
+							if(
+								$autocompleteDefault instanceof \Element === FALSE or
+								$autocompleteDefault->exists()
+							) {
+								$default[] = ($d->autocompleteResults)($autocompleteDefault, $e);
+							}
+
+						} else {
+
+							if(
+								$e->offsetExists($property) and (
+									($e[$property] instanceof \Element and $e[$property]->notEmpty()) or
+									($e[$property] instanceof \Element === FALSE and $e[$property] !== NULL)
+								)
+							) {
+								$default[] = ($d->autocompleteResults)($e[$property]);
+							}
+
+						}
+
+					}
+
+					if(is_closure($d->autocompleteDispatch)) {
+						$dispatch = $d->autocompleteDispatch->call($this, $this, $e);
+					} else {
+						$dispatch = $d->autocompleteDispatch ?? NULL;
+					}
+
+					if(is_closure($d->autocompleteHead)) {
+						$autocompleteHead = $d->autocompleteHead->call($this, $this, $e);
+					} else {
+						$autocompleteHead = $d->autocompleteHead;
+					}
+
+					if($autocompleteHead !== NULL) {
+						$attributes += $this->getAutocompleteHead($autocompleteHead);
+					}
+
+					// Un choix garde le texte tapé, sélectionné, pour revenir sur les autres résultats de la même recherche
+					if($d->autocompleteKeepQuery ?? FALSE) {
+						$attributes['data-autocomplete-keep-query'] = TRUE;
+					}
+
+					// La liste prend la largeur de l'input-group qui contient le champ, addon et croix compris
+					if($d->autocompleteWidth !== NULL) {
+						$attributes['data-autocomplete-width'] = $d->autocompleteWidth;
+					}
+
+					$reorder = $d->autocompleteReorder ?? FALSE;
+					$textual = $d->autocompleteTextual ?? FALSE;
+
+					[
+						'query' => $query,
+						'results' => $results
+					] = $this->autocomplete($name, $url, $autocompleteBody, $dispatch, $default, $reorder, $textual, $attributes);
+
+					$d->last = $results;
+
+					return $query;
+
+				default :
+					throw new \Exception('Unknown field \''.$field.'\'');
+
+			}
+
+		}
+
+		if($type === NULL) {
+			throw new \Exception('No type found for property \''.$property.'\'');
+		}
+
+		if($type === 'bool') {
+			return $this->checkbox($name, 1, ['checked' => $default] + $attributes);
+		} else if(strpos($type, 'element') !== FALSE and $d->module !== NULL) {
+
+			if($values instanceof \Collection or is_array($values)) {
+				return $this->select($name, $values, ($e[$property] ?? new \AnonymousElement()), $attributes);
+			} else {
+				throw new \Exception('Missing collection or array for property \''.$property.'\'');
+			}
+
+		} else if($type === 'text8' or $type === 'textFixed') {
+
+			if($e->model()->hasProperty($property)) {
+
+				[, $max] = $e->model()->getPropertyRange($property);
+
+				$attributes += [
+					'maxlength' => $max
+				];
+
+			}
+
+			return $this->text($name, $default, $attributes);
+
+		} else if($type === 'fqn') {
+
+			return $this->fqn($name, $default, $attributes);
+
+		} else if(strpos($type, 'text') === 0) {
+
+			return $this->textarea($name, $default, $attributes);
+
+		} else if(strpos($type, 'editor') === 0) {
+
+			$options = $d->options ?? [];
+			$options += [
+				'draft' => self::getEditorDraftId($e, $property)
+			];
+
+			return $this->editor($name, ($default), $options, $attributes);
+
+		} else if($type === 'email') {
+
+			return $this->email($name, $default, $attributes);
+
+		} else if($type === 'url') {
+
+			return $this->url($name, $default, $attributes);
+
+		} else if(strpos($type, 'int') === 0) {
+
+			if($e->model()->hasProperty($property)) {
+				[$min, $max] = $e->model()->getPropertyRange($property);
+				$attributes += [
+					'min' => $min,
+					'max' => $max
+				];
+			}
+
+			return $this->number($name, $default, $attributes);
+
+		} else if(str_starts_with($type, 'float') or $type === 'decimal') {
+
+			if($e->model()->hasProperty($property)) {
+
+				[$min, $max] = $e->model()->getPropertyRange($property);
+
+				$attributes += [
+					'min' => $min,
+					'max' => $max,
+					'step' => (string)(1 / pow(10, $e->model()->getPropertyDecimal($property)))
+				];
+			} else {
+
+				$attributes += [
+					'step' => '0.01'
+				];
+
+			}
+
+			return $this->number($name, $default, $attributes);
+
+		} else if(
+			$type === 'date' or
+			$type === 'datetime'
+		) {
+
+			if($e->model()->hasProperty($property)) {
+				[$min, $max] = $e->model()->getPropertyRange($property);
+				$attributes += [
+					'min' => $min,
+					'max' => $max
+				];
+			}
+
+			return match($type) {
+				'date' => $this->date($name, $default, $attributes),
+				'datetime' => $this->datetime($name, $default, $attributes)
+			};
+
+		} else if($type === 'time') {
+			return $this->time($name, $default, $attributes);
+		} else if($type === 'week') {
+			return $this->week($name, $default, $attributes);
+		} else if($type === 'month') {
+			return $this->month($name, $default, $attributes);
+		} else if($type === 'set') {
+
+			$h = '';
+
+			foreach($d->set as $set) {
+
+				$checked = (isset($e[$property]) and $e[$property]->value($set));
+				$label = $values[$set] ?? '<i>'.$set.'</i>';
+
+				$h .= $this->checkbox($name.'[]', $set, [
+					'checked' => $checked,
+					'callbackLabel' => fn($input) => $input.' '.$label
+				]);
+
+			}
+
+			return $h;
+
+		} else if(strpos($type, 'enum') === 0) {
+
+			$list = [];
+			foreach($d->enum as $enum) {
+				$list[$enum] = $values[$enum] ?? '<i>'.$enum.'</i>';
+			}
+			if($m->hasProperty($property) and $m->isPropertyNull($property) === FALSE) {
+				$attributes += ['required' => TRUE];
+			}
+
+			return $this->radios($name, $list, $default, $attributes);
+
+		} else if($type === 'color') {
+
+			if($m->hasProperty($property) and $m->isPropertyNull($property) === FALSE) {
+				$attributes += ['required' => TRUE];
+			}
+
+			return $this->color($name, $default, $attributes);
+		} else {
+			throw new \Exception('Type \''.$type.'\' of property \''.$property.'\' not handled');
+		}
+
+	}
+
+	public function electronicAddressGroup(string $label, \pdp\Address $eAddress, array $schemes, ?string $suffix = '', ?string $before = ''): string {
+
+		return $this->group(
+			$label,
+			'<div class="form-control-block form-control-address">'.$before.$this->electronicAddress($eAddress['scheme'] ?? NULL, $eAddress['value'] ?? NULL, $schemes, $suffix).'</div>',
+			['data-wrapper' => 'scheme value electronicAddress']
+		);
+
+	}
+
+	public function electronicAddressElementsGroup(string $label, ?string $scheme, ?string $value, array $schemes, ?string $suffix = '', ?string $before = '', ?string $wrapper = NULL): string {
+
+		return $this->group(
+			$label,
+			'<div class="form-control-block form-control-address">'.$before.$this->electronicAddress($scheme, $value, $schemes, $suffix).'</div>',
+			['data-wrapper' => 'scheme value '.($wrapper ?? 'electronicAddress')]
+		);
+
+	}
+
+	public function electronicAddress(?string $scheme, ?string $value, array $schemes, ?string $suffix = NULL) {
+
+		$h = '';
+		$formattedSchemes = [];
+		foreach($schemes as $availableScheme) {
+			$formattedSchemes[] = ['label' => $availableScheme, 'value' => $availableScheme];
+		}
+
+
+		$h .= '<div class="form-e-invoicing-identifier-address">';
+
+			$h .= \Asset::image('main', 'facturation-electronique.png', ['style' => 'height: 4rem;']);
+
+			$h .= $this->group(
+				s("Identifiant"),
+				$this->select('scheme'.$suffix, $formattedSchemes, $scheme),
+				nested: TRUE
+			);
+
+			$h .= $this->group(
+				s("Adresse"),
+				$this->text('value'.$suffix, $value, ['placeholder' => s("Ex: SIREN_SIRET_DEPARTEMENT")]),
+				nested: TRUE
+			);
+
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+
+	public function addressGroup(string $label, string $prefix, \Element $e, array $attributes = [], string $before = ''): string {
+
+		$field = fn($name) => ($prefix === '') ? $name : $prefix.ucfirst($name);
+
+		return $this->group(
+			$label,
+			$before.'<div class="form-control-block form-control-address">'.$this->address($prefix, $e, $attributes).'</div>',
+			['data-wrapper' => $field('address').' '.$field('street1').' '.$field('street2').' '.$field('postcode').' '.$field('city').' '.$field('country')]
+		);
+
+	}
+
+	/**
+	 * Create a input group (according to options definition)
+	 * It is usefull for inline checkbox/radio and for input-group-addon style
+	 *
+	 * @param string $fields
+	 * @param array $attributes
+	 * @return string
+	 */
+	public function inputGroup(string $fields, array $attributes = []): string {
+
+		$h = '<div class="input-group';
+
+		if(isset($attributes['class'])) {
+			$h .= ' '.$attributes['class'];
+			unset($attributes['class']);
+		}
+
+		$h .= '" '.attrs($attributes).'>'.$fields.'</div>';
+
+		return $h;
+
+	}
+
+	/**
+	 * Create an asterisk
+	 *
+	 */
+	public static function asterisk(): string {
+
+		\Asset::css('util', 'form.css');
+
+		return '<div class="form-asterisk" title="'.s("Champ obligatoire").'">'.\Asset::icon('asterisk').'</div>';
+	}
+
+	/**
+	 * Create an asterisk
+	 *
+	 */
+	public static function asteriskInfo(?int $maxSeniority = 10): string {
+
+		\Asset::css('util', 'form.css');
+
+		if($maxSeniority !== NULL) {
+
+			try {
+
+				// La propriété est déclarée nullable et n'est posée que par `ConnectionLib::getOnline()`,
+				// qui ne tourne pas hors d'une requête : un rendu en ligne de commande la lirait à NULL.
+				$eUser = \main\MainSetting::$onlineUser ?? new \user\User();
+
+				if(
+					$eUser->notEmpty() and
+					$eUser['seniority'] > $maxSeniority
+				) {
+					return '';
+				}
+
+			} catch(\Exception) {
+
+			}
+
+		}
+
+		$h = '<div class="form-asterisk-info">';
+			$h .= s("Les champs marqués {value} sont obligatoires", self::asterisk());
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	/**
+	 * Create a input text
+	 *
+	 */
+	public function addon(string $content, array $attributes = []): string {
+		$h = '<span class="input-group-addon" '.attrs($attributes).'>'.$content.'</span>';
+		return $h;
+	}
+
+	/**
+	 * Create a input text
+	 *
+	 */
+	public function inputAddon(string $content, array $attributes = []): string {
+		$h = '<span class="input-group-addon input-group-addon-for-input" '.attrs($attributes).'>'.$content.'</span>';
+		return $h;
+	}
+
+	/**
+	 * Display help for a field
+	 *
+	 * @param string $content
+	 * @return string
+	 */
+	public function help(string $content): string {
+		return '<span class="color-muted">'.$content.'</span>';
+	}
+
+	/**
+	 * Create a label for the last field
+	 *
+	 * @param string $text Label text
+	 */
+	public function label(string $text): string {
+
+		if($this->lastFieldId === NULL) {
+			return $text;
+		} else {
+			return '<label for="'.$this->lastFieldId.'">'.$text.'</label>';
+		}
+
+	}
+
+	/**
+	 * Display several checkboxes
+	 *
+	 */
+	public function checkboxes(?string $name, array|\ArrayIterator $values, array|\ArrayIterator|null|\Set $selectedValues = NULL, array $attributes = []): string {
+
+		// Default attributes
+		$attributes += [
+			'columns' => 1,
+			'all' => TRUE,
+			'actions' => [],
+			'postEmpty' => FALSE,
+			'callbackCheckboxContent' => NULL,
+			'callbackCheckboxAttributes' => function() {
+				return [];
+			}
+		];
+
+		$columns = $attributes['columns'];
+		unset($attributes['columns']);
+
+		$postEmpty = $attributes['postEmpty'];
+		unset($attributes['postEmpty']);
+
+		$all = $attributes['all'];
+		unset($attributes['all']);
+
+		// D'autres façons de cocher, rangées entre « Tout cocher » et « Tout décocher » : des liens que
+		// l'appelant écrit, chacun avec son script.
+		$actions = $attributes['actions'];
+		unset($attributes['actions']);
+
+		$callbackCheckboxContent = $attributes['callbackCheckboxContent'];
+		unset($attributes['callbackCheckboxContent']);
+
+		$callbackCheckboxAttributes = $attributes['callbackCheckboxAttributes'];
+		unset($attributes['callbackCheckboxAttributes']);
+
+		$this->setDefaultAttributes('checkboxes', $attributes, $name);
+
+		$formatSelectedValues = $this->getSelectedValue($selectedValues, TRUE);
+
+		$h = '';
+
+		// ⚠️ **Un groupe de cases entièrement décoché ne poste rien**, donc `build()` ne voit pas
+		// la propriété et la valeur précédente reste en base : l'écran ne peut pas se vider. Ce
+		// champ caché poste la clé quand aucune case ne l'a fait.
+		//
+		// ⚠️ **Il ne s'active que sur demande, et ce n'est pas de la prudence.** Un même nom de
+		// champ peut être rendu par plusieurs appels — `plant\PlantUi` en fait un par famille de
+		// critères, mesuré à quatre — et un caché par appel posterait alors quatre valeurs vides
+		// à chaque enregistrement, cases cochées comprises. Le régime de chaque appel est déclaré
+		// et contrôlé par `framework/util/test/CheckboxesEmptyAi.t.php`.
+		//
+		// ⚠️ **Le caché garde les crochets du champ.** Sans eux il poste un scalaire quand les
+		// cases postent un tableau : PHP ne garde alors qu'une des deux clés, selon l'ordre, et
+		// une case cochée peut disparaître. Avec eux les deux entrent dans le même tableau, et la
+		// chaîne vide s'y perd au cast — mesuré, `['', VEGETABLE]` rend bien `VEGETABLE` seul.
+		if($postEmpty) {
+			$h .= $this->hidden($name, '');
+		}
+
+		$h .= '<div class="form-control field-radio-group field-radio-group-'.$columns.'" '.attrs($attributes).'>';
+
+			if($all) {
+				$actions = array_merge(
+					['<a '.attr('onclick', 'CheckboxField.check(this, "'.encode($name).'", true)').'>'.s("Tout cocher").'</a>'],
+					$actions,
+					['<a '.attr('onclick', 'CheckboxField.check(this, "'.encode($name).'", false)').'>'.s("Tout décocher").'</a>']
+				);
+			}
+
+			if($actions !== []) {
+				$h .= '<div class="field-radio-group-action">'.implode(' / ', $actions).'</div>';
+			}
+
+			foreach($values as $key => $option) {
+
+				[$optionValue, $optionContent] = $this->getOptionValue($key, $option);
+
+				if($callbackCheckboxContent !== NULL) {
+					$label = call_user_func($callbackCheckboxContent, $option);
+				} else {
+					$label = $optionContent;
+				}
+
+				$checked = (
+					$formatSelectedValues !== NULL and
+					in_array($optionValue, $formatSelectedValues, TRUE)
+				);
+
+				$h .= '<label class="field-radio-group-item">';
+					$h .= $this->inputCheckbox($name, $optionValue, ['checked' => $checked] + call_user_func($callbackCheckboxAttributes, $option, $key)).' <div>'.$label.'</div>';
+				$h .= '</label>';
+
+			}
+
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	/**
+	 * Display a checkbox
+	 *
+	 */
+	public function checkbox(?string $name, mixed $value = '1', array $attributes = []): string {
+
+		if(isset($attributes['callbackLabel'])) {
+			$addon = $attributes['callbackLabel'];
+			unset($attributes['callbackLabel']);
+		} else {
+			$addon = fn($input) => $input;
+		}
+
+		if(isset($attributes['callbackFieldAttributes'])) {
+			$fieldAttributes = $attributes['callbackFieldAttributes'];
+			unset($attributes['callbackFieldAttributes']);
+		} else {
+			$fieldAttributes = [];
+		}
+
+		$fieldAttributes['class'] = ($fieldAttributes['class'] ?? '').' field-checkbox';
+
+		$input = $this->inputCheckbox($name, $value, $attributes);
+
+		$h = '<label '.attrs($fieldAttributes).'>';
+			$h .= $addon($input);
+		$h .= '</label>';
+
+		return $h;
+
+	}
+
+	public function inputCheckbox(?string $name = NULL, mixed $value = '1', array $attributes = []): string {
+
+		if(isset($attributes['checked'])) {
+
+			if($attributes['checked']) {
+				$attributes['checked'] = 'checked';
+			} else {
+				unset($attributes['checked']);
+			}
+		}
+
+		return $this->input('checkbox', $name, $value, $attributes);
+
+	}
+
+	/**
+	 * Display a radio button
+	 *
+	 */
+	public function radio(string $name, $value, string $label, mixed $selectedValue = NULL, array $attributes = []): string {
+		return '<div class="radio"><label>'.$this->inputRadio($name, $value, $label, $selectedValue, $attributes).'</label></div>';
+	}
+
+	/**
+	 * Display several radio fields
+	 *
+	 */
+	public function radios(?string $name, array|\ArrayIterator $values, mixed $selectedValue = NULL, array $attributes = []): string {
+
+		// Default attributes
+		$attributes += [
+			'columns' => 1,
+			'callbackRadioContent' => NULL,
+			'callbackRadioAttributes' => function() {
+				return [];
+			}
+		];
+
+		$columns = $attributes['columns'];
+		unset($attributes['columns']);
+
+		$callbackRadioContent = $attributes['callbackRadioContent'];
+		unset($attributes['callbackRadioContent']);
+
+		$callbackRadioAttributes = $attributes['callbackRadioAttributes'];
+		unset($attributes['callbackRadioAttributes']);
+
+		$this->setDefaultAttributes('radios', $attributes);
+
+		$h = '<div class="form-control field-radio-group field-radio-group-'.$columns.'" '.attrs($attributes).' '.attr('data-field', $name).'>';
+
+			if(empty($attributes['required'])) {
+
+				$h .= '<label class="field-radio-group-item">';
+					$h .= $this->inputRadio($name, '', NULL, $selectedValue, call_user_func($callbackRadioAttributes, NULL, NULL));
+					$h .= '<div>'.($attributes['placeholder'] ?? s("Aucun")).'</div>';
+				$h .= '</label>';
+
+				unset($attributes['placeholder']);
+
+			}
+			unset($attributes['required']);
+
+
+			foreach($values as $key => $option) {
+
+				[$optionValue, $optionContent, $optionAttributes] = $this->getOptionValue($key, $option);
+
+				if($callbackRadioContent !== NULL) {
+					$label = call_user_func($callbackRadioContent, $option);
+				} else {
+					$label = $optionContent;
+				}
+
+				$h .= '<label class="field-radio-group-item">';
+					$h .= $this->inputRadio($name, $optionValue, NULL, $selectedValue, array_merge($optionAttributes, call_user_func($callbackRadioAttributes, $option, $key)));
+					$h .= '<div>'.$label.'</div>';
+				$h .= '</label>';
+
+			}
+
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	/**
+	 * Un choix fermé qui se montre (`util-choices`, `component.css`) : chaque option est une image au-dessus de son nom.
+	 * `$values` associe chaque valeur à son `label` et à son `image`, et au besoin à des `attributes` posés sur son
+	 * bouton radio. L'option dont l'image est NULL est celle qui ne choisit rien : elle montre une croix
+	 */
+	public function choices(?string $name, array $values, mixed $selectedValue = NULL, array $attributes = []): string {
+
+		$options = [];
+
+		foreach($values as $value => $option) {
+
+			$option += ['attributes' => []];
+
+			if($option['image'] === NULL) {
+				$image = '<span class="util-choice-none">'.\Asset::icon('x-lg').'</span>';
+			} else {
+				$image = $option['image'];
+			}
+
+			$options[] = [$value, $image.'<span>'.$option['label'].'</span>', $option['attributes']];
+
+		}
+
+		return $this->getChoices('util-choices', $name, $options, $selectedValue, $attributes);
+
+	}
+
+	/**
+	 * Le même choix en pastilles : `$colors` liste les couleurs, qui sont aussi les valeurs postées, ou associe à chaque
+	 * valeur postée sa couleur quand la valeur est un nom et non la couleur elle-même
+	 */
+	public function colorChoices(?string $name, array $colors, mixed $selectedValue = NULL, array $attributes = []): string {
+
+		$options = [];
+
+		if(array_is_list($colors)) {
+			$colors = array_combine($colors, $colors);
+		}
+
+		foreach($colors as $value => $color) {
+			$options[] = [$value, '<span style="--choice-color: '.encode($color).'"></span>', []];
+		}
+
+		return $this->getChoices('util-choices util-choices-color', $name, $options, $selectedValue, $attributes);
+
+	}
+
+	private function getChoices(string $class, ?string $name, array $options, mixed $selectedValue, array $attributes): string {
+
+		$this->setDefaultAttributes('radios', $attributes, $name);
+		unset($attributes['name']);
+
+		$attributes['class'] = $class.' '.($attributes['class'] ?? '');
+
+		$h = '<div '.attrs($attributes).' '.attr('data-field', $name).'>';
+
+			foreach($options as [$value, $content, $radioAttributes]) {
+				$h .= '<label class="util-choice">'.$this->inputRadio($name, $value, NULL, $selectedValue, $radioAttributes).$content.'</label>';
+			}
+
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	public function yesNo(?string $name, mixed $selectedValue = NULL, array $attributes = []): string {
+
+		$attributes += [
+			'required' => TRUE,
+			'columns' => 2,
+			'yes' => s("oui"),
+			'no' => s("non"),
+			'data-type' => 'yesNo'
+		];
+
+		$values = [
+			[
+				'value' => 1,
+				'label' => $attributes['yes']
+			],
+			[
+				'value' => 0,
+				'label' => $attributes['no']
+			],
+		];
+
+		unset($attributes['yes'], $attributes['no']);
+
+		return $this->radios($name, $values, $selectedValue, $attributes);
+
+	}
+
+	public function switch(?string $name, mixed $selectedValue = NULL, array $attributes = []): string {
+
+		$h = '';
+
+		if(isset($attributes['onchange'])) {
+			$onclick = 'SwitchField.change(this, (input) => '.$attributes['onchange'].')';
+		} else {
+			$onclick = 'SwitchField.change(this)';
+		}
+
+		$valueOn = $attributes['valueOn'] ?? TRUE;
+		$valueOff = $attributes['valueOff'] ?? FALSE;
+
+		$class = 'field-switch '.($selectedValue === $valueOn ? 'field-switch-on' : 'field-switch-off');
+
+		if(isset($attributes['class'])) {
+			$class .= ' '.$attributes['class'];
+		}
+
+		$h .= '<div class="'.$class.'" '.attr('onclick', $onclick).' data-value-on="'.encode($valueOn).'" data-value-off="'.encode($valueOff).'">';
+			$h .= '<div class="field-switch-circle"></div>';
+			if(isset($attributes['labelOn']) or isset($attributes['labelOff'])) {
+				$h .= '<div class="field-switch-text">';
+					$h .= '<div>'.($attributes['labelOn'] ?? '').'</div>';
+					$h .= '<div>'.($attributes['labelOff'] ?? '').'</div>';
+				$h .= '</div>';
+			}
+			$h .= $this->hidden($name, $selectedValue);
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	public function inputRadio(?string $name, int|string|float|null $value, ?string $label = NULL, mixed $selectedValue = NULL, array $attributes = []): string {
+
+		if(array_key_exists('id', $attributes) === FALSE) {
+			$attributes['id'] = $name;
+			if(is_string($value)) {
+				$attributes['id'] .= ctype_alnum($value) ? ucfirst($value) : crc32($value);
+			} else {
+				$attributes['id'] .= $value;
+			}
+		}
+
+		$selectedValue = $this->getInputValue($selectedValue);
+
+		if(is_bool($selectedValue)) {
+			$selectedValue = (int)$selectedValue;
+		}
+
+		$selectedValue = (string)$selectedValue;
+
+		if(isset($attributes['checked'])) {
+
+			if($attributes['checked']) {
+				$attributes['checked'] = 'checked';
+			} else {
+				unset($attributes['checked']);
+			}
+		} else if((string)$value === $selectedValue) {
+			$attributes['checked'] = 'checked';
+		}
+
+		$h = $this->input('radio', $name, $value, $attributes);
+
+		if($label !== NULL) {
+			$h .= ' <span>'.$label.'</span>';
+		}
+
+		return $h;
+
+	}
+
+	/**
+	 * Display a date field
+	 *
+	 * @param string $name
+	 * @param string $selection Default date
+	 * @param array $attributes => 'callback' method called for each changement
+	 * @return string
+	 */
+	public function date(string $name, ?string $value = NULL, array $attributes = []): string {
+
+		$attributes['class'] = 'form-control '.($attributes['class'] ?? '');
+		$attributes['min'] = date('Y-m-d', strtotime($attributes['min'] ?? '1900-01-01'));
+		$attributes['max'] = date('Y-m-d', strtotime($attributes['max'] ?? '2100-01-01'));
+
+		return $this->input('date', $name, $value, $attributes);
+
+	}
+
+	/**
+	 * Display a datetime field
+	 *
+	 * @param string $name
+	 * @param string $selection Default datetime
+	 * @param array $attributes => 'callback' method called for each changement
+	 * @return string
+	 */
+	public function datetime(string $name, ?string $value = NULL, array $attributes = []): string {
+
+		$attributes['class'] = 'form-control '.($attributes['class'] ?? '');
+
+		if($value !== NULL) {
+			$value = date('Y-m-d\TH:i', strtotime($value));
+		}
+
+		$attributes['min'] = date('Y-m-d\TH:i', strtotime($attributes['min'] ?? '1900-01-01 00:00:00'));
+		$attributes['max'] = date('Y-m-d\TH:i', strtotime($attributes['max'] ?? '2100-01-01 00:00:00'));
+
+		return $this->input('datetime-local', $name, $value, $attributes);
+
+	}
+
+	/**
+	 * Display a date field
+	 *
+	 * @param string $name
+	 * @param string $selection Default date
+	 * @param array $attributes => 'callback' method called for each changement
+	 * @return string
+	 */
+	public function month(string $name, ?string $value = NULL, array $attributes = []): string {
+
+		if(isset($attributes['display'])) {
+			$display = $attributes['display'];
+			unset($attributes['display']);
+		} else {
+			$display = 'auto';
+		}
+
+		$attributes['class'] = 'form-control '.($attributes['class'] ?? '');
+
+		$wrapperId = uniqid('field-month-wrapper-');
+
+		$h = '<div class="field-month-wrapper" id="'.$wrapperId.'">';
+
+			if($display === 'auto' or $display === 'fallback') {
+
+				$yearAttributes = [
+					'data-fallback' => 'year',
+					'placeholder' => s("Année")
+				];
+
+				if(isset($attributes['min']) and isset($attributes['max'])) {
+
+					$minYear = min([date_year($attributes['min']), date_year($attributes['max'])]);
+					$maxYear = max([date_year($attributes['min']), date_year($attributes['max'])]);
+					$values = [];
+
+					for($currentYear = $minYear; $currentYear <= $maxYear; $currentYear++) {
+						$values[] = ['value' => $currentYear, 'label' => $currentYear];
+					}
+
+					if(count($values) === 1) {
+						$year = $this->hidden($name.'Year', $values[0]['value'], $yearAttributes);
+					} else {
+						$year = $this->select($name.'Year', $values, $value ? date_year($value) : NULL, $yearAttributes);
+					}
+
+				} else {
+
+					$year = $this->number($name.'Year', $value ? date_year($value) : NULL, [
+						'data-fallback' => 'year',
+						'placeholder' => s("Année")
+					]);
+
+				}
+
+				$h .= '<div class="field-month-fallback input-group hide">';
+					$h .= $this->select($name.'Month', DateUi::months(), $value ? date_month($value) : NULL, [
+						'placeholder' => s("Mois"),
+						'data-fallback' => 'monthNumber',
+					]).' ';
+					$h .= $year;
+				$h .= '</div>';
+
+			}
+
+			$h .= '<div class="field-month-native hide">';
+				$h .= $this->input('month', $name, $value, $attributes);
+			$h .= '</div>';
+
+		$h .= '</div>';
+
+		$h .= '<script>';
+			$h .= 'DateField.startFieldMonth(\'#'.$wrapperId.'\', \''.$display.'\')';
+		$h .= '</script>';
+
+		return $h;
+
+	}
+
+	/**
+	 * Display a week field
+	 */
+	public function week(string $name, string|int|null $value = NULL, array $attributes = []): string {
+
+		$wrapperId = uniqid('field-week-wrapper-');
+
+		if(is_int($value)) {
+			$weekNumber = NULL;
+			$weekYear = $value;
+		} else {
+			$weekNumber = $value ? week_number($value) : NULL;
+			$weekYear = $value ? week_year($value) : NULL;
+		}
+
+		if(isset($attributes['withYear'])) {
+			$withYear = $attributes['withYear'];
+			unset($attributes['withYear']);
+		} else {
+			$withYear = TRUE;
+		}
+
+		$h = '<div class="field-week-wrapper" id="'.$wrapperId.'" data-with-year="'.($withYear ? 'true' : 'false').'">';
+
+			$h .= '<div class="input-group">';
+				$h .= '<span class="input-group-addon">'.s("Semaine").'</span>';
+
+				$id = uniqid('field-week-');
+
+				$h .= $this->getWeekNumberField($name.'Week', $weekNumber, [
+					'data-dropdown-id' => $wrapperId.'-week',
+					'onfocus' => 'DateField.blurFieldWeek(this)',
+					'onclick' => 'DateField.openWeekSelector(this)',
+					'oninput' => 'DateField.onInputFieldWeek("#'.$wrapperId.'")',
+					'data-fallback' => 'weekNumber',
+					'data-week-number' => '#'.$id,
+					'data-year-selector' => '#'.$wrapperId.' [name="'.$name.'Year"]',
+					'min' => 1,
+					'max' => 53,
+				] + $attributes);
+				$h .= '<span class="input-group-addon field-week-preview" id="'.$id.'">'.($weekNumber ? DateUi::weekToDays(\Clock::year().'-W'.sprintf('%02d', $weekNumber), withYear: FALSE) : '').'</span>';
+
+				if($withYear === TRUE) {
+					$h .= '<span class="input-group-addon">'.s("Année").'</span>';
+					$h .= $this->number($name.'Year', $weekYear, [
+							'data-fallback' => 'year',
+							'onclick' => 'DateField.openWeekSelector(this)',
+							'oninput' => 'DateField.onInputFieldWeek("#'.$wrapperId.'")',
+							'data-week-selector' => '#'.$wrapperId.' [name="'.$name.'Week"]',
+						] + $attributes);
+				}
+			$h .= '</div>';
+
+			$h .= '<div data-dropdown-id="'.$wrapperId.'-week-list" class="dropdown-list dropdown-list-minimalist">';
+				$h .= \util\FormUi::weekSelector(
+					$weekYear ?? \Clock::year(),
+					onclickWeeks: 'DateField.changeFieldWeek(\'#'.$wrapperId.'\', this)',
+					defaultWeek: $value,
+					showYear: $withYear
+				);
+			$h .= '</div>';
+
+			if($withYear === FALSE) {
+				$h .= $this->hidden($name.'Year', $weekYear, [
+					'data-fallback' => 'year',
+					'data-week-selector' => '#'.$wrapperId.' [name="'.$name.'Week"]',
+				]);
+			}
+
+			$h .= $this->hidden($name, $value, ['class' => 'field-week-value'] + $attributes);
+
+		$h .= '</div>';
+
+		$h .= '<script>';
+			$h .= 'DateField.startFieldWeek(\'#'.$wrapperId.'\')';
+		$h .= '</script>';
+
+		return $h;
+
+	}
+
+	/**
+	 * Display text field for weeks
+	 */
+	public function weekNumber(string $name, ?int $value = NULL, array $attributes = []): string {
+
+		$id = uniqid('field-week-');
+
+		$weekNumber = $value ? week_number($value) : NULL;
+
+		$attributes += [
+			'data-week-number' => '#'.$id,
+		];
+
+		$h = '<div class="input-group">';
+			$h .= '<span class="input-group-addon">'.s("Semaine").'</span>';
+			$h .= $this->getWeekNumberField($name, $value, $attributes);
+			$h .= '<span class="input-group-addon field-week-preview" id="'.$id.'">'.DateUi::weekToDays(\Clock::year().'-W'.sprintf('%02d', $weekNumber), withYear: FALSE).'</span>';
+		$h .= '</div>';
+
+		return $h;
+	}
+
+	protected function getWeekNumberField(string $name, ?int $value = NULL, array $attributes = []) {
+
+		$attributes += [
+			'placeholder' => s("n°"),
+			'min' => 1,
+			'max' => 53,
+			'onrender' => 'DateField.updateWeeks(this)'
+		];
+
+		return $this->number($name, $value, $attributes);
+
+	}
+
+	public static function weekSelector(int $year, ?string $linkWeeks = NULL, ?string $linkMonths = NULL, ?string $onclickWeeks = NULL, ?string $onclickMonths = NULL, ?string $defaultWeek = NULL, bool $showYear = TRUE, ?int $minYear = NULL, ?int $maxYear = NULL, ?string $maxWeek = NULL): string {
+
+		\Asset::css('util', 'form.css');
+
+		$currentWeek = \Clock::week();
+
+		// Une semaine au-delà de `$maxWeek` se montre sans se choisir, et l'année qui la suit ne s'ouvre pas.
+		if($maxWeek !== NULL) {
+			$maxYear = min($maxYear ?? PHP_INT_MAX, (int)week_year($maxWeek));
+		}
+		$defaultWeek ??= $currentWeek;
+
+		if($linkWeeks !== NULL) {
+			$linkWeeks = HttpUi::removeArgument($linkWeeks, 'month');
+		}
+
+		if($linkMonths !== NULL) {
+			$linkMonths = HttpUi::removeArgument($linkMonths, 'week');
+		}
+
+		$weeks = date('W', strtotime($year.'-12-31')) === '53' ? 53 : 52;
+		$list = [];
+
+		for($weekNumber = 1; $weekNumber <= $weeks; $weekNumber++) {
+
+			$week = $year.'-W'.sprintf('%02d', $weekNumber);
+			$monday = strtotime($week);
+			$sunday = strtotime($week.' + 6 DAY');
+
+			$sundayMonth = (int)date('n', $sunday);
+			$sundayDay = (int)date('j', $sunday);
+
+			if($sundayDay >= 4) {
+
+				$list[$sundayMonth][] = [
+					'week' => $week,
+					'weekNumber' => $weekNumber,
+					'sunday' => $sundayDay,
+				];
+
+			} else {
+
+				$mondayMonth = (int)date('n', $monday);
+				$mondayDay = (int)date('j', $monday);
+
+				$list[$mondayMonth][] = [
+					'week' => $week,
+					'weekNumber' => $weekNumber,
+					'sunday' => $mondayDay + 6,
+				];
+
+			}
+
+		}
+
+		$id = uniqid('field-week-selector-');
+
+		$isValidYear = fn($test) => (
+			($minYear === NULL or $test >= $minYear) and
+			($maxYear === NULL or $test <= $maxYear)
+		);
+
+		$h = '<div id="'.$id.'" class="field-week-selector" data-year-min="'.$minYear.'" data-year-max="'.$maxYear.'">';
+			$h .= '<div class="field-week-selector-title">';
+				$h .= '<h4>'.s("Calendrier").'</h4>';
+			$h .= '</div>';
+
+			if($showYear) {
+
+				$params = [
+					'id' => $id,
+					'linkWeeks' => $linkWeeks,
+					'linkMonths' => $linkMonths,
+					'onclickWeeks' => $onclickWeeks,
+					'onclickMonths' => $onclickMonths,
+					'default' => $defaultWeek,
+					'minYear' => $minYear,
+					'maxYear' => $maxYear,
+					'maxWeek' => $maxWeek
+				];
+
+				$h .= '<div class="field-week-selector-year">';
+					if($isValidYear($year - 1)) {
+						$h .= '<a data-ajax="util/form:weekChange" '.attrs($params, 'post-').' post-year="'.($year - 1).'" data-dropdown-keep class="field-week-selector-navigation field-week-selector-navigation-before">'.\Asset::icon('chevron-left').'</a>';
+					} else {
+						$h .= '<div></div>';
+					}
+					$h .= '<h4>'.$year.'</h4>';
+					if($isValidYear($year + 1)) {
+						$h .= '<a data-ajax="util/form:weekChange" '.attrs($params, 'post-').' post-year="'.($year + 1).'" data-dropdown-keep class="field-week-selector-navigation field-week-selector-navigation-after">'.\Asset::icon('chevron-right').'</a>';
+					} else {
+						$h .= '<div></div>';
+					}
+				$h .= '</div>';
+				
+			} else {
+				$h .= '<br/>';
+			}
+			
+			$h .= '<div class="field-week-selector-weeks">';
+
+				$h .= '<div></div>';
+
+				$h .= '<div class="field-week-selector-ticks">';
+
+					foreach([1, 5, 10, 15, 20, 25, 31] as $day) {
+						$h .= '<div class="field-week-selector-label" style="grid-column-start: '.($day + 3).'; grid-column-end: '.($day + 5).'">'.$day.'</div>';
+						$h .= '<div class="field-week-selector-tick" style="grid-column-start: '.($day + 4).'"></div>';
+					}
+
+				$h .= '</div>';
+
+				foreach($list as $month => $weeks) {
+
+					if($linkMonths) {
+						$h .= '<a '.attr('href', str_replace('__CURRENT__', $month, $linkMonths)).' data-month="'.$month.'" class="field-week-selector-month">'.DateUi::getMonthName($month).'</a>';
+					} else if($onclickMonths) {
+						$h .= '<a '.attr('onclick', str_replace('__CURRENT__', $month, $onclickMonths)).' data-month="'.$month.'" class="field-week-selector-month">'.DateUi::getMonthName($month).'</a>';
+					} else {
+						$h .= '<div class="field-week-selector-month">'.DateUi::getMonthName($month).'</div>';
+					}
+
+					$h .= '<div class="field-week-selector-bubbles">';
+
+					foreach($weeks as ['week' => $week, 'weekNumber' => $weekNumber, 'sunday' => $sunday]) {
+
+						$color = ($defaultWeek === $week) ? 'btn-secondary' : ($currentWeek === $week ? 'btn-outline-primary field-week-selector-bubble-current' : 'btn-primary');
+
+						if($maxWeek !== NULL and $week > $maxWeek) {
+							$h .= '<span class="btn btn-sm btn-primary field-week-selector-bubble disabled" style="grid-column-start: '.($sunday - 6 + 4).'; grid-column-end: '.($sunday + 1 + 4).'">'.$weekNumber.'</span>';
+							continue;
+						}
+
+						$attrs = [
+							'href' => $linkWeeks ? str_replace('__CURRENT__', $week, $linkWeeks) : NULL,
+							'onclick' => $onclickWeeks ? str_replace('__CURRENT__', $week, $onclickWeeks) : NULL,
+							'data-week' => $week,
+							'class' => 'btn btn-sm '.$color.' field-week-selector-bubble',
+							'style' => 'grid-column-start: '.($sunday - 6 + 4).'; grid-column-end: '.($sunday + 1 + 4),
+							'title' => $showYear ? \util\DateUi::weekToDays($week) : s("Autour du {value}", \util\DateUi::weekToDays($week, withYear: FALSE))
+						];
+
+						$h .= '<a '.attrs($attrs).'>'.$weekNumber.'</a>';
+
+					}
+
+					$h .= '</div>';
+
+				}
+
+			$h .= '</div>';
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	/**
+	 * Display a time field
+	 *
+	 * @param string $name
+	 * @param string $value Default time
+	 * @param array $attributes => 'callback' method called for each changement
+	 * @return string
+	 */
+	public function time(string $name, mixed $value = NULL, array $attributes = []): string {
+
+		$attributes['placeholder'] = '--:--';
+		$attributes['class'] = 'form-control '.($attributes['class'] ?? '');
+
+		return $this->input('time', $name, $value, $attributes);
+
+	}
+
+	/**
+	 * Display a select field with range
+	 *
+	 * @param string $name
+	 * @param int $min
+	 * @param int $max
+	 * @param int $step
+	 * @param mixed $selection Default selection (int or array for multiple selected values)
+	 * @param array $attributes Additional attributes (with callback for content, default encode)
+	 */
+	public function range(string $name, int $min, int $max, int $step, int $value, array $attributes = []): string {
+
+		$attributes['min'] = $min;
+		$attributes['max'] = $max;
+		$attributes['step'] = $step;
+
+		if(isset($attributes['data-label'])) {
+
+			$h = '<div class="form-range">';
+				$h .=  $this->input('range', $name, $value, $attributes);
+				$h .= '<div class="form-range-label" title="'.s("Modifier la valeur").'">';
+					$h .= $this->inputGroup(
+						$this->number(value: $value, attributes: [
+							'oninput' => 'RangeField.setValue(this)',
+							'onfocus' => 'this.select()'
+						]).
+						$this->addon($attributes['data-label'])
+					);
+				$h .= '</div>';
+			$h .= '</div>';
+
+		} else {
+			$h =  $this->input('range', $name, $value, $attributes);
+		}
+
+		return $h;
+
+	}
+
+	/**
+	 * Display a select field with range
+	 *
+	 * @param string $name
+	 * @param int $from
+	 * @param int $to
+	 * @param int $step
+	 * @param mixed $selection Default selection (int or array for multiple selected values)
+	 * @param array $attributes Additional attributes (with callback for content, default encode)
+	 */
+	public function rangeSelect(string $name, int $from, int $to, int $step, mixed $selection = NULL, array $attributes = []): string {
+
+		$array = [];
+
+		if(
+			($from < $to and $step > 0) or
+			($from > $to and $step < 0)
+		) {
+
+			for($i = $from; ($from > $to) ? ($i >= $to) : ($i <= $to); $i += $step) {
+				$array[$i] = $i;
+			}
+
+		} else {
+			$array[$from] = $from;
+		}
+
+		return $this->select($name, $array, $selection, $attributes);
+
+	}
+
+	/**
+	 * Display a select field for elements
+	 *
+	 * @param string $name
+	 * @param array $values Possible values
+	 * @param mixed $selection Default selection
+	 * @param array $attributes Additional attributes ('multiple' for multiple select, with callback for content, default encode)
+	 */
+	public function select(?string $name, mixed $values, mixed $selection = NULL, array $attributes = []): string {
+
+		// Selection can be an element
+		$selection = $this->getSelectedValue($selection, !empty($attributes['multiple']));
+
+		if(isset($attributes['callback'])) {
+			$callback = $attributes['callback'];
+			unset($attributes['callback']);
+		} else {
+			$callback = 'encode';
+		}
+
+		if(isset($attributes['group'])) {
+			$hasGroup = (bool)$attributes['group'];
+			unset($attributes['group']);
+		} else {
+			$hasGroup = FALSE;
+		}
+
+		$clearable = $attributes['clearable'] ?? FALSE;
+		unset($attributes['clearable']);
+
+		if(
+			$clearable and
+			(empty($attributes['required']) === FALSE or empty($attributes['multiple']) === FALSE)
+		) {
+			throw new \Exception('A clearable select cannot be required or multiple');
+		}
+
+		$attributes['class'] = 'form-control '.($attributes['class'] ?? '');
+
+		$this->setDefaultAttributes('select', $attributes, $name);
+
+		$select = '';
+
+		if(empty($attributes['required']) and empty($attributes['multiple'])) {
+
+			$select .= '<option value=""';
+
+			if($selection === NULL) {
+				$select .= ' selected="selected"';
+			}
+
+			$select .= ' class="field-radio-select">';
+				$select .= $attributes['placeholder'] ?? s("< Choisir >");
+			$select .= '</option>';
+
+			unset($attributes['placeholder']);
+
+		}
+		unset($attributes['required']);
+
+		$select = '<select '.attrs($attributes).'>'.$select;
+
+			if($hasGroup) {
+
+				foreach($values as $group) {
+
+					array_expects($group, ['label', 'values']);
+
+					$select .= '<optgroup label="'.encode($group['label']).'">';
+						$select .= $this->getOptions($group['values'], $callback, $selection);
+					$select .= '</optgroup>';
+
+				}
+
+			} else {
+				$select .= $this->getOptions($values, $callback, $selection);
+			}
+
+		$select .= "</select>";
+
+		if($clearable) {
+			$select = $this->inputGroup($select.$this->getClear());
+		}
+
+		return $select;
+
+	}
+
+	protected function getOptions(mixed $values, mixed $callback, mixed $selection): string {
+
+		$h = '';
+
+		foreach($values as $key => $value) {
+
+			[$optionValue, $optionContent, $optionAttributes] = $this->getOptionValue($key, $value);
+
+			$h .= '<option value="'.encode($optionValue).'"';
+
+			if(
+				isset($optionAttributes['disabled']) === FALSE and
+				$selection !== NULL
+			) {
+
+				foreach($selection as $valueCheck) {
+					if((string)$valueCheck === (string)$optionValue) {
+						$h .= ' selected="selected"';
+						break;
+					}
+				}
+
+			}
+
+			if($optionAttributes) {
+				$h .= ' '.attrs($optionAttributes);
+			}
+
+			$h .= '>'.call_user_func($callback, $optionContent).'</option>';
+
+		}
+
+		return $h;
+
+	}
+
+	/**
+	 * Display a select field for elements
+	 *
+	 * @param string $name
+	 * @param array $values Possible values
+	 * @param mixed $selection Default selection
+	 * @param array $attributes Additional attributes ('multiple' for multiple select, with callback for content, default encode)
+	 */
+	public function selectDropdown(?string $name, array $values, mixed $selection = NULL, array $attributes = []): string {
+
+		if(count($values) === 0) {
+			throw new \Exception('Missing values');
+		}
+
+		$required = !empty($attributes['required']);
+		unset($attributes['required']);
+
+		if($selection === NULL) {
+
+			if($required) {
+				$selection = array_key_first($values);
+			}
+
+		} else {
+			// Selection can be an element
+			$selection = $this->getInputValue($selection);
+		}
+
+		$attributes['class'] = 'form-control form-dropdown-toggle '.($attributes['class'] ?? '');
+
+		$this->setDefaultAttributes('select', $attributes, $name);
+
+		$placeholder = $attributes['placeholder'] ?? s("< Choisir >");
+
+		unset($attributes['required']);
+
+		$select = '<a data-dropdown="bottom-start" '.attrs($attributes).'>';
+			$select .= '<div class="form-dropdown-title">';
+				$select .= '<div class="form-dropdown-head">';
+					if($selection === NULL) {
+						$select .= $placeholder;
+					} else {
+						$select .= $values[$selection];
+					}
+				$select .= '</div>';
+				$select .= \Asset::icon('chevron-down');
+			$select .= '</div>';
+		$select .= '</a>';
+		$select .= '<div class="dropdown-list form-dropdown-list">';
+
+		if($required === FALSE) {
+
+			$selected = ($selection === NULL);
+
+			$select .= '<label class="dropdown-item form-dropdown-placeholder '.($selected ? 'selected' : '').'">';
+				$select .= $this->inputRadio('stock', '', selectedValue: $selected ? '' : NULL, attributes: ['onclick' => 'SelectDropdownField.select(this);']);
+				$select .= '<div class="form-dropdown-content">'.$placeholder.'</div>';
+			$select .= '</label>';
+
+		}
+
+		foreach($values as $key => $value) {
+
+			[$optionValue, $optionContent, $optionAttributes] = $this->getOptionValue($key, $value);
+
+			$class = 'dropdown-item';
+			$selected = FALSE;
+
+			if(isset($optionAttributes['disabled']) === FALSE) {
+
+				if(
+					$selection !== NULL and
+					(string)$selection === (string)$optionValue
+				) {
+					$class .= ' selected';
+					$selected = TRUE;
+				}
+
+			} else {
+				$class .= ' disabled';
+			}
+
+			$select .= '<label class="'.$class.'" '.attrs($optionAttributes).'>';
+				$select .= $this->inputRadio('stock', $optionValue, selectedValue: $selected ? $optionValue : NULL, attributes: ['onclick' => 'SelectDropdownField.select(this);']);
+				$select .= '<div class="form-dropdown-content">'.$optionContent.'</div>';
+			$select .= '</label>';
+
+		}
+
+		$select .= "</div>";
+
+		return $select;
+
+	}
+
+	private function getSelectedValue(mixed $selection, bool $multiple): ?array {
+
+		if($selection === NULL) {
+			return NULL;
+		}
+
+		if($selection instanceof \Collection) {
+			if($multiple) {
+				return $selection->getIds();
+			} else {
+				throw new \Exception('Unexpected collection');
+			}
+		} else if($selection instanceof \Element) {
+			if($selection->empty()) {
+				return [];
+			} else {
+				return [$selection['id']];
+			}
+		} else if($selection instanceof \Set) {
+			return $selection->values();
+		} else if(is_array($selection) === FALSE) {
+			return [$selection];
+		} else {
+			return $selection;
+		}
+
+	}
+
+	private function getInputValue($selection) {
+
+		if($selection instanceof \Element) {
+			if($selection->empty()) {
+				return NULL;
+			} else {
+				return $selection['id'];
+			}
+		} else if(is_bool($selection)) {
+			return $selection ? '1' : '0';
+		} else {
+			return $selection;
+		}
+
+	}
+
+	private function getOptionValue(string|int|float $key, $option): array {
+
+		if($option instanceof \Element) {
+
+			$value = NULL;
+			$label = NULL;
+			$counter = 0;
+
+			foreach($option as $field => $valueElement) {
+
+				switch(++$counter) {
+					case 1 :
+						$value = $valueElement;
+						break;
+					case 2 :
+						$label = $valueElement;
+						break;
+					default :
+						break(2);
+				}
+
+			}
+
+			return [$value, $label, []];
+
+		} else if(is_array($option)) {
+
+			return [
+				$option['value'] ?? NULL,
+				$option['label'],
+				$option['attributes'] ?? []
+			];
+
+		} else {
+			return [$key, $option, []];
+		}
+
+	}
+
+	public static function getFieldAction(string $text, string $class = ''): string {
+		return '<div class="field-action '.$class.'">'.$text.'</div>';
+	}
+	public static function info(string $text, string $class = '', string $id = ''): string {
+		return '<div class="form-info '.$class.'"'.($id !== '' ? ' id="'.$id.'"' : '').'>'.$text.'</div>';
+	}
+
+	/**
+	 * La valeur d'une option de radios() qui porte une raison sous son libellé : ce qui la précise, ou ce
+	 * qui la ferme. Le libellé et la raison sont du HTML, comme les valeurs de radios().
+	 */
+	public static function radioOption(string $label, string $reason): string {
+		return '<div class="field-radio-group-label">'.$label.'</div><div class="field-radio-group-reason">'.$reason.'</div>';
+	}
+
+	/**
+	 * Display text field
+	 */
+	public function fake(string $value, ?string $icon = NULL, bool $encode = TRUE): string {
+
+		$icon ??= \Asset::icon('check-lg');
+
+		return $this->inputGroup(
+			$this->addon($icon).
+			'<div class="form-control disabled">'.($encode ? encode($value) : $value).'</div>'
+		);
+	}
+
+	/**
+	 * Display text field
+	 */
+	public function text(?string $name = NULL, $value = NULL, array $attributes = []): string {
+
+		$attributes['class'] = 'form-control '.($attributes['class'] ?? '');
+
+		return $this->input('text', $name, $value, $attributes);
+	}
+
+	/**
+	 * Display text field for numbers
+	 */
+	public function number(?string $name = NULL, $value = NULL, array $attributes = []): string {
+
+		$attributes['class'] = 'form-control form-number '.($attributes['class'] ?? '');
+
+		return $this->input('number', $name, $value, $attributes);
+	}
+
+	/**
+	 * Display text field for calculated input
+	 */
+	public function calculation(string $name, ?string $value = NULL, array $attributes = []): string {
+
+		$attributes['class'] = 'form-control form-number '.($attributes['class'] ?? '');
+		$attributes['data-calculation'] = 1;
+
+		if(array_key_exists('after', $attributes)) {
+			$after = $attributes['after'];
+			unset($attributes['after']);
+		} else {
+			$after = '';
+		}
+
+		$result = '<div class="form-calculation hide" data-calculated>';
+			if($value !== NULL) {
+				$result .= '= '.$value;
+			}
+		$result .= '</div>';
+
+		$result .= $this->hidden($name, $value, ['data-calculated-value' => TRUE]);
+
+		$attributes['name'] = $name.'-calculation';
+
+		return $this->input('text', $name, $value, $attributes).$after.$result;
+	}
+
+	/**
+	 * Display text field with color picker
+	 */
+	public function color(string $name, $value = NULL, array $attributes = []): string {
+
+		if(array_key_exists('emptyColor', $attributes)) {
+			$emptyColor = $attributes['emptyColor'];
+			unset($attributes['emptyColor']);
+		} else {
+			$emptyColor = '#000000';
+		}
+
+		if(array_key_exists('required', $attributes)) {
+			$required = $attributes['required'];
+			unset($attributes['required']);
+		} else {
+			$required = FALSE;
+		}
+
+		$attributes['class'] = 'form-control form-color '.($attributes['class'] ?? '');
+
+		$h = '<div class="field-color">';
+			$h .= $this->input('color', $name.'Color', $value, ['oninput' => 'ColorField.update(this)'] + $attributes);
+			if($required === FALSE) {
+				$h .= '<label>'.$this->inputCheckbox($name.'Empty', TRUE, ['checked' => ($value === NULL), 'onclick' => 'ColorField.setEmpty(this, "'.$emptyColor.'")']).' '.($attributes['placeholder'] ?? s("Aucune")).'</label>';
+			}
+			$h .= $this->hidden($name, $value);
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	/**
+	 * Display text field for emails
+	 */
+	public function email(string $name, ?string $value = NULL, array $attributes = []): string {
+
+		$attributes['class'] = 'form-control email '.($attributes['class'] ?? '');
+
+		return $this->input('email', $name, $value, $attributes);
+	}
+
+	public function address(string $prefix, \Element $e, array $attributes = []) {
+
+		$field = fn($name) => ($prefix === '') ? $name : $prefix.ucfirst($name);
+
+		$h = $this->group(
+			s("Adresse"),
+			$this->dynamicField($e, $field('street1')),
+			nested: TRUE
+		);
+		$h .= $this->group(
+			s("Complément d'adresse"),
+			$this->dynamicField($e, $field('street2')),
+			nested: TRUE
+		);
+
+		$h .= '<div class="form-postcode-city">';
+
+			$h .= $this->group(
+				s("Code postal"),
+				$this->dynamicField($e, $field('postcode')),
+				nested: TRUE
+			);
+
+			$h .= $this->group(
+				s("Ville"),
+				$this->dynamicField($e, $field('city')),
+				nested: TRUE
+			);
+
+		$h .= '</div>';
+
+		if(($attributes['country'] ?? TRUE)) {
+
+			$h .= $this->group(
+				s("Pays"),
+				$this->dynamicField($e, $field('country')),
+				nested: TRUE
+			);
+
+		}
+
+		return $h;
+
+	}
+
+	/**
+	 * Display text field for fully qualified names
+	 */
+	public function fqn(string $name, ?string $value = NULL, array $attributes = []): string {
+
+		$attributes['class'] = 'form-control '.($attributes['class'] ?? '');
+
+		$attributes += [
+			'data-type' => 'fqn',
+			'append' => '<small>'.\Asset::icon('info-circle').' '.s("Uniquement a-z et -").'</small>'
+		];
+
+		return $this->input('text', $name, $value, $attributes);
+	}
+
+	/**
+	 * Display text field for urls
+	 */
+	public function url(string $name, ?string $value = NULL, array $attributes = []): string {
+
+		$attributes['class'] = 'form-control url '.($attributes['class'] ?? '');
+		$attributes += [
+			'placeholder' => 'https://'
+		];
+
+		return $this->input('url', $name, $value, $attributes);
+	}
+
+	/**
+	 * Display text area field
+	 */
+	public function textarea(string $name, ?string $value = NULL, array $attributes = []): string {
+
+		$attributes['class'] = 'form-control '.($attributes['class'] ?? '');
+
+		$this->setDefaultAttributes('textarea', $attributes, $name);
+
+		$textarea = "<textarea ".attrs($attributes).">".encode($value)."</textarea>";
+
+		$count = $this->getCharacterCount($attributes);
+		if($count) {
+			return '<div class="form-character-count-wrapper for-textarea">
+						'.$textarea.'
+						'.$count.'
+					</div>';
+
+		}
+
+		return $textarea;
+	}
+
+	/**
+	 * Display editor field
+	 */
+	public function editor(string $name, $value = '', array $values = [], array $attributes = []): string {
+
+		if($value) {
+			$convertedValue = new \editor\EditorFormatterUi()->getFromXml($value, $values);
+		} else {
+			$convertedValue = '';
+		}
+
+		$this->setDefaultAttributes('editor', $attributes, $name);
+
+		return new \editor\EditorUi()->field($name, $values, $convertedValue, $attributes);
+
+	}
+
+	/**
+	 * Display password field
+	 */
+	public function password(string $name, ?string $value = NULL, array $attributes = []): string {
+
+		$attributes['class'] = 'form-control '.($attributes['class'] ?? '');
+		$attributes['autocapitalize'] = 'off';
+		$attributes['autocorrect'] = 'off';
+		$attributes['makeVisible'] ??= TRUE;
+
+		$makeVisible = empty($attributes['makeVisible']) === FALSE;
+		unset($attributes['makeVisible']);
+
+		$field = $this->input('password', $name, $value, $attributes);
+
+		if($makeVisible) {
+			return $this->inputGroup(
+				$field.
+				'<a onclick="PasswordField.toggleVisibility(this)" class="btn btn-form form-password-toggle" data-visible="0">'.\Asset::icon('eye-slash', ['class' => 'form-password-hidden']).\Asset::icon('eye-fill', ['class' => 'form-password-visible']).'</a>'
+			);
+		} else {
+			return $field;
+		}
+
+	}
+
+	/**
+	 * Display hidden field
+	 */
+	public function hidden(?string $name, $value = NULL, array $attributes = []): string {
+
+		return $this->input('hidden', $name, $value, $attributes);
+
+	}
+
+	/**
+	 * Display several hidden field
+	 */
+	public function hiddens(array $values, array $attributes = []): string {
+
+		$h = '';
+
+		foreach($values as $name => $value) {
+			$h .= $this->hidden($name, $value, $attributes);
+		}
+
+		return $h;
+
+	}
+
+	/**
+	 * Relay some information
+	 */
+	public function relay(string $source, string|array $names, array $attributes = []): string {
+
+		str_is($source, ['GET', 'POST', 'REQUEST']);
+
+		$h = '';
+
+		foreach((array)$names as $name) {
+			$h .= $this->hidden($name, $source($name), $attributes);
+		}
+
+		return $h;
+
+	}
+
+	/**
+	 * Display a file field
+	 */
+	public function file(string $name, array $attributes = []): string {
+
+		$attributes['class'] = 'form-control '.($attributes['class'] ?? '');
+
+		return $this->input('file', $name, NULL, $attributes);
+	}
+
+	/**
+	 * Un champ de fichier caché dans un bouton : le clic sur le bouton ouvre le choix du fichier. $label est
+	 * du HTML, icône comprise ; une classe passée dans $attributes s'ajoute à hide.
+	 */
+	public function fileButton(string $name, string $label, array $attributes = [], string $class = 'btn-outline-primary'): string {
+
+		$attributes['class'] = 'hide '.($attributes['class'] ?? '');
+
+		return '<label class="btn '.$class.'">'.$label.$this->file($name, $attributes).'</label>';
+
+	}
+
+	/**
+	 * Display a button
+	 */
+	public function button($value = NULL, array $attributes = []): string {
+
+		$attributes['class'] = ($attributes['class'] ?? 'btn btn-primary');
+		$attributes['type'] = ($attributes['type'] ?? 'button');
+
+		$this->setDefaultAttributes('button', $attributes);
+
+		return "<button ".attrs($attributes).">".$value."</button>";
+
+	}
+
+	/**
+	 * Display submit field
+	 */
+	public function submit($value = NULL, array $attributes = []): string {
+
+		$attributes['type'] = 'submit';
+
+		return $this->button($value, $attributes);
+
+	}
+
+	/**
+	 * La rangée qui envoie un formulaire de recherche : le bouton, la croix qui vide la recherche quand $reset le
+	 * demande, et le total des résultats quand il est donné. Quand montrer la croix reste à l'appelant, chaque
+	 * recherche ayant ses critères. $total est du HTML.
+	 */
+	public function searchSubmit(string $resetUrl, bool $reset, string $total = ''): string {
+
+		$h = '<div class="util-search-submit">';
+			$h .= $this->submit(s("Chercher"));
+			if($reset) {
+				$h .= '<a href="'.encode($resetUrl).'" class="btn btn-only-icon">'.\Asset::icon('x-lg').'</a>';
+			}
+			if($total !== '') {
+				$h .= '<div class="badge badge-solid bg-primary">'.$total.'</div>';
+			}
+		$h .= '</div>';
+
+		return $h;
+
+	}
+
+	/**
+	 * Create an autocomplete field
+	 */
+	public function autocomplete(string $name, string $url, array $body, ?string $dispatch, array $values, bool $reorder, bool $textual, array $attributes): array {
+
+		$id = $attributes['id'] ?? uniqid('autocomplete-');
+
+		$multiple = (strpos($name, '[]') !== FALSE);
+
+		if($multiple and $textual) {
+			throw new \Exception('Not compatible');
+		}
+
+		// Un choix unique écrit déjà son texte dans le champ
+		if($multiple === FALSE and ($attributes['data-autocomplete-keep-query'] ?? FALSE)) {
+			throw new \Exception('autocompleteKeepQuery expects multiple');
+		}
+
+		// Une seule largeur est prévue, une faute de frappe ne doit pas laisser la liste à celle du champ sans le dire
+		$width = $attributes['data-autocomplete-width'] ?? NULL;
+
+		if($width !== NULL and $width !== 'group') {
+			throw new \Exception('autocompleteWidth expects group');
+		}
+
+		foreach($body as $key => $value) {
+			if(is_bool($value)) {
+				$body[$key] = (int)$value;
+			} else if($value === NULL) {
+				unset($body[$key]);
+			}
+		}
+
+		$attributes += [
+			'placeholder' => '', // Mandatory
+			'data-autocomplete-url' => $url,
+			'data-autocomplete-body' => json_encode($body),
+			'data-autocomplete-items' => $id,
+			'data-autocomplete-field' => $name,
+			'data-autocomplete-reorder' => $reorder,
+			'data-autocomplete-select' => 'event',
+			'onrender' => 'AutocompleteField.start(this);'
+		];
+
+		if($textual) {
+
+			$inputLabel = $name;
+
+			$attributes['data-autocomplete-textual'] = TRUE;
+			$attributes['data-autocomplete-empty'] = s("Sélectionner {value}", '&laquo; {value} &raquo;');
+
+		} else {
+
+			$inputLabel = $id.'-label';
+
+			$attributes['data-autocomplete-empty'] = s("Aucun résultat !");
+
+		}
+
+		if($dispatch) {
+			$attributes['data-autocomplete-dispatch'] = $dispatch;
+		}
+
+		if($values === []) {
+			$defaultQuery = NULL;
+			$defaultResults = '';
+		} else if($multiple) {
+			$defaultQuery = NULL;
+			$defaultResults = '';
+			foreach($values as $value) {
+				$defaultResults .= '<div class="autocomplete-item" data-value="'.$value['value'].'">';
+					$defaultResults .= $this->hidden($name, $value['value']);
+					$defaultResults .= $value['itemHtml'];
+					$defaultResults .= '<div class="autocomplete-item-actions">';
+						$defaultResults .= '<a onclick="AutocompleteField.upItem(this)" class="btn btn-only-icon btn-sm btn-outline-primary autocomplete-reorder-up">'.\Asset::icon('arrow-up').'</a>';
+						$defaultResults .= '<a onclick="AutocompleteField.downItem(this)" class="btn btn-only-icon btn-sm btn-outline-primary autocomplete-reorder-down">'.\Asset::icon('arrow-down').'</a>';
+						$defaultResults .= '<a onclick="AutocompleteField.removeItem(this)" class="btn btn-only-icon btn-sm btn-outline-primary">'.\Asset::icon('trash-fill').'</a>';
+					$defaultResults .= '</div>';
+				$defaultResults .= '</div>';
+			}
+		} else {
+			$value = first($values);
+			$defaultQuery = $value['itemText'];
+
+			if($textual === FALSE) {
+				$defaultResults = $this->hidden($name, $value['value']);
+			} else {
+				$defaultResults = '';
+			}
+
+		}
+
+		if(empty($attributes['clearable']) === FALSE) {
+			throw new \Exception('Field type autocomplete cannot be clearable');
+		}
+
+		$query = $this->text($inputLabel, $defaultQuery, $attributes);
+		$query .= '<a class="autocomplete-empty" onclick="AutocompleteField.empty(this)">'.\Asset::icon('x').'</a>';
+
+		return [
+			'query' => $query,
+			'results' => '<div class="autocomplete-items '.($reorder ? 'autocomplete-items-reorder' : '').' '.($multiple ? 'autocomplete-items-multiple' : '').'" id="'.$id.'">'.$defaultResults.'</div>'
+		];
+
+	}
+
+	/**
+	 * Les attributs de la rangée de boutons en tête de la liste d'une autocomplétion. La recherche poste la valeur
+	 * choisie sous `name`, `selected` part d'office, et `values` donne les boutons dans leur ordre. Les valeurs
+	 * voyagent en paires : un objet JSON rangerait ses clés entières par ordre croissant côté JavaScript.
+	 */
+	public function getAutocompleteHead(array $head): array {
+
+		if(empty($head['name']) or empty($head['label']) or empty($head['values'])) {
+			throw new \Exception('autocompleteHead expects name, label and values');
+		}
+
+		if(isset($head['selected']) === FALSE or array_key_exists($head['selected'], $head['values']) === FALSE) {
+			throw new \Exception('autocompleteHead expects selected among values');
+		}
+
+		$values = [];
+
+		foreach($head['values'] as $value => $label) {
+			$values[] = [$value, encode($label)];
+		}
+
+		return [
+			'data-autocomplete-head' => json_encode([
+				'name' => $head['name'],
+				'label' => encode($head['label']),
+				'values' => $values
+			]),
+			'data-autocomplete-head-selected' => $head['selected']
+		];
+
+	}
+
+	protected function input(string $type, ?string $name, $value, array $attributes): string {
+
+		$this->setDefaultAttributes($type, $attributes, $name);
+
+		$attributes['type'] = $type;
+		$attributes['value'] = $this->getInputValue($value);
+
+		$inputAttributes = $attributes;
+
+		$clearable = $attributes['clearable'] ?? FALSE;
+		unset($inputAttributes['clearable']);
+
+		if($clearable) {
+			// :placeholder-shown, qui masque la croix d'un champ vide, n'agit que sur un champ qui porte un placeholder
+			$inputAttributes['placeholder'] ??= ' ';
+			$clear = $this->getClear();
+		} else {
+			$clear = '';
+		}
+
+		if(isset($attributes['prepend'])) {
+
+			unset($inputAttributes['prepend']);
+			$prepend = $this->addon($attributes['prepend']);
+
+		} else {
+			$prepend = '';
+		}
+
+		if(isset($attributes['append'])) {
+
+			unset($inputAttributes['append']);
+			$append = $this->addon($attributes['append']);
+
+		} else {
+			$append = '';
+		}
+
+		$input = '<input '.attrs($inputAttributes).'/>';
+
+		if($prepend or $clear or $append) {
+			$input = $this->inputGroup($prepend.$input.$clear.$append);
+		}
+
+		$count = $this->getCharacterCount($attributes);
+
+		if($count) {
+			return '<div class="form-character-count-wrapper for-input input-alert">
+				'.$input.$count.'
+			</div>';
+		}
+
+		return $input;
+	}
+
+	protected function getClear(): string {
+		return '<a class="input-group-clear input-group-addon input-group-addon-for-input" data-clear title="'.s("Effacer").'">'.\Asset::icon('x-lg').'</a>';
+	}
+
+	private function getCharacterCount(array $attributes): string {
+		$limit = $attributes['data-limit'] ?? NULL;
+		if($limit) {
+			return '<span class="form-character-count" data-limit-for="'.$attributes['id'].'"></span>';
+		}
+		return '';
+	}
+
+	protected function setDefaultAttributes(string $type, array &$attributes, ?string $name = NULL) {
+
+		$attributes['id'] ??= uniqid('field-');
+		$attributes['name'] ??= $name;
+
+		// select() consomme clearable avant d'appeler cette méthode
+		// Les champs de date ne passent jamais en :placeholder-shown : la croix y resterait visible à vide
+		if(
+			empty($attributes['clearable']) === FALSE and
+			in_array($type, ['text', 'number', 'email', 'url']) === FALSE
+		) {
+			throw new \Exception('Field type '.$type.' cannot be clearable');
+		}
+
+		$this->lastFieldId = $attributes['id'] ?? NULL;
+		$this->lastFieldName = $attributes['name'];
+		$this->lastFieldType = $type;
+
+		if($type !== 'button') {
+			$this->nextWrapper = $attributes['name'];
+		}
+
+
+	}
+
+	public function getLastFieldId(): ?string {
+		return $this->lastFieldId;
+	}
+
+}
+?>

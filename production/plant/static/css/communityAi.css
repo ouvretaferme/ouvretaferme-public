@@ -1,0 +1,1273 @@
+/*
+ * Frise des trois temps de la campagne d'évaluation des variétés.
+ *
+ * Le motif lui-même est générique (`util-campaign` dans component.css) : ne reste
+ * ici que ce qui appartient à cet écran, la bande colorée qui sort du gabarit pour
+ * occuper toute la largeur, comme le bloc d'état d'une facture électronique. Elle
+ * annonce la campagne, elle n'est pas un encart parmi d'autres.
+ */
+.plant-campaign {
+	margin-bottom: 2rem;
+	margin-left: calc(-1 * var(--container-padding));
+	margin-right: calc(-1 * var(--container-padding));
+	padding: 1.5rem 1rem;
+	background-color: var(--color-bg-vert-bleu);
+}
+
+/*
+ * L'objectif de votes de la campagne, dans le bandeau : le décompte à gauche et
+ * l'objectif à droite, au-dessus de la barre (`util-progress` dans component.css).
+ * Le corps est fixé parce que le bandeau agrandit le sien.
+ */
+.plant-campaign-goal {
+	margin: var(--space-md) 0;
+}
+
+.plant-campaign-goal-count {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: var(--space-md);
+	margin-bottom: var(--space-xs);
+	font-size: 1rem;
+}
+
+/*
+ * ---------------------------------------------------------------------------
+ * Bibliothèque de cultures : le plan de culture agrégé d'une espèce.
+ *
+ * Tout se lit sur un seul axe, les 52 semaines de l'année, partagé par le
+ * calendrier et par les créneaux. C'est ce qui permet de comparer d'un coup
+ * d'œil un créneau à un autre, et un créneau à la pratique générale : deux axes
+ * de largeurs différentes auraient obligé à convertir mentalement.
+ *
+ * Trois couleurs, une par conduite : plantation, semis direct, récolte. Ce sont
+ * celles des interventions correspondantes dans le reste du produit, pour qu'une
+ * même notion ne change pas de couleur d'un écran à l'autre.
+ * ---------------------------------------------------------------------------
+ */
+
+/* Lue par PlantCommunity.selectTab() : la barre revient sous l'en-tête collant, pas dessous. */
+#community-tabs {
+	scroll-margin-top: var(--mainSticky);
+}
+
+.community-crop {
+	/*
+	 * Les trois couleurs sont celles que le produit donne déjà aux interventions
+	 * correspondantes (`work\Action` de référence : plantation, semis direct,
+	 * récolte). Une culture plantée et une culture semée en place se retrouvent
+	 * ainsi de la même couleur ici et dans le planning.
+	 */
+	--community-gutter: 11rem;
+	--community-seedling: #C2005E;
+	--community-planting: #099A89;
+	--community-sowing: #0D7A11;
+	--community-harvest: #3076BD;
+	margin-top: 2rem;
+}
+
+/*
+ * Les chiffres de l'espèce se détachent du bandeau de filtres qui les précède.
+ * `util-figures` ne pose de marge que sous lui, pour ce qui le suit : ce qui le
+ * précède reste au contexte. Le `.community-summary` qu'il remplace ici portait
+ * 1,5 rem au-dessus, et les perdre collait les deux blocs.
+ */
+.community-crop > .util-figures {
+	margin-top: 1.5rem;
+}
+
+/* ------------------------------------------------------- filtres, spécifique */
+
+.community-filter-help,
+.community-filter-missing {
+	margin-top: 0.5rem;
+	font-size: 0.8125rem;
+	color: var(--color-neutral);
+	max-width: 28rem;
+}
+
+/* --------------------------------------------------------------------- blocs */
+
+.community-block {
+	margin-top: 2.5rem;
+}
+
+.community-block-note {
+	margin-top: 0.75rem;
+	font-size: 0.8125rem;
+	color: var(--color-neutral);
+}
+
+/*
+ * Le graphique et les créneaux débordent en largeur sur petit écran : ils
+ * défilent dans leur propre conteneur, le corps de page ne bouge pas.
+ */
+.community-chart,
+.community-slots {
+	overflow-x: auto;
+}
+
+.community-chart > *,
+.community-slots > * {
+	min-width: 40rem;
+}
+
+/*
+ * Sans cette remise à zéro, une ligne de jetons de variétés impose sa largeur
+ * naturelle à la colonne `1fr` qui la contient et pousse toute la grille des 52
+ * semaines vers la droite au lieu de passer à la ligne.
+ */
+.community-slot-detail,
+.community-slot-varieties {
+	min-width: 0;
+}
+
+/* ----------------------------------------------------------- axe des mois */
+
+/*
+ * L'axe et les pistes partagent la même grille de 52 colonnes ; c'est elle qui
+ * garantit qu'une barre de la semaine 20 tombe bien sous « mai ».
+ */
+.community-axis-months,
+.community-axis-weeks,
+.community-chart-track,
+.community-slot-timeline {
+	display: grid;
+	grid-template-columns: repeat(52, 1fr);
+}
+
+/*
+ * Pas de décalage propre : l'axe est toujours posé dans un conteneur déjà aligné
+ * sur la piste — le corps d'une bande du calendrier, ou la seconde colonne de la
+ * ligne d'en-tête des créneaux. Une marge de gouttière ici le poussait d'une
+ * largeur d'intitulé, soit sept semaines, et faisait pointer la fin juin sur la
+ * semaine 31.
+ */
+.community-axis {
+	border-top: 1px solid var(--border);
+}
+
+.community-axis-month {
+	padding: 0.25rem 0;
+	font-size: 0.75rem;
+	text-align: center;
+	color: var(--color-neutral);
+	border-left: 1px solid var(--border-light);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/*
+ * Les cinquante-deux numéros, un par colonne. Ils sont volontairement discrets :
+ * c'est une règle graduée, on y lit une valeur quand on la cherche, on ne la lit
+ * pas en balayant. D'où un corps très petit — chaque colonne ne fait qu'une
+ * vingtaine de pixels — et la coupe plutôt que le débordement sur la voisine.
+ */
+.community-axis-week {
+	padding-bottom: 0.25rem;
+	font-size: 0.5625rem;
+	line-height: 1;
+	text-align: center;
+	color: var(--muted);
+	overflow: hidden;
+}
+
+/* Les dizaines servent de points d'appui : elles seules sont appuyées. */
+.community-axis-week:nth-child(10n) {
+	color: var(--color-neutral);
+	font-weight: bold;
+}
+
+/* --------------------------------------------------------------- calendrier */
+
+.community-chart-row {
+	display: flex;
+	align-items: flex-end;
+	gap: 0;
+}
+
+.community-chart-row + .community-chart-row {
+	margin-top: 1.5rem;
+}
+
+.community-chart-label {
+	width: var(--community-gutter, 9rem);
+	flex-shrink: 0;
+	padding-right: 0.75rem;
+	padding-bottom: 1.5rem;
+	text-align: right;
+}
+
+.community-chart-title {
+	font-size: 0.8125rem;
+	font-weight: bold;
+	color: var(--color-text-main);
+}
+
+/* L'effectif dit sur quoi la bande est calculée, donc ce qu'elle vaut. */
+.community-chart-scale {
+	font-size: 0.75rem;
+	color: var(--color-neutral);
+}
+
+.community-chart-body {
+	flex: 1;
+	min-width: 0;
+}
+
+.community-chart-track {
+	position: relative;
+	height: 6rem;
+	border-bottom: 1px solid var(--border);
+}
+
+/*
+ * Le SVG est étiré à la bande sans conserver ses proportions : le tracé est posé
+ * en semaines (0-52) et en pourcents (0-100), et c'est la boîte qui lui donne sa
+ * taille réelle. Le trait est donc mis à l'échelle lui aussi, d'où le
+ * `vector-effect` qui lui rend une épaisseur constante.
+ */
+.community-curve {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1;
+}
+
+.community-curve-line {
+	fill: none;
+	stroke-width: 2;
+	vector-effect: non-scaling-stroke;
+	stroke-linejoin: round;
+}
+
+.community-curve-area {
+	stroke: none;
+}
+
+.community-chart-row.is-seedling .community-curve-line {
+	stroke: var(--community-seedling);
+}
+
+.community-chart-row.is-seedling .community-curve-area {
+	fill: color-mix(in srgb, var(--community-seedling) 15%, transparent);
+}
+
+.community-chart-row.is-implantation .community-curve-line {
+	stroke: var(--community-planting);
+}
+
+.community-chart-row.is-implantation .community-curve-area {
+	fill: color-mix(in srgb, var(--community-planting) 15%, transparent);
+}
+
+/*
+ * En semis direct, la bande d'implantation prend la couleur du semis : c'est la
+ * même conduite que dans le planning, elle ne doit pas changer de couleur ici.
+ */
+.community-crop.is-sowing .community-chart-row.is-implantation .community-curve-line {
+	stroke: var(--community-sowing);
+}
+
+.community-crop.is-sowing .community-chart-row.is-implantation .community-curve-area {
+	fill: color-mix(in srgb, var(--community-sowing) 15%, transparent);
+}
+
+.community-chart-row.is-harvest .community-curve-line {
+	stroke: var(--community-harvest);
+}
+
+.community-chart-row.is-harvest .community-curve-area {
+	fill: color-mix(in srgb, var(--community-harvest) 15%, transparent);
+}
+
+/*
+ * Les zones de survol restent découpées à la semaine : la courbe montre la forme,
+ * le survol rend l'effectif exact que le lissage a justement fondu.
+ */
+.community-chart-weeks {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	display: grid;
+	grid-template-columns: repeat(52, 1fr);
+}
+
+/*
+ * La semaine gardée par le JS porte `util-column-hover` (component.css). Le survol en reprend la
+ * déclaration à l'identique, en `background-image` : sur la semaine à la fois survolée et gardée, les
+ * deux règles posent la même couche au lieu de superposer deux teintes.
+ */
+.community-chart-week:hover {
+	background-image: linear-gradient(var(--background-column-hover), var(--background-column-hover));
+}
+
+/*
+ * Survol d'une semaine d'implantation : la courbe de l'espèce passe en gris et reste
+ * en place comme repère, la cohorte de cette semaine se trace par-dessus à sa propre
+ * échelle. La semaine survolée garde son fond (`util-column-hover`) quand la souris descend
+ * lire la bande des récoltes, que `:hover` seul ne couvrirait plus.
+ */
+.community-chart.has-cohort .community-chart-row.is-harvest .community-chart-track > .community-curve .community-curve-line {
+	stroke: var(--border);
+}
+
+.community-chart.has-cohort .community-chart-row.is-harvest .community-chart-track > .community-curve .community-curve-area {
+	fill: color-mix(in srgb, var(--border) 25%, transparent);
+}
+
+.community-cohort {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+}
+
+.community-chart-row.is-harvest .community-cohort .community-curve-line {
+	stroke: var(--community-harvest);
+	stroke-width: 2.5;
+}
+
+.community-chart-row.is-harvest .community-cohort .community-curve-area {
+	fill: color-mix(in srgb, var(--community-harvest) 18%, transparent);
+}
+
+.community-cohort-scale {
+	color: var(--community-harvest);
+	font-weight: bold;
+}
+
+/*
+ * Le lien vers le début de récolte passe au-dessus des zones de survol des semaines :
+ * il les laisse répondre, leur `title` dit l'effectif exact de chaque semaine.
+ */
+.community-cohort-delay {
+	pointer-events: none;
+}
+
+/* ------------------------------------------------------- séparations de mois */
+
+/*
+ * Les traits de mois sont une couche à part, posée derrière les barres et sous
+ * les frises. Ils partagent la grille des 52 semaines, donc ils tombent
+ * exactement là où l'axe change de mois.
+ */
+.community-grid {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	display: grid;
+	grid-template-columns: repeat(52, 1fr);
+	pointer-events: none;
+}
+
+.community-grid-month + .community-grid-month {
+	border-left: 1px solid var(--border-light);
+}
+
+/*
+ * Graduation fine des créneaux : chaque semaine porte son trait, et celle qui
+ * ouvre un mois le porte plus marqué. C'est ce qui permet de compter les semaines
+ * d'une barre à l'œil, sans avoir à la rapporter aux seuls repères mensuels.
+ * La première semaine n'a pas de trait, il doublerait le bord de la carte.
+ */
+.community-grid-week {
+	border-left: 1px solid var(--border-light);
+}
+
+.community-grid-week:first-child {
+	border-left-color: transparent;
+}
+
+.community-grid-week.is-month {
+	border-left-color: var(--border);
+}
+
+/* ----------------------------------------------------------------- créneaux */
+
+/*
+ * Un créneau est un bloc, pas une ligne de tableau : il porte son fond, son
+ * arrondi et son espace propre. Les lignes séparées d'un simple filet se
+ * confondaient dès qu'un créneau tenait sur trois lignes de texte, et l'œil ne
+ * savait plus quelles variétés appartenaient à quel mois.
+ */
+.community-slot {
+	display: grid;
+	grid-template-columns: var(--community-gutter, 9rem) minmax(0, 1fr);
+	align-items: start;
+	margin-bottom: 0.5rem;
+	padding: 0.875rem 0.75rem;
+	border-radius: var(--radius);
+	background-color: var(--background-light);
+	border: 1px solid var(--border-light);
+}
+
+/* La ligne d'en-tête ne porte que l'axe : pas de fond, pas de hauteur propre. */
+.community-slot.is-header {
+	margin-bottom: 0;
+	padding: 0 0.75rem;
+	background-color: transparent;
+	border-color: transparent;
+}
+
+.community-slot.is-header .community-axis {
+	grid-column: 2;
+	min-width: 0;
+}
+
+.community-slot:hover {
+	border-color: var(--border);
+	background-color: #fff;
+}
+
+.community-slot.is-header:hover {
+	border-color: transparent;
+	background-color: transparent;
+}
+
+/*
+ * L'en-tête tient sur les deux lignes de droite (frise puis variétés) : sans ça
+ * la ligne de la frise prendrait la hauteur de l'en-tête, et les variétés se
+ * retrouveraient décrochées loin sous la barre qu'elles complètent.
+ */
+.community-slot-head {
+	grid-row: 1 / span 2;
+	padding-right: 0.75rem;
+	text-align: right;
+}
+
+.community-slot.is-header .community-slot-head {
+	grid-row: 1;
+}
+
+.community-slot-month {
+	font-size: 1.125rem;
+	font-weight: bold;
+	line-height: 1.2;
+	color: var(--color-text-main);
+}
+
+.community-slot-count {
+	font-size: 0.8125rem;
+	color: var(--color-neutral);
+}
+
+.community-slot-action {
+	font-size: 0.75rem;
+	color: var(--color-neutral);
+	font-style: italic;
+}
+
+.community-slot-timeline {
+	position: relative;
+	align-items: end;
+	height: 6.75rem;
+}
+
+/*
+ * Le relief hebdomadaire, en aires. Chaque courbe s'ouvre et se referme à sa
+ * hauteur réelle, sur le bord de sa première et de sa dernière semaine : une
+ * pente vers zéro inventerait une montée en puissance et une extinction que la
+ * donnée ne dit pas — la période commence et s'arrête net.
+ *
+ * Les séries sont superposées, non empilées : ce ne sont pas des parts d'un tout,
+ * ce sont trois choses qui arrivent en même temps, et les empiler ferait lire une
+ * somme qui n'existe pas. Les aires étant translucides, elles se recouvrent sans
+ * se masquer.
+ *
+ * Le SVG est étiré à la bande sans conserver ses proportions — le tracé est posé
+ * en semaines (0-52) et en pourcents (0-100), la boîte lui donne sa taille.
+ */
+/* ------------------------------------------------- vue simplifiée */
+
+/*
+ * Une ligne par étape, sur la même grille de demi-semaines que les repères. Chaque
+ * semaine de l'intervalle est une cellule dont la hauteur suit son effectif, et
+ * les cellules sont centrées sur la ligne : la barre s'épaissit en son cœur et
+ * s'amincit sur ses bords, symétriquement.
+ */
+.community-ranges {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 2rem;
+	z-index: 1;
+	display: grid;
+	grid-template-columns: repeat(104, 1fr);
+	grid-auto-rows: 10px;
+	align-content: start;
+	row-gap: 0.5rem;
+}
+
+/*
+ * Une semaine creuse mais comprise dans l'intervalle garde une épaisseur visible :
+ * des fermes y travaillent, et une barre interrompue se lirait comme deux périodes
+ * distinctes.
+ */
+.community-range {
+	align-self: center;
+	min-height: 2px;
+}
+
+/*
+ * Le point de la médiane, centré sur sa semaine et posé sur la barre. Le liseré
+ * clair le détache du fond de la barre, dont il partage la couleur.
+ */
+.community-range-median {
+	position: relative;
+	height: 100%;
+}
+
+.community-range-median::before {
+	content: '';
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 0.625rem;
+	height: 0.625rem;
+	transform: translate(-50%, -50%);
+	border-radius: 50%;
+	border: 2px solid var(--background-light);
+	box-sizing: content-box;
+}
+
+.community-slot:hover .community-range-median::before {
+	border-color: #fff;
+}
+
+.community-range.is-seedling {
+	background-color: color-mix(in srgb, var(--community-seedling) 35%, transparent);
+}
+
+.community-range-median.is-seedling::before {
+	background-color: var(--community-seedling);
+}
+
+.community-range.is-implantation {
+	background-color: color-mix(in srgb, var(--community-planting) 35%, transparent);
+}
+
+.community-range-median.is-implantation::before {
+	background-color: var(--community-planting);
+}
+
+.community-crop.is-sowing .community-range.is-implantation {
+	background-color: color-mix(in srgb, var(--community-sowing) 35%, transparent);
+}
+
+.community-crop.is-sowing .community-range-median.is-implantation::before {
+	background-color: var(--community-sowing);
+}
+
+.community-range.is-harvest {
+	background-color: color-mix(in srgb, var(--community-harvest) 35%, transparent);
+}
+
+.community-range-median.is-harvest::before {
+	background-color: var(--community-harvest);
+}
+
+/*
+ * La vue simplifiée tient dans trois lignes de barres là où le relief occupe une
+ * bande entière : le créneau se resserre d'autant.
+ */
+.community-slots.is-simple .community-slot-timeline {
+	height: 4.5rem;
+}
+
+/* ------------------------------------------------- vue experte */
+
+.community-relief {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	top: 2rem;
+	z-index: 1;
+	min-height: 4.25rem;
+}
+
+.community-relief-svg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.community-relief-line {
+	fill: none;
+	stroke-width: 1.5;
+	vector-effect: non-scaling-stroke;
+	stroke-linejoin: round;
+}
+
+.community-relief-area {
+	stroke: none;
+}
+
+.community-relief-line.is-seedling {
+	stroke: var(--community-seedling);
+}
+
+.community-relief-area.is-seedling {
+	fill: color-mix(in srgb, var(--community-seedling) 30%, transparent);
+}
+
+.community-relief-line.is-implantation {
+	stroke: var(--community-planting);
+}
+
+.community-relief-area.is-implantation {
+	fill: color-mix(in srgb, var(--community-planting) 30%, transparent);
+}
+
+.community-crop.is-sowing .community-relief-line.is-implantation {
+	stroke: var(--community-sowing);
+}
+
+.community-crop.is-sowing .community-relief-area.is-implantation {
+	fill: color-mix(in srgb, var(--community-sowing) 30%, transparent);
+}
+
+.community-relief-line.is-harvest {
+	stroke: var(--community-harvest);
+}
+
+.community-relief-area.is-harvest {
+	fill: color-mix(in srgb, var(--community-harvest) 20%, transparent);
+}
+
+/* Le survol reste découpé à la semaine, pour rendre les effectifs exacts. */
+.community-relief-weeks {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	display: grid;
+	grid-template-columns: repeat(52, 1fr);
+}
+
+.community-relief-week:hover {
+	background-color: color-mix(in srgb, var(--color-brand) 6%, transparent);
+}
+
+/* --------------------------------------------------------- étapes et délais */
+
+/*
+ * Les étapes occupent leur propre voie, au-dessus du relief : posées dessus,
+ * elles auraient masqué les colonnes au moment précis où l'on cherche à les lire.
+ */
+.community-steps {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 2;
+}
+
+/*
+ * Même grille de demi-semaines que les repères qu'ils nomment : un nom qui désigne
+ * une période se centre entre deux repères, et le milieu de deux semaines n'est pas
+ * une semaine.
+ */
+.community-steps-labels {
+	display: grid;
+	grid-template-columns: repeat(104, 1fr);
+}
+
+/*
+ * Deux fois plus de colonnes que de semaines : les délais courent d'un milieu de
+ * semaine à l'autre, pas d'un bord à l'autre, et une demi-semaine est la plus
+ * petite unité qu'ils aient à placer.
+ */
+.community-steps-delays {
+	display: grid;
+	grid-template-columns: repeat(104, 1fr);
+}
+
+/*
+ * Le repère d'une étape : un trait au milieu de sa semaine, sous le nom qui la
+ * désigne. Il occupe la demi-semaine qui suit le milieu et se dessine sur son
+ * bord gauche, donc exactement au centre.
+ */
+.community-tick {
+	grid-row: 1;
+	height: 1rem;
+	border-left: 1px solid var(--muted);
+}
+
+/*
+ * Le nom de l'étape est centré sur la colonne de sa médiane et déborde de part et
+ * d'autre : une semaine fait une vingtaine de pixels, « plantation » trois fois
+ * plus. Sans débordement, il faudrait le tronquer ou le déplacer, et il ne
+ * désignerait plus la semaine qu'il nomme.
+ */
+.community-step {
+	grid-row: 1;
+	position: relative;
+	height: 0.875rem;
+}
+
+.community-step span {
+	position: absolute;
+	bottom: 0;
+	left: 50%;
+	transform: translateX(-50%);
+	white-space: nowrap;
+	font-size: 0.6875rem;
+	font-weight: bold;
+	color: var(--color-text-main);
+}
+
+/*
+ * Un trait tendu entre deux repères : ce n'est pas une période pendant laquelle
+ * il se passe quelque chose, c'est la distance entre deux moments. Les repères
+ * qui la bornent sont posés par les étapes elles-mêmes, pas par ce trait.
+ */
+.community-delay {
+	position: relative;
+	grid-row: 1;
+	height: 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.community-delay::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 50%;
+	border-top: 1px dotted var(--muted);
+}
+
+.community-delay span {
+	position: relative;
+	padding: 0 0.25rem;
+	background-color: var(--background-light);
+	font-size: 0.6875rem;
+	color: var(--color-neutral);
+	white-space: nowrap;
+}
+
+.community-slot:hover .community-delay span {
+	background-color: #fff;
+}
+
+/* ------------------------------------------------- plein champ / sous abri */
+
+/*
+ * La légende occupe la gouttière de la ligne d'en-tête, juste au-dessus de la
+ * colonne des barres : les mots y sont écrits une fois, et chaque créneau n'a
+ * plus qu'à porter ses deux pourcentages.
+ */
+.community-modes-legend {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 0.125rem;
+	font-size: 0.75rem;
+	color: var(--color-neutral);
+}
+
+.community-modes-bar {
+	display: flex;
+	width: 100%;
+	height: .9rem;
+	margin-top: 0.375rem;
+	border-radius: 0.25rem;
+	overflow: hidden;
+	background-color: var(--border-light);
+}
+
+/*
+ * Le pourcentage est écrit dans la part qu'il mesure : la longueur donne le
+ * rapport, le chiffre le précise, et il n'y a rien à rapprocher de rien.
+ */
+.community-modes-part {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	font-size: 0.6rem;
+	line-height: 1;
+	white-space: nowrap;
+}
+
+.community-modes-part.is-open-field,
+.community-modes-label.is-open-field::before {
+	background-color: var(--open-field-background);
+}
+
+.community-modes-part.is-greenhouse,
+.community-modes-label.is-greenhouse::before {
+	background-color: var(--greenhouse-background);
+}
+
+.community-modes-part.is-open-field {
+	color: var(--open-field);
+}
+
+.community-modes-part.is-greenhouse {
+	color: var(--greenhouse);
+}
+
+.community-modes-label::before {
+	content: '';
+	display: inline-block;
+	width: 0.5rem;
+	height: 0.5rem;
+	margin-right: 0.3125rem;
+	border-radius: 50%;
+	vertical-align: 0;
+}
+
+/* ------------------------------------------------- légende des frises */
+
+.community-legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem 1.25rem;
+	margin-bottom: 1rem;
+	font-size: 0.8125rem;
+	color: var(--color-neutral);
+}
+
+.community-legend-item::before {
+	content: '';
+	display: inline-block;
+	width: 0.75rem;
+	height: 0.75rem;
+	margin-right: 0.375rem;
+	border-radius: 2px;
+	vertical-align: -1px;
+}
+
+.community-legend-item.is-seedling::before {
+	background-color: var(--community-seedling);
+}
+
+.community-legend-item.is-implantation::before {
+	background-color: var(--community-planting);
+}
+
+.community-crop.is-sowing .community-legend-item.is-implantation::before {
+	background-color: var(--community-sowing);
+}
+
+.community-legend-item.is-harvest::before {
+	background-color: var(--community-harvest);
+}
+
+.community-slot-detail {
+	grid-column: 2;
+	margin-top: 0.5rem;
+}
+
+.community-slot-detail > * + * {
+	margin-top: 0.375rem;
+}
+
+/* ----------------------------------------------------------------- variétés */
+
+.community-slot-varieties {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.375rem;
+}
+
+.community-variety {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	padding: 0.125rem 0.25rem 0.125rem 0.5rem;
+	border-radius: 2rem;
+	border: 1px solid var(--border);
+	background-color: #fff;
+	font-size: 0.8125rem;
+}
+
+/*
+ * Seule la première lettre est forcée : `capitalize` mettrait une majuscule à
+ * chaque mot et rendrait « Verte Des Maraîchers », qui n'est le nom de personne.
+ */
+.community-variety-name::first-letter {
+	text-transform: uppercase;
+}
+
+/*
+ * Le nombre de structures est collé au nom : c'est ce qui distingue une variété
+ * que tout le monde utilise d'une que trois structures ont essayée, et sans lui
+ * la liste se lirait comme un classement sans échelle.
+ */
+.community-variety-count {
+	padding: 0 0.375rem;
+	border-radius: 2rem;
+	background-color: var(--color-bg-vert-bleu);
+	color: var(--color-brand);
+	font-weight: bold;
+	font-size: 0.75rem;
+}
+
+/* -------------------------------------------------------------------- vide */
+
+.community-empty {
+	margin-top: 1.5rem;
+	padding: 2rem 1.25rem;
+	text-align: center;
+	border-radius: var(--radius);
+	background-color: var(--background-light);
+	color: var(--color-neutral);
+}
+
+.community-empty p {
+	margin-bottom: 0.25rem;
+}
+
+@media (max-width: 767px) {
+
+	.community-crop {
+		--community-gutter: 6rem;
+	}
+
+}
+
+/* -------------------------------------------------------- choix de l'espèce */
+
+/*
+ * L'omnibox est un filtre parmi les autres et tient donc la même rangée. Elle n'a
+ * pas d'intitulé au-dessus : c'est son bas qui s'aligne sur celui des jetons, pas
+ * son haut sur celui des libellés.
+ */
+.community-filters-search {
+	align-self: flex-end;
+}
+
+/* ------------------------------------------------ filtres d'un panneau */
+
+/*
+ * Les sélecteurs d'un panneau d'onglet se suivent et passent à la ligne ensemble
+ * quand la place manque.
+ */
+.community-block-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem 1rem;
+}
+
+/* ------------------------------------------------------ couleur d'un mode */
+
+/*
+ * Plein champ et sous abri se disent par leur couleur, celle que le produit leur
+ * donne déjà (reboot.css). Chaque bloc qui porte un mode la reçoit en variable, et
+ * ses enfants la lisent sans savoir de quel mode il s'agit.
+ */
+.conduct-mode-open-field {
+	--conduct-mode: var(--open-field);
+	--conduct-mode-background: var(--open-field-background);
+}
+
+.conduct-mode-greenhouse {
+	--conduct-mode: var(--greenhouse);
+	--conduct-mode-background: var(--greenhouse-background);
+}
+
+.conduct-mode-title {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin: 1.5rem 0 0.75rem;
+	font-weight: bold;
+	color: var(--conduct-mode);
+}
+
+.conduct-mode-title::before {
+	content: '';
+	flex-shrink: 0;
+	width: 0.625rem;
+	height: 0.625rem;
+	border-radius: 50%;
+	background-color: var(--conduct-mode);
+}
+
+.conduct-mode-title small {
+	font-weight: normal;
+	color: var(--muted);
+}
+
+/* --------------------------------------- vue d'ensemble, bandes de densité */
+
+/*
+ * Les classes community-chart-* sont celles du calendrier ; seules la couleur du
+ * tracé et l'axe des densités sont propres aux conduites.
+ *
+ * Le calendrier impose 40 rem à ses bandes pour que ses 52 semaines restent
+ * lisibles, et défile sur petit écran. Une bande de densité n'a que cinq
+ * graduations, elle tient dans l'écran : la règle suivante, de même poids et
+ * posée après, lève ce minimum.
+ */
+.conduct-bands > * {
+	min-width: 0;
+}
+
+.conduct-bands .community-chart-title {
+	color: var(--conduct-mode);
+}
+
+.conduct-bands {
+	--conduct-median-line: 1.25rem;
+}
+
+/*
+ * La bande réserve une ligne au-dessus de la plus haute barre, où se pose
+ * l'étiquette de médiane : elle ne recouvre jamais l'histogramme, et n'a donc pas
+ * besoin de fond.
+ */
+.conduct-bands .community-chart-track {
+	height: calc(6rem + var(--conduct-median-line));
+}
+
+/*
+ * L'échelle se cale sur la zone des barres : la hauteur de la piste sans la ligne
+ * de médiane, et le bas relevé de l'axe des densités et du trait qui clôt la piste.
+ */
+.conduct-scale {
+	position: relative;
+	flex-shrink: 0;
+	width: 1.75rem;
+	height: 6rem;
+	margin-bottom: calc(1.5rem + 1px);
+}
+
+.conduct-scale span {
+	position: absolute;
+	right: 0.375rem;
+	transform: translateY(50%);
+	font-size: 0.6875rem;
+	line-height: 1;
+	white-space: nowrap;
+	color: var(--color-neutral);
+}
+
+.conduct-histogram {
+	position: absolute;
+	top: var(--conduct-median-line);
+	right: 0;
+	bottom: 0;
+	left: 0;
+}
+
+/* Les barres sont jointives : un pixel transparent à droite les sépare sans creuser l'intervalle. */
+.conduct-histogram-bar {
+	position: absolute;
+	bottom: 0;
+	box-sizing: border-box;
+	border-right: 1px solid transparent;
+	background-clip: padding-box;
+	background-color: color-mix(in srgb, var(--conduct-mode) 45%, transparent);
+	box-shadow: inset 0 2px var(--conduct-mode);
+}
+
+.conduct-histogram-bar:hover {
+	background-color: color-mix(in srgb, var(--conduct-mode) 70%, transparent);
+}
+
+/* La grille reprend les traits de semaine et de mois du calendrier. */
+.conduct-grid {
+	position: absolute;
+	top: var(--conduct-median-line);
+	right: 0;
+	bottom: 0;
+	left: 0;
+	pointer-events: none;
+}
+
+.conduct-grid-line {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	border-left: 1px solid var(--border-light);
+}
+
+.conduct-grid-line.is-tick {
+	border-left-color: var(--border);
+}
+
+.conduct-grid-level {
+	position: absolute;
+	left: 0;
+	right: 0;
+	border-top: 1px solid var(--border);
+}
+
+.conduct-curve-median {
+	position: absolute;
+	top: var(--conduct-median-line);
+	bottom: 0;
+	z-index: 2;
+	border-left: 2px dashed var(--conduct-mode);
+}
+
+.conduct-curve-median span {
+	position: absolute;
+	bottom: 100%;
+	left: -2px;
+	font-size: 0.75rem;
+	line-height: var(--conduct-median-line);
+	font-weight: bold;
+	white-space: nowrap;
+	color: var(--conduct-mode);
+}
+
+.conduct-curve-median-end span {
+	left: auto;
+	right: 0;
+}
+
+.conduct-axis {
+	position: relative;
+	height: 1.5rem;
+}
+
+.conduct-axis span {
+	position: absolute;
+	top: 0.25rem;
+	transform: translateX(-50%);
+	font-size: 0.75rem;
+	white-space: nowrap;
+	color: var(--color-neutral);
+}
+
+/* Une graduation qui toucherait sa voisine se tait (PlantCommunity.fitAxis). */
+.conduct-axis span.is-silent {
+	visibility: hidden;
+}
+
+/* ------------------------------- vue d'ensemble experte, rangs × écartement */
+
+.conduct-overview {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 1rem 2.5rem;
+}
+
+/*
+ * Une case porte au plus deux ronds, plein champ puis sous abri. Le nombre de
+ * colonnes vient des écartements que l'espèce porte, posé par l'UI.
+ */
+.conduct-map {
+	flex: 0 1 36rem;
+	min-width: 0;
+	display: grid;
+	grid-template-columns: max-content repeat(var(--conduct-map-columns), minmax(0, 1fr));
+	align-items: center;
+	border-top: 1px solid var(--border);
+}
+
+.conduct-map > * {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.375rem;
+	min-height: 3.75rem;
+	padding: 0.375rem 0.25rem;
+	border-bottom: 1px solid var(--border);
+}
+
+.conduct-map > :not(:first-child, .conduct-map-rows) {
+	border-left: 1px solid var(--border);
+}
+
+.conduct-map > .conduct-map-head {
+	min-height: 0;
+	font-size: 0.75rem;
+	color: var(--muted);
+}
+
+.conduct-map > .conduct-map-rows {
+	justify-content: flex-end;
+	padding-right: 0.5rem;
+	font-size: 0.8125rem;
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+/*
+ * Un rond plus large que sa case déborde sur la voisine, dont le trait de gauche se peint
+ * après lui : le rond passe au-dessus pour que le trait reste dessous.
+ */
+.conduct-map-dot {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	font-size: 0.6875rem;
+	font-weight: bold;
+	color: var(--background-surface);
+	background-color: var(--conduct-mode);
+}
+
+.conduct-overview-legend {
+	flex: 1 1 14rem;
+	max-width: 20rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.375rem;
+	font-size: 0.8125rem;
+}
+
+.conduct-overview-legend .conduct-mode-title {
+	margin: 0;
+}
+
+/* ------------------------------------------------ la carte d'une conduite */
+
+/*
+ * Une rangée de mode porte au plus trois cartes. util-cards-3 passe à deux colonnes
+ * sous 1200 px (component.css), ce qui laisserait la troisième seule sur sa ligne
+ * entre 992 et 1199 px ; le dessin est assez bas pour tenir en trois colonnes.
+ */
+@media (min-width: 992px) {
+
+	.conduct-cards.util-cards-3 {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+}
+
+/*
+ * La popularité est la raison pour laquelle une conduite est dans la liste : elle
+ * se voit avant de se lire. La barre prend toute la largeur et le nombre la clôt,
+ * en deux pistes et non en rangée souple — posé en flex, le nombre poussait
+ * l'origine de la barre de huit pixels d'une carte à l'autre selon son nombre de
+ * chiffres, et une barre dont l'origine se déplace ne compare plus rien.
+ */
+.conduct-share {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) max-content;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 1rem;
+}
+
+.conduct-share .util-progress-part {
+	background-color: var(--conduct-mode);
+}
+
+.conduct-share-value {
+	font-weight: bold;
+	color: var(--conduct-mode);
+}
+
+/* Une précision sur la densité, pas une seconde valeur : elle quitte la taille et la graisse du chiffre. */
+.conduct-density-note {
+	font-size: 0.9rem;
+	font-weight: normal;
+}

@@ -1,0 +1,16 @@
+/* Une note par page dans le PDF d'un carnet : la première suit le bloc de la structure. */
+.note-pdf-note + .note-pdf-note {
+	break-before: page;
+}
+
+.note-pdf-note {
+	margin-top: 8mm;
+}
+
+.note-pdf-title {
+	margin-bottom: 1mm;
+}
+
+.note-pdf-marks {
+	margin-bottom: 4mm;
+}

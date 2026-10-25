@@ -1,0 +1,176 @@
+/* Items */
+div.crop-items {
+	margin-bottom: 1.5rem;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-column-gap: 1rem;
+	grid-row-gap: 1rem;
+}
+
+@media (max-width: 1599px) {
+
+	div.crop-items {
+		grid-template-columns: 1fr;
+		max-width: 50rem;
+	}
+
+	div.crop-item-ghost {
+		display: none;
+	}
+
+}
+
+/* La fiche reprend le contour, l'ombre et le retrait d'un util-block sans en prendre la classe. Ce
+   retrait est le seul entre le contour et le texte : les sections n'en ajoutent aucun. */
+div.crop-item {
+	padding: var(--space-md);
+	border: var(--border-width, 1px) solid var(--border);
+	border-radius: var(--radius);
+	background-color: white;
+	box-shadow: var(--shadow-v2);
+}
+
+/* Dans un panneau, la fiche est à plat comme un util-block. */
+.panel-dialog div.crop-item {
+	box-shadow: none;
+}
+
+@media (min-width: 1600px) {
+
+	div.crop-item {
+		display: grid;
+		grid-template-rows: auto 1fr auto;
+	}
+
+}
+
+div.crop-item.crop-item-ghost {
+	visibility: hidden;
+}
+
+/* Comme le bandeau du bas, l'en-tête rend le retrait de la fiche pour que son filet aille d'un
+   bord à l'autre, et le reprend en marge intérieure. */
+div.crop-item-header {
+	margin: calc(-1 * var(--space-md)) calc(-1 * var(--space-md)) 0;
+	padding: var(--space-md) var(--space-md) 0;
+	border-top-left-radius: 0.5rem;
+	border-top-right-radius: 0.5rem;
+}
+
+/* Le filet se tient à un rem du contenu de part et d'autre, comme le hr d'un util-block. */
+div.crop-item-header:not(:last-child) {
+	margin-bottom: var(--space-md);
+	padding-bottom: var(--space-md);
+	border-bottom: 1px solid var(--border);
+}
+
+div.crop-item-title {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	grid-column-gap: 0.5rem;
+	align-items: center;
+}
+
+div.crop-item-title h2 {
+	margin: 0;
+	font-size: 1.5rem;
+	font-weight: normal;
+}
+
+div.crop-item-title h2 a {
+	color: inherit;
+}
+
+div.crop-item-varieties {
+	width: 100%;
+	padding-left: 3.5rem;
+	display: grid;
+	grid-template-columns: auto auto;
+	align-items: baseline;
+	font-size: 0.9rem;
+	line-height: 1.4;
+}
+
+div.crop-item-varieties.crop-item-varieties-1 {
+	grid-template-columns: 1fr;
+}
+
+@media (max-width: 575px) {
+
+	div.crop-item-varieties {
+		grid-template-columns: 1fr;
+	}
+
+}
+
+span.crop-item-varieties-label {
+	text-transform: uppercase;
+	padding-right: .5rem;
+}
+
+span.crop-item-varieties-part {
+	color: var(--muted);
+}
+
+div.crop-item-soil-infos {
+	text-transform: uppercase;
+	font-size: 0.9rem;
+	line-height: 1.4;
+}
+
+/* Le bandeau ferme la fiche : il rend le retrait de la fiche pour toucher ses bords, et le reprend
+   en marge intérieure pour que son texte reste aligné sur celui des sections. */
+div.crop-item-info {
+	margin: var(--space-md) calc(-1 * var(--space-md)) calc(-1 * var(--space-md));
+	padding: var(--space-xs) var(--space-md);
+	background-color: var(--info);
+	font-weight: bold;
+	border-bottom-right-radius: var(--radius);
+	border-bottom-left-radius: var(--radius);
+	line-height: 1.4;
+}
+
+@media (min-width: 576px) {
+
+	dt.crop-item-harvest-label {
+		grid-column-start: 1;
+	}
+
+	dd.crop-item-harvest-value {
+		grid-column-start: 2;
+		grid-column: span 3;
+	}
+
+}
+
+@media (max-width: 575px) {
+
+	dt.crop-item-harvest-label {
+		grid-column-start: 1;
+		grid-column: span 2;
+	}
+
+	dd.crop-item-harvest-value {
+		grid-column-start: 1;
+		grid-column: span 2;
+	}
+
+}
+
+div.crop-write-spacing-values {
+	display: grid;
+	grid-template-columns: auto min-content auto;
+	align-items: center;
+}
+
+[data-wrapper^="seedlingSeeds"]:not([data-action="sowing"]):not([data-action="young-plant"]) {
+	display: none !important;
+}
+
+[data-wrapper^="seedlingSeeds"][data-action="sowing"] .crop-field-young-plant {
+	display: none;
+}
+
+[data-wrapper^="seedlingSeeds"][data-action="young-plant"] .crop-field-sowing {
+	display: none;
+}

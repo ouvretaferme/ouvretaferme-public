@@ -1,0 +1,20 @@
+{
+	"conforme.glb": {
+		"triangles": 1976
+	},
+	"refus-os.glb": {
+		"refusal": "bone",
+		"values": {
+			"name": "chapeau",
+			"bones": "bassin, torse, tete, brasG, brasD, avantBrasG, avantBrasD, jambeG, jambeD, tibiaG, tibiaD"
+		}
+	},
+	"refus-armature.glb": {
+		"refusal": "rig",
+		"values": {}
+	},
+	"refus-sol.glb": {
+		"refusal": "ground",
+		"values": {}
+	}
+}

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Liste blanche des formats qu'ImageMagick lit et écrit pour OTF : tout est refusé, puis seuls les
+  formats d'image que le code lui confie sont rouverts. Un SVG ne passe jamais par ImageMagick, mais
+  par rsvg-convert appelé directement (media\SvgLib), et un PDF n'y entre jamais.
+
+  Formats rouverts :
+  - GIF, JPEG, PNG, WEBP, BMP : images téléversées (media\MediaSetting::IMAGES_INPUT_TYPE) ;
+  - HEIC : photos de téléphone converties en JPEG par les justificatifs (proof\FileLib::convertHeif()) ;
+  - GRADIENT, PLASMA : images calculées, sans rien lire, par les décors des tests de justificatifs.
+
+  ImageMagick 6.9 compare le nom du format en tenant compte de la casse, et le code écrit
+  setImageFormat('jpeg') en minuscules : chaque format est donc nommé dans les deux casses.
+-->
+<policymap>
+  <policy domain="resource" name="memory" value="256MiB"/>
+  <policy domain="resource" name="map" value="512MiB"/>
+  <policy domain="resource" name="width" value="16KP"/>
+  <policy domain="resource" name="height" value="16KP"/>
+  <policy domain="resource" name="area" value="128MP"/>
+  <policy domain="resource" name="disk" value="1GiB"/>
+  <policy domain="delegate" rights="none" pattern="*"/>
+  <policy domain="path" rights="none" pattern="@*"/>
+  <policy domain="coder" rights="none" pattern="*"/>
+  <policy domain="coder" rights="read|write" pattern="{GIF,gif,JPEG,jpeg,JPG,jpg,PNG,png,WEBP,webp,BMP,bmp,HEIC,heic,GRADIENT,gradient,PLASMA,plasma}"/>
+</policymap>

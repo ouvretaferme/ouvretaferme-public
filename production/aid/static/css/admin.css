@@ -1,0 +1,135 @@
+/* Le catalogue des aides dans l'administration (aid\AdminUi). La feuille reste chargée après l'écran en
+   navigation ajax : chaque sélecteur se borne à #aid-admin. */
+
+#aid-admin .aid-table-list {
+	grid-template-columns: minmax(0, 1fr) auto auto auto auto auto auto;
+}
+
+#aid-admin .aid-table-editions,
+#aid-admin .aid-table-sources {
+	grid-template-columns: minmax(0, 1fr) auto auto auto auto;
+}
+
+#aid-admin .aid-table-areas {
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+}
+
+#aid-admin .aid-table-roles,
+#aid-admin .aid-table-links {
+	grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+#aid-admin .aid-table-review {
+	grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+/* Le moment et les gestes prennent une part de la largeur, et non leur contenu : en `auto`, la ligne
+   d'ajout élargirait ces colonnes en s'ouvrant, et les pièces au-dessus d'elle se décaleraient. */
+#aid-admin .aid-table-pieces {
+	grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
+}
+
+#aid-admin .aid-table-pieces > .util-table-row > :nth-child(4) {
+	text-align: end;
+}
+
+/* L'écart d'une reprise se lit aussi dans la colonne de côté : chaque propriété coiffe son rang d'un
+   intertitre, et l'avant et l'après se partagent toute la largeur. */
+#aid-admin .aid-table-seed {
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+/* La couverture : une ligne absente justifiée est couverte, mais sans aide. Elle prend un vert clair de
+   la famille de « trouvée », sens principal de la barre, et le vide de la piste reste l'ouvert (décidé
+   par V-Sub). Le badge du détail porte le même fond, son texte foncé pour rester lisible. */
+#aid-admin :is(.util-progress-part, .util-legend-mark).aid-justified {
+	background-color: color-mix(in srgb, var(--success) 35%, white);
+}
+
+/* La piste vide de util-progress, que rien ne nomme dans le socle : la marque de l'ouvert dans la
+   légende la reprend, et la carte en teint ce qui n'a pas de taux, pour garder sa forme et se lire
+   comme « rien à colorer » (décidé par V-Sub). */
+#aid-admin {
+	--aid-track: color-mix(in srgb, var(--text) 6%, transparent);
+}
+
+#aid-admin .util-legend-mark.aid-open {
+	background-color: var(--aid-track);
+}
+
+#aid-admin .badge.aid-justified {
+	background-color: color-mix(in srgb, var(--success) 35%, white);
+	color: var(--success-on-light);
+}
+
+/* Une largeur commune aux barres de la colonne de côté, pour qu'elles se comparent d'une région à l'autre. */
+#aid-admin .util-row .util-progress {
+	width: 8rem;
+}
+
+/* La rampe de la carte, du plus bas au plus haut taux reçu, comme ExpectedUi::getFill() la peint. */
+#aid-admin .aid-map-scale {
+	background: linear-gradient(to right, color-mix(in srgb, var(--production-light) 10%, white), var(--production-light));
+}
+
+/* Les colonnes masquées par hide-*-down sortent de la grille avec leur cellule. */
+@media (max-width: 991px) {
+
+	#aid-admin .aid-table-list {
+		grid-template-columns: minmax(0, 1fr) auto auto auto auto;
+	}
+
+}
+
+@media (max-width: 767px) {
+
+	#aid-admin .aid-table-list {
+		grid-template-columns: minmax(0, 1fr) auto auto;
+	}
+
+	#aid-admin .aid-table-review {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+
+	#aid-admin .aid-table-sources {
+		grid-template-columns: minmax(0, 1fr) auto auto auto;
+	}
+
+	/* La condition d'une pièce passe sous elle, sur toute la largeur, au retrait de la première colonne
+	   qu'elle occupe désormais : son titre de colonne n'a plus de cellule au-dessus d'elle. La ligne
+	   d'ajout garde l'ordre de ses champs, celui de la tabulation. */
+	#aid-admin .aid-table-pieces {
+		grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) minmax(0, 2fr);
+	}
+
+	#aid-admin .aid-table-pieces > :not(.util-table-add-entry) > :nth-child(3) {
+		grid-row: 2;
+		grid-column: 1 / -1;
+		padding-left: var(--space-md);
+	}
+
+	#aid-admin .aid-table-pieces > .util-table-head > :nth-child(3) {
+		display: none;
+	}
+
+}
+
+@media (max-width: 575px) {
+
+	/* La ligne d'ajout passe sur trois rangs, sa pièce sur toute la largeur, puis le moment et la condition
+	   dans l'ordre de la tabulation, puis les gestes. Elle n'élargit plus les colonnes, que la place rend à
+	   leur contenu. */
+	#aid-admin .aid-table-pieces {
+		grid-template-columns: minmax(0, 1fr) auto auto;
+	}
+
+	#aid-admin .aid-table-pieces > .util-table-add-entry > [data-wrapper~="note"] {
+		grid-column: 2 / -1;
+	}
+
+	#aid-admin .aid-table-editions,
+	#aid-admin .aid-table-sources {
+		grid-template-columns: minmax(0, 1fr) auto auto;
+	}
+
+}

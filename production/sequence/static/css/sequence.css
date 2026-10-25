@@ -1,0 +1,193 @@
+div.sequence-header-description {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	grid-column-gap: 1rem;
+	grid-auto-flow: column;
+}
+
+span.sequence-header-description-icon {
+	font-size: 2rem;
+	color: var(--primary);
+	line-height: 1.2;
+}
+
+/* Items */
+@media (min-width: 768px) {
+
+	main table.sequence-item thead {
+		position: sticky;
+		top: calc(var(--mainSticky) - 1px);
+		z-index: 1;
+	}
+
+}
+
+td.sequence-item-vignette {
+	width: 2rem;
+}
+
+td.sequence-item-vignette > * {
+	margin-top: -0.25rem;
+	margin-bottom: -0.25rem;
+}
+
+td.sequence-item-use {
+	font-size: 0.9rem;
+}
+
+@media (max-width: 767px) {
+	.sequence-item-use {
+		display: none;
+	}
+}
+
+div.sequence-item-crop {
+	display: grid;
+	grid-template-columns: 1fr 10rem 10rem 10rem;
+}
+
+@media (max-width: 1199px) {
+	div.sequence-item-crop {
+		grid-template-columns: 1fr 7.5rem 7.5rem 7.5rem;
+	}
+}
+
+div.sequence-item-crop > *:not(:nth-child(1)) {
+	text-align: right;
+}
+
+.sequence-item-period:not(:last-child) {
+	margin-bottom: 0.25rem;
+}
+
+.sequence-item-season {
+	font-weight: normal;
+	line-height: 1.2;
+}
+
+/* Séries dans un itinéraires technique */
+div.sequence-series-wrapper {
+	overflow: auto;
+	margin-bottom: 1.5rem;
+}
+
+div.sequence-series-wrapper.sequence-series-wrapper-1 {
+	max-width: 600px;
+}
+
+div.sequence-series-wrapper.sequence-series-wrapper-2 {
+	max-width: 800px;
+}
+
+div.sequence-series-body {
+	background-color: white;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+div.sequence-series-header {
+	border: 1px solid transparent;
+}
+
+div.sequence-series-item {
+	display: grid;
+	grid-column-gap: 0.5rem;
+	align-items: baseline;
+	text-decoration: none;
+	padding: 0.33rem 1rem;
+}
+
+div.sequence-series-item-season {
+	font-weight: bold;
+	font-size: 0.9rem;
+}
+
+div.sequence-series-item-crop:not(:last-child) {
+	border-right: 1px solid var(--border);
+	padding-right: 0.5rem;
+}
+
+/* La colonne des actions tient le bouton « Créer une série » à sa largeur naturelle, marge du
+   libellé et flèche comprises : bridé, il centre son contenu par-dessus ses bords. Elle se fixe
+   plutôt que de suivre son contenu parce que chaque série est sa propre grille, et que les
+   frises des lignes doivent tomber ensemble. */
+.sequence-plan {
+	--series-details: 17rem;
+	--series-area: 5rem;
+	--series-actions: 10rem;
+}
+
+.sequence-plan .series-item-planning {
+	grid-template-columns:
+		var(--series-details)
+		var(--series-area)
+		1fr
+		var(--series-actions);
+}
+
+.sequence-plan .series-item-planning.series-item-title .series-item-title-plant {
+	padding-left: 1rem;
+}
+
+.sequence-plan .series-item-planning-details {
+	padding-left: 1rem;
+}
+
+.series-item-planning-wrapper.sequence-plan div.series-grid {
+	left: calc(var(--series-details) + var(--series-area) + 2 * var(--series-gap) + var(--series-timeline-gap));
+	right: calc(var(--series-actions) + var(--series-gap));
+}
+
+.sequence-plan-actions {
+	display: flex;
+	align-items: center;
+	justify-content: end;
+	align-self: center;
+	padding-right: 0.5rem;
+}
+
+.sequence-plan-event-shifted {
+	border-style: dashed;
+}
+
+/* Un ruban qu'on ne peut pas modifier reste inerte ; celui qui se saisit prend sa
+   main dans series.css, avec le pointillé de survol. */
+.sequence-plan .series-item-timeline-event-full {
+	cursor: default;
+}
+
+@media (max-width: 1199px) {
+
+	.sequence-plan {
+		--series-details: 13rem;
+	}
+
+}
+
+@media (max-width: 991px) {
+
+	.sequence-plan {
+		--series-details: 10rem;
+		--series-area: 4rem;
+	}
+
+}
+
+/* Le libellé du bouton porte `hide-xs-down` : sous 576px, la colonne ne tient plus que l'icône et
+   la flèche. */
+@media (max-width: 575px) {
+
+	.sequence-plan {
+		--series-actions: 8.5rem;
+	}
+
+}
+
+.sequence-plan-event-span {
+	cursor: grab;
+	touch-action: pan-y;
+}
+
+.sequence-plan-event-span:hover {
+	outline: 2px dashed var(--primary);
+	outline-offset: 2px;
+}

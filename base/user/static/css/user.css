@@ -1,0 +1,90 @@
+.login-form {
+	margin: auto;
+}
+
+/* Une seule largeur pour le formulaire et, sur la page, pour la colonne qui le porte avec
+   l'invitation à s'inscrire : cette colonne s'aligne sur le titre de la page, et le centrage de
+   .login-form, fait pour le panneau, n'y déplace plus rien. */
+.login-form,
+.user-login-page {
+	max-width: 500px;
+}
+
+.login-submit {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.login-submit .login-forgotten-password {
+	text-align: right;
+}
+
+.login-form .form-control-label {
+	padding: 0;
+}
+
+/* E-mail verified */
+div.user-light {
+	margin-top: 3rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+div.user-light h1 {
+	margin-bottom: 1.5rem;
+}
+
+div.user-light h4 {
+	margin: 0rem 0 3rem;
+	color: #666;
+}
+
+.user-account-header {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	grid-column-gap: 1rem;
+	align-items: center;
+}
+
+.user-account-header .media-image-dropdown {
+	border-radius: 50%;
+}
+
+.user-account-header .media-image-upload.media-image-no .media-image-action {
+	top: -0.5rem;
+	right: -0.5rem;
+	left: 66%;
+	bottom: 66%;
+	font-size: 1.25rem;
+}
+
+.user-account-header .media-image-action a {
+	background-color: var(--primary);
+}
+
+.user-account-header > h1 {
+	margin: 0 !important;
+}
+
+
+#user-signup:has(select[name="invoiceCountry"] option:checked[data-france="0"]) [data-wrapper="siret"] {
+	display: none;
+}
+
+.user-form-address label:has(input[type="checkbox"]) {
+	margin-bottom: 0.5rem;
+}
+
+.user-form-address:has(input[type="checkbox"]:checked) .form-control-address {
+	display: none;
+}
+
+.login-form .login-code {
+	font-size: 1.75rem;
+	letter-spacing: .35em;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+	max-width: 14rem;
+}

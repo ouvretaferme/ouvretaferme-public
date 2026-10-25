@@ -1,0 +1,169 @@
+.website-title {
+	display: flex;
+	align-items: center;
+	column-gap: 1rem;
+}
+
+.website-info-description {
+	font-weight: normal;
+}
+
+/* Webpage */
+@media (max-width: 575px) {
+
+	.website-page-url,
+	.website-page-content {
+		display: none;
+	}
+
+}
+
+.website-menu-editor-list {
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+}
+
+.website-menu-editor-item {
+	list-style-type: none;
+}
+
+.website-menu-editor-entry {
+	margin-bottom: 0.5rem;
+}
+
+.website-menu-editor-handle {
+	cursor: grab;
+	color: var(--muted);
+	font-size: 1.5rem;
+	line-height: 1;
+	padding: 0.25rem;
+	margin: -0.25rem;
+	touch-action: none;
+	/* Sortable en `forceFallback` ne pose `user-select: none` sur le body que sous Safari ; ailleurs il vide
+	   la sélection au départ, et la souris partie d'une poignée sélectionnable la reconstruit. */
+	user-select: none;
+}
+
+.website-menu-editor-handle:active {
+	cursor: grabbing;
+}
+
+.website-menu-editor-target {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.website-menu-editor-buttons {
+	display: flex;
+	gap: 0.5rem;
+	max-width: none;
+}
+
+.website-menu-editor-children .website-menu-editor-add-child {
+	display: none;
+}
+
+.website-menu-editor-branch {
+	margin-left: 2.75rem;
+	padding-left: 1rem;
+	border-left: 2px solid var(--border);
+	margin-bottom: 0.5rem;
+}
+
+.website-menu-editor-branch:has(> .website-menu-editor-children:empty) {
+	display: none;
+}
+
+.website-menu-editor-dragging .website-menu-editor-branch:has(> .website-menu-editor-children:empty) {
+	display: block;
+	border-left-style: dotted;
+}
+
+.website-menu-editor-children .website-menu-editor-branch,
+.website-menu-editor-dragging .website-menu-editor-children .website-menu-editor-branch:has(> .website-menu-editor-children:empty),
+.website-menu-editor-dragging .website-menu-editor-item-ghost > .website-menu-editor-branch:has(> .website-menu-editor-children:empty),
+.website-menu-editor-dragging.website-menu-editor-dragging-parent .website-menu-editor-branch:has(> .website-menu-editor-children:empty) {
+	display: none;
+}
+
+.website-menu-editor-children:empty {
+	display: flex;
+	align-items: center;
+	min-height: var(--website-menu-editor-drop-height, 2.25rem);
+	border: 2px dashed var(--border);
+	border-radius: var(--radius);
+	background-color: var(--background-light);
+}
+
+.website-menu-editor-dragging .website-menu-editor-children:empty:after {
+	content: attr(data-label);
+	padding: 0.25rem 0.75rem;
+	font-size: 0.85rem;
+	color: var(--muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.website-menu-editor-add {
+	margin-top: 1rem;
+}
+
+.website-menu-editor-dragging,
+.website-menu-editor-dragging * {
+	user-select: none;
+}
+
+.website-menu-editor-item-ghost .website-menu-editor-entry {
+	opacity: 0.4;
+	border-style: dashed;
+}
+
+.website-menu-editor-item-chosen .website-menu-editor-entry {
+	border-color: var(--primary);
+}
+
+/* Create */
+div.webpage-write-url {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	grid-column-gap: 1rem;
+	align-items: baseline;
+}
+
+@media (max-width: 991px) {
+
+	div.webpage-write-url {
+		grid-template-columns: 1fr;
+	}
+
+}
+
+div.webpage-write-url .input-group-addon {
+	font-size: 0.8rem;
+}
+
+div.webpage-write-url label {
+	text-align: right;
+	white-space: nowrap;
+}
+
+div.website-code {
+	margin-left: 1rem;
+	padding-left: 1rem;
+	border-left: 2px solid var(--primary);
+	margin-bottom: 2rem;
+}
+
+/* L'appel à personnaliser, sur l'écran de gestion du site.
+ *
+ * Même carte que sur la boutique (shop/manage.css) : le châssis vient de
+ * util-card, ne reste ici que la disposition interne et l'effacement des
+ * couleurs et du chevron sur les écrans étroits. */
+
+.website-appearance-wrapper {
+	margin-bottom: 2rem;
+}
+

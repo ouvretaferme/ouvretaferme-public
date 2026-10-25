@@ -1,0 +1,23 @@
+.DS_Store
+.idea/
+.min/
+.claude/state/
+
+# Un banc de rendu doit être servi par le dev pour que les feuilles, les fontes et le sprite
+# chargent : il est donc posé dans un <paquet>/static/, au milieu de fichiers suivis. Le supprimer
+# après capture ne suffit pas — un `git add` large lancé pendant les quelques secondes de la pose
+# l'emporte, et c'est arrivé deux fois le 12/09/2026 : 847 Ko commités deux fois dans l'historique,
+# qui ne s'en débarrasse plus. `.claude/recette/banc.py` pose ses fichiers sous ce nom.
+bancTemporaireAi-*.html
+.playwright-mcp/
+
+# Les outils Python de `.claude/` laissent un cache compilé partout où une session les importe :
+# 200 répertoires non suivis au 2026-09-25, aucun dans l'index, y compris dans les dossiers de
+# chantier dont les sessions n'ont pas à faire le ménage. Même risque que le banc ci-dessus, un
+# `git add` large les emporte.
+__pycache__/
+.buildpath
+.settings
+.project
+secret.c.php
+*.pem

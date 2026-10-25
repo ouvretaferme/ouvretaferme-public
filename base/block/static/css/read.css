@@ -1,0 +1,395 @@
+/* La liste des blocs, en lecture comme dans l'éditeur (`BlockUi::render()`, `BlockUi::getEditor()`) :
+   deux blocs sont séparés de 1 rem, l'écart de deux paragraphes d'un texte, et une leçon coupée en
+   blocs par le « / » se lit comme avant sa coupe. C'est la liste qui espace, pas le bloc : les marges
+   basses que les composants portent ailleurs (1,5 rem sous util-figures, 1 rem sous util-procedure et
+   sous chaque étape, sous le dernier paragraphe d'un texte ou d'une citation) ne
+   s'ajoutent pas à l'écart. Elles ne sont retirées que sous `.block-list` : les mêmes composants
+   gardent leurs marges partout ailleurs dans le produit.
+
+   `margin-bottom` sur la liste rend à ce qui la suit (les fichiers d'une leçon, son quiz) l'écart que
+   le dernier paragraphe donnait avant les blocs.
+
+   L'éditeur (`block.css`) porte l'écart à 1,5 rem, jamais moins de 24 px, pour loger son « + ». */
+
+.block-list {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	margin-bottom: 1rem;
+}
+
+.block-list :is(.util-figures, .util-procedure, .util-table) {
+	margin-bottom: 0;
+}
+
+.block-list .util-procedure-step:last-child {
+	padding-bottom: 0;
+}
+
+/* La page de lecture d'une leçon est un document (`div.doc-content h4`, `template-doc.css`), dont la
+   marge des titres bat celle du titre d'étape (0,1,2 contre 0,1,0) : une étape lue était alors plus
+   haute de 12 px que la même étape dans l'éditeur. La liste rend au titre la marge du composant. */
+.block-list .util-procedure-title {
+	margin: 0.3rem 0 0.25rem;
+}
+
+/* Le même document pose une bordure et des marges sur toute image (`div.doc-content
+   img:not(.asset-icon)`, 0,2,2, marge basse en `!important`) : la photo d'un bloc texte descendait
+   de 1 rem dans la boite dont l'éditeur fixe la hauteur, et en sortait par le bas. */
+.block-list .reador .editor-image > img {
+	border: 0;
+	border-radius: 0;
+	margin-top: 0;
+	margin-bottom: 0 !important;
+}
+
+/* L'instant d'une étape (`BlockTypeUi::getStepAt()`) se lit sous son titre, avant son texte : le bouton
+   garde sa largeur dans le flux de l'étape. */
+.block-step-at {
+	margin-bottom: var(--space-xs);
+}
+
+/* La capture d'une étape (`BlockTypeUi::getStepMedia()`) prend la largeur du texte de l'étape, sans
+   jamais grandir au-delà de sa taille de lecture, et se détache du fond par un filet d'un pixel,
+   celui des captures de la maquette des tutoriels. Le lien épouse l'image : seule la capture ouvre
+   l'image entière. La règle du document vue plus haut lui imposerait sa marge basse en
+   `!important` : la capture est le dernier élément de l'étape, et c'est l'étape qui espace.
+   `:not(.asset-icon)` hisse
+   la règle au-dessus de celle du document (0,3,1 contre 0,2,2), qui sinon garderait sa bordure. */
+.block-list .block-step-media {
+	display: block;
+	width: fit-content;
+	max-width: 100%;
+	margin-top: var(--space-sm);
+}
+
+.block-list .block-step-media > img:not(.asset-icon) {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	margin-top: 0;
+	margin-bottom: 0 !important;
+}
+
+/* Les repères d'une capture (`BlockTypeUi::getStepMarks()`) se placent en pourcentage du lien, qui
+   épouse l'image. La règle se borne à la capture et non à la liste des blocs : le lecteur d'une leçon
+   recopie la capture hors de la liste (`LearningReader`), repères compris. Le trait d'un cadre est
+   un contour posé à l'extérieur de la zone : une zone en pourcentage d'une capture réduite à la
+   largeur d'un téléphone ne fait que quelques pixels, qu'un trait intérieur recouvrirait en entier.
+   Un anneau garde sa taille et se centre sur son point. Ni l'un ni l'autre ne prend le clic, qui
+   reste à l'image entière.
+
+   Le trait est en terracotta, qu'aucun réseau ne redéfinit, et non en `--primary`, qu'un réseau
+   redéfinit : un repère doit se voir sur n'importe quelle capture, quelle que soit la teinte du
+   réseau. Le liseré blanc qui l'entoure le détache d'une capture sombre, une carte satellite par
+   exemple. Pour un cadre, l'ombre qui peint le liseré passe sous le contour et ne se voit qu'au-delà
+   de lui. */
+.block-step-media:has(> .block-step-mark, > .block-step-zoom) {
+	position: relative;
+}
+
+.block-step-media > .block-step-mark {
+	position: absolute;
+	pointer-events: none;
+}
+
+.block-step-media > .block-step-mark-box {
+	border-radius: calc(var(--radius) / 2);
+	outline: 2.5px solid var(--color-terracota);
+	background-color: color-mix(in srgb, var(--color-terracota) 8%, transparent);
+	box-shadow: 0 0 0 calc(2.5px + 1px) color-mix(in srgb, white 80%, transparent);
+}
+
+.block-step-media > .block-step-mark-ring {
+	width: 1.875rem;
+	height: 1.875rem;
+	border: 2.5px solid var(--color-terracota);
+	border-radius: 50%;
+	box-shadow: 0 0 0 1px color-mix(in srgb, white 80%, transparent);
+	transform: translate(-50%, -50%);
+}
+
+/* Le bouton qui dit qu'une capture s'agrandit, posé dans le coin qu'aucun repère n'atteint
+   (`BlockTypeUi::getStepZoom()`) : le clic va au lien de la capture qui le porte. C'est un rond
+   d'encre translucide, qui laisse deviner la capture sous lui. Au toucher, où rien ne se survole,
+   il reste affiché et garde la taille d'un doigt. Sous un pointeur, il se réduit et n'apparaît
+   qu'au survol de la capture, ou quand le lien prend le focus au clavier, pour ne pas couvrir la
+   capture qu'on lit. */
+.block-step-media > .block-step-zoom {
+	position: absolute;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--touch-target);
+	height: var(--touch-target);
+	border-radius: 50%;
+	color: white;
+	background-color: color-mix(in srgb, var(--color-encre) 72%, transparent);
+	transition: opacity var(--duration-xs), background-color var(--duration-xs);
+}
+
+@media (hover: hover) {
+
+	.block-step-media > .block-step-zoom {
+		width: 1.875rem;
+		height: 1.875rem;
+		font-size: 0.9rem;
+		opacity: 0;
+	}
+
+	.block-step-media:is(:hover, :focus-visible) > .block-step-zoom {
+		opacity: 1;
+	}
+
+	.block-step-media > .block-step-zoom:hover {
+		background-color: var(--color-encre);
+	}
+
+}
+
+.block-step-media > .block-step-zoom-bottom-right {
+	right: var(--space-sm);
+	bottom: var(--space-sm);
+}
+
+.block-step-media > .block-step-zoom-bottom-left {
+	left: var(--space-sm);
+	bottom: var(--space-sm);
+}
+
+.block-step-media > .block-step-zoom-top-right {
+	right: var(--space-sm);
+	top: var(--space-sm);
+}
+
+.block-step-media > .block-step-zoom-top-left {
+	left: var(--space-sm);
+	top: var(--space-sm);
+}
+
+/* Deux volets d'un accordéon sont séparés de l'écart de deux blocs. Le volet ne porte pas de marge :
+   c'est son voisin qui l'éloigne, ici en lecture, où les volets sont frères, et dans `block.css` à
+   l'édition, où chacun a son enveloppe. */
+.block-list .util-deck + .util-deck {
+	margin-top: 1rem;
+}
+
+.block-list :is(.reador, .readitor, blockquote) > :last-child,
+.block-list .editor-quote blockquote {
+	margin-bottom: 0;
+}
+
+.block-list .readitor div.editor-quote {
+	padding: var(--quote-padding, 0);
+	background: var(--quote-background, none);
+	border: var(--quote-border, none);
+	border-radius: var(--quote-radius, 0);
+}
+
+/* 0,4,2 : au-dessus de la couleur de base de l'icône (`editor.css`, 0,3,3), sous celle que choisit la
+   bordure de la citation (0,4,3), quel que soit l'ordre de chargement des deux feuilles. */
+.block-list .readitor div.editor-quote > div.editor-quote-image {
+	color: var(--quote-icon-color, var(--muted));
+}
+
+.block-list .readitor div.editor-quote > blockquote {
+	font-size: var(--quote-font-size, inherit);
+	font-style: var(--quote-font-style, inherit);
+}
+
+.block-list .readitor div.editor-quote > blockquote > .util-annotation {
+	color: var(--quote-author-color, var(--muted));
+}
+
+/* Les colonnes d'un tableau (`BlockTypeUi::renderTable()`) se partagent la largeur sans descendre sous
+   7 rem : en dessous, le tableau défile dans son cadre (`util-overflow`). Leur nombre est celui du
+   tableau, posé par le rendu en variable. */
+.block-table {
+	grid-template-columns: repeat(var(--block-table-columns), minmax(7rem, 1fr));
+}
+
+/* La vidéo (`BlockTypeUi::renderVideo()`). Le cadre tient le 16/9 de lui-même : la figure de l'éditeur
+   de texte est dimensionnée par un script (`Reador`), que la lecture d'un bloc ne charge pas. Avant le
+   clic il ne porte que le bouton et le nom de l'hébergeur, sur le fond de la page ; après, le lecteur
+   le remplit (`BlockVideo.play()`). La légende reprend celle d'une figure de l'éditeur (`editor.css`,
+   `div.readitor figure > figcaption`), pour qu'une vidéo et une photo légendée se lisent pareil.
+
+   La disposition est une classe de l'enveloppe de la figure (`BlockTypeUi::getVariantClass()`). La
+   petite taille prend la moitié de la colonne, centrée. À gauche ou à droite d'un texte, la vidéo et
+   lui se partagent la largeur en deux colonnes égales, alignées en haut, dans l'ordre du rendu, qui
+   est celui de la lecture. `minmax(0, 1fr)` et non `1fr` : le minimum automatique d'un élément de
+   grille laisserait une adresse ou un lien long élargir sa colonne au-delà de la moitié. Sous 576 px,
+   où la moitié d'un téléphone ne montre plus rien, la petite taille prend toute la largeur et les
+   deux colonnes s'empilent, ce qui est à gauche d'abord. Empilé, un tel bloc s'écarte de ses voisins
+   plus que la liste ne le fait : sans cela, le texte d'une vidéo « à gauche » et celui d'une vidéo
+   « à droite » qui la suit se touchent, et le second se lit comme la suite du premier. L'écart est
+   celui de la lecture seule (`.block-list > …`), l'éditeur séparant déjà ses blocs par son « + ».
+
+   Chaque règle part de l'enveloppe ou de la figure du bloc et descend d'enfant en enfant : cette
+   feuille reste chargée après l'écran qui l'a demandée, et une classe seule s'appliquerait à tout ce
+   qui la porte ailleurs, quel qu'en soit l'auteur. */
+figure.block-video {
+	margin: 0;
+}
+
+div.block-video-small > figure.block-video {
+	width: 50%;
+	margin-inline: auto;
+}
+
+div:is(.block-video-left, .block-video-right) {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--space-lg);
+	align-items: start;
+}
+
+@media (max-width: 575px) {
+
+	div.block-video-small > figure.block-video {
+		width: 100%;
+	}
+
+	div:is(.block-video-left, .block-video-right) {
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--space-md);
+	}
+
+	.block-list > div:is(.block-video-left, .block-video-right):not(:first-child),
+	.block-list > div:is(.block-video-left, .block-video-right) + * {
+		margin-top: var(--space-lg);
+	}
+
+}
+
+figure.block-video > .block-video-frame {
+	position: relative;
+	aspect-ratio: 16 / 9;
+	overflow: hidden;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background: var(--background-body);
+}
+
+figure.block-video > .block-video-frame > iframe {
+	display: block;
+	width: 100%;
+	height: 100%;
+	border: 0;
+}
+
+/* L'adresse d'une vidéo que plus aucun hébergeur ne reconnait s'écrit à la place du bouton : elle se
+   coupe où il faut, une adresse n'ayant pas d'espace. */
+figure.block-video > .block-video-frame > .block-video-poster {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--space-sm);
+	overflow-wrap: anywhere;
+	text-align: center;
+}
+
+figure.block-video > .block-video-frame > .block-video-host {
+	position: absolute;
+	left: var(--space-sm);
+	bottom: var(--space-sm);
+	padding: var(--space-xxs) var(--space-xs);
+	border-radius: var(--radius);
+	background: var(--background-surface);
+	color: var(--text);
+	font-size: 0.9rem;
+}
+
+figure.block-video > figcaption {
+	margin-top: var(--space-xs);
+	text-align: center;
+	font-size: 0.9rem;
+	font-style: italic;
+}
+
+/* Un libellé long passe à la ligne dans le bouton (`BlockTypeUi::renderButton()`), que `.btn` garde
+   insécable (`component.css`) et qui sortirait sinon d'un écran de téléphone. L'interligne d'un texte
+   écarte ses lignes, et le rembourrage rend ce qu'il ajoute : un bouton d'une ligne garde la hauteur
+   des autres boutons. */
+.block-list .block-button .btn {
+	white-space: normal;
+	line-height: 1.3;
+	padding-block: calc(var(--space-xs) - 0.15em);
+}
+
+/* La légende d'une photo d'un bloc Texte, à l'allure de celle d'une vidéo. */
+.block-list .reador figure > figcaption {
+	color: var(--text);
+	font-size: 0.9rem;
+}
+
+/* La section (`BlockUi::render()`) : sa tête, puis les blocs qu'elle emporte jusqu'à la suivante,
+   dans une liste à elle qui garde l'écart de deux blocs. Le fond court sous toute la section, tête
+   et blocs : c'est lui qui dit où elle s'arrête. Il lit `--section-background`, que la formation
+   pose sur la teinte de son gabarit (`learning.css`), comme `--callout-background` pour l'encadré,
+   et prend sans gabarit une teinte de la couleur du produit ou du réseau.
+
+   Le fond déborde dans le retrait de la colonne, de son propre rembourrage : le texte des blocs
+   reste à l'aplomb de celui du reste de l'objet. Sous 768 px, le contenu n'a plus de retrait
+   latéral (`template-doc.css`), et le fond va d'un bord à l'autre de l'écran, sans coins. */
+.block-list > .block-section {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-md);
+	padding: var(--space-lg);
+	border-radius: var(--radius-lg);
+	background: var(--section-background, color-mix(in srgb, var(--primary) 10%, var(--background-surface)));
+}
+
+@media (min-width: 768px) {
+
+	.block-list > .block-section {
+		margin-inline: calc(-1 * var(--space-lg));
+	}
+
+}
+
+@media (max-width: 767px) {
+
+	.block-list > .block-section {
+		margin-inline: calc(-1 * var(--container-padding));
+		padding-inline: var(--container-padding);
+		border-radius: 0;
+	}
+
+}
+
+.block-list > .block-section > .block-list {
+	margin-bottom: 0;
+}
+
+/* Le titre est un `util-title > h2`, que les gabarits habillent déjà (`--heading-*`,
+   `component.css`) : il en prend la casse, l'espacement et le filet. Il perd la marge et le filet
+   que le document pose sur tout `h2` (`div.doc-content h2`, `template-doc.css`), écrits pour une
+   partie de page qui commence sur le fond de la page, et non dans un bandeau. Le surtitre est un
+   `util-label` tel que le design system le dessine, écarté du titre d'un cran. */
+.block-list .block-section-head > .util-label {
+	margin-bottom: var(--space-xxs);
+}
+
+.block-list .block-section-head > .util-title {
+	margin-bottom: 0;
+}
+
+.block-list .block-section-head > .util-title > h2 {
+	margin: 0;
+	font-size: 1.75rem;
+	border-bottom: var(--heading-border, none);
+}
+
+@media (max-width: 767px) {
+
+	.block-list .block-section-head > .util-title > h2 {
+		font-size: 1.5rem;
+	}
+
+}

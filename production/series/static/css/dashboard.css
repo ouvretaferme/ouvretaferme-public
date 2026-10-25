@@ -1,0 +1,88 @@
+/* Le bloc des interventions de la semaine, sur l'accueil d'une structure.
+
+   Tout sélecteur est borné par `.series-dashboard-week`, la classe que seul ce bloc pose : une feuille
+   de package reste chargée après qu'on a quitté l'écran qui l'a demandée, la navigation ajax ne
+   retirant pas la `<link>`. La boîte des rangs est celle du système de design (`util-rows`). */
+
+/* La pastille se centre sur la ligne du nom, et les espèces passent dessous, dans la colonne du nom :
+   centrée sur les deux lignes, elle glisserait entre le nom et ses espèces. */
+.series-dashboard-week .series-dashboard-action {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: center;
+	min-width: 0;
+}
+
+.series-dashboard-week .series-dashboard-action > .util-annotation {
+	grid-column: 2;
+}
+
+/* Le pli d'une action (`DashboardUi::getWeekAction()`) : sa tête est le rang du système de design, que le
+   clic déplie sur ses interventions. Le triangle natif est retiré au profit du chevron du produit, comme
+   sur le pli du socle : `list-style` pour Firefox, `::-webkit-details-marker` pour Chrome et Safari. */
+.series-dashboard-week > .series-dashboard-fold > summary {
+	list-style: none;
+	cursor: pointer;
+}
+
+/* Le compte et le chevron restent à droite, au-dessus des marques qu'ils déplient : passés sous le nom,
+   comme le rang d'une tuile y passe (`.util-tile .util-row`), le chevron ne serait plus en face d'elles.
+   Ce sont les espèces qui reviennent à la ligne. */
+.util-tile .series-dashboard-week > .series-dashboard-fold > summary {
+	flex-wrap: nowrap;
+}
+
+.series-dashboard-week > .series-dashboard-fold > summary::-webkit-details-marker {
+	display: none;
+}
+
+/* La tête d'un pli n'est plus un enfant direct de `util-rows` : le nom de l'action reprend la couleur que
+   `util-flat` donne au libellé d'un rang. */
+.util-flat .series-dashboard-week > .series-dashboard-fold > summary > .series-dashboard-action {
+	color: var(--muted);
+}
+
+.series-dashboard-week .series-dashboard-count {
+	display: flex;
+	align-items: center;
+	gap: var(--space-xs);
+}
+
+.series-dashboard-week .series-dashboard-fold[open] .util-fold-chevron {
+	transform: rotate(180deg);
+}
+
+/* Les interventions s'alignent sur le nom de l'action : la liste réserve la colonne de sa pastille, du même
+   token que `div.action-circle` (`base/structure/static/css/action.css`), et l'écart de sa marge. Leur marque
+   se range à droite, sous le chevron. Le filet bas ferme le pli comme un rang. */
+.series-dashboard-week .series-dashboard-tasks {
+	display: grid;
+	grid-template-columns: var(--action-circle) minmax(0, 1fr);
+	column-gap: var(--space-xs);
+	padding: var(--space-xxs) 0 var(--space-xs);
+	border-bottom: 1px solid var(--border);
+}
+
+.series-dashboard-week .series-dashboard-task {
+	grid-column: 2;
+	display: flex;
+	align-items: center;
+	gap: var(--space-sm);
+	padding: var(--space-xxs) 0;
+}
+
+.series-dashboard-week .series-dashboard-task-name {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+/* Sous 575 px, la marque du planning reçoit un calque de la taille d'un doigt (`planning.css`) : une ligne
+   aussi haute que ce calque empêche deux marques voisines de se chevaucher. */
+@media (max-width: 575px) {
+
+	.series-dashboard-week .series-dashboard-task {
+		min-height: var(--touch-target);
+	}
+
+}

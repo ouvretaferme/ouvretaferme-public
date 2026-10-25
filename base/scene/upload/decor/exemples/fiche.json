@@ -1,0 +1,15 @@
+{
+	"type": "building",
+	"length": 14,
+	"width": 9,
+	"height": 4.2,
+	"settings": {
+		"roof": "deux-pans",
+		"cover": "tuile",
+		"coverTint": "tuile",
+		"wall": "pierre",
+		"wallTint": "pierre",
+		"door": "porte-pleine",
+		"windows": 2
+	}
+}

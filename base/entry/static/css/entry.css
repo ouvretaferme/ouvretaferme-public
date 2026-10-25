@@ -1,0 +1,48 @@
+/* Le détail de la confirmation passe à la ligne plutôt que de faire défiler la liste en largeur :
+   une série au nom long suivie de ses emplacements dépasse la largeur de l'omnibox, que le champ
+   garde. Ses lignes s'équilibrent, pour que la coupure ne laisse pas un mot seul sur la dernière. */
+.entry-field .util-omnibox-item-detail {
+	white-space: normal;
+	text-wrap: balance;
+	text-align: right;
+}
+
+/* La fin du mot en frappe, en grisé à la suite de ce qui est tapé (`EntryField.showCompletion()`). Le
+   texte tapé y est recopié invisible, à la même police que le champ, pour la poser juste après lui. */
+.entry-field .util-omnibox-tail {
+	position: relative;
+}
+
+.entry-field .entry-completion {
+	position: absolute;
+	inset: 0 auto 0 0;
+	display: flex;
+	align-items: center;
+	white-space: pre;
+	pointer-events: none;
+	color: var(--muted);
+}
+
+.entry-field .entry-completion-typed {
+	visibility: hidden;
+}
+
+/* La case a la largeur d'une colonne de jour, où la confirmation tiendrait sur un mot par ligne : la liste prend
+   la largeur de celle du champ de recherche d'en-tête, et s'ouvre vers la gauche, comme elle, pour ne pas sortir
+   de l'écran depuis la dernière colonne. La case prend aussi la largeur de sa colonne et ne la donne pas : sans
+   `contain`, chaque jeton posé élargirait la colonne entière, une piste en `minmax(13rem, max-content)`
+   (planning.css), et déplacerait toute la grille sous les yeux. Ses jetons défilent dans le champ
+   (`util-omnibox-scroll`). */
+.entry-cell {
+	--util-omnibox-list-left: auto;
+	--util-omnibox-list-width: max(100%, min(26rem, 100vw - 2rem));
+	contain: inline-size;
+	width: 100%;
+}
+
+/* Dans la case, le détail prend la place que le libellé laisse sans rien lui prendre : « Ajouter 4 kg » garde sa
+   ligne, et c'est le détail qui passe à la ligne. Au menu, plus étroit dans la barre latérale, le libellé cède avec
+   lui : le détail y tomberait à un mot par ligne. */
+.entry-cell .util-omnibox-item-detail {
+	flex: 1 1 0;
+}

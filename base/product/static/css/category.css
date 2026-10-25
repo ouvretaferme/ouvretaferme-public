@@ -1,0 +1,43 @@
+.category-vignette-wrapper {
+	display: flex;
+	flex-wrap: wrap;
+	row-gap: 0.5rem;
+}
+
+.category-vignette-wrapper > * {
+	padding: 0.5rem 1rem;
+	border-radius: var(--radius);
+}
+
+label.category-vignette-empty  {
+	display: flex;
+	align-items: center;
+}
+
+label.category-vignette-icon  {
+	transition: all 0.25s;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+}
+
+label.category-vignette-icon:has(> input:checked),
+label.category-vignette-icon:hover {
+	background-color: var(--background-light);
+}
+
+.category-vignette {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	vertical-align: middle;
+}
+
+.tab-item .category-vignette {
+	margin: -0.5rem 0.5rem -0.5rem;
+}
+
+/* Dans sa place d'onglet (`tab-item-vignette`), qui porte sa taille et l'écart avec le nom. */
+.tab-item-vignette > .category-vignette {
+	margin: 0;
+}

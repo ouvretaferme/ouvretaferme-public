@@ -1,0 +1,17 @@
+/* Le rapport GoAccess est un document autonome : il se lit dans un cadre qui prend la hauteur de la
+   fenêtre sous le titre, et se laisse défiler seul. */
+.security-access-report {
+	display: block;
+	width: 100%;
+	height: calc(100vh - 14rem);
+	min-height: 30rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background: #fff;
+}
+
+/* Le chemin d'un balayage est souvent une suite d'octets échappés sans espace : sans point de césure,
+   il élargit le tableau au-delà de son cadre et pousse les dernières colonnes hors de l'écran. */
+.security-access-path {
+	overflow-wrap: anywhere;
+}

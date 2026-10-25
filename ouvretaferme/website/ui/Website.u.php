@@ -1,0 +1,307 @@
+<?php
+namespace website;
+
+class WebsiteUi {
+
+	use \Notifiable;
+
+	/**
+	 * Une entrée de menu qui mène hors du site, à une boutique ou ailleurs, porte l'icône que lui donne le code
+	 * fermé, sinon celle d'un lien sortant.
+	 */
+	public static function getMenuIcon(string $url): string {
+
+		$icons = array_filter(self::notify('getMenuIcon', $url));
+
+		return $icons ? reset($icons) : \Asset::icon('box-arrow-up-right');
+
+	}
+
+	/**
+	 * L'adresse de l'espace où le menu du site mène ses visiteurs, vide pour un site qui n'en a pas.
+	 */
+	public static function getSpaceUrl(Website $eWebsite): string {
+		return implode('', self::notify('getSpaceUrl', $eWebsite));
+	}
+
+	public static function link(Website $eWebsite): string {
+
+		$url = self::url($eWebsite);
+
+		return '<a href="'.encode($url).'" target="_blank">'.$url.'</a>';
+
+	}
+
+	public static function url(Website $eWebsite, string $url = '/', bool $showProtocol = TRUE, bool $internalDomain = FALSE): string {
+
+		$eWebsite->expects(['id', 'domain', 'domainStatus', 'internalDomain']);
+
+		if(
+			$internalDomain === FALSE and
+			$eWebsite['domainStatus'] === Website::PINGED_SECURED and
+			LIME_ENV === 'prod'
+		) {
+			$domain = $eWebsite['domain'];
+		} else {
+			$domain = WebsiteSetting::domain().'/'.encode($eWebsite['internalDomain']);
+		}
+
+		return $showProtocol ? match(LIME_ENV) {
+			'dev' => 'http://'.$domain.$url,
+			'prod' => SERVER('REQUEST_SCHEME', default: 'https').'://'.$domain.$url
+		} : $domain;
+
+	}
+
+	public static function path(Website $eWebsite, string $url = '/'): string {
+
+		$eWebsite->expects(['id', 'domain', 'domainStatus', 'internalDomain']);
+
+		if($eWebsite['domainStatus'] === Website::PINGED_SECURED and LIME_ENV === 'prod') {
+			$prefix = '';
+		} else {
+			$prefix = '/'.encode($eWebsite['internalDomain']);
+		}
+
+		if(get_exists('customDesign')) {
+
+			$parameters = [];
+
+			foreach([
+				'customDesign', 'customDesignPosition', 'customWidth', 'customText',
+				'customBackground', 'customColor', 'customLinkColor', 'customFont', 'customTitleFont'
+			] as $parameter) {
+
+				if(GET($parameter)) {
+					$parameters[$parameter] = GET($parameter);
+				}
+
+			}
+
+			$url .= '?'.http_build_query($parameters);
+
+		}
+		return match(LIME_ENV) {
+			'dev' => $prefix.$url,
+			'prod' => $prefix.$url
+		};
+
+	}
+
+	public static function getTitleParts(string $title): string {
+
+		$title = trim($title);
+		$position = mb_strpos($title, ' ');
+
+		if($position === FALSE) {
+			return '<span class="website-title-lead">'.encode($title).'</span>';
+		}
+
+		return '<span class="website-title-lead">'.encode(mb_substr($title, 0, $position)).'</span> '.
+			'<span class="website-title-rest">'.encode(mb_substr($title, $position + 1)).'</span>';
+
+	}
+
+	public static function getLogo(Website $eWebsite, string $size): string {
+
+		$eWebsite->expects(['id', 'logo']);
+
+		if($eWebsite['logo'] === NULL) {
+			return '';
+		}
+
+		$ui = new \media\WebsiteLogoUi();
+
+		$format = $ui->convertToFormat($size);
+
+		$style = 'background-image: url('.$ui->getUrlByElement($eWebsite, $format).');';
+
+		return '<div class="media-rectangle-view" style="'.$ui->getSquareCss($size).'; '.$style.'"></div>';
+
+	}
+
+	public static function getBanner(Website $eWebsite, string $width): string {
+
+		$eWebsite->expects(['id', 'banner']);
+
+		$ui = new \media\WebsiteBannerUi();
+
+		$class = 'media-banner-view'.' ';
+		$style = '';
+
+		if($eWebsite['banner'] !== NULL) {
+			$style .= 'background-image: url('.$ui->getUrlByElement($eWebsite, 's').');';
+		}
+
+		return '<div class="'.$class.'" style="width: '.$width.'; max-width: 100%; height: auto; aspect-ratio: 3; '.$style.'"></div>';
+
+	}
+
+	public static function getLogoImage(Website $eWebsite): string {
+
+		$eWebsite->expects(['id', 'logo']);
+
+		if($eWebsite['logo'] === NULL) {
+			return '';
+		}
+
+		$ui = new \media\WebsiteLogoUi();
+
+		return \Asset::image($ui->getUrlByElement($eWebsite, 'm'));
+
+	}
+
+	public static function getFavicon(Website $eWebsite, string $size): string {
+
+		$eWebsite->expects(['id', 'favicon']);
+
+		if($eWebsite['favicon'] === NULL) {
+			return '';
+		}
+
+		$ui = new \media\WebsitefaviconUi();
+
+		$format = $ui->convertToFormat($size);
+		$style = 'background-image: url('.$ui->getUrlByElement($eWebsite, $format).');';
+
+		return '<div class="media-rectangle-view" style="'.$ui->getSquareCss($size).'; '.$style.'"></div>';
+
+	}
+
+	private static function isQrCodeAddress(Website $eWebsite, string $property): bool {
+
+		if($eWebsite->exists() === FALSE) {
+			return FALSE;
+		}
+
+		$internal = (self::url($eWebsite) === self::url($eWebsite, internalDomain: TRUE));
+
+		return match($property) {
+			'internalDomain' => $internal,
+			'domain' => ($internal === FALSE)
+		};
+
+	}
+
+	private static function getAddressWarning(): string {
+		return '<div class="util-warning website-write-address-warning mt-1 mb-0 hide">'.s("Avec cette nouvelle adresse, les QR codes déjà diffusés ne mèneront plus à votre site.").'</div>';
+	}
+
+	public static function p(string $property): \PropertyDescriber {
+
+		$d = Website::model()->describer($property, [
+			'customBackground' => s("Couleur d'arrière plan"),
+			'customText' => s("Couleur du texte"),
+			'customColor' => s("Couleur contrastante"),
+			'customLinkColor' => s("Couleur des liens"),
+			'customDesign' => s("Template"),
+			'customDesignPosition' => s("Position du menu"),
+			'customWidth' => s("Largeur maximale du contenu"),
+			'customFont' => s("Police pour le texte"),
+			'customTitleFont' => s("Police pour le titre principal des pages"),
+			'internalDomain' => s("Adresse du site sur <u>{siteName}</u>"),
+			'domain' => s("Nom de domaine"),
+			'logo' => s("Logo"),
+			'name' => s("Titre du site"),
+			'description' => s("Description du site"),
+			'footer' => s("Pied de page"),
+		]);
+
+		switch($property) {
+
+			case 'internalDomain' :
+				$d->prepend = \Lime::getProtocol().'://'.WebsiteSetting::domain().'/';
+				$d->attributes = fn(\util\FormUi $form, Website $e) => self::isQrCodeAddress($e, 'internalDomain') ? ['oninput' => 'WebsiteManage.changeAddress(this)'] : [];
+				$d->after = fn(\util\FormUi $form, Website $e) => \util\FormUi::info(s("Uniquement des chiffres, des lettres ou des tirets")).(self::isQrCodeAddress($e, 'internalDomain') ? self::getAddressWarning() : '');
+				break;
+
+			case 'domain' :
+				$d->prepend = \Lime::getProtocol().'://';
+				$d->placeholder = 'www.mondomaine.fr';
+				$d->labelAfter = \util\FormUi::info(s("Votre domaine doit impérativement commencer par un sous-domaine (exemple : www)"));
+				$d->attributes = fn(\util\FormUi $form, Website $e) => self::isQrCodeAddress($e, 'domain') ? ['oninput' => 'WebsiteManage.changeAddress(this)'] : [];
+
+				$after = s("Si vous renseignez un nom de domaine, celui-ci est prioritaire par rapport à l'adresse du site sur <u>{siteName}</u>. Vous devez acheter et configurer séparément votre nom de domaine pour utiliser cette fonctionnalité, par exemple chez :");
+				$after .= '<ul>';
+					$after .= '<li><a href="https://www.ovhcloud.com/" target="_blank">OVH</a></li>';
+					$after .= '<li><a href="https://www.gandi.net/" target="_blank">Gandi</a> (plus simple, mais plus cher)</li>';
+				$after .= '</ul>';
+
+				$d->after = fn(\util\FormUi $form, Website $e) => \util\FormUi::info($after).(self::isQrCodeAddress($e, 'domain') ? self::getAddressWarning() : '');
+
+				break;
+
+			case 'name' :
+				$d->attributes = ['data-limit' => Website::model()->getPropertyRange('name')[1]];
+				break;
+
+			case 'description' :
+				$d->field = 'textarea';
+				$d->attributes = ['data-limit' => Website::model()->getPropertyRange('description')[1]];
+				$d->label .= \util\FormUi::info(s("Utilisée pour les moteurs de recherche"));
+				break;
+
+			case 'footer' :
+				$d->options = [
+					'acceptFigure' => TRUE
+				];
+				$d->labelAfter = \util\FormUi::info(s("Le pied de page est affiché sur toutes les pages de votre site."));
+				break;
+
+			case 'customDesign':
+				$d->values = fn(Website $e) => $e['cDesign'] ?? $e->expects(['cDesign']);
+				$d->required = TRUE;
+				break;
+
+			case 'customDesignPosition':
+				$d->field = 'select';
+				$d->required = TRUE;
+				$d->values = [
+					Website::TOP => s("En haut"),
+					Website::LEFT => s("Sur le côté"),
+				];
+				$d->labelAfter = \util\FormUi::info(s("Sur les petits écrans, le menu est toujours affiché en haut de la page."));
+				break;
+
+			case 'customWidth':
+				$d->append = 'pixels';
+				$d->labelAfter = \util\FormUi::info(s("La valeur par défaut de {value} pixels est généralement un bon compromis.", Website::model()->getDefaultValue('customWidth')));
+				break;
+
+			case 'customText':
+				$d->field = 'select';
+				$d->required = TRUE;
+				$d->values = [
+					Website::BLACK => s("Noir"),
+					Website::WHITE => s("Blanc"),
+				];
+				break;
+
+			case 'customFont':
+				$d->field = 'select';
+				$d->required = TRUE;
+				$d->values = \main\CustomizeUi::CUSTOM_FONTS;
+				break;
+
+			case 'customColor':
+				$d->labelAfter = \util\FormUi::info(s("Utilisée sur certains templates ainsi que sur les petits écrans"));
+				break;
+
+			case 'customLinkColor':
+				$d->labelAfter = \util\FormUi::info(s("À l'exception des liens du menu principal de votre site"));
+				$d->placeholder = s("Par défaut");
+				break;
+
+			case 'customTitleFont':
+				$d->field = 'select';
+				$d->required = TRUE;
+				$d->values = \main\CustomizeUi::CUSTOM_TITLE_FONTS;
+				break;
+		}
+
+		return $d;
+
+	}
+
+}
+?>

@@ -1,0 +1,355 @@
+.profile-header {
+	margin-bottom: 2rem;
+}
+
+/* ⚠️ `min-height` et non `height` : la bande porte un titre dont la longueur ne se borne pas.
+   Sous 360 px, le nom le plus long de la base (73 caractères, ferme 4167) rendait un `h1` plus
+   haut que la bande, et comme `-inner` y était ancré en bas, sa première ligne se peignait
+   au-dessus — du blanc sur le fond clair de la page. 35 fermes actives passent 40 caractères.
+
+   L'ancrage en bas descend donc ici : un enfant en `height: 100%` ne peut pas le tenir contre un
+   parent devenu indéfini, il vaudrait `auto` et la bande pousserait le titre en haut. */
+.profile-banner {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	min-height: 11rem;
+	background-size: cover;
+	background-position: center;
+}
+
+/* Le voile ne se pose que sur une image : sur l'aplat, la couleur du domaine est déjà choisie
+   pour porter du blanc, et l'assombrir une seconde fois la ferait virer au noir. */
+.profile-banner:not(.profile-banner-empty)::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(0deg, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0) 55%);
+}
+
+/* Le relief tient tout le fond de la bande : le SVG porte son propre aplat et se recadre en
+   `slice`, il n'y a donc aucune couleur à poser ici. */
+.profile-banner-pattern {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+}
+
+.profile-banner-pattern svg {
+	width: 100%;
+	height: 100%;
+}
+
+/* Les courbes sont claires : le texte y passe en sombre, et perd l'ombre portée qui ne sert qu'au
+   texte posé sur une image qu'on ne choisit pas. */
+.profile-banner-empty .profile-banner-text,
+.profile-banner-empty .profile-banner-text h1 {
+	color: var(--text);
+	text-shadow: none;
+}
+
+/* Le `padding-top` répond au titre qui affleurait l'arête de la bande quand il la débordait.
+
+   ⚠️ **Le poser ici ou sur `.profile-banner` ne change rien**, et trois personnes ont cru le
+   contraire le 12/09 avant qu'une mesure croisée ne les démente. La bande est en `border-box`
+   (`reboot.css:2`), donc son `min-height` englobe le padding, et l'inner y est ancré en bas :
+   les deux écritures se réduisent à la même expression, hauteur `max(H, p + c)` et titre à
+   `hauteur - c`. Le padding est absorbé par le mou tant qu'il y en a, et ne devient de la
+   hauteur qu'une fois ce mou épuisé — dans les deux cas.
+
+   Ce qui se choisit est donc **la valeur**, pas l'emplacement, et 1 rem se déduit du
+   `padding-bottom` juste en dessous : le titre reprend au-dessus la respiration que la ligne de
+   méta a en dessous. Il reste ici pour cette symétrie, qui se relit ; 1,5 rem aurait demandé
+   qu'on croie un chiffre, et coûté 3 px de bande à 767 px sans rien donner de plus. */
+.profile-banner-inner {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	align-items: flex-end;
+	gap: 1.5rem;
+	padding-top: 1rem;
+	padding-bottom: 1rem;
+}
+
+/* Sans container, la bande n'a aucune gouttière et son contenu colle au bord : c'est l'aperçu du
+   bandeau dans les réglages (`ProfileAiUi::getIdentity()`, container: FALSE), la page publique
+   tenant la sienne du .container qu'elle reprend. Le corps suit d'autant, sinon la description
+   repart 2 rem à gauche du titre. */
+.profile-header-plain .profile-banner-inner,
+.profile-header-plain .profile-header-body {
+	padding-left: 2rem;
+}
+
+/* Après la règle ci-dessus, qu'elle doit battre à spécificité égale : le corps aligné sur le titre
+   reprend la gouttière en plus du décalage du médaillon. */
+.profile-header-plain .profile-header-body-offset {
+	padding-left: 10.5rem;
+}
+
+/* Le médaillon tient entièrement dans la bande : il ne la chevauche plus, donc le corps n'a rien à
+   compenser sous lui (arbitrage, 12/09/2026). */
+.profile-medallion {
+	padding: 0.25rem;
+}
+
+.profile-banner-text {
+	min-width: 0;
+	color: white;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+/* Même forme que le surtitre du bandeau d'un groupe (`template-community.css:94`) : la bande porte
+   une image qu'on ne choisit pas, d'où l'ombre portée plutôt qu'un gris qui s'y perdrait. */
+.profile-banner-type {
+	text-transform: uppercase;
+	letter-spacing: 0.09em;
+	font-size: 0.72rem;
+	font-weight: bold;
+	margin-bottom: 0.25rem;
+}
+
+.profile-banner-text h1 {
+	color: white;
+	margin-bottom: 0.125rem;
+	font-size: 2.25rem;
+	overflow-wrap: anywhere;
+}
+
+.profile-header-meta {
+	font-size: 0.9rem;
+}
+
+.profile-header-body {
+	padding-top: 1rem;
+}
+
+/* Le médaillon fait 6,5 rem plus deux fois son liseré de 0,25, et la bande l'espace de 1,5 du
+   texte : le corps reprend exactement ce décalage pour retrouver l'axe du titre. */
+.profile-header-body-offset {
+	padding-left: 8.5rem;
+}
+
+
+@media (max-width: 767px) {
+
+	.profile-banner {
+		min-height: 8rem;
+	}
+
+	.profile-banner-text h1 {
+		font-size: 1.75rem;
+	}
+
+	.profile-banner-inner {
+		gap: 1rem;
+	}
+
+}
+
+.profile-description {
+	position: relative;
+	max-width: 44rem;
+	padding-left: 2.25rem;
+	font-size: 1.15rem;
+	line-height: 1.6;
+	overflow-wrap: anywhere;
+}
+
+/* Le guillemet dit de qui sont ces mots : ceux de la ferme, et non ceux du logiciel, qui parle
+   partout ailleurs sur cette page. En pseudo-élément parce que le texte vient de l'éditeur : il
+   n'a pas à porter la ponctuation d'un style, et une description déjà entre guillemets n'en
+   hériterait pas de seconds. */
+.profile-description::before {
+	content: "\201C";
+	position: absolute;
+	left: 0;
+	top: -0.35rem;
+	font-size: 3rem;
+	line-height: 1;
+	color: color-mix(in srgb, var(--color-brand) 45%, transparent);
+}
+
+.profile-block {
+	margin-bottom: 2.5rem;
+}
+
+.profile-block > h3 {
+	margin-top: 2rem;
+}
+
+.profile-tooltip {
+	padding: 0.75rem;
+	max-width: 18rem;
+	background-color: var(--background-body);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.12);
+}
+
+.profile-tooltip-name {
+	font-weight: 600;
+}
+
+/* La scène : le fond, le voile et les chiffres empilés dans un même cadre. */
+.profile-scene {
+	position: relative;
+	border-radius: 1rem;
+	overflow: hidden;
+	margin-bottom: 2rem;
+}
+
+.profile-scene-map,
+.profile-scene-plain {
+	display: block;
+	width: 100%;
+	height: 22rem;
+	object-fit: cover;
+}
+
+.profile-scene-plain > svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.profile-scene-place {
+	position: absolute;
+	top: 0.875rem;
+	left: 1rem;
+	background-color: rgba(255, 255, 255, 0.88);
+	border-radius: 999px;
+	padding: 0.3rem 0.8rem;
+	font-size: 0.85rem;
+	font-weight: bold;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* Le voile porte la lisibilité, et il va jusqu'à l'opacité pleine : le texte est posé sur une
+   image qu'on ne choisit pas — une route blanche, une ville, de la neige. Mesuré sur la carte
+   réelle en 1200×300, le point le plus clair de cette bande est un rgb(246, 246, 246) ; le blanc
+   sur le voile plein y donne 17,85:1, et tiendrait encore 4,94:1 si le voile s'arrêtait à 60 %. */
+.profile-scene-veil {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	/* ⚠️ Le dégradé est plein avant que le texte commence, et non à 62 % comme la planche
+	   l'indiquait : elle calibrait sur une scène de 260 px, la carte en fait 350. Les libellés
+	   tombaient alors sur un voile encore translucide, et un badge d'autoroute transparaissait
+	   au travers de « ALTITUDE ». Le contraste tenait — mesuré 6,9:1 — mais l'écran était sale. */
+	background: linear-gradient(rgba(13, 26, 22, 0), rgb(13, 26, 22) 45%);
+	padding: 3.5rem 1.25rem 1rem 1.25rem;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 1rem;
+	color: white;
+}
+
+.profile-scene-key {
+	font-size: 0.72rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	font-weight: bold;
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.profile-scene-value {
+	font-size: 1.5rem;
+	font-weight: bold;
+	line-height: 1.05;
+}
+
+/* Un mot n'a pas la taille d'un nombre : « Argile limoneuse » sur deux lignes en 1,5rem
+   déborderait sa case, quand « 5 ha » y tient à l'aise. */
+.profile-scene-value-word {
+	font-size: 1.05rem;
+	line-height: 1.15;
+}
+
+.profile-scene-detail {
+	font-size: 0.75rem;
+	color: rgba(255, 255, 255, 0.62);
+}
+
+
+@media (max-width: 767px) {
+
+	.profile-header-body-offset {
+		padding-left: 0;
+	}
+
+	/* Le médaillon ne décale plus rien sur petit écran, mais la gouttière de l'aperçu reste */
+	.profile-header-plain .profile-header-body-offset {
+		padding-left: 2rem;
+	}
+
+	.profile-scene-veil {
+		grid-template-columns: 1fr 1fr;
+		padding: 3rem 1rem 0.875rem 1rem;
+	}
+
+	.profile-scene-map,
+	.profile-scene-plain {
+		height: 26rem;
+	}
+
+}
+
+.profile-productions {
+	display: grid;
+	gap: 0.75rem;
+}
+
+.profile-production {
+	background-color: var(--background-light);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 1rem 1.25rem;
+}
+
+.profile-production-head {
+	display: flex;
+	align-items: baseline;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	margin-bottom: 0.5rem;
+}
+
+.profile-production-head > h3 {
+	margin-bottom: 0;
+}
+
+.profile-production-year {
+	margin-left: auto;
+	font-size: 0.8rem;
+	color: var(--text-intermediate);
+}
+
+.profile-production-values {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(11rem, 15rem));
+	gap: 0.125rem 1.5rem;
+}
+
+.profile-production-values > div {
+	display: flex;
+	justify-content: space-between;
+	gap: 0.75rem;
+	padding: 0.15rem 0;
+}
+
+.profile-production-values span {
+	color: var(--text-intermediate);
+}
+
+.profile-production-description {
+	font-size: 0.9rem;
+	color: var(--text-intermediate);
+	margin: 0.5rem 0 0 0;
+}
+
+.profile-badge-conversion {
+	color: var(--greenhouse);
+}
